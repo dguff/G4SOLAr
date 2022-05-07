@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# External dependencies
+G4SOLAr/extern
+
+# build files
+/build
+
