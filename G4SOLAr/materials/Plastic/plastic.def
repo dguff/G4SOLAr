@@ -1,0 +1,8 @@
+# comment this line 
+# get NIST definition of generic plastic
+
+beginDef
+  name: Plastic
+  NIST: G4_POLYCARBONATE
+endDef
+

@@ -1,0 +1,26 @@
+# comment this line 
+# Definition of Acrylic 
+# (values from OSIRIS simulation) 
+
+beginDef
+  name: Acrylic
+  density: 1.18
+  ncomp: 3
+endDef
+
+# info on components
+beginEle
+  NIST: C
+  frac: 0.59984
+endEle
+
+beginEle
+  NIST: H
+  frac: 0.08055
+endEle
+
+beginEle
+  NIST: O
+  frac: 0.31961
+endEle
+

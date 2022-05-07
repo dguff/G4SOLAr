@@ -1,0 +1,17 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArUserPath.hh
+ * @created     : venerdì mag 06, 2022 23:42:46 CEST
+ */
+
+#ifndef SLARUSERPATH_HH
+
+#define SLARUSERPATH_HH
+
+#define SLAR_BASE_DIR     "@PROJECT_SOURCE_DIR@"
+#define SLAR_MATERIAL_DIR "@PROJECT_SOURCE_DIR@/materials"
+
+
+
+#endif /* end of include guard SLARUSERPATH_HH */
+

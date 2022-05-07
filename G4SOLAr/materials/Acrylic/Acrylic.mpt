@@ -1,0 +1,93 @@
+beginPropertyVec
+  name: RINDEX
+  data:
+  1.55  eV,      1.4878
+  1.795 eV,      1.4895
+  2.105 eV,      1.4925
+  2.271 eV,      1.4946
+  2.55  eV,      1.4986
+  2.845 eV,      1.5022
+  3.064 eV,      1.5065
+  4.133 eV,      1.5358
+  6.20  eV,      1.6279
+  6.526 eV,      1.6270
+  6.889 eV,      1.5359
+  7.294 eV,      1.5635
+  7.75  eV,      1.793
+  8.267 eV,      1.7199
+  8.857 eV,      1.6739
+  9.538 eV,      1.5635
+  10.33 eV,      1.462
+  15.5  eV,      1.462
+endPropertyVec
+
+beginPropertyVec
+  name: ABSLENGTH
+  data:
+   1.55 eV,       4.0e+3 mm
+   1.61 eV,       4.0e+3 mm
+   2.07 eV,       4.0e+3 mm
+   2.48 eV,       4.0e+3 mm
+   3.76 eV,       4.0e+3 mm
+   4.13 eV,       4.0e+3 mm
+   6.20 eV,       8.0e-3 mm
+  10.33 eV,       8.0e-3 mm
+  15.5  eV,       8.0e-3 mm
+endPropertyVec
+
+beginPropertyVec
+  name: RAYLEIGH
+  data:
+  1.55   eV,     500.0  m
+  1.7714 eV,     300.0  m
+  2.102  eV,     170.0  m
+  2.255  eV,     100.0  m
+  2.531  eV,      62.0  m
+  2.884  eV,      42.0  m
+  3.024  eV,      30.0  m
+  4.133  eV,       7.6  m
+  6.20   eV,       0.85 m
+  10.33  eV,       0.85 m
+  15.5   eV,       0.85 m
+endPropertyVec
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+

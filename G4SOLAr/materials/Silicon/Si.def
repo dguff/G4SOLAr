@@ -1,0 +1,7 @@
+# comment this line 
+# get NIST definition of Silicon
+
+beginDef
+  NIST: G4_Si
+endDef
+

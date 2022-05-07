@@ -1,0 +1,27 @@
+# comment this line 
+# Definition of Bialkali
+# (values from OSIRIS simulation) 
+
+beginDef
+  name: Bialkali
+  density: 4.28
+  ncomp: 3
+endDef
+
+# info on components
+beginEle
+  NIST: K
+  frac: 0.133
+endEle
+
+beginEle
+  NIST: Cs
+  frac: 0.452
+endEle
+
+beginEle
+  NIST: Sb
+  frac: 0.415
+endEle
+
+
