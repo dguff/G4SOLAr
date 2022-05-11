@@ -469,7 +469,7 @@ G4String SLArDetectorConstruction::GetFirstChar(G4String line)
   while (isspace(line[i])) i++;
 
   if (i==length) return "#";
-  else           return line[i];
+  else           return &line[i];
 }
 
 //void SLArDetectorConstruction::LoadPMTMap(G4String path)

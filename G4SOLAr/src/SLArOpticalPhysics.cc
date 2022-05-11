@@ -70,7 +70,7 @@ void SLArOpticalPhysics::ConstructProcess()
   fWLSProcess = new G4OpWLS("WLS");
 
   fScintProcess = new G4Scintillation("Scintillation");
-  fScintProcess->SetScintillationYieldFactor(1.);
+  //fScintProcess->SetScintillationYieldFactor(1.);
   fScintProcess->SetTrackSecondariesFirst(true);
 
   fCerenkovProcess = new G4Cerenkov("Cerenkov");
@@ -104,7 +104,7 @@ void SLArOpticalPhysics::ConstructProcess()
 
   pManager->AddDiscreteProcess(fWLSProcess);
 
-  fScintProcess->SetScintillationYieldFactor(1.);
+  //fScintProcess->SetScintillationYieldFactor(1.);
   //fScintProcess->SetScintillationExcitationRatio(0.0);
   fScintProcess->SetTrackSecondariesFirst(true);
 

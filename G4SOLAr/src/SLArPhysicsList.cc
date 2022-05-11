@@ -63,6 +63,7 @@
 #include "G4RadioactiveDecayPhysics.hh"
 
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
