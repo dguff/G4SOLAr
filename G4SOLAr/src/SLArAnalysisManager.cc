@@ -180,7 +180,7 @@ void SLArAnalysisManager::SetOutputPath(G4String path)
     stat(path, &s);
     if (s.st_mode & S_IFDIR)
     { // append '/' if necessary 
-      G4String last = spath.operator()(spath.length()-1);
+      G4String last = spath.operator[](spath.length()-1);
       if ( last.compareTo("/") ) spath.append("/");
       fOutputPath = spath;
       return;
