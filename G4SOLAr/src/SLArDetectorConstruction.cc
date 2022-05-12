@@ -58,7 +58,7 @@
 //#include "detector/Hodoscope/SLArHodoscopeSD.hh"
 
 
-#include "G4GDMLParser.hh"
+//#include "G4GDMLParser.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Element.hh"
