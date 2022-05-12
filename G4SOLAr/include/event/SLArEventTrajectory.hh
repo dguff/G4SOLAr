@@ -13,6 +13,23 @@
 #include "TString.h"
 #include "TVector3.h"
 
+struct trj_point {
+  float fX; 
+  float fY; 
+  float fZ;
+  float fEdep; 
+
+  trj_point() : fX(0.), fY(0.), fZ(0.), fEdep(0.) {}
+  trj_point(double x, double y, double z, double edep) {
+    fX = x; 
+    fY = y; 
+    fZ = z; 
+    fEdep = edep;
+  }
+};
+
+
+
 class SLArEventTrajectory : public TObject
 {
   public:
@@ -38,8 +55,8 @@ class SLArEventTrajectory : public TObject
     void    SetTrackLength (float l)        {fTrackLength = l    ;}
     void    SetInitMomentum(TVector3 p)     {fInitMomentum = p   ;}
 
-    std::vector<TVector3>& GetPoints()      {return fTrjPoints   ;}
-    void    RegisterPoint(double x, double y, double z);
+    std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
+    void    RegisterPoint(double x, double y, double z, double edep);
 
 
   private:
@@ -51,7 +68,7 @@ class SLArEventTrajectory : public TObject
     float                 fInitKineticEnergy;
     float                 fTrackLength      ; 
     TVector3              fInitMomentum     ;
-    std::vector<TVector3> fTrjPoints        ;
+    std::vector<trj_point> fTrjPoints        ;
 
   public:
     ClassDef(SLArEventTrajectory, 1);

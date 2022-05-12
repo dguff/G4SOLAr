@@ -10,6 +10,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ struct trj_point++;
+#pragma link C++ class std::vector<trj_point>++;
 #pragma link C++ class SLArEventTrajectory++;
 #pragma link C++ class std::vector<SLArEventTrajectory*>++;
 #pragma link C++ class SLArMCPrimaryInfo+;
