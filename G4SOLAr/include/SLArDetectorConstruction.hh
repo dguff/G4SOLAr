@@ -47,7 +47,7 @@
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4VisAttributes.hh"
-#include "G4GDMLParser.hh"
+//#include "G4GDMLParser.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -110,7 +110,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
   private:
     void                            Init();
     G4String                        fPMTMapPath;
-    G4GDMLParser                    fParser;
+    //G4GDMLParser                    fParser;
     std::vector<G4VisAttributes*>   fVisAttributes;
 
     SLArDetTank*                      fTank;
