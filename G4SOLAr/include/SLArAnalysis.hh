@@ -31,7 +31,7 @@
 #ifndef SLArAnalysis_h
 #define SLArAnalysis_h 1
 
-#include "G4AnalysisManager.hh"
+#include "g4root.hh"
 
 //#include "g4xml.hh"
 
