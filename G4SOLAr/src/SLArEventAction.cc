@@ -380,30 +380,34 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
         if (SLArTrj->GetPDGEncoding()!=0)              // filter optical photons
         {
           // Copy relevant attributes into SLArEvTrajectory
-          if ( (SLArTrj->GetPDGEncoding()!=11 && 
-                SLArTrj->GetPDGEncoding()!=22) ||
-              (SLArTrj->GetInitialKineticEnergy() > 0.1)
-             ) // filter electrons and gamms with Ekin < 100 keV
-          {
-            SLArEventTrajectory* evTrajectory = new SLArEventTrajectory();
-            evTrajectory->SetParticleName(SLArTrj->GetParticleName());
-            evTrajectory->SetPDGID(SLArTrj->GetPDGEncoding());
-            evTrajectory->SetTrackID(SLArTrj->GetTrackID());
-            evTrajectory->SetParentID(SLArTrj->GetParentID());
-            evTrajectory->SetCreatorProcess(SLArTrj->GetCreatorProcess());
-            evTrajectory->SetInitKineticEne(
-                SLArTrj->GetInitialKineticEnergy());
-            // store trajectory points
-            for (int n=0; n<SLArTrj->GetPointEntries(); n++)
-              evTrajectory->RegisterPoint(
-                  SLArTrj->GetPoint(n)->GetPosition().getX(),
-                  SLArTrj->GetPoint(n)->GetPosition().getY(),
-                  SLArTrj->GetPoint(n)->GetPosition().getZ()
-                  );
-            evInfo->RegisterTrajectory(evTrajectory);
-          }  
+          SLArEventTrajectory* evTrajectory = new SLArEventTrajectory();
+          evTrajectory->SetParticleName(SLArTrj->GetParticleName());
+          evTrajectory->SetPDGID(SLArTrj->GetPDGEncoding());
+          evTrajectory->SetTrackID(SLArTrj->GetTrackID());
+          evTrajectory->SetParentID(SLArTrj->GetParentID());
+          evTrajectory->SetCreatorProcess(SLArTrj->GetCreatorProcess());
+          evTrajectory->SetInitKineticEne(SLArTrj->GetInitialKineticEnergy());
+          // store trajectory points
+          size_t npoints = SLArTrj->GetPointEntries(); 
+          size_t nedeps = SLArTrj->GetEdep().size();
+          //if ( npoints != nedeps) {
+            //printf("SLArEventAction::RecordEventTarget WARNING:\n");
+            //printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
+                //npoints, nedeps);
+          //}
+          float edep = 0; 
+          for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
+            (n == 0) ? edep = 0 : edep = SLArTrj->GetEdep().at(n-1);
+            evTrajectory->RegisterPoint(
+                SLArTrj->GetPoint(n)->GetPosition().getX(),
+                SLArTrj->GetPoint(n)->GetPosition().getY(),
+                SLArTrj->GetPoint(n)->GetPosition().getZ(),
+                edep
+                );
+          }
+          evInfo->RegisterTrajectory(evTrajectory);
+        }  
 
-        }
       } 
     }
   }

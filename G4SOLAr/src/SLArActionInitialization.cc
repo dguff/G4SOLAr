@@ -51,8 +51,16 @@ SLArActionInitialization::~SLArActionInitialization()
 
 void SLArActionInitialization::BuildForMaster() const
 {
-  //SetUserAction(new SLArRunAction());
-  SetUserAction(new SLArEventAction());
+  SLArEventAction* eventAction = new SLArEventAction();
+  SLArTrackingAction* trkAction = new SLArTrackingAction();
+  SetUserAction(eventAction);
+
+
+  SetUserAction(new SLArPrimaryGeneratorAction());
+  SetUserAction(new SLArRunAction());
+  SetUserAction(trkAction);
+  SetUserAction(new SLArSteppingAction(eventAction, trkAction));
+  SetUserAction(new SLArStackingAction(eventAction));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -60,14 +68,15 @@ void SLArActionInitialization::BuildForMaster() const
 void SLArActionInitialization::Build() const
 {
   SLArEventAction* eventAction = new SLArEventAction();
+  SLArTrackingAction* trkAction = new SLArTrackingAction();
   SetUserAction(eventAction);
 
 
   SetUserAction(new SLArPrimaryGeneratorAction());
   SetUserAction(new SLArRunAction());
-  SetUserAction(new SLArSteppingAction(eventAction));
+  SetUserAction(trkAction);
+  SetUserAction(new SLArSteppingAction(eventAction, trkAction));
   SetUserAction(new SLArStackingAction(eventAction));
-  SetUserAction(new SLArTrackingAction());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

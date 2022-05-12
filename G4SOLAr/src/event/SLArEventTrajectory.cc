@@ -24,9 +24,9 @@ SLArEventTrajectory::~SLArEventTrajectory()
   fTrjPoints.clear();
 }
 
-void SLArEventTrajectory::RegisterPoint(double x, double y, double z)
+void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double edep)
 {
-  fTrjPoints.push_back( TVector3(x, y, z) );
+  fTrjPoints.push_back( trj_point(x, y, z, edep) );
   return;
 }
 

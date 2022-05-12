@@ -29,6 +29,7 @@
 
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
+#include "SLArTrajectory.hh"
 
 #include "G4VPhysicalVolume.hh"
 #include "G4Step.hh"
@@ -45,10 +46,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArSteppingAction::SLArSteppingAction(SLArEventAction* ea)
+SLArSteppingAction::SLArSteppingAction(SLArEventAction* ea, SLArTrackingAction* ta)
   : G4UserSteppingAction()
 { 
   fEventAction          = ea;
+  fTrackinAction        = ta;
   fEventNumber = -1;
 }
 
@@ -74,6 +76,12 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  
+  SLArTrajectory* trajectory =
+    (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
+  double edep = step->GetTotalEnergyDeposit();
+  trajectory->GetEdep().push_back(edep);
+
 
   const std::vector<const G4Track*>* secondaries =
     step->GetSecondaryInCurrentStep();

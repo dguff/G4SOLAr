@@ -16,13 +16,15 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArTrackingAction::SLArTrackingAction()
-{}
+SLArTrackingAction::SLArTrackingAction() {}
+
+SLArTrackingAction::~SLArTrackingAction() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
+
   //Let this be up to the user via vis.mac
   fpTrackingManager->SetStoreTrajectory(true);
 
@@ -42,6 +44,7 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
+
   SLArTrajectory* trajectory =
     (SLArTrajectory*)fpTrackingManager->GimmeTrajectory();
   SLArUserPhotonTrackInformation*
@@ -50,7 +53,6 @@ void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   //Lets choose to draw only the photons that hit the sphere and a pmt
   if(aTrack->GetDefinition()==
       G4OpticalPhoton::OpticalPhotonDefinition()){
-
     /*
      *const G4VProcess* creator=aTrack->GetCreatorProcess();
      *if(creator && creator->GetProcessName()=="OpWLS"){
@@ -89,6 +91,8 @@ void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
  */
   }  
 
-  if(trackInformation->GetForceDrawTrajectory())
-    trajectory->SetDrawTrajectory(true);
+  if (trackInformation) {
+    if(trackInformation->GetForceDrawTrajectory())
+      trajectory->SetDrawTrajectory(true);
+  }
 }

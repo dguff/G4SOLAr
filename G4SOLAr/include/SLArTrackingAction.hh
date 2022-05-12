@@ -11,6 +11,7 @@
 #define SLArTRACKINGACTION_HH
 
 #include "G4UserTrackingAction.hh"
+#include "G4TrackingManager.hh"
 #include "globals.hh"
 
 class SLArTrackingAction : public G4UserTrackingAction {
@@ -18,12 +19,12 @@ class SLArTrackingAction : public G4UserTrackingAction {
   public:
 
     SLArTrackingAction();
-    virtual ~SLArTrackingAction() {};
+    virtual ~SLArTrackingAction();
 
     virtual void PreUserTrackingAction(const G4Track*);
     virtual void PostUserTrackingAction(const G4Track*);
 
-  private:
+    G4TrackingManager* GetTrackingManager() {return fpTrackingManager;}
 
 };
 

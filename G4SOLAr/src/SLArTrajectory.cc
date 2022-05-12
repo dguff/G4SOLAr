@@ -27,6 +27,7 @@ SLArTrajectory::SLArTrajectory()
    fForceNoDraw(false),fForceDraw(false)
 {
   fParticleDefinition = nullptr;
+  fEdepContainer.reserve(500);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -34,6 +35,7 @@ SLArTrajectory::SLArTrajectory()
 SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
   :G4Trajectory(aTrack),fWls(false),fDrawit(false)
 {
+  fEdepContainer.reserve(500);
   fParticleDefinition=aTrack->GetDefinition();
   if (aTrack->GetTrackID()!=1)
     fCreatorProcess    =aTrack->GetCreatorProcess()->GetProcessName();
@@ -45,11 +47,15 @@ SLArTrajectory::SLArTrajectory(SLArTrajectory &right)
   :G4Trajectory(right),fWls(right.fWls),fDrawit(right.fDrawit)
 {
   fParticleDefinition=right.fParticleDefinition;
+  fEdepContainer.resize(right.fEdepContainer.size() ); 
+  fEdepContainer.assign(right.fEdepContainer.begin(), right.fEdepContainer.end());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArTrajectory::~SLArTrajectory() {}
+SLArTrajectory::~SLArTrajectory() {
+  fEdepContainer.clear();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

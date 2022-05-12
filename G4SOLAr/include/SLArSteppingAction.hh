@@ -44,7 +44,7 @@
 class SLArSteppingAction : public G4UserSteppingAction
 {
   public:
-    SLArSteppingAction(SLArEventAction*);
+    SLArSteppingAction(SLArEventAction*, SLArTrackingAction*);
     virtual ~SLArSteppingAction();
 
     // method from the base class
@@ -52,7 +52,8 @@ class SLArSteppingAction : public G4UserSteppingAction
 
   private:
     G4OpBoundaryProcessStatus fExpectedNextStatus;
-    SLArEventAction*            fEventAction;
+    SLArEventAction*          fEventAction;
+    SLArTrackingAction*       fTrackinAction;
     G4int fEventNumber;
 };
 

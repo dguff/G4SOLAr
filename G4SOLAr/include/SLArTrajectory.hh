@@ -40,15 +40,16 @@ class SLArTrajectory : public G4Trajectory
     void WLS(){fWls=true;}
     void SetForceDrawTrajectory(G4bool b){fForceDraw=b;}
     void SetForceNoDrawTrajectory(G4bool b){fForceNoDraw=b;}
+    std::vector<float>& GetEdep() {return fEdepContainer;}
 
   private:
-
     G4bool fWls;
     G4bool fDrawit;
     G4bool fForceNoDraw;
     G4bool fForceDraw;
     G4String fCreatorProcess;
     G4ParticleDefinition* fParticleDefinition;
+    std::vector<float>  fEdepContainer;
 };
 
 extern G4ThreadLocal G4Allocator<SLArTrajectory>* SLArTrajectoryAllocator;
