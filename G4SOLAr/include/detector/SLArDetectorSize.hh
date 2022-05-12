@@ -80,7 +80,7 @@ class SLArDetectorSize {
           fGeoPar.insert( std::pair<G4String, G4double> ("r", 10.0*cm) );
           fGeoPar.insert( std::pair<G4String, G4double> ("y",  2.0*cm) );
 
-          fMaterialID = "Water";
+          fMaterialID = "LAr";
           fMatBuilder->InitBuilder(fMaterialID);
           fMatBuilder->BuildMaterial();
           fMaterial = fMatBuilder->GetMaterial();
