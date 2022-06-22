@@ -11,7 +11,7 @@
 #include "material/SLArMaterialInfo.h"
 
 #include "detector/SLArBaseDetModule.hh"
-//#include "detector/PMT/SLArDetPMT.hh"
+#include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/Tank/SLArDetTankMsgr.hh"
 
 #include "G4ThreeVector.hh"

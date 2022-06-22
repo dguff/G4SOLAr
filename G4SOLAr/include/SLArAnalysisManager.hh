@@ -16,7 +16,7 @@
 #include "TTree.h"
 
 //#include "config/SLArSystemConfigHodo.hh"
-//#include "config/SLArSystemConfigPMT.hh"
+#include "config/SLArPDSystemConfig.hh"
 #include "event/SLArMCEvent.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
@@ -35,7 +35,7 @@ class SLArAnalysisManager
     static G4bool IsInstance();
 
     G4bool CreateFileStructure();
-    //G4bool LoadPMTCfg         (SLArSystemConfigPMT*  pmtCfg );
+    G4bool LoadPDSCfg         (SLArPDSystemConfig*  pdsCfg );
     //G4bool LoadHodoCfg        (SLArSystemConfigHodo* hodoCfg);
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
@@ -46,8 +46,8 @@ class SLArAnalysisManager
     // Access methods
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
-    //SLArSystemConfigPMT*
-           //GetPMTCfg()     {return  fPMTSysCfg;}
+    SLArPDSystemConfig*
+           GetPDSCfg()     {return  fPDSysCfg;}
     //SLArSystemConfigHodo*
            //GetHodoCfg()    {return fHodoSysCfg;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
@@ -88,8 +88,7 @@ class SLArAnalysisManager
     TTree*              fEventTree;
     SLArMCEvent*          fMCEvent;
 
-    //SLArSystemConfigPMT * fPMTSysCfg;
-    //SLArSystemConfigHodo* fHodoSysCfg;
+    SLArPDSystemConfig * fPDSysCfg;
 
 };
 

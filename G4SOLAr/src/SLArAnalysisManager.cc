@@ -32,7 +32,8 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fIsMaster(isMaster), fOutputPath("output/"),
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
-    fMCEvent  (nullptr)
+    fMCEvent  (nullptr), 
+    fPDSysCfg(nullptr)
 {
   if ( ( isMaster && fgMasterInstance ) || ( fgInstance ) ) {
     G4ExceptionDescription description;
@@ -102,15 +103,15 @@ G4bool SLArAnalysisManager::Save()
   return true;
 }
 
-/*
- *G4bool SLArAnalysisManager::LoadPMTCfg(SLArSystemConfigPMT* pmtCfg)
- *{
- *  fPMTSysCfg = pmtCfg;
- *  if (!fPMTSysCfg) return false;
- *  else             return true ; 
- *}
- *
- *G4bool SLArAnalysisManager::LoadHodoCfg(SLArSystemConfigHodo* hodoCfg)
+
+G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
+{
+  fPDSysCfg = pdsCfg;
+  if (!fPDSysCfg) return false;
+  else             return true ; 
+}
+
+/*G4bool SLArAnalysisManager::LoadHodoCfg(SLArSystemConfigHodo* hodoCfg)
  *{
  *  fHodoSysCfg = hodoCfg;
  *  if (!fHodoSysCfg) return false;

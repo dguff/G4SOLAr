@@ -32,8 +32,6 @@
 
 #include "SLArUserPath.hh"
 #include "SLArAnalysisManager.hh"
-//#include "config/SLArCfgHodoModule.hh"
-//#include "config/SLArSystemConfigPMT.hh"
 
 #include "SLArDetectorConstruction.hh"
 #include "detector/SLArDetectorSize.hh"
@@ -43,20 +41,8 @@
 #include "detector/Tank/SLArDetTankMsgr.hh"
 #include "detector/Tank/SLArTankSD.hh"
 
-//#include "detector/LAPPD/SLArDetLAPPD.hh"
-//#include "detector/LAPPD/SLArDetLAPPDMsgr.hh"
-//#include "detector/LAPPD/SLArLAPPDSD.hh"
-//#include "detector/LAPPD/SLArLAPPDHit.hh"
-
-//#include "detector/PMT/SLArDetPMT.hh"
-//#include "detector/PMT/SLArDetPMTMsgr.hh"
-//#include "detector/PMT/SLArPMTSD.hh"
-//#include "detector/PMT/SLArPMTHit.hh"
-
-//#include "detector/Hodoscope/SLArDetHodoscope.hh"
-//#include "detector/Hodoscope/SLArHodoscopeHit.hh"
-//#include "detector/Hodoscope/SLArHodoscopeSD.hh"
-
+#include "config/SLArPDSystemConfig.hh"
+#include "config/SLArCfgSuperCell.hh"
 
 //#include "G4GDMLParser.hh"
 #include "G4Material.hh"
@@ -100,14 +86,12 @@
 SLArDetectorConstruction::SLArDetectorConstruction()
  : G4VUserDetectorConstruction(), 
    fTank(nullptr), fTankMsgr(nullptr), 
+   fSuperCell(nullptr),
    fRotPMTBDwnStr(nullptr), fRotPMTBTop(nullptr),
    fRotPMTBBottom(nullptr), fRotPMTBLeft(nullptr),
    fRotPMTBRight(nullptr),
-   //fLAPPD(nullptr), fLAPPDMsgr(nullptr), 
    fWorldLog(nullptr)
-{
-  //fIsLAPPD      = false;
-}
+{ }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -177,88 +161,66 @@ void SLArDetectorConstruction::Init() {
   }
   fTank->BuildMaterial();
   fTankMsgr = new SLArDetTankMsgr(this); 
-  // retrieve tank dimensions
   G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
-  //G4cout << "SLArDetectorConstruction::Init PMTs" << G4endl;
-  //fRotPMTBDwnStr = new G4RotationMatrix();
-  //fRotPMTBTop    = new G4RotationMatrix();
-  //fRotPMTBDwnStr->rotateY(+1.00*pi);
-  //fRotPMTBTop   ->rotateX(-0.50*pi);
-  //// Load PMT maps and build PMT models
-  //// Get SLArAnlysisManager and create PMT cfg
-  //G4String pmtMapPath = 
-    //"./../WbLSBeamCell/BeamCellMC/PMTModels/";
-  //SLArSystemConfigPMT* SLArPMTSysCfg = 
-    //new SLArSystemConfigPMT("PMTSystemConfig");
-
-  //// create and register array cfgs
-  //SLArCfgPMTArray* PMTSLArfgArray[2];
-  //double    rotArray[2] = {0            ,  0.5*pi};
-  //G4String nameArray[2] = {"BDownstream",  "BTop"};
-  //G4String mapPath  [2] = {"map_face_v0.txt", "map_side_v0.txt"};
-  //G4ThreeVector mapPlanePos[2] = {
-    //G4ThreeVector(0, 
-        //-0.5*tnkExtraTop, 
-        //innerTnkLenght*0.5-tnkExtraDwnstr+acrThck+1*cm),
-    //G4ThreeVector(0, 
-        //innerTnkHeight*0.5-tnkExtraTop, 
-        //-0.5*tnkExtraDwnstr)};
-  //G4ThreeVector mapPlaneRot[2] = {
-    //G4ThreeVector(0.0*pi, 0.0*pi, 0.0*pi), 
-    //G4ThreeVector(0.5*pi, 0.0*pi, 0.0*pi)};
-
-  //for (int i=0; i<2; i++)
-  //{
-    //PMTSLArfgArray[i] = new SLArCfgPMTArray(nameArray[i], 1+i);
-    //PMTSLArfgArray[i]->LoadPMTMapAscii(
-          //pmtMapPath+mapPath[i], nameArray[i], rotArray[i]);
-    //PMTSLArfgArray[i]->SetPMTArrayPosition(
-        //mapPlanePos[i].x(), mapPlanePos[i].y(), mapPlanePos[i].z());
-    //PMTSLArfgArray[i]->SetArrayRotAngle(
-        //mapPlaneRot[i].x(), mapPlaneRot[i].y(), mapPlaneRot[i].z());
-    
-    //// scan PMTs and build when find a new model
-    //for (auto &pmtinfo : PMTSLArfgArray[i]->GetMap())
-    //{
-      //if (!fPMTs.count(pmtinfo.second->GetModel())) 
-      //{
-        //G4cout <<"\tBuilding model: " << pmtinfo.second->GetModel() 
-        //<< G4endl;
-        //BuildPMTModel(pmtinfo.second->GetModel());
-        //G4String skinName = pmtinfo.second->GetModel();
-        //skinName += "PMTCathode_surf";
-        //new G4LogicalSkinSurface(skinName, 
-            //fPMTs.find(pmtinfo.second->GetModel())->
-            //second->GetCathode()->GetModLV(), 
-            //fPMTs.find(pmtinfo.second->GetModel())->
-            //second->GetCathodeMaterial()->
-            //GetMaterialBuilder()->GetSurface()
-            //);
-      //}
-    //}
-
-    //SLArPMTSysCfg->RegisterArray(PMTSLArfgArray[i]);
-  //}
-
-  //SLArAnaMgr->LoadPMTCfg(SLArPMTSysCfg);
-
+  G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
   
-  //G4cout << "SLArDetectorConstruction::Init PMTs DONE" << G4endl;
+  SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
 
-  /*
-   * // Initialize Hodoscope
-   *G4cout << "SLArDetectorConstruction::Init Hodoscope" << G4endl;
-   *fHodoscopes.insert(
-   *    std::make_pair("MiniTrkPlane", 
-   *    new SLArDetHodoscope("MiniTrkPlane")));
-   *SLArDetHodoscope* MiniTrkPlane = fHodoscopes.find("MiniTrkPlane")->second;
-   *MiniTrkPlane->BuildGeoParMap(19*cm, 1.9*cm, 1.5*cm);
-   *MiniTrkPlane->BuildMaterial();
-   *MiniTrkPlane->SetNBars(10);
-   */
+  fSuperCell = new SLArDetSuperCell(); 
+  fSuperCell->BuildDefalutGeoParMap(); 
+
+  if (d.HasMember("SuperCell")) {
+    const auto sc = d["SuperCell"].GetObj();
+    if (sc.HasMember("dimensions")) {
+      for (const auto &xx : sc["dimensions"].GetArray()) {
+        const auto entry = xx.GetObj(); 
+        const char* name = entry["name"].GetString(); 
+        const char* unit = entry["unit"].GetString(); 
+        G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
+        fSuperCell->GetGeoInfo()->RegisterGeoPar(name, val);
+      }
+    }
+
+    if (sc.HasMember("modules")) {
+      assert(sc["modules"].IsArray());
+      for (const auto &mdl : sc["modules"].GetArray()) {
+        SLArCfgSuperCellArray* array = 
+          new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
+        
+        if (mdl.HasMember("positions")) {
+          assert(mdl["positions"].IsArray());
+          for (const auto &isc : mdl["positions"].GetArray()) {
+            SLArCfgSuperCell* scCfg = new SLArCfgSuperCell(); 
+            const char* cunit = isc["unit"].GetString(); 
+            auto xyz = isc["xyz"].GetArray(); 
+            auto rot = isc["rot"].GetArray(); 
+
+            scCfg->SetIdx(isc["copy"].GetInt()); 
+
+            scCfg->SetX(xyz[0].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+            scCfg->SetY(xyz[1].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+            scCfg->SetZ(xyz[2].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+            
+            scCfg->SetPhi  (rot[0].GetDouble()*TMath::DegToRad()); 
+            scCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
+            scCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
+
+            array->RegisterSuperCell(scCfg); 
+          }
+        }
+        
+        pdsCfg->RegisterArray(array);
+      }
+    }
+  }
+
+  SLArAnaMgr->LoadPDSCfg(pdsCfg);
+  fSuperCell->BuildMaterial(); 
+
+  G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
 
   std::fclose(geo_cfg_file);
 }
@@ -292,29 +254,10 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
         G4ThreeVector(0, 0, 0), 
         fWorldLog, false, 20);
 
-  // PMTs
-  //BuildAndPlacePMTs();
+  // SuperCell
+  BuildAndPlaceSuperCells();
 
   //DumpPMTMap("./output/pmtMapFile.txt");
-
-/*
- *  G4String model = "ETL9351_bare";
- *  BuildPMTModel(model);
- *  SLArDetPMT* pmt = fPMTs.find(model)->second;
- *  printf("Theta Angle: %.2f \n", 
- *      pmt->GetGlass()->GetGeoPar("PMTGlassTheta"));
- *  fPMTPV.push_back(  
- *      pmt->GetModPV(
- *        Form("ETL_PMT%i", 0), 0, 
- *        G4ThreeVector(0, 0, 0),
- *        fWorldLog, false, 666
- *        )
- *      );
- *
- */
- 
-  // Hodoscopes
-  //BuildAndPlaceHodoscope();
 
  // ------------- Surfaces --------------
  //
@@ -359,8 +302,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   //Visualization attributes
 
   fTank->SetVisAttributes();
-  //for (auto &pmt : fPMTs) pmt.second->SetVisAttributes();
-  //for (auto &hodo : fHodoscopes) hodo.second->SetVisAttributes();
+  //fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
@@ -384,7 +326,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   
   //fParser.Write("beamCell_v0.gdml", expHall_phys);
 
-//always return the physical World
+  //always return the physical World
   return expHall_phys;
 }
 
@@ -472,316 +414,80 @@ G4String SLArDetectorConstruction::GetFirstChar(G4String line)
   else           return &line[i];
 }
 
-//void SLArDetectorConstruction::LoadPMTMap(G4String path)
-//{
-  //fPMTMapPath = path;
 
-  //std::ifstream mapfile;
-  //mapfile.open(path);
+void SLArDetectorConstruction::BuildAndPlaceSuperCells()
+{
+  G4cout << "\nSLArDetectorConstruction:BuildSuperCell" << G4endl;
+  fSuperCell->BuildSuperCell();
 
-  //if (!mapfile.is_open())
-  //{
-    //G4cerr<<"Map file in "<<fPMTMapPath<<" not opened!"<<G4endl;
-    //return;
-  //}
-  //else
-  //{
-    //G4String cline;
-    //while (std::getline(mapfile, cline))
-    //{
-      //G4String c0 = GetFirstChar(cline);
-      //if (!c0.contains("#"))
-      //{
-        //std::stringstream stream(cline);
-        //int idx; double x, y;
-        //G4cout << "Stream: " << stream.str() << G4endl;
-        //stream >> idx >> x >> y;
-        //fPMTMap.push_back( PMTGeoInfo(x*cm, y*cm, idx) );  
-      //}
-    //}  
-  //}
+  new G4LogicalSkinSurface("SCCoating_skin", 
+      fSuperCell->GetCoating()->GetModLV(), 
+      fSuperCell->GetCoatingMaterial()->
+      GetMaterialBuilder()->GetSurface()
+      );
 
-  //mapfile.close();
-  ////Print map:
-  ////for (auto &xy : fPMTMap)
-    ////printf("idx: %i\t%.3f\t%.3f\n", xy.fNum, xy.fX, xy.fY);
+  G4cout << "\nSLArDetectorConstruction:PlaceSuperCells" << G4endl;
 
-  //return;
-//}
-
-//void SLArDetectorConstruction::DumpPMTMap(G4String path)
-//{
-  //std::ofstream outputFile;
-  //outputFile.open(path);
-
-  //if (!outputFile.is_open()) 
-  //{
-    //G4cout<<"SLArDetectorConstruction::DumpPMTMap Output file " 
-          //<<path<<" not opened" << G4endl;
-    //return;
-  //}
-  //else {
-    //G4cout<<"SLArDetectorConstruction::DumpPMTMap"  << G4endl; 
-    //G4cout<<(int)fPMTMap.size()<<" PMT registered"<< G4endl; 
-  
-
-    //for (int i=0; i<(int)fPMTMap.size(); i++) 
-    //{
-      //outputFile << "idx: " << fPMTMap.at(i).fNum       << "\t" 
-                 //<< "xc: "  << fPMTMap.at(i).fX   / cm  << "\t" 
-                 //<< "yc: "  << fPMTMap.at(i).fY   / cm  << "\n";
-    //}
-  //}
-  //outputFile.close();
-  //return;
-//}
-
-//void  SLArDetectorConstruction::BuildAndPlaceHodoscope()
-//{
-  //G4cout << "\nSLArDetectorConstruction:BuildAndPlaceHodoscope" 
-         //<< G4endl;
-
-  //SLArSystemConfigHodo* HodoSysCfg = 
-    //new SLArSystemConfigHodo("HodoConfig");
-
-  //SLArDetHodoscope* detHodo = fHodoscopes.find("MiniTrkPlane")->second;
-  //detHodo->BuildHodoPlane();
-  //detHodo->GetGeoInfo()->DumpParMap();
-
-  //G4PVReplica * barReplica = detHodo->GetReplicaBar();
-  //EAxis         barRepAxis = kZAxis;
-  //G4double      barWidth, barOffset;
-  //G4int         nBars   = 0;
-  //G4bool        SLAronsuming; 
-  //barReplica->GetReplicationData(barRepAxis, nBars, 
-      //barWidth, barOffset, SLAronsuming);
-
-  //G4Box*        hodoBox    = (G4Box*)detHodo->GetModSV();
-  //G4double      hodoHalfZ  = hodoBox->GetZHalfLength();
-
-  //SLArCfgHodoModule* cfgModule = nullptr;
-
-  //auto placeHodoPlane = [&] 
-    //(int idx, G4ThreeVector pos, G4RotationMatrix* rot)
-    //{
-      //G4int iHodoSeries = 5000 + idx;
-      //G4String planeName = "MiniTrkPlane"+std::to_string(idx);
-
-      //printf("placing module %s at y = %.2f\n", 
-          //planeName.c_str(), pos.getY());
-
-      //fHodoModulePV.push_back(
-          //detHodo->GetModPV(planeName, 
-            //rot, pos, fWorldLog, false, iHodoSeries)
-      //);
-
-      //cfgModule = new SLArCfgHodoModule(iHodoSeries);
-      //cfgModule->SetName(planeName);
-      //cfgModule->SetVerticalPos(pos.getY());
-      //for (G4int i=0; i<nBars; i++)
-      //{
-        //SLArCfgHodoBar* hodobar = new SLArCfgHodoBar(i);
-        //hodobar->SetCenter(pos.getX(), (2*i+1)*barWidth*0.5-hodoHalfZ);
-        //hodobar->SetLength(detHodo->GetBarLength());
-        //hodobar->SetWidth (detHodo->GetBarWidth ());
-        //hodobar->BuildGShape();
-        //cfgModule->RegisterBar((SLArCfgHodoBar*)hodobar->
-            //Clone(Form("hodobar%i", i)));
-      //}
-      //cfgModule->SetTH2BinIdx();
-      //HodoSysCfg->RegisterModule(cfgModule);
-    //};
-
-  //G4RotationMatrix* rotHodo = new G4RotationMatrix();
-  //rotHodo->rotateX(pi*0.5);
-
-  //G4ThreeVector pos = G4ThreeVector(0, 0,
-      //-0.5*fTank->GetGeoPar("TargetLength")+
-      //-detHodo->GetGeoInfo()->GetGeoPar("HodoBarHeight")*9-10*cm);
-
-  //for (G4int ip=0; ip<8; ip++)
-  //{
-    //pos[2] += detHodo->GetGeoInfo()->GetGeoPar("HodoBarHeight");
-
-    //if (ip==4) pos[2] += 3*cm;
-  
-    //rotHodo->rotateZ(0.5*pi);
-
-    //printf("calling placeHodoPlane at y = %.2f\n", pos.getY());
-    //placeHodoPlane(ip+1, pos, rotHodo);
-  //}
-  
-  //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  //SLArAnaMgr->LoadHodoCfg(HodoSysCfg);
-//}
-
-//void SLArDetectorConstruction::BuildAndPlaceLAPPD()
-//{
-  //G4cout << "\nSLArDetectorConstruction:BuildAndPlaceLAPPD" << G4endl;
-  //fLAPPD->BuildLAPPD();
-
-  //fLAPPD->GetModPV("LAPPD", 0, 
-      //G4ThreeVector(0, 
-        //-0.5*(fTank->GetGeoPar("BarrelHeight") + 
-          //fLAPPD->GetTotalHeight()), 0), 
-      //fWorldLog, false, 30);
-
-  //G4cout << "Build Photocathode logical skin" << G4endl;
-  //G4cout << "Cathode name: " << 
-    //fLAPPD->GetCathode()->GetModLV()->GetName() << G4endl;
-  ////G4cout << "Surface properties" << G4endl;
-  ////fLAPPD.GetCathodeMaterial()->GetMaterialBuilder()->
-  ////GetSurface()->DumpInfo();
-
-  //new G4LogicalSkinSurface("LAPPDCathode_surf", 
-      //fLAPPD->GetCathode()->GetModLV(), 
-      //fLAPPD->GetCathodeMaterial()->GetMaterialBuilder()->GetSurface()
-      //);
-//}
-
-//void SLArDetectorConstruction::BuildAndPlaceLAPPD(
-    //G4RotationMatrix* rot, const G4ThreeVector& pos, 
-    //G4String         name, G4int             copyNo)
-//{
-  //G4cout << "\nSLArDetectorConstruction:BuildAndPlaceLAPPD" << G4endl;
-  //G4cout << ">\tBuilding LAPPD" << G4endl;
-  //fLAPPD->BuildLAPPD();
-
-  //fLAPPD->GetModPV(name, rot, pos, fWorldLog, false, copyNo);
-
-  //G4cout << "Build Photocathode logical skin" << G4endl;
-  //G4cout << "Cathode name: " << 
-    //fLAPPD->GetCathode()->GetModLV()->GetName() << G4endl;
-  ////G4cout << "Surface properties" << G4endl;
-  ////fLAPPD.GetCathodeMaterial()->GetMaterialBuilder()->
-  ////GetSurface()->DumpInfo();
-
-  //new G4LogicalSkinSurface("LAPPDCathode_surf", 
-      //fLAPPD->GetCathode()->GetModLV(), 
-      //fLAPPD->GetCathodeMaterial()->GetMaterialBuilder()->GetSurface()
-      //);
-//}
+  // Get PMTSystem Configuration
+  G4cout << "Getting BCAnaManager" << G4endl;
+  SLArAnalysisManager* SLArAnaMgr  = SLArAnalysisManager::Instance();
+  SLArPDSystemConfig*  pdsCfg = SLArAnaMgr->GetPDSCfg();
+  G4cout << "Getting PDS Cfg (" << pdsCfg->GetName() << ")" << G4endl;
 
 
-//void SLArDetectorConstruction::BuildAndPlacePMTs()
-//{
-  //G4cout << "\nSLArDetectorConstruction:PlacePMTs" << G4endl;
-  //// Get PMTSystem Configuration
-  //G4cout << "Getting SLArAnaManager" << G4endl;
-  //SLArAnalysisManager* SLArAnaMgr  = SLArAnalysisManager::Instance();
-  //SLArSystemConfigPMT* pmtSysCfg = SLArAnaMgr->GetPMTCfg();
-  //G4cout << "Getting PMT Cfg (" << pmtSysCfg->GetName() << ")" << G4endl;
+  for (auto &pdsArray : pdsCfg->GetArrayMap())
+  {
+    SLArCfgSuperCellArray* arrayCfg = pdsArray.second;
+    G4cout << arrayCfg->GetName() <<" map: " 
+      << arrayCfg->GetMap().size() << " entries" << G4endl;
 
-  //for (auto &pmtArray : pmtSysCfg->GetArrayMap())
-  //{
-    //SLArCfgPMTArray* arrayCfg = pmtArray.second;
-    //G4cout << arrayCfg->GetName() <<" map: " 
-      //<< arrayCfg->GetMap().size() << " entries" << G4endl;
-    ////arrayCfg->DumpMap();
+    int iSC = 0;
 
-    //int iPmt = 0;
+    for (auto &scinfo : arrayCfg->GetMap())
+    {
 
-    //for (auto &pmtinfo : arrayCfg->GetMap())
-    //{
-      //if (!fPMTs.count(pmtinfo.second->GetModel())) 
-      //{
-        //G4cout <<"\tBuilding model: " << pmtinfo.second->GetModel() 
-        //<< G4endl;
-        //BuildPMTModel(pmtinfo.second->GetModel());
-        //G4String skinName = pmtinfo.second->GetModel();
-        //skinName += "PMTCathode_surf";
-        //new G4LogicalSkinSurface(skinName, 
-            //fPMTs.find(pmtinfo.second->GetModel())->
-            //second->GetCathode()->GetModLV(), 
-            //fPMTs.find(pmtinfo.second->GetModel())->
-            //second->GetCathodeMaterial()->
-            //GetMaterialBuilder()->GetSurface()
-            //);
-      //}
+      //G4cout << "Getting PMT model info...";
+      G4RotationMatrix* rotPMT = new G4RotationMatrix();
+      rotPMT->rotateX(scinfo.second->GetPhi()); 
+      rotPMT->rotateY(scinfo.second->GetTheta()); 
+      rotPMT->rotateZ(scinfo.second->GetPsi()); 
+      
+      G4double pmtShft = 0.0;
 
-      ////G4cout << "Getting PMT model info...";
-      //SLArDetPMT* pmt = nullptr;
-      //G4RotationMatrix* rotPMT = nullptr;
-      //pmt = fPMTs.find(pmtinfo.second->GetModel())->second;
-      //G4double pmtShft = 0.0;
-      //if (!strcmp(pmtArray.second->GetName(), "BDownstream"))
-      //{
-        //pmtShft = 0.5*pmt->GetGeoPar("PMTCaseHeight");
-        //if (pmt->GetModel()->GetModelName().contains("cone"))
-        //{
-          //pmtShft = 0.5*pmt->GetGeoPar("PMTCaseHeight") +
-            //pmt->GetGeoPar("PMTConeHeight") + 
-            //pmt->GetGeoPar("PMTCurvatureRadius") -
-            //pmt->GetGeoPar("PMTGlassQ");
-        //}
-      //}
-      //else if (!strcmp(pmtArray.second->GetName(), "BTop"))
-      //{
-        //if (pmt->GetModel()->GetModelName().contains("ETL"))
-        //{
-          //pmtShft+=(
-              //pmt->GetGeoPar("PMTCaseHeight")*0.5  +
-              //pmt->GetGeoPar("PMTGlassConeHeight") +
-              //pmt->GetGeoPar("PMTGlassZaxis")
-              //);
-        //}
-      //}
-      //double kk = +1;
+      G4ThreeVector basePos(
+          scinfo.second->GetX(), 
+          scinfo.second->GetY(), 
+          scinfo.second->GetZ() 
+          );
 
-      //if      (!strcmp(arrayCfg->GetName(),"BDownstream"))
-      //{rotPMT   = fRotPMTBDwnStr; kk = +1;}
-      //else if (!strcmp(arrayCfg->GetName(),"BTop"))
-      //{rotPMT   = fRotPMTBTop; kk = -1;}
-      //else if (!strcmp(arrayCfg->GetName(),"BBottom"))
-      //{rotPMT   = fRotPMTBBottom; kk = +1;}
-      //else if (!strcmp(arrayCfg->GetName(),"BLeft"))
-      //{rotPMT   = fRotPMTBLeft; kk = -1;}
-      //else if (!strcmp(arrayCfg->GetName(),"BRight"))
-      //{rotPMT   = fRotPMTBRight; kk = +1;}
+      G4ThreeVector pmtPos = basePos; 
+      G4cout << "SC #" << scinfo.second->GetIdx() << G4endl;
+      G4cout << "basePos  = " << basePos  << G4endl;
+      //G4cout << "planePos = " << planePos << G4endl;
+      //G4cout << "pre-rotation: " << planePos << G4endl;
+      //G4cout << "post-rotation: " << planePos << "\n"<< G4endl;
+      //getchar();
 
-      //G4ThreeVector planePos(
-          //pmtinfo.second->GetX(), 
-          //pmtinfo.second->GetY(),
-          //pmtinfo.second->GetZ()+kk*pmtShft
-          //);
-      //G4ThreeVector basePos(
-          //arrayCfg->GetPMTArrayPosition()[0], 
-          //arrayCfg->GetPMTArrayPosition()[1], 
-          //arrayCfg->GetPMTArrayPosition()[2] 
-          //);
+      fSuperCellsPV.push_back(  
+          fSuperCell->GetModPV(
+            Form("SC%i", iSC), rotPMT, 
+            pmtPos,
+            fTank->GetModLV(), false, scinfo.second->GetIdx()
+            )
+          );
+      // set physical placement in pmt cfg
+      scinfo.second->SetPhysX(pmtPos[0]);
+      scinfo.second->SetPhysY(pmtPos[1]);
+      scinfo.second->SetPhysZ(pmtPos[2]);
+      iSC++;
+    }
 
-      //planePos.rotateX(arrayCfg->GetRotationAngle()[0]);
-      //planePos.rotateY(arrayCfg->GetRotationAngle()[1]);
-      //planePos.rotateZ(arrayCfg->GetRotationAngle()[2]);
+    //break;
 
-      //G4ThreeVector pmtPos = basePos + planePos; 
-      ////G4cout << "PMT #" << pmtinfo.second->GetIdx() << G4endl;
-      ////G4cout << "basePos  = " << basePos  << G4endl;
-      ////G4cout << "planePos = " << planePos << G4endl;
-      ////G4cout << "pre-rotation: " << planePos << G4endl;
-      ////G4cout << "post-rotation: " << planePos << "\n"<< G4endl;
-      ////getchar();
-
-      //fPMTPV.push_back(  
-          //pmt->GetModPV(
-            //Form("PMT%i", iPmt), rotPMT, 
-            //pmtPos,
-            //fWorldLog, false, pmtinfo.second->GetIdx()
-            //)
-          //);
-      //// set physical placement in pmt cfg
-      //pmtinfo.second->SetPhysX(pmtPos[0]);
-      //pmtinfo.second->SetPhysY(pmtPos[1]);
-      //pmtinfo.second->SetPhysZ(pmtPos[2]);
-      //iPmt++;
-    //}
-
-    ////break;
-
-  //}
-   //G4cout << "SLArDetectorConstruction::BuildAndPlacePMTs DONE" << G4endl;
-  //return;
-//}
+  }
+   G4cout << "SLArDetectorConstruction::BuildAndPlacePMTs DONE" << G4endl;
+  return;
+}
 
 //int SLArDetectorConstruction::RemovePMTs() 
 //{

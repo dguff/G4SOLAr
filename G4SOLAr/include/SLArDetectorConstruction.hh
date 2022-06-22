@@ -34,11 +34,9 @@
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
-//#include "detector/PMT/SLArDetPMT.hh"
-//#include "detector/LAPPD/SLArDetLAPPD.hh"
-//#include "detector/Hodoscope/SLArDetHodoscope.hh"
 #include "detector/SLArDetectorSize.hh"
 #include "detector/Tank/SLArDetTank.hh"
+#include "detector/SuperCell/SLArDetSuperCell.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -51,7 +49,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class SLArCfgPMTArray;
+class SLArCfgSuperCellArray;
 
 struct PMTGeoInfo{
   public:
@@ -75,7 +73,6 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
 
   friend class SLArDetTankMsgr;
-  //friend class SLArDetPMTMsgr;
   friend class SLArAnalysisManagerMsgr;
 
   public:
@@ -92,7 +89,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
                                     //GetDetHodoscopes();
     //SLArDetLAPPD*                     GetDetLAPPD();
     //void  [>deprecated<]            LoadPMTMap(G4String path);
-    //void                            BuildAndPlacePMTs();
+    void                            BuildAndPlaceSuperCells();
     //void                            BuildPMTModel(const char* mod);
     //void                            BuildAndPlaceLAPPD();
     //void                            BuildAndPlaceHodoscope();
@@ -102,14 +99,11 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
                                       //G4String            name, 
                                       //G4int             copyNo);
     G4LogicalVolume*                GetLogicWorld();
-    std::vector<G4VPhysicalVolume*>&GetVecPMT();
-    void                            DumpPMTMap(G4String path = "");
-    int                             RemovePMTs ();
-    int                             RemoveHodoModules();
+    std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
+    void                            DumpSuperCellMap(G4String path = "");
 
   private:
     void                            Init();
-    G4String                        fPMTMapPath;
     //G4GDMLParser                    fParser;
     std::vector<G4VisAttributes*>   fVisAttributes;
 
@@ -119,7 +113,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //std::map<G4String, SLArDetHodoscope*>
                                     //fHodoscopes;
 
-    //std::map<G4String,SLArDetPMT*>    fPMTs;
+    SLArDetSuperCell*               fSuperCell;
     G4RotationMatrix*               fRotPMTBDwnStr;  
     G4RotationMatrix*               fRotPMTBTop   ;  
     G4RotationMatrix*               fRotPMTBBottom;  
@@ -138,7 +132,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //bool                            IsLAPPD();
 
     G4LogicalVolume*                fWorldLog;
-    //std::vector<G4VPhysicalVolume*> fPMTPV;
+    std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     //std::vector<G4VPhysicalVolume*> fHodoModulePV;
     G4String                        GetFirstChar(G4String line);
 

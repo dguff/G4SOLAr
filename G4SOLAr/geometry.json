@@ -22,6 +22,17 @@
       {"name" : "cell_x" , "val" : 12.0, "unit" : "cm"}, 
       {"name" : "cell_y" , "val" :  1.0, "unit" : "cm"}, 
       {"name" : "cell_z" , "val" : 60.0, "unit" : "cm"}
+    ], 
+    "modules": [
+      {
+        "name" : "array0", 
+        "id"   : 1, 
+        "positions" : [
+          {"copy" : 1001, "xyz" : [-0.27, 0.0, -1.15], "unit" : "m", "rot" : [0, 0, 90]}, 
+          {"copy" : 1002, "xyz" : [-0.27, 0.5, -1.15], "unit" : "m", "rot" : [0, 0, 90]}
+        ]
+      }
     ]
   }
 }
+

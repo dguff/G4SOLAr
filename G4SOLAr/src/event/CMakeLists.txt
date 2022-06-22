@@ -4,7 +4,7 @@
 # @created     : venerdì mag 06, 2022 23:01:03 CEST
 ######################################################################
 
-# SLArMCPrimaryInfo disctionary 
+# SLArMCPrimaryInfo dictionary 
 ROOT_GENERATE_DICTIONARY(SLArMCPrimaryInfoDict
   ${PROJECT_SOURCE_DIR}/include/event/SLArMCPrimaryInfo.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTrajectory.hh

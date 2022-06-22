@@ -29,7 +29,7 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 #----------------------------------------------------------------------------
-# Setup Geant4 include directories and compile definitions
+# Find external dependencies
 include(ExternalProject)
 ExternalProject_Add("rapidjson"
   SOURCE_DIR      ${PROJECT_SOURCE_DIR}/extern/rapidjson
@@ -41,6 +41,8 @@ ExternalProject_Add("rapidjson"
 set(G4SOLAR_RAPIDJSON_INCLUDE "${PROJECT_SOURCE_DIR}/extern/rapidjson/include")
 #include(${CMAKE_CURRENT_BINARY_DIR}/extern/rapidjson/RapidJSONConfig.cmake)
 
+find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG) 
+
 set(G4SOLAR_INCLUDE "${PROJECT_SOURCE_DIR}/include")
 set(G4SOLAR_SRC     "${PROJECT_SOURCE_DIR}/src"    )
 
@@ -51,6 +53,8 @@ include_directories(${G4SOLAR_INCLUDE}
                     ${G4SOLAR_INCLUDE}/material
                     ${G4SOLAR_INCLUDE}/detector
                     ${G4SOLAR_INCLUDE}/detector/Tank
+                    ${G4SOLAR_INCLUDE}/detector/SuperCell
+                    ${G4SOLAR_INCLUDE}/config
                     ${G4SOLAR_INCLUDE}/event
                     ${G4SOLAR_RAPIDJSON_INCLUDE}
                     ${Geant4_INCLUDE_DIR}
@@ -59,16 +63,20 @@ include_directories(${G4SOLAR_INCLUDE}
 
 file(GLOB sources   ${G4SOLAR_SRC}/*.cc
                     ${G4SOLAR_SRC}/event/*.cc
+                    ${G4SOLAR_SRC}/config/*.cc
                     ${G4SOLAR_SRC}/material/*.cc
                     ${G4SOLAR_SRC}/detector/*.cc
                     ${G4SOLAR_SRC}/detector/Tank/*.cc
+                    ${G4SOLAR_SRC}/detector/SuperCell/*.cc
 )
 
 file(GLOB headers   ${G4SOLAR_INCLUDE}/*.hh
                     ${G4SOLAR_INCLUDE}/event/*.hh
+                    ${G4SOLAR_INCLUDE}/config/*.hh
                     ${G4SOLAR_INCLUDE}/material/*.hh
                     ${G4SOLAR_INCLUDE}/detector/*.hh
                     ${G4SOLAR_INCLUDE}/detector/Tank/*.hh
+                    ${G4SOLAR_INCLUDE}/detector/SuperCell/*.hh
                     )
 
 add_definitions(${ROOT_CXX_FLAGS})
@@ -79,6 +87,7 @@ configure_file(SLArUserPath.hh.in ${G4SOLAR_INCLUDE}/SLArUserPath.hh @ONLY)
 
 #----------------------------------------------------------------------------
 # Generate SLArEvent and SLArConfig libraries and dictionaries
+add_subdirectory(${G4SOLAR_SRC}/config)
 add_subdirectory(${G4SOLAR_SRC}/event)
 
 #----------------------------------------------------------------------------
@@ -89,6 +98,7 @@ add_dependencies(solar_sim rapidjson)
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
+target_link_libraries(solar_sim SLArPDSystemConfig)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

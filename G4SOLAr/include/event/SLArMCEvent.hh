@@ -14,9 +14,10 @@
 #include <vector>
 
 #include "event/SLArMCPrimaryInfo.hh"
+//#include "config/SLArPDSystemConfig.hh"
+
 //#include "event/SLArEventSystemPMT.hh"
 //#include "event/SLArEventSystemHodo.hh"
-//#include "config/SLArSystemConfigPMT.hh"
 
 class SLArMCEvent : public TObject
 {
