@@ -46,9 +46,9 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
     // this is a primary. Save the track ID in the corresponding SLArMCPrimaryInfo
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     for (auto &primaryInfo : SLArAnaMgr->GetEvent()->GetPrimary()) {
-      if (aTrack->GetMomentum().x() == primaryInfo->GetMomentum()[0] &&
-          aTrack->GetMomentum().y() == primaryInfo->GetMomentum()[1] &&
-          aTrack->GetMomentum().z() == primaryInfo->GetMomentum()[2]) {
+      if (fabs(aTrack->GetMomentum().x() - primaryInfo->GetMomentum()[0]) < 1e-6 &&
+          fabs(aTrack->GetMomentum().y() - primaryInfo->GetMomentum()[1]) < 1e-6 &&
+          fabs(aTrack->GetMomentum().z() - primaryInfo->GetMomentum()[2]) < 1e-6) {
         primaryInfo->SetTrackID(aTrack->GetTrackID()); 
         break;
       }
