@@ -23,7 +23,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr)
 {
-  TString UIDetPath = "/BeamCell/manager/";
+  TString UIDetPath = "/SLAr/manager/";
 
   fMsgrDir = new G4UIdirectory(UIDetPath);
   fMsgrDir->SetGuidance("SLAr manager instructions");

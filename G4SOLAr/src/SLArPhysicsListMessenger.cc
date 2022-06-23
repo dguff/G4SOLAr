@@ -50,16 +50,16 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   : fPhysicsList(pPhys)
 {
 
-  fDirectory = new G4UIdirectory("/BeamCell/phys/");
+  fDirectory = new G4UIdirectory("/SLAr/phys/");
   fDirectory->SetGuidance("SLArPhysicsList control");
 
   fSetAbsorptionCMD = new G4UIcmdWithABool(
-      "/BeamCell/phys/setAbsorption", this);
+      "/SLAr/phys/setAbsorption", this);
   fSetAbsorptionCMD->SetGuidance("Turn on or off absorption process");
   fSetAbsorptionCMD->AvailableForStates(G4State_Idle);
 
   fVerboseCmd = new G4UIcmdWithAnInteger(
-      "/BeamCell/phys/verbose",this);
+      "/SLAr/phys/verbose",this);
   fVerboseCmd->SetGuidance("set verbose for physics processes");
   fVerboseCmd->SetParameterName("verbose",true);
   fVerboseCmd->SetDefaultValue(1);
@@ -68,14 +68,14 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
 
   fCerenkovCmd =
     new G4UIcmdWithAnInteger(
-        "/BeamCell/phys/cerenkovMaxPhotons",this);
+        "/SLAr/phys/cerenkovMaxPhotons",this);
   fCerenkovCmd->SetGuidance("set max nb of photons per step");
   fCerenkovCmd->SetParameterName("MaxNumber",false);
   fCerenkovCmd->SetRange("MaxNumber>=0");
   fCerenkovCmd->AvailableForStates(G4State_Idle);
 
   fGammaCutCMD = new G4UIcmdWithADoubleAndUnit(
-      "/BeamCell/phys/gammaCut",this);
+      "/SLAr/phys/gammaCut",this);
   fGammaCutCMD->SetGuidance("Set gamma cut");
   fGammaCutCMD->SetParameterName("Gcut",false);
   fGammaCutCMD->SetUnitCategory("Length");
@@ -84,7 +84,7 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fGammaCutCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fElectCutCMD = new G4UIcmdWithADoubleAndUnit(
-      "/BeamCell/phys/electronCut",this);
+      "/SLAr/phys/electronCut",this);
   fElectCutCMD->SetGuidance("Set electron cut");
   fElectCutCMD->SetParameterName("Ecut",false);
   fElectCutCMD->SetUnitCategory("Length");
@@ -93,7 +93,7 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fElectCutCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fPosCutCMD = new G4UIcmdWithADoubleAndUnit(
-      "/BeamCell/phys/positronCut",this);
+      "/SLAr/phys/positronCut",this);
   fPosCutCMD->SetGuidance("Set positron cut");
   fPosCutCMD->SetParameterName("Pcut",false);
   fPosCutCMD->SetUnitCategory("Length");
@@ -102,7 +102,7 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fPosCutCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fAllCutCMD = new G4UIcmdWithADoubleAndUnit(
-      "/BeamCell/phys/allCuts",this);
+      "/SLAr/phys/allCuts",this);
   fAllCutCMD->SetGuidance("Set cut for all");
   fAllCutCMD->SetParameterName("cut",false);
   fAllCutCMD->SetUnitCategory("Length");
@@ -111,7 +111,7 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fAllCutCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fStepMaxCMD = new G4UIcmdWithADoubleAndUnit(
-      "/BeamCell/phys/stepMax",this);
+      "/SLAr/phys/stepMax",this);
   fStepMaxCMD->SetGuidance("Set max. step length in the detector");
   fStepMaxCMD->SetParameterName("mxStep",false);
   fStepMaxCMD->SetUnitCategory("Length");
@@ -120,18 +120,18 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fStepMaxCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fClearPhysicsCMD = new G4UIcmdWithoutParameter(
-      "/BeamCell/phys/clearPhysics",this);
+      "/SLAr/phys/clearPhysics",this);
   fClearPhysicsCMD->SetGuidance("Clear the physics list");
   fClearPhysicsCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fRemovePhysicsCMD = new G4UIcmdWithAString(
-      "/BeamCell/phys/removePhysics",this);
+      "/SLAr/phys/removePhysics",this);
   fRemovePhysicsCMD->
     SetGuidance("Remove a physics process from Physics List");
   fRemovePhysicsCMD->SetParameterName("PList",false);
   fRemovePhysicsCMD->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  fListCMD = new G4UIcmdWithoutParameter("/BeamCell/phys/list",this);
+  fListCMD = new G4UIcmdWithoutParameter("/SLAr/phys/list",this);
   fListCMD->SetGuidance("Available Physics Lists");
   fListCMD->AvailableForStates(G4State_Idle);
 
