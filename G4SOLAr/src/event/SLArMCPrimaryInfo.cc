@@ -11,20 +11,12 @@
 ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
-  fID(0), fName("noParticle"), fEnergy(0.),
-  fTotalEdep(0.), fNCherPhotons(0), fNScntPhotons(0), fNWLSPhotons(0),
-  fVertex{0}, fMomentum{0}, fEdep3Hist(0) 
-{
-  fEdep3Hist = new TH3F("hEdep3Hits", "Edep tomography", 
-      15,  -750, +750, 
-      20, -1000, +1000, 
-      15,  -570, +750);
-}
+  fID(0), fTrkID(0), fName("noParticle"), fEnergy(0.),
+  fTotalEdep(0.),
+  fVertex{0}, fMomentum{0}
+{}
 
-SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {
-  //std::cerr << "Deleting SLArMCPrimary info (nothing to delete)" << std::endl;
-  delete fEdep3Hist;
-}
+SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {}
 
 void SLArMCPrimaryInfo::SetPosition(double x, double y,
                                   double z, double t)
@@ -48,14 +40,11 @@ void SLArMCPrimaryInfo::ResetParticle()
 {
   std::cout << "SLArMCPrimaryInfo::ResetParticle!" << std::endl;
   fID           = 0;
+  fTrkID        = 0; 
   fName         = "noName";
   fEnergy       = 0.;
   fTime         = 0.;
   fTotalEdep    = 0.;
-  fNCherPhotons = 0;
-  fNScntPhotons = 0;
-  fNWLSPhotons  = 0;
-  fEdep3Hist->Reset();
 
   for (auto &tt : fTrajectories) {delete tt;}
   fTrajectories.clear();
@@ -66,7 +55,7 @@ void SLArMCPrimaryInfo::ResetParticle()
 void SLArMCPrimaryInfo::PrintParticle()
 {
   std::cout << "SLAr Primary Info: " << std::endl;
-  std::cout << "Particle:" << fName << " (" << fID <<")" << std::endl;
+  std::cout << "Particle:" << fName << "id: " << fID <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
                          << fVertex[1]<< ", " 
@@ -82,8 +71,4 @@ int SLArMCPrimaryInfo::RegisterTrajectory(SLArEventTrajectory* trj)
   return (int)fTrajectories.size();
 }
 
-void SLArMCPrimaryInfo::AddEdep(float x, float y, float z, float edep)
-{
-  fEdep3Hist->Fill(x, y, z, edep);
-  return;
-}
+

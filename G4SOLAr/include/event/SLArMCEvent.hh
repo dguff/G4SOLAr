@@ -33,13 +33,14 @@ class SLArMCEvent : public TObject
     //SLArEventSystemPMT*   GetPMTSystem() {return fSystemPMT ;}
     //SLArEventSystemHodo*  GetHodoSystem(){return fSystemHodo;}
 
-    SLArMCPrimaryInfo* GetPrimary() {return fSLArPrimary ;}
+    std::vector<SLArMCPrimaryInfo*>& GetPrimary() {return fSLArPrimary ;}
+    bool  CheckIfPrimary(int trkId);
 
-    void         Reset         ();
+    void  Reset();
 
   private:
     int              fEvNumber ;
-    SLArMCPrimaryInfo* fSLArPrimary; 
+    std::vector<SLArMCPrimaryInfo*> fSLArPrimary; 
     //SLArEventSystemPMT*     fSystemPMT;
     //SLArEventSystemHodo*    fSystemHodo;
 

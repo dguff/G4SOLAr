@@ -4,6 +4,7 @@
  * @created     : lunedì ago 31, 2020 12:59:32 CEST
  */
 
+#include "SLArAnalysisManager.hh"
 #include "SLArTrajectory.hh"
 #include "G4TrajectoryPoint.hh"
 #include "G4Trajectory.hh"
@@ -37,8 +38,22 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
 {
   fEdepContainer.reserve(500);
   fParticleDefinition=aTrack->GetDefinition();
-  if (aTrack->GetTrackID()!=1)
+  
+  if (aTrack->GetParentID() > 0) {
     fCreatorProcess    =aTrack->GetCreatorProcess()->GetProcessName();
+  }
+  else {
+    // this is a primary. Save the track ID in the corresponding SLArMCPrimaryInfo
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    for (auto &primaryInfo : SLArAnaMgr->GetEvent()->GetPrimary()) {
+      if (aTrack->GetMomentum().x() == primaryInfo->GetMomentum()[0] &&
+          aTrack->GetMomentum().y() == primaryInfo->GetMomentum()[1] &&
+          aTrack->GetMomentum().z() == primaryInfo->GetMomentum()[2]) {
+        primaryInfo->SetTrackID(aTrack->GetTrackID()); 
+        break;
+      }
+    }
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

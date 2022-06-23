@@ -99,7 +99,7 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
     G4cout << "Target ID = " << fTargetHCollID << G4endl;
 
     // Reset hits in DST event 
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     //SLArAnaMgr->GetEvent()->GetPMTSystem()->ResetHits();
     //SLArAnaMgr->GetEvent()->GetHodoSystem()->Reset();
 
@@ -127,6 +127,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
                     "SLArCode001", JustWarning, msg);
         return;
     }   
+    G4cerr << "SLArEventAction::EndOfEventAction()" << G4endl;
 
     RecordEventTarget( event );
 
@@ -366,12 +367,12 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
     SLArTankHit* hit = (*hHC1)[0];
     fTotEdep = hit->GetDepositedEnergy();
 
-    SLArAnaMgr->GetEvent()->GetPrimary()->SetTotalEdep(fTotEdep);
+    SLArAnaMgr->GetEvent()->GetPrimary().front()->SetTotalEdep(fTotEdep);
 
     G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
     if (trj_cont)
     {
-      SLArMCPrimaryInfo* evInfo = SLArAnaMgr->GetEvent()->GetPrimary();
+      auto primaries = SLArAnaMgr->GetEvent()->GetPrimary();
       TrajectoryVector* trj_vec = trj_cont->GetVector();
 
       for (auto const t : *trj_vec)
@@ -390,11 +391,11 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
           // store trajectory points
           size_t npoints = SLArTrj->GetPointEntries(); 
           size_t nedeps = SLArTrj->GetEdep().size();
-          //if ( npoints != nedeps) {
-            //printf("SLArEventAction::RecordEventTarget WARNING:\n");
-            //printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
-                //npoints, nedeps);
-          //}
+          if ( npoints != nedeps) {
+            printf("SLArEventAction::RecordEventTarget WARNING:\n");
+            printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
+                npoints, nedeps);
+          }
           float edep = 0; 
           for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
             (n == 0) ? edep = 0 : edep = SLArTrj->GetEdep().at(n-1);
@@ -405,7 +406,14 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
                 edep
                 );
           }
-          evInfo->RegisterTrajectory(evTrajectory);
+
+          // find the right primary to associate the trajectory
+          for (auto &primary : primaries) {
+            if (SLArTrj->GetTrackID() == primary->GetTrackID() || 
+                SLArTrj->GetParentID() == primary->GetTrackID()) {
+              primary->RegisterTrajectory(evTrajectory);
+            }
+          }
         }  
 
       } 

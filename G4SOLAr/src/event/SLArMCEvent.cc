@@ -8,11 +8,10 @@
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
-  fEvNumber(0), fSLArPrimary(nullptr)
+  fEvNumber(0)
 {
   //fSystemPMT  = new SLArEventSystemPMT();
   //fSystemHodo = new SLArEventSystemHodo();
-  fSLArPrimary  = new SLArMCPrimaryInfo();
 }
 
 SLArMCEvent::~SLArMCEvent()
@@ -20,7 +19,10 @@ SLArMCEvent::~SLArMCEvent()
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
   //if (fSystemPMT)  delete fSystemPMT; 
   //if (fSystemHodo) delete fSystemPMT; 
-  if (fSLArPrimary)  delete fSLArPrimary;
+  for (auto &p : fSLArPrimary) {
+    delete p; p = nullptr; 
+  }
+  fSLArPrimary.clear();
   std::cerr << "SLArMCEvent DONE" << std::endl;
 }
 
@@ -59,6 +61,20 @@ void SLArMCEvent::Reset()
 {
   //if (fSystemPMT ) fSystemPMT ->ResetHits();
   //if (fSystemHodo) fSystemHodo->Reset();
-  if (fSLArPrimary ) fSLArPrimary ->ResetParticle();
+  for (auto &p : fSLArPrimary) {
+    delete p; p = nullptr; 
+  }
+  fSLArPrimary.clear(); 
   fEvNumber = -1;
+}
+
+bool SLArMCEvent::CheckIfPrimary(int trkId) {
+  bool is_primary = false; 
+  for (const auto &p : fSLArPrimary) {
+    if (trkId == p->GetTrackID()) {
+      is_primary = true; 
+      break;
+    }
+  }
+  return is_primary; 
 }
