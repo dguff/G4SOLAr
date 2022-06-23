@@ -391,11 +391,13 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
           // store trajectory points
           size_t npoints = SLArTrj->GetPointEntries(); 
           size_t nedeps = SLArTrj->GetEdep().size();
-          if ( npoints != nedeps) {
-            printf("SLArEventAction::RecordEventTarget WARNING:\n");
-            printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
-                npoints, nedeps);
-          }
+          /*
+           *if ( npoints != nedeps) {
+           *  printf("SLArEventAction::RecordEventTarget WARNING:\n");
+           *  printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
+           *      npoints, nedeps);
+           *}
+           */
           float edep = 0; 
           for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
             (n == 0) ? edep = 0 : edep = SLArTrj->GetEdep().at(n-1);

@@ -38,7 +38,6 @@ void SLArMCPrimaryInfo::SetMomentum(double px, double py, double pz,
 
 void SLArMCPrimaryInfo::ResetParticle()
 {
-  std::cout << "SLArMCPrimaryInfo::ResetParticle!" << std::endl;
   fID           = 0;
   fTrkID        = 0; 
   fName         = "noName";
