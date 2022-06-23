@@ -39,11 +39,16 @@
 
 class G4ParticleGun;
 class G4Event;
+class SLArBulkVertexGenerator;
 class SLArPrimaryGeneratorMessenger;
+
+namespace bxdecay0_g4 {
+  class PrimaryGeneratorAction;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGunMode {kFixed = 0, kCosmic = 1};
+enum  EGunMode {kFixed = 0, kRadio = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
@@ -57,10 +62,16 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetOptPhotonPolar(                );
     void SetOptPhotonPolar(G4double        );
     void SetGunMode       (EGunMode gunMode);
+    void SetBulkName      (G4String vol);
 
   private:
     G4ParticleGun* fParticleGun;
+    bxdecay0_g4::PrimaryGeneratorAction* fDecay0Gen;
     SLArPrimaryGeneratorMessenger* fGunMessenger;
+
+    SLArBulkVertexGenerator* fBulkGenerator;
+
+    G4String       fVolumeName;
 
     EGunMode       fGunMode;
 };

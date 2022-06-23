@@ -56,6 +56,7 @@ include_directories(${G4SOLAR_INCLUDE}
                     ${G4SOLAR_INCLUDE}/detector/SuperCell
                     ${G4SOLAR_INCLUDE}/config
                     ${G4SOLAR_INCLUDE}/event
+                    ${BxDecay0_INCLUDE_DIR}
                     ${G4SOLAR_RAPIDJSON_INCLUDE}
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
@@ -99,6 +100,7 @@ target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
 target_link_libraries(solar_sim SLArPDSystemConfig)
+target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

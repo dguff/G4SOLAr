@@ -55,11 +55,12 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     virtual void SetNewValue(G4UIcommand*, G4String);
  
   private:
-    SLArPrimaryGeneratorAction*       fSLArAction;
-    G4UIdirectory*                  fGunDir;
-    G4UIcmdWithADoubleAndUnit*      fPolarCmd;
+    SLArPrimaryGeneratorAction*         fSLArAction;
+    G4UIdirectory*                      fGunDir;
+    G4UIcmdWithADoubleAndUnit*          fPolarCmd;
 
-    G4UIcmdWithAString*             fModeCmd;
+    G4UIcmdWithAString*                 fModeCmd;
+    G4UIcmdWithAString*                 fVolCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

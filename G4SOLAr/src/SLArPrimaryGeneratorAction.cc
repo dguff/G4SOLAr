@@ -35,9 +35,12 @@
 
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
+#include "SLArBulkVertexGenerator.hh"
+#include "bxdecay0_g4/primary_generator_action.hh"
 
 #include "Randomize.hh"
 
+#include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4VPhysicalVolume.hh"
@@ -50,15 +53,20 @@
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fParticleGun(0)
+   fParticleGun(0), fDecay0Gen(0), fGunMessenger(0), 
+   fBulkGenerator(0), 
+   fVolumeName("Target"), 
+   fGunMode(kFixed)
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
+  fDecay0Gen   = new bxdecay0_g4::PrimaryGeneratorAction(0);
+  fBulkGenerator = new SLArBulkVertexGenerator(); 
+  fDecay0Gen->SetVertexGenerator(fBulkGenerator);
 
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
@@ -74,112 +82,92 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, +1) );
   fParticleGun->SetParticlePosition         (G4ThreeVector(0, 0, -1.5*m));
-
-  fGunMode    = kFixed;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
-  delete fParticleGun;
   delete fGunMessenger;
+  delete fParticleGun;
+  delete fDecay0Gen;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
+  fVolumeName = vol; 
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
+
+  fBulkGenerator->SetBulkLogicalVolume(volume->GetLogicalVolume()); 
+  return;
+}
+
 void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  if (fGunMode == kCosmic) 
-  {
-    //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
-    // by default set random angle (cos2 theta) in the range where it 
-    // is more likely for it to intercept the hodoscopes. 
-    // The tracks are required to cross a disk of 5 cm radius in the 
-    // center of the tank
 
-    G4double h_world = 0;
-    G4VPhysicalVolume* worldPV
-      = G4PhysicalVolumeStore::GetInstance()->GetVolume("World");
-    if (worldPV) {
-      G4Box* worldSV 
-        = dynamic_cast<G4Box*>(worldPV->GetLogicalVolume()->GetSolid());
-      h_world= worldSV->GetZHalfLength();
+
+  //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
+ 
+  if (fGunMode == kRadio) {
+    G4cerr << "Generating radio event..." << G4endl;
+    if (!fBulkGenerator->GetBulkLogicalVolume()) {
+      G4cerr << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
+      SetBulkName(fVolumeName);
     }
+    G4cerr << "Running fDecay0Gen..." << G4endl;
+    fDecay0Gen->GeneratePrimaries(anEvent); 
 
+    // Store Primary information id dst
+    G4cerr << "Storing primary info..." << G4endl;
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-    G4double h_tank = 0;
-    G4double y_tank = 0;
-    G4VPhysicalVolume* tankPV
-      = G4PhysicalVolumeStore::GetInstance()->GetVolume("Tank");
-    if (tankPV) y_tank = tankPV->GetObjectTranslation().getY();
-    if (tankPV) {
-      G4Tubs* tankSV 
-        = dynamic_cast<G4Tubs*>(tankPV->GetLogicalVolume()->GetSolid());
-      h_tank = tankSV->GetZHalfLength();
+    G4int n = anEvent->GetNumberOfPrimaryVertex(); 
+    for (int i=0; i<n; i++) {
+      SLArMCPrimaryInfo * tc_primary = new SLArMCPrimaryInfo();
+
+      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary();
+      tc_primary->SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
+      tc_primary->SetTrackID(particle->GetTrackID());
+      tc_primary->SetName(particle->GetParticleDefinition()->GetParticleName());
+      tc_primary->SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+          anEvent->GetPrimaryVertex(i)->GetY0(), 
+          anEvent->GetPrimaryVertex(i)->GetZ0());
+      tc_primary->SetMomentum(
+          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+          particle->GetKineticEnergy());
+
+      SLArAnaMgr->GetEvent()->GetPrimary().push_back(tc_primary); 
     }
-
-    // FIXME: when hodoscopes are better treated in detector construction
-    // replace hard coded quota and size
-    G4double y_hodo = 30*cm;  
-    G4double x_hodo = 15*cm;
-
-    // compute maximum theta allowed
-    G4double theta_max = atan( x_hodo / (y_hodo-y_tank) );
-    // define theta distribution in the allowed range
-    TF1 fCRtheta("fCRtheta", "pow(cos(x), 2)", -theta_max, +theta_max);
-    // Set particle momentum
-    G4ParticleMomentum p(+0., -1., +0.  ); // initial vertical track
-    p.rotateZ( fCRtheta.GetRandom()     ); // rotate according to theta
-    p.rotateY( G4UniformRand()*360.0*deg); // phi - symmetry
-
-    // define crossing (x,z) coordinates 
-    G4double r2 = G4UniformRand()* 25.*cm2;
-    G4double phi= G4UniformRand()*360.*deg;
-    G4double  xx= sqrt(r2)*cos(phi);
-    G4double  zz= sqrt(r2)*sin(phi);
-
-    // trace back the track from (xx, zz, y_tank) to the top of
-    // the world box
-    G4double scale = (h_world - y_tank) / p.getY();
-
-    G4ThreeVector pos(p.getX()*scale+xx    , 
-        p.getY()*scale+y_tank, 
-        p.getZ()*scale+zz    );
-
+    
+    return;
+  } else {
+    G4ThreeVector pos(0, 0, 0);
     // Set gun position
-    fParticleGun
-      ->SetParticlePosition(pos);
+    fParticleGun->SetParticlePosition(pos);
     // Set gun direction
-    fParticleGun->SetParticleMomentumDirection(p);
+    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
+    // Store Primary information id dst
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    SLArMCPrimaryInfo * tc_primary = new SLArMCPrimaryInfo(); 
 
-    G4cout << "h_world: " << h_world << G4endl;
-    G4cout << "h_tank          : " << h_tank           << G4endl;
-    G4cout << "theta_max:        " << theta_max        << G4endl;
-    G4cout << "vtx pos  :        " << pos              << G4endl;
-    G4cout << "momentum dir:     " << p                << G4endl;
+    tc_primary->SetID( fParticleGun->GetParticleDefinition()
+        ->GetParticleDefinitionID());
+    tc_primary->SetName(fParticleGun->GetParticleDefinition()
+        ->GetParticleName());
+    tc_primary->SetPosition(fParticleGun->GetParticlePosition().getX(),
+        fParticleGun->GetParticlePosition().getY(),
+        fParticleGun->GetParticlePosition().getZ());
+    tc_primary->SetMomentum(fParticleGun->GetParticleMomentumDirection().getX(), 
+        fParticleGun->GetParticleMomentumDirection().getY(), 
+        fParticleGun->GetParticleMomentumDirection().getZ(), 
+        fParticleGun->GetParticleEnergy());
+    SLArAnaMgr->GetEvent()->GetPrimary().push_back(tc_primary); 
+
+    fParticleGun->GeneratePrimaryVertex(anEvent);
   }
 
-  // Store Primary information id dst
 
-  
-  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  SLArMCPrimaryInfo * tc_primary = SLArAnaMgr->GetEvent()->GetPrimary();
-  tc_primary->ResetParticle();
-
-  tc_primary->SetID( fParticleGun->GetParticleDefinition()
-                           ->GetParticleDefinitionID());
-  tc_primary->SetName(fParticleGun->GetParticleDefinition()
-                           ->GetParticleName());
-  tc_primary->SetPosition(fParticleGun->GetParticlePosition().getX(),
-                    fParticleGun->GetParticlePosition().getY(),
-                    fParticleGun->GetParticlePosition().getZ());
-  tc_primary->SetMomentum(fParticleGun->GetParticleMomentumDirection().getX(), 
-                    fParticleGun->GetParticleMomentumDirection().getY(), 
-                    fParticleGun->GetParticleMomentumDirection().getZ(), 
-                    fParticleGun->GetParticleEnergy());
-
-  fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

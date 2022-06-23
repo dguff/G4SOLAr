@@ -48,7 +48,7 @@ SLArPrimaryGeneratorMessenger::
   : G4UImessenger(),
     fSLArAction(SLArGun)
 {
-  fGunDir = new G4UIdirectory("/BeamCell/gun/");
+  fGunDir = new G4UIdirectory("/SLAr/gun/");
   fGunDir->SetGuidance("PrimaryGenerator control");
 
   fPolarCmd =
@@ -62,12 +62,19 @@ SLArPrimaryGeneratorMessenger::
   fPolarCmd->AvailableForStates(G4State_Idle);
 
   fModeCmd = 
-    new G4UIcmdWithAString("/BeamCell/gun/mode", this);
-  fModeCmd->SetGuidance("Set BeamCell gun mode");
-  fModeCmd->SetGuidance("(Fixed, Cosmic, ...)");
+    new G4UIcmdWithAString("/SLAr/gun/mode", this);
+  fModeCmd->SetGuidance("Set SOLAr gun mode");
+  fModeCmd->SetGuidance("(Fixed, Radio, ...)");
   fModeCmd->SetParameterName("Mode", false);
   fModeCmd->SetDefaultValue("Fixed");
-  fModeCmd->SetCandidates("Fixed Cosmic");
+  fModeCmd->SetCandidates("Fixed Radio");
+
+  fVolCmd = 
+    new G4UIcmdWithAString("/SLAr/gun/volume", this); 
+  fVolCmd->SetGuidance("Set bulk volume for bulk event generation"); 
+  fVolCmd->SetGuidance("(Physical Volume name)"); 
+  fVolCmd->SetParameterName("PhysVol", true, false); 
+  fVolCmd->SetDefaultValue("Target"); 
 
 }
 
@@ -99,9 +106,13 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     EGunMode gunMode = kFixed;
     G4String strMode = newValue;
     if      (strMode.contains("Fixed" )) gunMode = kFixed;
-    else if (strMode.contains("Cosmic")) gunMode = kCosmic;
+    else if (strMode.contains("Radio")) gunMode = kRadio;
 
     fSLArAction->SetGunMode(gunMode);
+  } 
+  else if (command == fVolCmd) { 
+    G4String vol = newValue; 
+    fSLArAction->SetBulkName(vol); 
   }
 }
 
