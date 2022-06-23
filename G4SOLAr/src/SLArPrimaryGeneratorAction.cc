@@ -106,21 +106,20 @@ void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
 void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
+  // Store Primary information id dst
+  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+  SLArAnaMgr->GetEvent()->Reset();
+
 
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
   if (fGunMode == kRadio) {
-    G4cerr << "Generating radio event..." << G4endl;
     if (!fBulkGenerator->GetBulkLogicalVolume()) {
       G4cerr << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
       SetBulkName(fVolumeName);
     }
-    G4cerr << "Running fDecay0Gen..." << G4endl;
     fDecay0Gen->GeneratePrimaries(anEvent); 
 
-    // Store Primary information id dst
-    G4cerr << "Storing primary info..." << G4endl;
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
     G4int n = anEvent->GetNumberOfPrimaryVertex(); 
     for (int i=0; i<n; i++) {
