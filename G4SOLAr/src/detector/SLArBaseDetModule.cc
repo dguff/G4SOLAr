@@ -67,6 +67,7 @@ G4VPhysicalVolume* SLArBaseDetModule::GetModPV(
   fName = name;
   fVec  = vec;
 
+  printf("mother logical volume: %p\n", reinterpret_cast<void*>(mlv)); 
   fModPV = new G4PVPlacement(fRot,fVec, 
       fModLV, fName, mlv, pMany, pCopyNo);
   return fModPV;

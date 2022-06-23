@@ -90,8 +90,6 @@ G4bool SLArTankSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   if (step->GetTrack()->GetDynamicParticle()
       ->GetDefinition()->GetParticleName() != "opticalphoton") {
-    G4int moduleID = touchable->GetCopyNumber(1);
-    G4int    barID = touchable->GetCopyNumber(0);
 
     // Get hit from collection
     SLArTankHit* hit = (*fHitsCollection)[0];
@@ -100,14 +98,6 @@ G4bool SLArTankSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     hit->Add(edep);
 
-    // add to edep tomography 
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-    SLArAnaMgr->GetEvent()->GetPrimary()->AddEdep(
-        postStepPoint->GetPosition()[0], 
-        postStepPoint->GetPosition()[2], 
-        postStepPoint->GetPosition()[1], 
-        edep
-        );
   }     
 
   return true;
