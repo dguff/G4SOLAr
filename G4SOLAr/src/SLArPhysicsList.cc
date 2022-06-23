@@ -44,6 +44,7 @@
 //#include "G4PhysListFactory.hh"
 #include "FTFP_BERT.hh"
 #include "QGSP_BERT_HP.hh"
+#include "G4EmLivermorePhysics.hh"
 
 #include "G4Gamma.hh"
 #include "G4Electron.hh"
@@ -72,11 +73,11 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
 {
   G4LossTableManager::Instance();
 
-  defaultCutValue  = 1.*mm;
+  defaultCutValue  = 0.1*mm;
   // set larger cuts for gamma, electrons and positrons 
-  fCutForGamma     = 1.*cm;
-  fCutForElectron  = 1.*cm;
-  fCutForPositron  = 1.*cm;
+  fCutForGamma     = 0.1*mm;
+  fCutForElectron  = 0.1*mm;
+  fCutForPositron  = 0.1*mm;
 
   //    G4PhysListFactory factory;
   G4VModularPhysicsList* phys = NULL;
@@ -104,8 +105,8 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
 
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn));
-
   RegisterPhysics(new G4RadioactiveDecayPhysics());
+  RegisterPhysics(new G4EmLivermorePhysics());
 
   fStepMaxProcess = new SLArStepMax();
 }
