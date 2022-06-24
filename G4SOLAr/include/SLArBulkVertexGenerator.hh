@@ -42,7 +42,7 @@ public:
  
   const G4RotationMatrix & GetSolidInverseRotation() const;
   
-  void SetSolidRotation(const G4RotationMatrix &);
+  void SetSolidRotation(G4RotationMatrix* );
  
   double GetTolerance() const;
   
