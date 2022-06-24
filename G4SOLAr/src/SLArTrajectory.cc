@@ -132,14 +132,24 @@ void SLArTrajectory::DrawTrajectory() const
     G4Colour colour;
  
     if(fParticleDefinition==G4OpticalPhoton::OpticalPhotonDefinition()){
-      if(fWls) //WLS photons are red
-        colour = G4Colour(1.,0.,0.);
-      else{ //Scintillation and Cerenkov photons are green
-        colour = G4Colour(0.,1.,0.);
-      }
+      colour = G4Colour(0.,0.5,0.5);
     }
-    else //All other particles are blue
-      colour = G4Colour(0.,0.,1.);
+    else if (fParticleDefinition == G4Electron::ElectronDefinition()) {
+      colour = G4Colour(1., 1., 0.); 
+    }
+    else if (fParticleDefinition == G4Gamma::GammaDefinition()) {
+      colour = G4Colour(0., 1., 0.); 
+    } 
+    else if (fParticleDefinition == G4Neutron::NeutronDefinition()) {
+      colour = G4Colour(0., 0., 1.); 
+    } 
+    else if (fParticleDefinition == G4Positron::PositronDefinition()) {
+      colour = G4Colour(1., 0., 1.); 
+    }
+    else {
+      //All other particles are red
+      colour = G4Colour(1.,0.,0.);
+    }
  
     G4VisAttributes trajectoryLineAttribs(colour);
     trajectoryLine.SetVisAttributes(&trajectoryLineAttribs);
