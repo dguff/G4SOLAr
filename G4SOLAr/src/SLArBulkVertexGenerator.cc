@@ -56,9 +56,9 @@ const G4RotationMatrix & SLArBulkVertexGenerator::GetSolidInverseRotation() cons
   return fBulkInverseRotation;
 }
   
-void SLArBulkVertexGenerator::SetSolidRotation(const G4RotationMatrix & rotation_)
+void SLArBulkVertexGenerator::SetSolidRotation(G4RotationMatrix* rotation_)
 {
-  fBulkRotation = rotation_;
+  fBulkRotation = *rotation_;
   fBulkInverseRotation = fBulkRotation.inverse();
   std::clog << "[log] SLArBulkVertexGenerator::SetSolidRotation: rotation=" << fBulkRotation << "\n";
 }

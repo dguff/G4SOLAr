@@ -100,6 +100,8 @@ void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
 
   fBulkGenerator->SetBulkLogicalVolume(volume->GetLogicalVolume()); 
+  fBulkGenerator->SetSolidTranslation(volume->GetTranslation()); 
+  fBulkGenerator->SetSolidRotation(volume->GetRotation()); 
   return;
 }
 
