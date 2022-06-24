@@ -1,0 +1,8 @@
+/SLAr/manager/SetOutputName slar_ar42.root
+/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
+/SLAr/gun/mode Radio
+/SLAr/phys/gammaCut 1 mm
+/SLAr/phys/electronCut 0.2 mm
+/bxdecay0/generator/verbosity 0
+/bxdecay0/generator/background Ar42 123456
+/run/beamOn 50000
