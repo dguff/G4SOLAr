@@ -39,9 +39,25 @@ ExternalProject_Add("rapidjson"
   INSTALL_COMMAND cmake -E echo "rapidjson: Skipping install step."
   )
 set(G4SOLAR_RAPIDJSON_INCLUDE "${PROJECT_SOURCE_DIR}/extern/rapidjson/include")
-#include(${CMAKE_CURRENT_BINARY_DIR}/extern/rapidjson/RapidJSONConfig.cmake)
 
 find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG) 
+
+set (G4SOLAR_MARLEY $ENV{MARLEY})
+message(STATUS "libMARLEY path: ${G4SOLAR_MARLEY}/build")
+find_library(MARLEY 
+             NAMES MARLEY
+             PATHS "${G4SOLAR_MARLEY}/build"
+             REQUIRED
+             NO_DEFAULT_PATH) 
+           find_library(MARLEY_ROOT 
+             NAMES MARLEY_ROOT
+             PATHS "${G4SOLAR_MARLEY}/build"
+             REQUIRED
+             NO_DEFAULT_PATH) 
+
+if (MARLEY) 
+  message(STATUS "MARLEY library found")
+endif()
 
 set(G4SOLAR_INCLUDE "${PROJECT_SOURCE_DIR}/include")
 set(G4SOLAR_SRC     "${PROJECT_SOURCE_DIR}/src"    )
@@ -57,6 +73,7 @@ include_directories(${G4SOLAR_INCLUDE}
                     ${G4SOLAR_INCLUDE}/config
                     ${G4SOLAR_INCLUDE}/event
                     ${BxDecay0_INCLUDE_DIR}
+                    ${G4SOLAR_MARLEY}/include
                     ${G4SOLAR_RAPIDJSON_INCLUDE}
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
@@ -101,30 +118,15 @@ target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
 target_link_libraries(solar_sim SLArPDSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
+target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build beamCell. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(g4solar_SCRIPTS
-    optPhoton.mac
-    gui.mac
-    vis.mac
-  )
-
-foreach(_script ${g4solar_SCRIPTS})
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/${_script}
-    ${PROJECT_BINARY_DIR}/${_script}
-    COPYONLY
-    )
-endforeach()
-
-#----------------------------------------------------------------------------
-# Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
-install(TARGETS solar_sim DESTINATION bin)
-
+file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #----------------------------------------------------------------------------
 # Copy shared libraries and dictionaries to offline/lib folder
 #
