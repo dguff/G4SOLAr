@@ -1,7 +1,0 @@
-/control/verbose 1
-/tracking/verbose 1
-#
-/gun/particle mu-
-/gun/energy 3 GeV
-#
-/run/beamOn 500
