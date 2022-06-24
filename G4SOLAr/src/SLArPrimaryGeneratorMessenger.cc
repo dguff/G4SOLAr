@@ -67,7 +67,7 @@ SLArPrimaryGeneratorMessenger::
   fModeCmd->SetGuidance("(Fixed, Radio, ...)");
   fModeCmd->SetParameterName("Mode", false);
   fModeCmd->SetDefaultValue("Fixed");
-  fModeCmd->SetCandidates("Fixed Radio");
+  fModeCmd->SetCandidates("Fixed Radio Marley");
 
   fVolCmd = 
     new G4UIcmdWithAString("/SLAr/gun/volume", this); 
@@ -75,6 +75,13 @@ SLArPrimaryGeneratorMessenger::
   fVolCmd->SetGuidance("(Physical Volume name)"); 
   fVolCmd->SetParameterName("PhysVol", true, false); 
   fVolCmd->SetDefaultValue("Target"); 
+
+  fMarleyCmd = 
+    new G4UIcmdWithAString("/SLAr/gun/marleyconf", this); 
+  fMarleyCmd->SetGuidance("Set MARLEY configuration file"); 
+  fMarleyCmd->SetGuidance("(configuration file path)"); 
+  fMarleyCmd->SetParameterName("marley_config", true, false); 
+  fMarleyCmd->SetDefaultValue("marley_default.json"); 
 
 }
 
@@ -107,12 +114,16 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     G4String strMode = newValue;
     if      (strMode.contains("Fixed" )) gunMode = kFixed;
     else if (strMode.contains("Radio")) gunMode = kRadio;
+    else if (strMode.contains("Marley")) gunMode = kMarley;
 
     fSLArAction->SetGunMode(gunMode);
   } 
   else if (command == fVolCmd) { 
     G4String vol = newValue; 
     fSLArAction->SetBulkName(vol); 
+  }
+  else if (command == fMarleyCmd) {
+    fSLArAction->SetMarleyConf(newValue); 
   }
 }
 

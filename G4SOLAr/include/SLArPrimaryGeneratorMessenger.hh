@@ -61,6 +61,7 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
 
     G4UIcmdWithAString*                 fModeCmd;
     G4UIcmdWithAString*                 fVolCmd;
+    G4UIcmdWithAString*                 fMarleyCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -36,6 +36,7 @@
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
 #include "SLArBulkVertexGenerator.hh"
+#include "SLArMarleyGen.hh"
 #include "bxdecay0_g4/primary_generator_action.hh"
 
 #include "Randomize.hh"
@@ -57,16 +58,18 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fParticleGun(0), fDecay0Gen(0), fGunMessenger(0), 
+   fParticleGun(0), fDecay0Gen(0), fMarleyGen(0), fGunMessenger(0), 
    fBulkGenerator(0), 
    fVolumeName("Target"), 
    fGunMode(kFixed)
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
-  fDecay0Gen   = new bxdecay0_g4::PrimaryGeneratorAction(0);
-  fBulkGenerator = new SLArBulkVertexGenerator(); 
-  fDecay0Gen->SetVertexGenerator(fBulkGenerator);
+  if (!fDecay0Gen) {
+    fDecay0Gen = new bxdecay0_g4::PrimaryGeneratorAction(); 
+    fBulkGenerator = new SLArBulkVertexGenerator(); 
+    fDecay0Gen->SetVertexGenerator(fBulkGenerator); 
+  }
 
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
@@ -91,6 +94,7 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
   delete fGunMessenger;
   delete fParticleGun;
   delete fDecay0Gen;
+  delete fMarleyGen;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -142,14 +146,47 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
     
     return;
-  } else {
+  } else if (fGunMode == kMarley) {
+    if (!fMarleyGen) {
+      fMarleyGen = new SLArMarleyGen(fMarleyCfg.c_str()); 
+      if (!fBulkGenerator) {
+        fBulkGenerator = new SLArBulkVertexGenerator();
+      }
+      fMarleyGen->SetVertexGenerator(fBulkGenerator); 
+    }
+
+    if (!fBulkGenerator->GetBulkLogicalVolume()) {
+      G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
+      SetBulkName(fVolumeName); 
+    }
+
+    fMarleyGen->GeneratePrimaries(anEvent); 
+
+    G4int n = anEvent->GetNumberOfPrimaryVertex(); 
+    for (int i=0; i<n; i++) {
+      SLArMCPrimaryInfo * tc_primary = new SLArMCPrimaryInfo();
+
+      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary();
+      tc_primary->SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
+      tc_primary->SetTrackID(particle->GetTrackID());
+      tc_primary->SetName(particle->GetParticleDefinition()->GetParticleName());
+      tc_primary->SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+          anEvent->GetPrimaryVertex(i)->GetY0(), 
+          anEvent->GetPrimaryVertex(i)->GetZ0());
+      tc_primary->SetMomentum(
+          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+          particle->GetKineticEnergy());
+
+      SLArAnaMgr->GetEvent()->GetPrimary().push_back(tc_primary); 
+    }
+  }
+  else {
     G4ThreeVector pos(0, 0, 0);
     // Set gun position
     fParticleGun->SetParticlePosition(pos);
     // Set gun direction
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
     // Store Primary information id dst
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     SLArMCPrimaryInfo * tc_primary = new SLArMCPrimaryInfo(); 
 
     tc_primary->SetID( fParticleGun->GetParticleDefinition()
@@ -206,6 +243,28 @@ void SLArPrimaryGeneratorAction::SetOptPhotonPolar(G4double angle)
  
  G4ThreeVector polar = std::cos(angle)*e_paralle + std::sin(angle)*e_perpend;
  fParticleGun->SetParticlePolarization(polar);
+}
+
+void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
+  fMarleyCfg = marley_conf; 
+  if (!fMarleyGen) {
+    fMarleyGen = new SLArMarleyGen(marley_conf); 
+    if (!fBulkGenerator) {
+      fBulkGenerator = new SLArBulkVertexGenerator();
+      SetBulkName(fVolumeName); 
+    }
+
+  } else {
+    delete fMarleyGen; 
+    fMarleyGen = new SLArMarleyGen(fMarleyCfg); 
+    if (!fBulkGenerator) {
+      fBulkGenerator = new SLArBulkVertexGenerator(); 
+      SetBulkName(fVolumeName); 
+    }
+  }
+
+  fMarleyGen->SetVertexGenerator(fBulkGenerator); 
+  return; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
