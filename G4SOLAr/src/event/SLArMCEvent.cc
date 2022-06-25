@@ -62,6 +62,8 @@ void SLArMCEvent::Reset()
   //if (fSystemPMT ) fSystemPMT ->ResetHits();
   //if (fSystemHodo) fSystemHodo->Reset();
   for (auto &p : fSLArPrimary) {
+    //printf("deleting primary...\n"); 
+    //p->PrintParticle(); 
     delete p; p = nullptr; 
   }
   fSLArPrimary.clear(); 

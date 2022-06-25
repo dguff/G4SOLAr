@@ -33,8 +33,12 @@ class SLArMCEvent : public TObject
     //SLArEventSystemPMT*   GetPMTSystem() {return fSystemPMT ;}
     //SLArEventSystemHodo*  GetHodoSystem(){return fSystemHodo;}
 
-    std::vector<SLArMCPrimaryInfo*>& GetPrimary() {return fSLArPrimary ;}
+    std::vector<SLArMCPrimaryInfo*>& GetPrimaries() {return fSLArPrimary ;}
+    SLArMCPrimaryInfo* GetPrimary(int ip) {return fSLArPrimary.at(ip);}
     bool  CheckIfPrimary(int trkId);
+
+    inline size_t RegisterPrimary(SLArMCPrimaryInfo* p) 
+      {fSLArPrimary.push_back(p); return fSLArPrimary.size();}
 
     void  Reset();
 
@@ -45,7 +49,7 @@ class SLArMCEvent : public TObject
     //SLArEventSystemHodo*    fSystemHodo;
 
   public:
-    ClassDef(SLArMCEvent, 1);
+    ClassDef(SLArMCEvent, 2);
 };
 
 
