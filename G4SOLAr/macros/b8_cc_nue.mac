@@ -1,0 +1,4 @@
+/SLAr/gun/mode Marley
+/SLAr/gun/marleyconf marley_cfg/b8_osc_spect_CC_nue.js
+/SLAr/gun/volume Target
+/run/beamOn 100000

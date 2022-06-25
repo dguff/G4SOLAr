@@ -12,7 +12,7 @@
   source: {
      type: "tgraph",
      neutrino: "ve",
-     tfile: "marley_files/b8_oscillated_file.root",  // Name of the ROOT file containing
+     tfile: "marley_cfg/b8_oscillated_file.root",  // Name of the ROOT file containing
                                   // the TGraph object
   
      namecycle: "b8_nue",        // Name of the TGraph object (used to

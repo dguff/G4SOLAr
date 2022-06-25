@@ -12,13 +12,12 @@
   source: {
      type: "tgraph",
      neutrino: "ve",
-     tfile: "hep_oscillated_file.root",  // Name of the ROOT file containing
+     tfile: "marley_cfg/hep_oscillated_file.root",  // Name of the ROOT file containing
                                   // the TGraph object
   
      namecycle: "hep_nue",        // Name of the TGraph object (used to
                                   // retrieve it from the ROOT file)
     },
-    executable_settings: {events:5000000 , output:[{file:"events_osc_hep_nue_CC.root" ,format:"root" , mode:"overwrite" }] },
 }
 
 

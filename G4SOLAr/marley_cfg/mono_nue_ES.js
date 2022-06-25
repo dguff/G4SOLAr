@@ -13,8 +13,7 @@
       type: "monoenergetic",
       neutrino: "ve",
       energy: 15
-    },
-    executable_settings: {events:1000000 , output:[{file:"mono_nue_ES.root" ,format:"root" , mode:"overwrite" }] },
+    }
 }
 
 

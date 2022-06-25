@@ -12,13 +12,12 @@
     source: {
       type: "tgraph",
       neutrino: "ve",
-      tfile: "b8_oscillated_file.root",  // Name of the ROOT file containing
+      tfile: "marley_cfg/b8_oscillated_file.root",  // Name of the ROOT file containing
                                          // the TGraph object
 
       namecycle: "b8_nue",              // Name of the TGraph object (used to
                                         // retrieve it from the ROOT file)
     },
-    executable_settings: {events:5000000 , output:[{file:"events_osc_b8_nue_ES.root" ,format:"root" , mode:"overwrite" }] },
 }
 
 
