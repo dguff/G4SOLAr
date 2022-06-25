@@ -87,21 +87,18 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
       //fLAPPDHCollID= sdManager->GetCollectionID("LAPPDColl");
     //if (fPMTHCollID == -2) 
       //fPMTHCollID  = sdManager->GetCollectionID("PMTColl"  );
-    // if (fHodoHCollID == -3)
-      //fHodoHCollID = sdManager->GetCollectionID("HodoColl" );
     if (fTargetHCollID == -4)
       fTargetHCollID = sdManager->GetCollectionID("TargetColl");
 
-    G4cout << "SLArEventAction::BeginOfEventAction(): ";
+    //G4cout << "SLArEventAction::BeginOfEventAction(): ";
     //G4cout << "LAPPD  ID = " << fLAPPDHCollID  << G4endl;
     //G4cout << "PMT    ID = " << fPMTHCollID    << G4endl;
     //G4cout << "Hod    ID = " << fHodoHCollID   << G4endl;
-    G4cout << "Target ID = " << fTargetHCollID << G4endl;
+    //G4cout << "Target ID = " << fTargetHCollID << G4endl;
 
     // Reset hits in DST event 
     //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     //SLArAnaMgr->GetEvent()->GetPMTSystem()->ResetHits();
-    //SLArAnaMgr->GetEvent()->GetHodoSystem()->Reset();
 
     // reset counters
     fHitCount                = 0;
@@ -127,7 +124,6 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
                     "SLArCode001", JustWarning, msg);
         return;
     }   
-    G4cerr << "SLArEventAction::EndOfEventAction()" << G4endl;
 
     RecordEventTarget( event );
 
@@ -367,12 +363,12 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
     SLArTankHit* hit = (*hHC1)[0];
     fTotEdep = hit->GetDepositedEnergy();
 
-    SLArAnaMgr->GetEvent()->GetPrimary().front()->SetTotalEdep(fTotEdep);
+    SLArAnaMgr->GetEvent()->GetPrimaries().front()->SetTotalEdep(fTotEdep);
 
     G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
     if (trj_cont)
     {
-      auto primaries = SLArAnaMgr->GetEvent()->GetPrimary();
+      auto primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
       TrajectoryVector* trj_vec = trj_cont->GetVector();
 
       for (auto const t : *trj_vec)

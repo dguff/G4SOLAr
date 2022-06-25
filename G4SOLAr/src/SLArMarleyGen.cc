@@ -85,6 +85,7 @@ void SLArMarleyGen::GeneratePrimaries(G4Event* anEvent)
     vertex->SetPrimary( particle );
   }
 
+
   // The primary vertex has been fully populated with all final-state particles
   // from the MARLEY event. Add it to the G4Event object so that Geant4 can
   // begin tracking the particles through the simulated geometry.
