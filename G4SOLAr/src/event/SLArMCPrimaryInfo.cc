@@ -54,7 +54,7 @@ void SLArMCPrimaryInfo::ResetParticle()
 void SLArMCPrimaryInfo::PrintParticle()
 {
   std::cout << "SLAr Primary Info: " << std::endl;
-  std::cout << "Particle:" << fName << "id: " << fID <<", trk id: " << fTrkID << std::endl;
+  std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
                          << fVertex[1]<< ", " 
