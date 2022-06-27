@@ -384,6 +384,7 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
           evTrajectory->SetParentID(SLArTrj->GetParentID());
           evTrajectory->SetCreatorProcess(SLArTrj->GetCreatorProcess());
           evTrajectory->SetInitKineticEne(SLArTrj->GetInitialKineticEnergy());
+          evTrajectory->SetTime(SLArTrj->GetTime()); 
           // store trajectory points
           size_t npoints = SLArTrj->GetPointEntries(); 
           size_t nedeps = SLArTrj->GetEdep().size();

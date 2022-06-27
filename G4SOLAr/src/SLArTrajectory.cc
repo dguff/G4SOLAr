@@ -25,7 +25,7 @@ G4ThreadLocal G4Allocator<SLArTrajectory>* SLArTrajectoryAllocator = nullptr;
 
 SLArTrajectory::SLArTrajectory()
   :G4Trajectory(),fWls(false),fDrawit(false),
-   fForceNoDraw(false),fForceDraw(false)
+   fForceNoDraw(false),fForceDraw(false), fTime(0.)
 {
   fParticleDefinition = nullptr;
   fEdepContainer.reserve(500);
@@ -34,7 +34,7 @@ SLArTrajectory::SLArTrajectory()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
-  :G4Trajectory(aTrack),fWls(false),fDrawit(false)
+  :G4Trajectory(aTrack),fWls(false),fDrawit(false), fTime(0.)
 {
   fEdepContainer.reserve(500);
   fParticleDefinition=aTrack->GetDefinition();
@@ -54,6 +54,8 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
       }
     }
   }
+  fTime = aTrack->GetGlobalTime(); 
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -42,12 +42,15 @@ class SLArTrajectory : public G4Trajectory
     void SetForceNoDrawTrajectory(G4bool b){fForceNoDraw=b;}
     std::vector<float>& GetEdep() {return fEdepContainer;}
 
+    G4float GetTime() {return fTime;}
+
   private:
     G4bool fWls;
     G4bool fDrawit;
     G4bool fForceNoDraw;
     G4bool fForceDraw;
     G4String fCreatorProcess;
+    G4float fTime;
     G4ParticleDefinition* fParticleDefinition;
     std::vector<float>  fEdepContainer;
 };

@@ -45,6 +45,7 @@ class SLArEventTrajectory : public TObject
     float   GetInitKineticEne() {return fInitKineticEnergy;}
     float   GetTrakLength()     {return fTrackLength    ;}
     TVector3& GetInitMomentum() {return fInitMomentum   ;}
+    float   GetTime()           {return fTime           ;}
 
     void    SetParticleName(TString name)   {fParticleName = name;}
     void    SetCreatorProcess(TString proc) {fCreatorProcess = proc;}
@@ -54,20 +55,22 @@ class SLArEventTrajectory : public TObject
     void    SetInitKineticEne(float k)      {fInitKineticEnergy=k;}
     void    SetTrackLength (float l)        {fTrackLength = l    ;}
     void    SetInitMomentum(TVector3 p)     {fInitMomentum = p   ;}
+    void    SetTime(float t)                {fTime = t           ;}
 
     std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
     void    RegisterPoint(double x, double y, double z, double edep);
 
 
   private:
-    TString               fParticleName     ;
-    TString               fCreatorProcess   ; 
-    int                   fPDGID            ; 
-    int                   fTrackID          ; 
-    int                   fParentID         ; 
-    float                 fInitKineticEnergy;
-    float                 fTrackLength      ; 
-    TVector3              fInitMomentum     ;
+    TString               fParticleName      ;
+    TString               fCreatorProcess    ; 
+    int                   fPDGID             ; 
+    int                   fTrackID           ; 
+    int                   fParentID          ; 
+    float                 fInitKineticEnergy ;
+    float                 fTrackLength       ; 
+    float                 fTime              ; 
+    TVector3              fInitMomentum      ;
     std::vector<trj_point> fTrjPoints        ;
 
   public:
