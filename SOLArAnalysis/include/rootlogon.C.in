@@ -1,0 +1,14 @@
+#include <cstdio>
+#include <iostream>
+
+#include "TSystem.h"
+#include "TInterpreter.h"
+
+void rootlogon() {
+  gInterpreter->AddIncludePath("@G4SOLAR_ANALYSIS_INCLUDE@");
+
+  gInterpreter->Load("@PROJECT_SOURCE_DIR@/../build/src/event/libSLArMCPrimaryInfo.so");
+  gInterpreter->Load("@PROJECT_SOURCE_DIR@/../build/src/event/libSLArMCEvent.so");
+  gInterpreter->Load("@CMAKE_CURRENT_BINARY_DIR@/src/libSLArQReadout.so");
+}
+
