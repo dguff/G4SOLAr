@@ -14,6 +14,8 @@
 #pragma link C++ class std::vector<slarq::cluster_point>+;
 #pragma link C++ class slarq::SLArQCluster+; 
 #pragma link C++ class std::vector<slarq::SLArQCluster*>+;
+#pragma link C++ struct slarq::slarq_axis+; 
+#pragma link C++ class std::vector<slarq::slarq_axis>+; 
 #pragma link C++ class slarq::SLArQReadout+;
 #endif
 

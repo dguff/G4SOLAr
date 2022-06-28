@@ -25,10 +25,11 @@ namespace slarq {
     TString fTitle; 
     double  fXmin; 
     double  fXmax;
+    double  fPitch;
     int     fNbins;
 
     slarq_axis() {}
-    slarq_axis(TString, int, double, double); 
+    slarq_axis(TString, int, double, double, double); 
   };
 
   class SLArQReadout : public TNamed 
@@ -43,6 +44,8 @@ namespace slarq {
       void   ApplySuppressionAndQRec(double thrs); 
       void   BuildHistograms();
 
+      size_t Clustering(); 
+
       double GetQReadoutXminAxis (EAxis kAxis); 
       double GetQReadoutXmaxAxis (EAxis kAxis); 
       double GetQReadoutPitchAxis(EAxis kAxis); 
@@ -54,7 +57,7 @@ namespace slarq {
       THnSparseD* GetQHistN() {return fHQn;}
       int GetEventNr() {return fIEv;}
 
-      void Record(double t, double* x); 
+      void Record(double t, double* x, double w=1); 
       void ResetEvent();
 
       void SetEventNr(int iev) {fIEv = iev;}
@@ -62,6 +65,8 @@ namespace slarq {
           double pitch, TString titl = "");
 
     private: 
+      size_t find_cluster(cluster_point* point); 
+
       int   fIEv;
       TH1D* fHTx; 
       TH2D* fHQyt; 

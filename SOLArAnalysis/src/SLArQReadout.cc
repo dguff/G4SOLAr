@@ -7,27 +7,34 @@
 #include "SLArQReadout.hh"
 #include "SLArQConstants.h"
 
+#include "TRandom3.h"
+
 ClassImp(slarq::SLArQReadout)
 
 namespace slarq {
 
-  slarq_axis::slarq_axis(TString titl, int nb, double xmin, double xmax) {
+  slarq_axis::slarq_axis(TString titl, int nb, double xmin, double xmax, double pitch) {
     fTitle = titl; 
     fNbins = nb;
     fXmin = xmin;
     fXmax = xmax;
+    fPitch = pitch;
   }
 
 
   SLArQReadout::SLArQReadout() 
     : TNamed(), fIEv(-1), fHTx(0), fHQyt(0), fHQzt(0), fHQn(0), 
     fAxis(4, slarq_axis())
-    {}
+  {
+    fClusters.reserve(20); 
+  }
 
   SLArQReadout::SLArQReadout(int iev, const TString name, const TString titl) 
     : TNamed(name, titl), fIEv(iev), fHTx(0), fHQyt(0), fHQzt(0), fHQn(0),
     fAxis(4, slarq_axis())
-  {}
+  {
+    fClusters.reserve(20); 
+  }
 
   SLArQReadout::SLArQReadout(const SLArQReadout& qout) 
     : TNamed(qout), fIEv(qout.fIEv), fHTx(0), fHQyt(0), fHQzt(0), fHQn(0), 
@@ -87,19 +94,19 @@ namespace slarq {
   }
 
   TH1* SLArQReadout::GetHist(EAxis kAxis) {
-    TH1* h = nullptr; 
-    if      (kAxis == kTime) h = fHTx; 
-    else if (kAxis == kY) h = fHQyt; 
-    else if (kAxis == kZ) h = fHQzt; 
+    if      (kAxis == slarq::kTime) return  fHTx; 
+    else if (kAxis == slarq::kY   ) return  fHQyt; 
+    else if (kAxis == slarq::kZ   ) return  fHQzt; 
 
-    return h;
+    return nullptr;
   }
 
   double SLArQReadout::GetQReadoutPitchAxis(EAxis kAxis) {
     double pitch = 0.;
-    if      (kAxis == kTime) pitch = fHTx->GetBinWidth(1); 
-    else if (kAxis == kY) pitch = fHQyt->GetXaxis()->GetBinWidth(1); 
-    else if (kAxis == kZ) pitch = fHQzt->GetXaxis()->GetBinWidth(1); 
+    if      (kAxis == slarq::kTime) pitch = fAxis[kTime].fPitch;
+    else if (kAxis == slarq::kY)    pitch = fAxis[kY].fPitch;
+    else if (kAxis == slarq::kZ)    pitch = fAxis[kZ].fPitch; 
+    else if (kAxis == slarq::kX)    pitch = fAxis[kX].fPitch; 
 
     return pitch;
 
@@ -107,9 +114,10 @@ namespace slarq {
 
   double SLArQReadout::GetQReadoutXminAxis(EAxis kAxis) {
     double xmin = 0.;
-    if      (kAxis == 0) xmin = fHTx->GetXaxis()->GetXmin(); 
-    else if (kAxis == 1) xmin = fHQyt->GetXaxis()->GetXmin(); 
-    else if (kAxis == 2) xmin = fHQzt->GetXaxis()->GetXmin(); 
+    if      (kAxis == slarq::kTime) xmin = fAxis[kTime].fXmin;
+    else if (kAxis == slarq::kY   ) xmin = fAxis[kY].fXmin;
+    else if (kAxis == slarq::kZ   ) xmin = fAxis[kZ].fXmin;
+    else if (kAxis == slarq::kX   ) xmin = fAxis[kX].fXmin;
 
     return xmin;
 
@@ -117,9 +125,10 @@ namespace slarq {
 
   double SLArQReadout::GetQReadoutXmaxAxis(EAxis kAxis) {
     double xmax = 0.;
-    if      (kAxis == 0) xmax = fHTx->GetXaxis()->GetXmax(); 
-    else if (kAxis == 1) xmax = fHQyt->GetXaxis()->GetXmax(); 
-    else if (kAxis == 2) xmax = fHQzt->GetXaxis()->GetXmax(); 
+    if      (kAxis == slarq::kTime) xmax = fAxis[kTime].fXmax;
+    else if (kAxis == slarq::kY   ) xmax = fAxis[kY].fXmax;
+    else if (kAxis == slarq::kZ   ) xmax = fAxis[kZ].fXmax;
+    else if (kAxis == slarq::kX   ) xmax = fAxis[kX].fXmax;
 
     return xmax;
 
@@ -127,12 +136,13 @@ namespace slarq {
 
   void SLArQReadout::SetReadoutAxis(EAxis kAxis, double xmin, double xmax, 
       double pitch, TString title) {
-   
+
     int N = (xmax - xmin) / pitch; 
     fAxis[kAxis].fXmin = xmin; 
     fAxis[kAxis].fXmax = xmin + N*pitch;
     fAxis[kAxis].fNbins = N; 
     fAxis[kAxis].fTitle = title; 
+    fAxis[kAxis].fPitch = pitch; 
 
     return;
   }
@@ -165,11 +175,19 @@ namespace slarq {
     htitl = Form("%s;%s;%s;%s", hname.Data(), 
         fAxis[kX].fTitle.Data(), fAxis[kY].fTitle.Data(), fAxis[kZ].fTitle.Data());
     int bin_[3]; double xmin_[3]; double xmax_[3]; 
-    for (int ii=0; ii<3; ii++) {
-      bin_[ii] = fAxis[ii].fNbins; 
-      xmin_[ii] = fAxis[ii].fXmin; 
-      xmax_[ii] = fAxis[ii].fXmax; 
-    }
+
+    bin_ [0] = fAxis[kX].fNbins; 
+    xmin_[0] = fAxis[kX].fXmin;  
+    xmax_[0] = fAxis[kX].fXmax;  
+
+    bin_ [1] = fAxis[kY].fNbins;   
+    xmin_[1] = fAxis[kY].fXmin;    
+    xmax_[1] = fAxis[kY].fXmax;    
+
+    bin_ [2] = fAxis[kZ].fNbins; 
+    xmin_[2] = fAxis[kZ].fXmin; 
+    xmax_[2] = fAxis[kZ].fXmax; 
+
     fHQn = new THnSparseD(hname, htitl, 3, bin_, xmin_, xmax_);  
   }
 
@@ -194,15 +212,15 @@ namespace slarq {
     return qtot;
   }
 
-  void SLArQReadout::Record(double t, double* xx) {
+  void SLArQReadout::Record(double t, double* xx, double w) {
     fHTx->Fill(t);
-    fHQyt->Fill(xx[1], t); 
-    fHQzt->Fill(xx[2], t); 
-    fHQn->Fill(xx); 
+    fHQyt->Fill(xx[1], t, w); 
+    fHQzt->Fill(xx[2], t, w); 
+    fHQn->Fill(xx, w); 
   }
 
   void SLArQReadout::ApplySuppressionAndQRec(double thrs) {
-    
+
     double bc = 0.; 
 
     for (int ix =1; ix < fHQyt->GetNbinsX(); ix++) {
@@ -216,7 +234,7 @@ namespace slarq {
         }
       }
     }
-    
+
     for (int ix =1; ix < fHQzt->GetNbinsX(); ix++) {
       for (int iy =1; iy < fHQzt->GetNbinsY(); iy++) {
         bc = fHQzt->GetBinContent(ix, iy);
@@ -232,17 +250,140 @@ namespace slarq {
     auto it = fHQn->CreateIter(false); 
     int ibin_[3] = {0};
     Long64_t ibin = 0; 
-    while ( (ibin = it->Next()) != 0) { 
+    while ( (ibin = it->Next()) >= 0) { 
       bc = fHQn->GetBinContent(ibin, ibin_);
-      if (bc < thrs) 
+      if (bc < thrs) {
+        //printf("setting bin content to 0..."); 
         fHQn->SetBinContent(ibin, 0.); 
+        //printf(" DONE\n");
+      }
       else {
         double t_ = fHQn->GetAxis(0)->GetBinCenter(ibin_[0]) / Vdrift; 
+        //printf("correcting charge for recombination effect (t = %.2f μs)...", 
+        //t_); 
         fHQn->SetBinContent(ibin, bc * exp( t_ / Elifetime )); 
+        //printf(" DONE\n"); 
       }
     }
 
     return;
   }
 
+  size_t SLArQReadout::Clustering() {
+    THnSparseD* maincluster = (THnSparseD*)fHQn->Clone("main_cluster");
+    const int h_rank = maincluster->GetNdimensions(); 
+    std::vector<int> idx(h_rank, 0); 
+    std::vector<int> idx_(h_rank, 0.); 
+    std::vector<double> xbin(h_rank, 0.); 
+    std::vector<double> bw(h_rank, 0.);
+    for (int k=0; k<h_rank; k++) {
+      bw[k] = maincluster->GetAxis(k)->GetBinWidth(10); 
+    } 
+
+    auto iti = maincluster->CreateIter(false);
+    Long64_t b =0;
+    int n_max_trials = 5;
+
+    while((b=iti->Next()) >=0 ){
+      double q = maincluster->GetBinContent(b, &idx[0]); 
+      double q_= 0.; 
+
+      bool bin_found = true; 
+      int n_trial = 0; 
+
+      while (bin_found || n_trial < n_max_trials) {
+
+        bin_found = false;
+        size_t cluster_id = 0;
+
+        for (int idim=0; idim<3; idim++) {
+          idx_ = idx; // set temporary idexes to current bin
+
+          for (int delta_ = -2; delta_ <3; delta_++) {
+            // scan the neighborhood of the current bin along the idim-axis
+            idx_[idim] = idx[idim]+delta_; 
+            q_ = maincluster->GetBinContent(&idx_[0]); 
+            if (q_ > 10) {
+              cluster_point point; 
+              point.fBin = maincluster->GetBin(&idx_[0]); 
+              for (int jdim=0; jdim<3; jdim++) {
+                xbin[jdim] = maincluster->GetAxis(jdim)->GetBinCenter(idx_[jdim]);
+              }
+              point.fPos.SetXYZ(xbin[0], xbin[1], xbin[2]); 
+              point.fCharge = q_;
+
+              cluster_id = find_cluster(&point);
+
+              // set the bin content to zero to prevent double-counting
+              maincluster->SetBinContent(point.fBin, 0.); 
+
+              bin_found = true;
+            }
+          }
+        }
+
+        printf("fClusters size = %lu - cluster id = %lu\n", fClusters.size(), cluster_id); 
+        double n_points = fClusters[cluster_id]->get_points().size(); 
+        auto item = fClusters[cluster_id]->get_points().begin();
+        if (gRandom->Rndm() > 0.5) {
+          // look around the HEAD
+          int p_rndm = TMath::Min(5*gRandom->Rndm(), n_points-1); 
+          //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
+          std::advance( item, p_rndm);
+        } else {
+          // look around the TAIL
+          int p_rndm = TMath::Max(0., n_points - 5*gRandom->Rndm()-1);
+          //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
+          std::advance( item, p_rndm ); 
+        }
+
+        //std::cout << "switch to bin " << item->fBin << std::endl;
+        maincluster->GetBinContent(item->fBin, &idx[0]); 
+        n_trial++;
+        //printf("bin_found = %i, n_trial = %i\n", (int)bin_found, n_trial); 
+      }
+
+    }
+
+    delete maincluster; 
+    return fClusters.size(); 
+  }
+
+  size_t SLArQReadout::find_cluster(cluster_point* point) {
+    const double dmax = 15; 
+
+    if (fClusters.size() == 0) {
+      SLArQCluster* clstr = new SLArQCluster(0); 
+      clstr->register_point(*point); 
+      printf("creating new cluster: adding bin %i to cluster %lu[%lu]\n", 
+          (int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
+      fClusters.push_back(clstr);
+      return clstr->get_id();
+    } else {
+      for (auto clstr : fClusters) {
+        if ( clstr->is_registered(point->fBin) ) {
+          printf("bin %i is already registered in cluster %lu\n", 
+              (int)point->fBin, clstr->get_id()); 
+          return 666;
+        }
+        for (const auto &clstr_point : clstr->get_points()) {
+          double dist2 = (point->fPos - clstr_point.fPos).Mag2();
+          if (dist2 <= dmax*dmax) {
+            printf("adding bin %i to cluster %lu[%lu]\n", 
+                (int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
+            clstr->register_point(*point);
+            return clstr->get_id();
+          }
+        }
+      }
+      SLArQCluster* clstr = new SLArQCluster( fClusters.back()->get_id()+1 ); 
+      clstr->register_point(*point); 
+      printf("creating new cluster %lu for bin %i\n", 
+          clstr->get_id(), (int)point->fBin ); 
+
+      fClusters.push_back(clstr);
+
+      return clstr->get_id();
+    }
+  }
 }
