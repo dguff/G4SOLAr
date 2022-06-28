@@ -19,4 +19,15 @@ add_library(SLArQReadout
   )
 target_link_libraries(SLArQReadout ${ROOT_LIBRARIES})
 
+ROOT_GENERATE_DICTIONARY(SLArQDiffusionDict
+  ${PROJECT_SOURCE_DIR}/include/SLArQDiffusion.hh
+  LINKDEF
+  ${PROJECT_SOURCE_DIR}/include/SLArQDiffusionLinkDef.h)
+
+add_library(SLArQDiffusion
+  SHARED
+  ${PROJECT_SOURCE_DIR}/src/SLArQDiffusion.cc
+  SLArQDiffusionDict.cxx
+  )
+target_link_libraries(SLArQDiffusion ${ROOT_LIBRARIES} SLArQReadout ${SLArMCPrimaryInfo})
 
