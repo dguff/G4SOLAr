@@ -21,6 +21,7 @@
 
 #include "SLArQConstants.h"
 #include "SLArQReadout.hh"
+#include "SLArQDiffusion.hh"
                                    
 
 //***********************************************
@@ -28,17 +29,6 @@
 double view_event(SLArMCEvent* ev, bool do_draw = false);
 double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev); 
 
-float Ldiffusion(float l) {
-  double t = l / Vdrift; //μs
-  float Ldiff = sqrt(2 * Dlong * t ); //mm
-  return Ldiff;
-}
-
-float Tdiffusion(float l){
-  double t = l / Vdrift; //s
-  float Tdiff = sqrt(2 * Dtrns * t ); //mm
-  return Tdiff;
-}
 
 int analyze_file(const char* path, bool do_draw = false) {
 
@@ -56,7 +46,7 @@ int analyze_file(const char* path, bool do_draw = false) {
   TTree* qtree = new TTree("qtree", "charge readout tree"); 
 
   slarq::SLArQReadout* ev_q = new slarq::SLArQReadout(0, "ev_q");
-  ev_q->SetReadoutAxis(slarq::kTime, 0, 800, 0.2, "Time [#mus]"); 
+  ev_q->SetReadoutAxis(slarq::kTime, 0, 800, 1.874, "Time [#mus]"); 
   ev_q->SetReadoutAxis(slarq::kX, 0., 1.2e3, 3.0, "#it{x} [mm]"); 
   ev_q->SetReadoutAxis(slarq::kY, 0., 2.3e3, 3.0, "#it{y} [mm]"); 
   ev_q->SetReadoutAxis(slarq::kZ, 0., 6.0e3, 3.0, "#it{z} [mm]"); 
@@ -64,46 +54,37 @@ int analyze_file(const char* path, bool do_draw = false) {
   ev_q->BuildHistograms();
   qtree->Branch("qreadout", &ev_q); 
 
-  TH1D* h1 = new TH1D("h1", "Energy deposit;Energy [MeV];Entries", 500, 0, 15); 
-
-  for (int iev = 0; iev<t->GetEntries(); iev++) {
-    if (iev%100 == 0) {
+  for (int iev = 0; iev<1000; iev++) {
+    if (iev%20 == 0) {
       printf("processing ev %i (%.2f%%)\n", iev,  100*iev / (double)t->GetEntries()); 
     }
     t->GetEntry(iev); 
 
     ev_q->SetEventNr(iev); 
+    double te = 0.; 
+    for (const auto &p : ev->GetPrimaries()) {
+      te += p->GetTotalEdep(); 
+    }
 
     double qtot = q_diff_and_record(ev, ev_q); 
 
-    h1->Fill(qtot); 
+    //printf("qtot = %g - expected = %g [%g MeV]\n", qtot, te / W, te);
+    //ev_q->Clustering(); 
+
+    qtree->Fill(); 
 
     ev_q->ResetEvent(); 
   }
 
+  qtree->Write(); 
+  file_out->Close(); 
 
-  TCanvas* cEne = new TCanvas(); 
-  h1->Draw("hist"); 
-
-  return h1->GetEntries();
+  return 1.;
 }
 
 double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
-  // ----------------------------------------------------
-  // Variables definitions: (q = nr of electrons)
-  double q_ev_true = 0.; //!< "true" nr of e created
-  double q_ev_obs  = 0.; //!< nr of electrons detected
-  double q_ev_rec  = 0.; //!< nr of electrons reconstructed (after recombination corr)
-
-  double q_step_true = 0.; //!< nr of electrons produced in the step
-  double q_step_true_exp = 0.; //!< expected nr of electrons in the step
-  double q_step_obs  = 0.; //!< nr of electrons detected in the step
-  double q_step_obs_exp = 0.;  //!< expected value of electrons detected in the step
-  double q_step_rec  = 0.; //!< nr of electrons reconstructed (after recombination corr) 
-
-  double xx[3] = {0};
-
   auto primaries = ev->GetPrimaries(); 
+  double q_ev_obs = 0.;
 
   size_t ip = 0; 
   for (const auto &p : primaries) {
@@ -112,31 +93,16 @@ double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
     //printf("%lu associated trajectories\n", trajectories.size()); 
     int itrj = 0;
 
+    slarq::SLArQDiffusion diff; 
+
     if (trajectories.size() > 0) {
       for (const auto &trj : trajectories) {
         //printf("trajectory %i has %lu points\n", itrj, trj->GetPoints().size()); 
         if (trj->GetPoints().size() > 0) {
           for (const auto &tp : trj->GetPoints()) {
-            double t = (tp.fX / Vdrift); //μs           
-
-            q_step_true_exp = (tp.fEdep / W);
-            q_step_true     = (int)gRandom->Poisson(q_step_true_exp); 
-            q_step_obs_exp = q_step_true * exp(-t / Elifetime);
-            q_step_obs = (int)gRandom->Poisson(q_step_obs_exp);
-
-            double reco_weight = exp( t / Elifetime ); 
-
-            for (int iq = 0; iq<q_step_obs; iq++) {
-              xx[0] = t * Vdrift + gRandom->Gaus(0., Ldiffusion(tp.fX)); 
-              xx[1] = tp.fY + gRandom->Gaus(0., Tdiffusion(tp.fX)); 
-              xx[2] = tp.fZ + gRandom->Gaus(0., Tdiffusion(tp.fX));
-
-              qev->Record( Vdrift / xx[0], xx); 
-            }
-
-            primary_edep += tp.fEdep; 
+            double q = diff.DiffuseAnalytical(&tp,  qev); 
+            primary_edep += q;
           }
-
         }
 
         itrj++;
@@ -150,6 +116,18 @@ double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
   qev->ApplySuppressionAndQRec(100); 
 
   return q_ev_obs; 
+}
+
+int main(int argc, const char* argv[]) {
+  
+  if (argc == 1) {
+    printf("please specify input file path\n"); 
+    return 0; 
+  }
+
+  double q = analyze_file(argv[1], false); 
+
+  return 1; 
 }
 
 double view_event(SLArMCEvent* ev, bool do_draw) 

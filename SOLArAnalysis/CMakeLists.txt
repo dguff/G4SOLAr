@@ -53,7 +53,8 @@ configure_file(${G4SOLAR_ANALYSIS_INCLUDE}/rootlogon.C.in ${PROJECT_SOURCE_DIR}/
 add_subdirectory(${G4SOLAR_ANALYSIS_SRC})
 
 #----------------------------------------------------------------------------
-# Add the executable, and link it to the Geant4 libraries
+# Add the executable, and link it to the required libraries
+add_subdirectory(${G4SOLAR_ANALYSIS_MACROS})
 #
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
