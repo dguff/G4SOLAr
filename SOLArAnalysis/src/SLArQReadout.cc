@@ -7,6 +7,7 @@
 #include "SLArQReadout.hh"
 #include "SLArQConstants.h"
 
+#include "TStyle.h"
 #include "TRandom3.h"
 
 ClassImp(slarq::SLArQReadout)
@@ -77,7 +78,7 @@ namespace slarq {
     fClusters.clear(); 
   }
 
-  SLArQCluster* SLArQReadout::GetMaxClusters() {
+  SLArQCluster* SLArQReadout::GetMaxCluster() {
     size_t iclmax = 0 ; 
     double q_tmp  = 0.;
 
@@ -91,6 +92,47 @@ namespace slarq {
     }
 
     return fClusters.at(icl); 
+  }
+
+  TH3D* SLArQReadout::GetMaxClusterHist() {
+    TH3D* h = fHQn->Projection(0, 1, 2); 
+    h->Reset(); 
+    auto max_cluster = GetMaxCluster(); 
+    h->SetName(Form("ev_%i_cluster_%lu_h3", fIEv, max_cluster->get_id())); 
+    max_cluster->set_cluster_hist(h); 
+    return h; 
+  }
+
+  std::vector<TH3D*> SLArQReadout::GetClusterHists() {
+    gStyle->SetPalette(kRainBow); 
+    const size_t ncols = 10; 
+    Color_t cols[ncols]; 
+    for (size_t icol = 0; icol <ncols; icol++) {
+      cols[icol] = gStyle->GetColorPalette(icol *255 / ncols); 
+    }
+
+    gStyle->SetPalette(kSunset); 
+
+
+    std::vector<TH3D*> hcluster(fClusters.size(), nullptr); 
+    size_t icl = 0; 
+    for (const auto &cluster : fClusters) {
+      hcluster[icl] = fHQn->Projection(0, 1, 2); 
+      hcluster[icl]->Reset(); 
+      hcluster[icl]->SetName(Form("ev_%i_cluster_%lu_h3", fIEv, cluster->get_id())); 
+      cluster->set_cluster_hist(hcluster[icl]);
+      hcluster[icl]->SetLineWidth(2); 
+      if (icl < ncols) {
+        hcluster[icl]->SetFillColor(cols[icl]);
+      } else {
+        hcluster[icl]->SetFillColor(cols[ncols-1]); 
+      }
+      hcluster[icl]->SetLineColor(kBlack); 
+
+      icl++;
+    }
+
+    return hcluster;
   }
 
   TH1* SLArQReadout::GetHist(EAxis kAxis) {
@@ -197,10 +239,15 @@ namespace slarq {
     }
     fClusters.clear(); 
 
-    if (fHTx ) fHTx->Reset(); 
+    if (fHTx ) fHTx ->Reset(); 
     if (fHQyt) fHQyt->Reset(); 
     if (fHQzt) fHQzt->Reset(); 
-    if (fHQn ) fHQn->Reset(); 
+    if (fHQn ) {
+      for (int i=0; i<3; i++) {
+        fHQn->GetAxis(i)->SetRange(); 
+      }
+      fHQn ->Reset(); 
+    }
 
     return;
   }
@@ -270,6 +317,9 @@ namespace slarq {
   }
 
   size_t SLArQReadout::Clustering() {
+
+    adjust_hn_range();
+
     THnSparseD* maincluster = (THnSparseD*)fHQn->Clone("main_cluster");
     const int h_rank = maincluster->GetNdimensions(); 
     std::vector<int> idx(h_rank, 0); 
@@ -322,7 +372,7 @@ namespace slarq {
           }
         }
 
-        printf("fClusters size = %lu - cluster id = %lu\n", fClusters.size(), cluster_id); 
+        //printf("fClusters size = %lu - cluster id = %lu\n", fClusters.size(), cluster_id); 
         double n_points = fClusters[cluster_id]->get_points().size(); 
         auto item = fClusters[cluster_id]->get_points().begin();
         if (gRandom->Rndm() > 0.5) {
@@ -355,22 +405,22 @@ namespace slarq {
     if (fClusters.size() == 0) {
       SLArQCluster* clstr = new SLArQCluster(0); 
       clstr->register_point(*point); 
-      printf("creating new cluster: adding bin %i to cluster %lu[%lu]\n", 
-          (int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
+      //printf("creating new cluster: adding bin %i to cluster %lu[%lu]\n", 
+          //(int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
       fClusters.push_back(clstr);
       return clstr->get_id();
     } else {
       for (auto clstr : fClusters) {
         if ( clstr->is_registered(point->fBin) ) {
-          printf("bin %i is already registered in cluster %lu\n", 
-              (int)point->fBin, clstr->get_id()); 
+          //printf("bin %i is already registered in cluster %lu\n", 
+              //(int)point->fBin, clstr->get_id()); 
           return 666;
         }
         for (const auto &clstr_point : clstr->get_points()) {
           double dist2 = (point->fPos - clstr_point.fPos).Mag2();
           if (dist2 <= dmax*dmax) {
-            printf("adding bin %i to cluster %lu[%lu]\n", 
-                (int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
+            //printf("adding bin %i to cluster %lu[%lu]\n", 
+                //(int)point->fBin, clstr->get_id(), clstr->get_points().size()); 
             clstr->register_point(*point);
             return clstr->get_id();
           }
@@ -378,12 +428,28 @@ namespace slarq {
       }
       SLArQCluster* clstr = new SLArQCluster( fClusters.back()->get_id()+1 ); 
       clstr->register_point(*point); 
-      printf("creating new cluster %lu for bin %i\n", 
-          clstr->get_id(), (int)point->fBin ); 
+      //printf("creating new cluster %lu for bin %i\n", 
+          //clstr->get_id(), (int)point->fBin ); 
 
       fClusters.push_back(clstr);
 
       return clstr->get_id();
     }
   }
+
+  void SLArQReadout::adjust_hn_range() {
+    int xmin[3]; int xmax[3]; 
+    for (int ik=0; ik<3; ik++) {
+      TH1D* h_tmp = fHQn->Projection(ik);
+      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(10));
+      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove(10));
+
+      fHQn->GetAxis(ik)->SetRangeUser(xmin[ik]-1,xmax[ik]+1);
+      delete h_tmp;
+    }
+   
+    return;
+  }
+
+
 }

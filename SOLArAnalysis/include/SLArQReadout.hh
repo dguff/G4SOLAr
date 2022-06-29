@@ -52,7 +52,9 @@ namespace slarq {
 
       double GetTotalCharge(); 
       std::vector<SLArQCluster*>& GetClusters() {return fClusters;}
-      SLArQCluster* GetMaxClusters(); 
+      std::vector<TH3D*> GetClusterHists(); 
+      SLArQCluster* GetMaxCluster(); 
+      TH3D* GetMaxClusterHist();
       TH1* GetHist(EAxis kAxis);
       THnSparseD* GetQHistN() {return fHQn;}
       int GetEventNr() {return fIEv;}
@@ -65,6 +67,7 @@ namespace slarq {
           double pitch, TString titl = "");
 
     private: 
+      void   adjust_hn_range(); 
       size_t find_cluster(cluster_point* point); 
 
       int   fIEv;
