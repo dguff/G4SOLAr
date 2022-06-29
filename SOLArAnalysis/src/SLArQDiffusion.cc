@@ -5,6 +5,7 @@
  */
 
 #include "SLArQDiffusion.hh"
+#include <type_traits>
 
 namespace slarq {
   double xshift[3] = {300., 1000., 1500.}; 
@@ -32,7 +33,12 @@ namespace slarq {
     xloc[0] = tpt->fX + xshift[0]; 
     xloc[1] = tpt->fY + xshift[1]; 
     xloc[2] = tpt->fZ + xshift[2]; 
-    if (xloc[0]*xloc[1]*xloc[2] <=0) return 0.; 
+    if (xloc[0]*xloc[1]*xloc[2] <=0) {
+      std::cerr << "SLArQDiffusion::DiffuseRandom: " 
+             << "WARNING trajectory point coordinate is negative!" << std::endl;
+      std::cerr << "x: " << xloc[0] << " - y: " << xloc[1] << " - z: " << xloc[2] << std::endl;
+      return 0.;
+    }
 
     double t = (xloc[0]/ Vdrift); //μs           
 
@@ -46,12 +52,15 @@ namespace slarq {
     double xx[3] = {0.}; 
 
     for (int iq = 0; iq<q_step_obs; iq++) {
-      xx[0] = t * Vdrift + gRandom->Gaus(0., Ldiffusion(xloc[0])); 
+      xx[0] = xloc[0] + gRandom->Gaus(0., Ldiffusion(xloc[0])); 
       xx[1] = xloc[1] + gRandom->Gaus(0., Tdiffusion(xloc[0])); 
       xx[2] = xloc[2] + gRandom->Gaus(0., Tdiffusion(xloc[0]));
 
-      qev->Record( Vdrift / xx[0], xx); 
+      qev->Record( xx[0] / Vdrift, xx); 
     }
+
+    //printf("tp [%.2f, %.2f, %.2f] : Edep = %g -> q_step_obs = %g\n", 
+        //xloc[0], xloc[1], xloc[2], tpt->fEdep, q_step_obs); 
 
     return q_step_obs; 
   }
