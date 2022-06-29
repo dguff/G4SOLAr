@@ -14,7 +14,6 @@
 #include "TMath.h"
 
 #include "config/SLArCfgSuperCell.hh"
-#include "G4UIcommand.hh"
 
 SLArCfgSuperCell::SLArCfgSuperCell() : 
   fIdx(-1), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
