@@ -63,9 +63,6 @@ SLArSteppingAction::~SLArSteppingAction()
 
 void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 {
-  G4int eventNumber = G4RunManager::GetRunManager()->
-    GetCurrentEvent()->GetEventID();
-
   G4Track* track = step->GetTrack();
 
   G4String ParticleName = track->GetDynamicParticle()->
@@ -80,7 +77,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
   SLArTrajectory* trajectory =
     (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
   double edep = step->GetTotalEnergyDeposit();
-  trajectory->GetEdep().push_back(edep);
+  trajectory->AddEdep(edep);
 
 
   const std::vector<const G4Track*>* secondaries =
@@ -116,6 +113,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
  *  }
  *
  */
+
   if (!thePostPV) return;
 
   G4OpBoundaryProcessStatus boundaryStatus=Undefined;
