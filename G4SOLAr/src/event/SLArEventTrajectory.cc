@@ -30,3 +30,10 @@ void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double ede
   return;
 }
 
+float SLArEventTrajectory::GetTotalEdep() { 
+  float edep = 0.; 
+  for (const auto &pt : fTrjPoints) {
+    edep += pt.fEdep; 
+  }             
+  return edep; 
+}

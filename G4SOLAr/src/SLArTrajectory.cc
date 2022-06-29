@@ -55,7 +55,6 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
     }
   }
   fTime = aTrack->GetGlobalTime(); 
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

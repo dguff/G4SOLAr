@@ -46,6 +46,7 @@ class SLArEventTrajectory : public TObject
     float   GetTrakLength()     {return fTrackLength    ;}
     TVector3& GetInitMomentum() {return fInitMomentum   ;}
     float   GetTime()           {return fTime           ;}
+    float   GetTotalEdep(); 
 
     void    SetParticleName(TString name)   {fParticleName = name;}
     void    SetCreatorProcess(TString proc) {fCreatorProcess = proc;}

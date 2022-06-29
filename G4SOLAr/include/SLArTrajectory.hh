@@ -35,6 +35,8 @@ class SLArTrajectory : public G4Trajectory
     inline void* operator new(size_t);
     inline void  operator delete(void*);
 
+    void AddEdep(G4double edep) {fEdepContainer.push_back(edep);}; 
+
     G4String GetCreatorProcess() {return fCreatorProcess;}
     void SetDrawTrajectory(G4bool b){fDrawit=b;}
     void WLS(){fWls=true;}
