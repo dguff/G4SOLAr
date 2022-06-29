@@ -50,5 +50,17 @@ namespace slarq {
 
     return false;
   }
+
+  void  SLArQCluster::set_cluster_hist(TH3* h) {
+    for (const auto &point : fPoints) {
+      h->Fill(
+          point.fPos.x(), 
+          point.fPos.y(), 
+          point.fPos.z(),
+          point.fCharge);
+    }
+
+    return;
+  }
 }
 
