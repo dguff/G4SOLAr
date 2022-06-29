@@ -125,27 +125,6 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBulkName(fVolumeName);
     }
     fDecay0Gen->GeneratePrimaries(anEvent); 
-
-
-    G4int n = anEvent->GetNumberOfPrimaryVertex(); 
-    for (int i=0; i<n; i++) {
-      SLArMCPrimaryInfo tc_primary;
-
-      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary();
-      tc_primary.SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
-      tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
-          anEvent->GetPrimaryVertex(i)->GetY0(), 
-          anEvent->GetPrimaryVertex(i)->GetZ0());
-      tc_primary.SetMomentum(
-          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
-          particle->GetKineticEnergy());
-
-      SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
-    }
-    
-    return;
   } else if (fGunMode == kMarley) {
     if (!fMarleyGen) {
       fMarleyGen = new SLArMarleyGen(fMarleyCfg.c_str()); 
@@ -159,46 +138,6 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBulkName(fVolumeName); 
     }
     fMarleyGen->GeneratePrimaries(anEvent); 
-
-    G4int n = anEvent->GetNumberOfPrimaryVertex(); 
-    
-    //printf("MARLEY produced %i vertex(ices)\n", n); 
-    for (int i=0; i<n; i++) {
-      SLArMCPrimaryInfo tc_primary;
-
-      G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
-      //printf("MARLEY vertex %i has %i particles \n", n, np); 
-      for (int ip = 0; ip<np; ip++) {
-        //printf("getting particle %i...\n", ip); 
-        auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
-
-        if (!particle->GetParticleDefinition()) {
-          tc_primary.SetID  (particle->GetPDGcode()); 
-          tc_primary.SetName("Ion");
-        } else {
-          tc_primary.SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
-          tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
-
-        }
-        tc_primary.SetTrackID(particle->GetTrackID());
-        tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
-            anEvent->GetPrimaryVertex(i)->GetY0(), 
-            anEvent->GetPrimaryVertex(i)->GetZ0());
-        tc_primary.SetMomentum(
-            particle->GetPx(), particle->GetPy(), particle->GetPz(), 
-            particle->GetKineticEnergy());
-
-        //printf("Adding particle to primary output list\n"); 
-        //tc_primary.PrintParticle(); 
-        SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
-      }
-    }
-
-    //printf("\nSLArPrimaryGeneratorAction::GeneratePrimaries - MARLEY\n");
-    //printf("primary list:\n"); 
-    //for (const auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
-      //p->PrintParticle(); 
-    //}
   }
   else {
     G4ThreeVector pos(0, 0, 0);
@@ -206,26 +145,52 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticlePosition(pos);
     // Set gun direction
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
-    // Store Primary information id dst
-    SLArMCPrimaryInfo tc_primary; 
-
-    tc_primary.SetID( fParticleGun->GetParticleDefinition()
-        ->GetParticleDefinitionID());
-    tc_primary.SetName(fParticleGun->GetParticleDefinition()
-        ->GetParticleName());
-    tc_primary.SetPosition(fParticleGun->GetParticlePosition().getX(),
-        fParticleGun->GetParticlePosition().getY(),
-        fParticleGun->GetParticlePosition().getZ());
-    tc_primary.SetMomentum(fParticleGun->GetParticleMomentumDirection().getX(), 
-        fParticleGun->GetParticleMomentumDirection().getY(), 
-        fParticleGun->GetParticleMomentumDirection().getZ(), 
-        fParticleGun->GetParticleEnergy());
-    SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
-
+    // Generate primary vertex
     fParticleGun->GeneratePrimaryVertex(anEvent);
+    // Store Primary information id dst
   }
 
+  G4int n = anEvent->GetNumberOfPrimaryVertex(); 
 
+  //printf("Primary Generator Action produced %i vertex(ices)\n", n); 
+  for (int i=0; i<n; i++) {
+    SLArMCPrimaryInfo tc_primary;
+
+    G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
+    //printf("vertex %i has %i particles \n", n, np); 
+    for (int ip = 0; ip<np; ip++) {
+      //printf("getting particle %i...\n", ip); 
+      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
+
+      if (!particle->GetParticleDefinition()) {
+        tc_primary.SetID  (particle->GetPDGcode()); 
+        tc_primary.SetName("Ion");
+      } else {
+        tc_primary.SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
+        tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
+
+      }
+      tc_primary.SetTrackID(particle->GetTrackID());
+      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+          anEvent->GetPrimaryVertex(i)->GetY0(), 
+          anEvent->GetPrimaryVertex(i)->GetZ0());
+      tc_primary.SetMomentum(
+          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+          particle->GetKineticEnergy());
+
+      //printf("Adding particle to primary output list\n"); 
+      //tc_primary.PrintParticle(); 
+      SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
+    }
+  }
+
+  //printf("\nSLArPrimaryGeneratorAction::GeneratePrimaries - MARLEY\n");
+  //printf("primary list:\n"); 
+  //for (const auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
+  //p->PrintParticle(); 
+  //}
+
+  return;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
