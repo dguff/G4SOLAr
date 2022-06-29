@@ -363,8 +363,6 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
     SLArTankHit* hit = (*hHC1)[0];
     fTotEdep = hit->GetDepositedEnergy();
 
-    SLArAnaMgr->GetEvent()->GetPrimaries().front()->SetTotalEdep(fTotEdep);
-
     G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
     if (trj_cont)
     {
@@ -386,8 +384,8 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
           evTrajectory->SetInitKineticEne(SLArTrj->GetInitialKineticEnergy());
           evTrajectory->SetTime(SLArTrj->GetTime()); 
           // store trajectory points
-          size_t npoints = SLArTrj->GetPointEntries(); 
-          size_t nedeps = SLArTrj->GetEdep().size();
+          //size_t npoints = SLArTrj->GetPointEntries(); 
+          //size_t nedeps = SLArTrj->GetEdep().size();
           /*
            *if ( npoints != nedeps) {
            *  printf("SLArEventAction::RecordEventTarget WARNING:\n");
@@ -395,6 +393,8 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
            *      npoints, nedeps);
            *}
            */
+          G4double trj_edep = 0; 
+          for (const auto &edep : SLArTrj->GetEdep()) trj_edep += edep; 
           float edep = 0; 
           for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
             (n == 0) ? edep = 0 : edep = SLArTrj->GetEdep().at(n-1);
@@ -411,8 +411,16 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
             if (SLArTrj->GetTrackID() == primary->GetTrackID() || 
                 SLArTrj->GetParentID() == primary->GetTrackID()) {
               primary->RegisterTrajectory(evTrajectory);
+            } else {
+              auto slar_trjs = primary->GetTrajectories(); 
+              for (const auto &strj : slar_trjs) {
+                if (strj->GetTrackID() == SLArTrj->GetParentID()) {
+                  primary->RegisterTrajectory(evTrajectory); 
+                }
+              }
             }
-          }
+
+          }    
         }  
 
       } 
