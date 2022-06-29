@@ -106,7 +106,7 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn));
   RegisterPhysics(new G4RadioactiveDecayPhysics());
-  RegisterPhysics(new G4EmLivermorePhysics());
+  ReplacePhysics(new G4EmLivermorePhysics());
 
   fStepMaxProcess = new SLArStepMax();
 }
