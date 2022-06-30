@@ -62,5 +62,33 @@ namespace slarq {
 
     return;
   }
+
+  void  SLArQCluster::set_cluster_hist(THnBase* hn) {
+    double xx[3] = {0.};
+    for (const auto &point : fPoints) {
+      xx[0] = point.fPos.x(); 
+      xx[1] = point.fPos.y(); 
+      xx[2] = point.fPos.z();  
+      hn->Fill(xx, point.fCharge);
+    }
+
+    adjust_h_range(hn); 
+
+    return;
+  }
+
+  void SLArQCluster::adjust_h_range(THnBase* hn) {
+    int xmin[3]; int xmax[3]; 
+    printf("SLArQCluster::adjust_h_range: hn has dimension %i\n", hn->GetNdimensions()); 
+    for (int ik=0; ik<3; ik++) {
+      TH1D* h_tmp = hn->Projection(ik);
+      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(10));
+      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove(10));
+
+      hn->GetAxis(ik)->SetRangeUser(xmin[ik]-1,xmax[ik]+1);
+      delete h_tmp;
+    }
+    return;
+  }
 }
 

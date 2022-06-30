@@ -15,7 +15,9 @@
 #include "Math/DisplacementVector3D.h"
 #include "Math/Vector3D.h"
 #include "Math/Point3D.h"
+#include "Math/RotationZYX.h"
 #include "TH3D.h"
+#include "THnBase.h"
 
 namespace slarq {
   typedef ROOT::Math::XYZPointF SLArQSpatialPoint;
@@ -49,7 +51,8 @@ namespace slarq {
 
       bool is_registered(Long64_t ibin); 
 
-      void set_cluster_hist(TH3* h); 
+      void set_cluster_hist(TH3* h);
+      void set_cluster_hist(THnBase* hn);
       void register_point(double* x, int ibin, double q);
       void register_point(cluster_point point);
 
@@ -57,6 +60,8 @@ namespace slarq {
       size_t fID; 
       double fCharge;
       std::vector<cluster_point> fPoints;
+
+      void adjust_h_range(THnBase*); 
 
     public:
       ClassDef(slarq::SLArQCluster, 1)
