@@ -4,7 +4,7 @@
 # @created     : lunedì giu 27, 2022 13:48:51 CEST
 ######################################################################
 
-# SLArMCPrimaryInfo dictionary 
+# SLArQReadout dictionary 
 ROOT_GENERATE_DICTIONARY(SLArQReadoutDict
   ${PROJECT_SOURCE_DIR}/include/SLArQReadout.hh
   ${PROJECT_SOURCE_DIR}/include/SLArQCluster.hh
@@ -31,3 +31,15 @@ add_library(SLArQDiffusion
   )
 target_link_libraries(SLArQDiffusion ${ROOT_LIBRARIES} SLArQReadout ${SLArMCPrimaryInfo})
 
+ROOT_GENERATE_DICTIONARY(SLArQEvRecoDict
+  ${PROJECT_SOURCE_DIR}/include/SLArQEvReco.hh
+  LINKDEF
+  ${PROJECT_SOURCE_DIR}/include/SLArQEvRecoLinkDef.h)
+
+add_library(SLArQEvReco
+  SHARED
+  ${PROJECT_SOURCE_DIR}/src/SLArQEvReco.cc
+  SLArQEvRecoDict.cxx
+  )
+
+target_link_libraries(SLArQEvReco ${ROOT_LIBRARIES} ROOT::GenVector SLArQReadout)

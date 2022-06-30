@@ -16,7 +16,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(ROOT REQUIRED COMPONENTS RIO Core)
+find_package(ROOT CONFIG REQUIRED)
 
 #----------------------------------------------------------------------------
 # Setup ROOT include directories and compile definitions

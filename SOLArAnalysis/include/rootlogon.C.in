@@ -11,5 +11,6 @@ void rootlogon() {
   gInterpreter->Load("@PROJECT_SOURCE_DIR@/../build/src/event/libSLArMCEvent.so");
   gInterpreter->Load("@CMAKE_CURRENT_BINARY_DIR@/src/libSLArQReadout.so");
   gInterpreter->Load("@CMAKE_CURRENT_BINARY_DIR@/src/libSLArQDiffusion.so");
+  gInterpreter->Load("@CMAKE_CURRENT_BINARY_DIR@/src/libSLArQEvReco.so");
 }
 
