@@ -32,6 +32,9 @@ void   display(SLArMCEvent* ev, slarq::SLArQReadout* qev, TCanvas* cv);
 
 
 int analyze_file(const char* path, bool do_draw = false) {
+  // Check if coordinate transformation is correctly defined
+  printf("slarq::xshift: [%.2f, %.2f, %.2f] mm\n", 
+      slarq::xshift[0], slarq::xshift[1], slarq::xshift[2]); 
 
   // Open and setup readout of the input file
   TFile* file_in = new TFile(path); 
@@ -68,14 +71,17 @@ int analyze_file(const char* path, bool do_draw = false) {
     ev_q->SetEventNr(iev); 
     double te = 0.; 
     double temax = 0; 
-    double* vertex; 
+    std::vector<double> vertex(3, 0.); 
     for (const auto &p : ev->GetPrimaries()) {
       te += p->GetTotalEdep(); 
       if (p->GetTotalEdep() > temax) {
-        vertex = p->GetVertex(); 
-        vertex[0] += slarq::xshift[0]; 
-        vertex[1] += slarq::xshift[1];
-        vertex[2] += slarq::xshift[2]; 
+        auto pvertex = p->GetVertex(); 
+        vertex[0] = pvertex.at(0) + slarq::xshift[0]; 
+        vertex[1] = pvertex.at(1) + slarq::xshift[1];
+        vertex[2] = pvertex.at(2) + slarq::xshift[2]; 
+        printf("setting vertex to [%.2f, %.2f, %.2f]\n", 
+            vertex[0], vertex[1], vertex[2]); 
+
       }
     }
 
@@ -87,7 +93,7 @@ int analyze_file(const char* path, bool do_draw = false) {
     slarq::SLArQEvReco reco(ev_q); 
     reco.PCA(); 
     auto hn_cluster = ev_q->GetMaxClusterHn();
-    reco.SetVertex(vertex); 
+    reco.SetVertex(&vertex[0]); 
     reco.ClusterFit(hn_cluster); 
     
 
