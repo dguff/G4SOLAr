@@ -91,7 +91,7 @@ namespace slarq {
       icl++;
     }
 
-    return fClusters.at(icl); 
+    return fClusters.at(iclmax); 
   }
 
   TH3D* SLArQReadout::GetMaxClusterHist() {
@@ -101,6 +101,15 @@ namespace slarq {
     h->SetName(Form("ev_%i_cluster_%lu_h3", fIEv, max_cluster->get_id())); 
     max_cluster->set_cluster_hist(h); 
     return h; 
+  }
+
+  THnSparseD* SLArQReadout::GetMaxClusterHn() {
+    THnSparseD* hn_cluster = (THnSparseD*)fHQn->Clone("hn_cluster"); 
+    hn_cluster->Reset(); 
+    auto max_cluster = GetMaxCluster(); 
+    hn_cluster->SetName(Form("ev_%i_cluster_%lu_hn", fIEv, max_cluster->get_id())); 
+    max_cluster->set_cluster_hist(hn_cluster); 
+    return hn_cluster; 
   }
 
   std::vector<TH3D*> SLArQReadout::GetClusterHists() {

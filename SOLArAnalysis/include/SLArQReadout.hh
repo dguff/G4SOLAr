@@ -55,6 +55,7 @@ namespace slarq {
       std::vector<TH3D*> GetClusterHists(); 
       SLArQCluster* GetMaxCluster(); 
       TH3D* GetMaxClusterHist();
+      THnSparseD* GetMaxClusterHn(); 
       TH1* GetHist(EAxis kAxis);
       THnSparseD* GetQHistN() {return fHQn;}
       int GetEventNr() {return fIEv;}
