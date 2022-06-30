@@ -8,7 +8,6 @@
 #include <type_traits>
 
 namespace slarq {
-  double xshift[3] = {300., 1000., 1500.}; 
 
   SLArQDiffusion::SLArQDiffusion() 
   {} 

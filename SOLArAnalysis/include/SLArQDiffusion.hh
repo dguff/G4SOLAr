@@ -19,7 +19,6 @@
 #include "SLArQConstants.h"
 
 namespace slarq {
-  extern double xshift[3]; 
   class SLArQDiffusion {
     public: 
       SLArQDiffusion(); 
@@ -30,7 +29,6 @@ namespace slarq {
     protected: 
       double Ldiffusion(double l); 
       double Tdiffusion(double l); 
-
   };
 }
 
