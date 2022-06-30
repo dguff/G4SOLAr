@@ -13,7 +13,7 @@ ClassImp(SLArMCPrimaryInfo)
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
   fID(0), fTrkID(0), fName("noParticle"), fEnergy(0.),
   fTotalEdep(0.),
-  fVertex{0}, fMomentum{0}
+  fVertex(3, 0.), fMomentum(3, 0.)
 {}
 
 SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {}
@@ -47,8 +47,8 @@ void SLArMCPrimaryInfo::ResetParticle()
 
   for (auto &tt : fTrajectories) {delete tt;}
   fTrajectories.clear();
-  memset(fVertex  , 0, sizeof(fVertex  ));
-  memset(fMomentum, 0, sizeof(fMomentum));
+  std::fill(fVertex.begin(), fVertex.end(), 0.); 
+  std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
 }
 
 void SLArMCPrimaryInfo::PrintParticle()
@@ -66,6 +66,7 @@ void SLArMCPrimaryInfo::PrintParticle()
 
 int SLArMCPrimaryInfo::RegisterTrajectory(SLArEventTrajectory* trj)
 {
+  fTotalEdep += trj->GetTotalEdep(); 
   fTrajectories.push_back(trj);
   return (int)fTrajectories.size();
 }

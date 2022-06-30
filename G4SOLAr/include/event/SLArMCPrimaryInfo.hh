@@ -27,8 +27,8 @@ class SLArMCPrimaryInfo : public TNamed
     void SetTotalEdep   (float edep)   {fTotalEdep    = edep;}
 
     TString   GetParticleName() {return fName     ;}
-    double*   GetMomentum    () {return fMomentum ;}
-    double*   GetVertex      () {return fVertex   ;}
+    std::vector<double>   GetMomentum    () {return fMomentum ;}
+    std::vector<double>   GetVertex      () {return fVertex   ;}
     double    GetEnergy      () {return fEnergy   ;}
     int       GetCode        () {return fID       ;}
     double    GetTime        () {return fTime     ;}
@@ -52,8 +52,8 @@ class SLArMCPrimaryInfo : public TNamed
     double   fEnergy  ;
     double   fTime    ;
     double   fTotalEdep;
-    double   fVertex  [3];
-    double   fMomentum[3];
+    std::vector<double>   fVertex  ;
+    std::vector<double>   fMomentum;
     std::vector<SLArEventTrajectory*> fTrajectories;
   
   public:
