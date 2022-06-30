@@ -23,9 +23,8 @@
 #include "SLArQConstants.h"
 #include "SLArQReadout.hh"
 #include "SLArQDiffusion.hh"
-                                   
+#include "SLArQEvReco.hh"
 
-//***********************************************
 // FUNCTIONS FORWARD DEFINITIONS
 double view_event(SLArMCEvent* ev, bool do_draw = false);
 double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev); 
@@ -68,14 +67,29 @@ int analyze_file(const char* path, bool do_draw = false) {
 
     ev_q->SetEventNr(iev); 
     double te = 0.; 
+    double temax = 0; 
+    double* vertex; 
     for (const auto &p : ev->GetPrimaries()) {
       te += p->GetTotalEdep(); 
+      if (p->GetTotalEdep() > temax) {
+        vertex = p->GetVertex(); 
+        vertex[0] += slarq::xshift[0]; 
+        vertex[1] += slarq::xshift[1];
+        vertex[2] += slarq::xshift[2]; 
+      }
     }
 
     double qtot = q_diff_and_record(ev, ev_q); 
 
-    //printf("qtot = %g - expected = %g [%g MeV]\n", qtot, te / W, te);
+    printf("vertex is (%.2f, %.2f, %.2f)\n", vertex[0], vertex[1], vertex[2]); 
     ev_q->Clustering(); 
+
+    slarq::SLArQEvReco reco(ev_q); 
+    reco.PCA(); 
+    auto hn_cluster = ev_q->GetMaxClusterHn();
+    reco.SetVertex(vertex); 
+    reco.ClusterFit(hn_cluster); 
+    
 
     timer->TurnOn(); 
     timer->Reset(); 
@@ -87,6 +101,7 @@ int analyze_file(const char* path, bool do_draw = false) {
     qtree->Fill(); 
 
     ev_q->ResetEvent(); 
+    delete hn_cluster; 
 
     printf("\n\n"); 
   }
@@ -213,76 +228,4 @@ int main(int argc, const char* argv[]) {
   return 1; 
 }
 
-double view_event(SLArMCEvent* ev, bool do_draw) 
-{
-  
-  double edep_tot = 0.;
-  double xmin = 1e8, xmax = -1e8, ymin = 1e8, ymax = -1e8, zmin = 1e8, zmax = -1e8; 
-
-  auto primaries = ev->GetPrimaries(); 
-
-  TGraph2D* gT[primaries.size()];
-  for (size_t iip=0; iip<primaries.size(); iip++) gT[iip] = nullptr;
-  size_t ip = 0; 
-  for (const auto &p : primaries) {
-    p->PrintParticle();
-    auto trajectories = p->GetTrajectories(); 
-    //printf("%lu associated trajectories\n", trajectories.size()); 
-    int itrj = 0;
-    if (trajectories.size() > 0) {
-      double primary_edep = 0; 
-      for (const auto &trj : trajectories) {
-        //printf("trajectory %i has %lu points\n", itrj, trj->GetPoints().size()); 
-        if (trj->GetPoints().size() > 0) {
-          for (const auto &tp : trj->GetPoints()) {
-            if (do_draw) {
-              if (!gT[ip]) gT[ip] = new TGraph2D(); 
-              gT[ip]->AddPoint(tp.fX, tp.fY, tp.fZ); 
-              //printf("point at (%g, %g, %g) - %g MeV\n", 
-                  //tp.fX, tp.fY, tp.fZ, tp.fEdep); 
-              if (tp.fX > xmax) xmax = 1.1*tp.fX; 
-              else if (tp.fX < xmin) xmin = tp.fX; 
-              if (tp.fY > ymax) ymax = 1.1*tp.fY; 
-              else if (tp.fY < ymin) ymin = tp.fY; 
-              if (tp.fZ > zmax) zmax = 1.1*tp.fZ; 
-              else if (tp.fZ < zmin) zmin = tp.fZ; 
-            }
-            primary_edep += tp.fEdep; 
-          }
-
-        }
-
-        itrj++;
-      }
-      edep_tot += primary_edep;
-      if (do_draw) {
-        printf("--> Trajectory energy deposit = %g MeV -> %g MeV\n", primary_edep, edep_tot); 
-      }
-    }
-    ip++;
-
-  }
-
-  TH3D* h3 = nullptr;
-  if (do_draw) {
-    h3 = new TH3D("frame", "frame", 30, xmin, xmax, 30, ymin, ymax, 30, zmin, zmax);
-    h3->Draw("axis"); 
-    for (size_t iip = 0; iip<primaries.size(); iip++) {
-      if (!gT[iip]) {printf("graph for primary %lu not found\n", iip);}
-      else gT[iip]->Draw("P0"); 
-    }
-
-    gPad->Modified(); 
-    gPad->Update(); 
-    getchar(); 
-
-    gPad->Clear(); 
-    delete h3; 
-    for (size_t iip=0; iip<primaries.size(); iip++) {
-      delete gT[iip];
-    }
-  }
-
-  return edep_tot;
-}
 

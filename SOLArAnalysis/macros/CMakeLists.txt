@@ -7,4 +7,4 @@
 add_executable(process_file process_events.cpp)
 target_link_libraries(process_file ${ROOT_LIBRARIES})
 target_link_libraries(process_file ${SLArMCEvent} ${SLArMCPrimaryInfo})
-target_link_libraries(process_file SLArQReadout SLArQDiffusion)
+target_link_libraries(process_file SLArQReadout SLArQDiffusion SLArQEvReco)
