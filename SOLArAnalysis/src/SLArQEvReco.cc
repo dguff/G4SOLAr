@@ -137,11 +137,11 @@ namespace slarq {
 
     double bw = hxy->GetXaxis()->GetBinWidth(1);
     if( find_direction(hxy, fVertex.x()) == 1) {
-      p1->Fit(fProjFit[0],"S","",fVertex.x(),fVertex.x()+bw*6);
-      p2->Fit(fProjFit[1],"S","",fVertex.x(),fVertex.x()+bw*6); 
+      p1->Fit(fProjFit[0],"QN0","",fVertex.x(),fVertex.x()+bw*6);
+      p2->Fit(fProjFit[1],"QN0","",fVertex.x(),fVertex.x()+bw*6); 
     } else {
-      p1->Fit(fProjFit[0],"S","",fVertex.x()-6*bw,fVertex.x());
-      p2->Fit(fProjFit[1],"S","",fVertex.x()-6*bw,fVertex.x()); 
+      p1->Fit(fProjFit[0],"QN0","",fVertex.x()-6*bw,fVertex.x());
+      p2->Fit(fProjFit[1],"QN0","",fVertex.x()-6*bw,fVertex.x()); 
     }
 
     delete hxy;
