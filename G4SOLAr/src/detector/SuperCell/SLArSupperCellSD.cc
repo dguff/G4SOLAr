@@ -30,7 +30,6 @@
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 #include "detector/SuperCell/SLArSuperCellHit.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"

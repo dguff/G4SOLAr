@@ -29,7 +29,7 @@ G4bool SLArAnalysisManager::IsInstance()
 
 SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   : fAnaMsgr  (nullptr),
-    fIsMaster(isMaster), fOutputPath("output/"),
+    fIsMaster(isMaster), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent  (nullptr), 

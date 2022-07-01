@@ -35,7 +35,6 @@
 #include "detector/Tank/SLArTankHit.hh"
 //#include "detector/PMT/SLArPMTHit.hh"
 //#include "detector/Hodoscope/SLArHodoscopeHit.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
