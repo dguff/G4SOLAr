@@ -1,10 +1,19 @@
 # G4SOLAr
 
 **G4SOLAr** implements a Geant4-based Monte Carlo simulation of a LAr TPC
-optimised for low-energy events searches. 
+optimized for low-energy events searches. 
 
 ## Disclaimer
-This code has never been properly tested 
+This code has never been properly tested, but there are some reasonable 
+expectations for it to work on a Linux machine. While offering my sincerest
+sympathies for your struggles, I cannot bear the responsibility for other 
+developers' tears. 
+
+In the source code one may find large sections commented and ``peculiar'' 
+choices for some names (such as _Tank_ to indicate the cryostat). 
+This is happening because a large part of this code is based on a MC simulation 
+I developed for WbLS optical neutrino detector. 
+Hopefully, a more appropriate naming convention will gain ground.
 
 ## Prerequisites (on a Linux machine)
 
@@ -17,11 +26,12 @@ This code has never been properly tested
     of producing neutrinoless *ββ*-decay final states.
     
   At the preset state of the development, these two packages have to be installed
-  manually by the user (see Event Generators installation and configuration). 
+  manually by the user 
+  (see [Event Generators installation and configuration](README_GENERATORS.md)). 
   
 ## Build the project (sanity check)
 
-### Step 1
+### Step 1 - MARLEY check
 Verify that the environmental variable `MARLEY` is defined and properly set.
 
 `MARLEY` comes with a useful setup script that can be sourced in your `.bashrc`
@@ -33,7 +43,7 @@ $ echo $MARLEY
 If the above command will return the path to the MARLEY directory, then you can 
 go to step 2. Otherwise, run the setup script manually. 
 
-### Step 2
+### Step 2 - Build
 Build the project
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
@@ -42,3 +52,31 @@ $ mkdir build && cd build
 $ cmake -DCMAKE_PREFIX_PATH=/path/to/bxdecay0/install ../G4SOLAr
 $ make
 ```
+
+### Step 3 - Run
+
+It is possible to run the simulation directly from the build folder, but it
+is advised to add the build directory to the executable PATH to be able to run 
+the simulation more flexibly on your machine
+```bash
+$ cd build
+$ export PATH=${PWD}:${PATH}
+```
+
+The run can be configured via macro files. A collection of examples can 
+be found in the `macros/` folder. The commands defined in the messenger
+classes are briefly commented in the macro files. 
+
+### Output structure
+
+The output file consists in a ROOT Tree containing the full development of 
+an event at the step-level. The event information is stored in the 
+`SLArMCEvent` class, which in turn contains a vector of `SLArMCPrimaryInfo`
+(one for each particle in the initial state). 
+
+In addition to its own trajectory, each "primary" carries 
+the trajectories of all secondary particles associated with the primary track.
+The points of each trajectory are defined by their spatial coordinates and by 
+the energy deposited in the step. 
+
+
