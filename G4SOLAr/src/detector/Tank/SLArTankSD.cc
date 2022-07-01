@@ -41,7 +41,6 @@
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4OpticalPhoton.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

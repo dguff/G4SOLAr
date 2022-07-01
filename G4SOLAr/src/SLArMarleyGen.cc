@@ -24,8 +24,6 @@
 #include "G4PhysicalConstants.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
-#include "G4SystemOfUnits.hh"
-//#include "globals.hh"
 
 // MARLEY includes
 #include "marley/Event.hh"

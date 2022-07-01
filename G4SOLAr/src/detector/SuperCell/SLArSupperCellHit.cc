@@ -39,7 +39,6 @@
 #include "G4AttValue.hh"
 #include "G4UIcommand.hh"
 #include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -174,7 +173,7 @@ void SLArSuperCellHit::Print()
     G4cout << "  PMT: "          << fPMTIdx  << "\n"
            << GetPhotonProcessName()
            << " Ph energy " << G4BestUnit(fEnergy, "Energy") 
-           << " : time "         << fTime/ns << " (nsec)"
+           << " : time "         << fTime/CLHEP::ns << " (nsec)"
            << " --- global (x,y) "<< G4BestUnit(fWorldPos.x(), "Length")
            << ", " << G4BestUnit(fWorldPos.y(), "Length") << G4endl;
 }

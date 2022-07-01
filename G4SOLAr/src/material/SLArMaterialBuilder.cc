@@ -331,7 +331,7 @@ SLArMaterialBuilder::CalculateRayleighMeanFreePaths() {
   // doesn't have an ISOTHERMAL_COMPRESSIBILITY constant then return
   G4double betat;
   if ( fMaterial->GetName() == "Water" )
-    betat = 7.658e-23*m3/MeV;
+    betat = 7.658e-23*CLHEP::m3/CLHEP::MeV;
   else if(materialProperties->ConstPropertyExists("ISOTHERMAL_COMPRESSIBILITY"))
     betat = materialProperties->GetConstProperty(kISOTHERMAL_COMPRESSIBILITY);
   else
@@ -350,7 +350,7 @@ SLArMaterialBuilder::CalculateRayleighMeanFreePaths() {
   // constant if the material is "Water"
   G4double temperature;
   if( fMaterial->GetName() == "Water" )
-    temperature = 283.15*kelvin; // Temperature of water is 10 degrees celsius
+    temperature = 283.15*CLHEP::kelvin; // Temperature of water is 10 degrees celsius
   else
     temperature = fMaterial->GetTemperature();
 

@@ -11,7 +11,6 @@
 #include "material/SLArMaterialBuilder.hh"
 
 #include "G4ThreeVector.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4OpticalSurface.hh"
@@ -44,9 +43,9 @@ class SLArDetectorSize {
     class SLArGEOworld : public SLArDetectorElement {
       public:
         SLArGEOworld() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("x", 1.0*m) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("y", 1.0*m) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("z", 1.0*m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("x", 1.0*CLHEP::m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("y", 1.0*CLHEP::m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("z", 1.0*CLHEP::m) );
 
           fMaterialID = "Air";
 
@@ -59,10 +58,10 @@ class SLArDetectorSize {
     class SLArGEObox : public SLArDetectorElement {
       public:
         SLArGEObox() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("x"    , 0.3* m) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("y"    , 0.3* m) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("z"    , 0.3* m) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("thick", 2.0*cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("x"    , 0.3*CLHEP::m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("y"    , 0.3*CLHEP::m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("z"    , 0.3*CLHEP::m) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("thick", 2.0*CLHEP::cm) );
           
 
           fMaterialID = "Steel";
@@ -77,8 +76,8 @@ class SLArDetectorSize {
     class SLArGEOtarget : public SLArDetectorElement {
       public:
         SLArGEOtarget() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("r", 10.0*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("y",  2.0*cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("r", 10.0*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("y",  2.0*CLHEP::cm) );
 
           fMaterialID = "LAr";
           fMatBuilder->InitBuilder(fMaterialID);
@@ -90,10 +89,10 @@ class SLArDetectorSize {
     class SLArGEOlappd : public SLArDetectorElement {
       public:
         SLArGEOlappd() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("x", 10.0*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("y",  0.5*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("z", 10.0*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("shift", 3.0*cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("x", 10.0*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("y",  0.5*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("z", 10.0*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("shift", 3.0*CLHEP::cm) );
 
           fMaterialID = "Silicon";
           fMatBuilder->InitBuilder(fMaterialID);
@@ -105,7 +104,7 @@ class SLArDetectorSize {
     class SLArGEOpmt : public SLArDetectorElement {
       public:
         SLArGEOpmt() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("side"  , 3.2*cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("side"  , 3.2*CLHEP::cm) );
           fGeoPar.insert( std::pair<G4String, G4double> ("rTube" , 0.8   ) ); // wrt to side
           fGeoPar.insert( std::pair<G4String, G4double> ("hTube" , 0.8   ) ); // wrt to side
           fGeoPar.insert( std::pair<G4String, G4double> ("hGlass", 0.25  ) ); // wrt to side
@@ -121,9 +120,9 @@ class SLArDetectorSize {
     class SLArGEOhodo : public SLArDetectorElement {
       public:
         SLArGEOhodo() : SLArDetectorElement() {
-          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarLength"  , 0.5*30.0*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarHeight"  , 0.5* 3.0*cm) );
-          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarWidth"   , 0.5* 1.0*cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarLength"  , 0.5*30.0*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarHeight"  , 0.5* 3.0*CLHEP::cm) );
+          fGeoPar.insert( std::pair<G4String, G4double> ("HodoBarWidth"   , 0.5* 1.0*CLHEP::cm) );
           
           fMaterialID = "PLSCINT";
           fMatBuilder->InitBuilder(fMaterialID);

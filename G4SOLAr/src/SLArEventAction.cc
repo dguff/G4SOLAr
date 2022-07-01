@@ -42,7 +42,6 @@
 #include "G4HCofThisEvent.hh"
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4TrajectoryContainer.hh"
 #include "G4Trajectory.hh"

@@ -22,7 +22,6 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4VisAttributes.hh"
 
@@ -66,10 +65,10 @@ void SLArDetTank::BuildMaterial()
 void SLArDetTank::BuildDefalutGeoParMap() 
 {
   G4cerr << "SLArDetTank::BuildGeoParMap()" << G4endl;
-  fGeoInfo->RegisterGeoPar("target_y"       , 150.0*cm);
-  fGeoInfo->RegisterGeoPar("target_z"       , 200.0*cm);
-  fGeoInfo->RegisterGeoPar("target_x"       ,  60.0*cm); 
-  fGeoInfo->RegisterGeoPar("cryo_tk"        ,   1.0*cm);
+  fGeoInfo->RegisterGeoPar("target_y"       , 150.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("target_z"       , 200.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("target_x"       ,  60.0*CLHEP::cm); 
+  fGeoInfo->RegisterGeoPar("cryo_tk"        ,   1.0*CLHEP::cm);
   G4cerr << "Exit method\n" << G4endl;
 }
 

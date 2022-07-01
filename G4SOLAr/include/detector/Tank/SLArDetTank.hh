@@ -19,7 +19,6 @@
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
-#include "G4SystemOfUnits.hh"
 
 
 class SLArDetTank : public SLArBaseDetModule

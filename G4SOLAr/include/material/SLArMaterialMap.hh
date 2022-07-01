@@ -14,7 +14,6 @@
 #include "material/SLArMaterialInfo.h"
 
 #include "G4ThreeVector.hh"
-#include "G4SystemOfUnits.hh"
 
 class SLArMaterialMap {
 

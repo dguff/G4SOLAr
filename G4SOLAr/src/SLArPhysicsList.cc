@@ -63,7 +63,6 @@
 
 #include "G4RadioactiveDecayPhysics.hh"
 
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,11 +72,11 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
 {
   G4LossTableManager::Instance();
 
-  defaultCutValue  = 0.1*mm;
+  defaultCutValue  = 0.1*CLHEP::mm;
   // set larger cuts for gamma, electrons and positrons 
-  fCutForGamma     = 0.1*mm;
-  fCutForElectron  = 0.1*mm;
-  fCutForPositron  = 0.1*mm;
+  fCutForGamma     = 0.1*CLHEP::mm;
+  fCutForElectron  = 0.1*CLHEP::mm;
+  fCutForPositron  = 0.1*CLHEP::mm;
 
   //    G4PhysListFactory factory;
   G4VModularPhysicsList* phys = NULL;

@@ -36,10 +36,10 @@
 #include "SLArPrimaryGeneratorMessenger.hh"
 
 #include "SLArPrimaryGeneratorAction.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
-#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -102,7 +102,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   if( command == fPolarCmd ) 
   {
     G4double angle = fPolarCmd->GetNewDoubleValue(newValue);
-    if ( angle == -360.0*deg ) {
+    if ( angle == -360.0*CLHEP::deg ) {
       fSLArAction->SetOptPhotonPolar();
     } else {
       fSLArAction->SetOptPhotonPolar(angle);

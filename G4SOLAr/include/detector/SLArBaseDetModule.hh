@@ -13,7 +13,6 @@
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"

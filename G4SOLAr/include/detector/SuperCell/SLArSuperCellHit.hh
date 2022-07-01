@@ -38,7 +38,6 @@
 #include "G4LogicalVolume.hh"
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
-#include "G4SystemOfUnits.hh"
 
 class G4AttDef;
 class G4AttValue;
@@ -74,7 +73,7 @@ public:
     G4double GetPhotonEnergy() const { return fEnergy; }
 
     void SetTime(G4double t) { fTime = t; }
-    G4double GetTime() const { return fTime / ns; }
+    G4double GetTime() const { return fTime / CLHEP::ns; }
 
     void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
     G4ThreeVector GetLocalPos() const { return fLocalPos; }

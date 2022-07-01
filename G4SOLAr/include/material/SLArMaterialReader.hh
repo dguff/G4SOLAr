@@ -11,7 +11,6 @@
 #include "TString.h"
 #include "TPRegexp.h"
 
-#include "G4SystemOfUnits.hh"
 #include "G4Material.hh"
 #include "G4OpticalSurface.hh"
 
@@ -25,7 +24,7 @@ class SLArElement {
     G4String fSymb    = "";
     G4int    fZ       = 0 ;
     G4int    fNAtom   = 0 ;
-    G4double fMolMass = 0*g/mole;
+    G4double fMolMass = 0*CLHEP::g/CLHEP::mole;
     G4double fFraction= 0 ;
 
     void PrintElementSummary();
