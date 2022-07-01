@@ -67,7 +67,7 @@ The run can be configured via macro files. A collection of examples can
 be found in the `macros/` folder. The commands defined in the messenger
 classes are briefly commented in the macro files. 
 
-### Output structure
+## Interpreting the output
 
 The output file consists in a ROOT Tree containing the full development of 
 an event at the step-level. The event information is stored in the 
@@ -79,4 +79,55 @@ the trajectories of all secondary particles associated with the primary track.
 The points of each trajectory are defined by their spatial coordinates and by 
 the energy deposited in the step. 
 
+To be able to access the event information in an interactive ROOT session, 
+one should load the `SLArMCEvent` and `SLArMCPrimaryInfo` shared libraries 
+(manually by invoking `gSystem->Load("/path/to/libSLArMCEvent.so")`, or by 
+adding the same command to a `rootlogon.C` file). 
+The following script shows how to access the step information. 
 
+```C++
+void view_trajectories(const char* filename) {
+  TFile* file = new TFile(filename); 
+  TTree* tree = (TTree*)file->Get("EventTree"); 
+  
+  SLArMCEvent* ev = nullptr; 
+  tree->SetBranchAddress("MCEvent", &ev); 
+  
+  for (int iev = 0; iev<t->GetEntries(); iev++) {
+    tree->GetEntry(iev); 
+
+    auto primaries = ev->GetPrimaries(); 
+
+    size_t ip = 0; 
+    for (const auto &p : primaries) {
+      int pPDGID = p->GetCode();     // Get primary PDG code 
+      int pTrkID = p->GetTrackID();  // Get primary trak id   
+      double primary_edep = 0; 
+
+      auto trajectories = p->GetTrajectories(); 
+      int itrj = 0;
+      if (trajectories.size() > 0) {
+        for (const auto &trj : trajectories) {
+          for (const auto &tp : trj->GetPoints()) {
+            double pos_x = tp.fX;     // x coordinate [mm]
+            double pos_y = tp.fY;     // y coordinate [mm]
+            double pos_z = tp.fZ;     // z coordinate [mm]
+            double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
+          }
+          itrj++;
+        } 
+      }
+      ip++;
+    }
+  }
+
+  reutrn;
+}
+```
+
+If you want to get a better idea of the output structure, the source files 
+can be found in 
+```
+G4SOLAr/include/event/*.hh
+G4SOLAr/src/event/*.cc
+```
