@@ -30,12 +30,10 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArRunAction.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -43,56 +41,6 @@
 SLArRunAction::SLArRunAction()
  : G4UserRunAction()
 { 
-  // Create analysis manager
-  // The choice of analysis technology is done via selectin of a namespace
-  // in SLArAnalysis.hh
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  G4cout << "Using " << analysisManager->GetType() << G4endl;
-
-  // Default settings
-  analysisManager->SetVerboseLevel(1);
-  analysisManager->SetNtupleMerging(true);
-  analysisManager->SetFileName("./output/testCell_out.root");
-
-  // Book histograms, ntuple
-  //
-  
-  // Creating 3D histograms
-  analysisManager
-    ->CreateH3("h3LAPPD","LAPPD hits", 
-                40, -10, +10,
-                40, -10, +10, 
-                50,   0, +50,
-                "mm","mm",  "ns"); // h3 Id = 0
-  
-  // Creating 2D histograms
-  analysisManager                                                
-    ->CreateH2("LAPPDXY","LAPPD X vs Y",           // h2 Id = 0
-               50, -10., 10, 50, -10., 10.); 
-  analysisManager                                                
-    ->CreateH2("PMTsXY","PMTs X vs Y",             // h2 Id = 1
-               50, -10., 10, 50, -10., 10.); 
-
-  //// Creating ntuple
-  analysisManager->CreateNtuple("PMThits", "PMTs hits");
-  analysisManager->CreateNtupleIColumn("EvNr");
-  analysisManager->CreateNtupleIColumn("PhType");
-  analysisManager->CreateNtupleIColumn("Idx");
-  analysisManager->CreateNtupleDColumn("Time");
-  analysisManager->CreateNtupleDColumn("GloX");
-  analysisManager->CreateNtupleDColumn("GloY");
-  analysisManager->CreateNtupleDColumn("PhEne");
-  analysisManager->FinishNtuple();
-
-  analysisManager->CreateNtuple("LAPPDhits", "LAPPDhits");
-  analysisManager->CreateNtupleIColumn("EvNr");
-  analysisManager->CreateNtupleIColumn("PhType");
-  analysisManager->CreateNtupleDColumn("Time");
-  analysisManager->CreateNtupleDColumn("GloX");
-  analysisManager->CreateNtupleDColumn("GloY");
-  analysisManager->CreateNtupleDColumn("PhEne");
-  analysisManager->FinishNtuple();
-
   // Create custom TestCell Analysis Manager
   SLArAnalysisManager* anamgr = SLArAnalysisManager::Instance();
   anamgr->FakeAccess();
@@ -102,7 +50,6 @@ SLArRunAction::SLArRunAction()
 
 SLArRunAction::~SLArRunAction()
 {
-  delete G4AnalysisManager::Instance();  
   delete SLArAnalysisManager::Instance();
 }
 
@@ -112,15 +59,6 @@ void SLArRunAction::BeginOfRunAction(const G4Run* /*run*/)
 { 
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
-  
-  // Get analysis manager
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-
-  // Open an output file 
-  // The default file name is set in SLArRunAction::SLArRunAction(),
-  // it can be overwritten in a macro
-  analysisManager->OpenFile();
-
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
   SLArAnaMgr->CreateFileStructure();
 }
@@ -131,13 +69,9 @@ void SLArRunAction::EndOfRunAction(const G4Run* /*run*/)
 {
   // save histograms & ntuple
   //
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->Write();
-  analysisManager->CloseFile();
-
-  SLArAnalysisManager* tcAnaMgr = SLArAnalysisManager::Instance();
-  //tcAnaMgr->WriteSysCfg();
-  tcAnaMgr->Save();
+  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+  //SLArAnaMgr->WriteSysCfg();
+  SLArAnaMgr->Save();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -1,0 +1,22 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : b8_es_nue
+# @created     : venerdì lug 01, 2022 11:54:35 CEST
+#
+# @description : Produce ES events from B-8 solar neutrinos using 
+#                MARLEY event generator
+######################################################################
+
+# Set output path and file name
+/SLAr/manager/SetOutputName slar_b8_nue_es.root
+/SLAr/manager/SetOutputFolder ../SOLArAnalysis/
+
+# Select MARLEY generator
+/SLAr/gun/mode Marley
+# Set the MARLEY configuration file
+/SLAr/gun/marleyconf marley_cfg/b8_osc_spect_ES_nue.js
+# Produce vertices uniformly in the volume name "Target"
+/SLAr/gun/volume Target
+
+# Fire!
+/run/beamOn 50000

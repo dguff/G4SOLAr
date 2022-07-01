@@ -9,7 +9,6 @@
 #define SLArGEOINFO_HH
 
 #include "G4ThreeVector.hh"
-#include "G4SystemOfUnits.hh"
 #include <ostream>
 #include <map>
 

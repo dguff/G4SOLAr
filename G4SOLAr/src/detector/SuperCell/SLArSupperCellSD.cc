@@ -30,7 +30,6 @@
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 #include "detector/SuperCell/SLArSuperCellHit.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
@@ -42,7 +41,6 @@
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4OpticalPhoton.hh"
-#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -114,7 +112,7 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   if(track->GetDefinition()
      != G4OpticalPhoton::OpticalPhotonDefinition()) return false;
 
-  G4double phEne = 0*eV;
+  G4double phEne = 0*CLHEP::eV;
 
   G4StepPoint* preStepPoint  = step->GetPreStepPoint();
   G4StepPoint* postStepPoint = step->GetPostStepPoint();

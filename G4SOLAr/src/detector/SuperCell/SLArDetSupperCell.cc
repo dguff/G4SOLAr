@@ -17,7 +17,6 @@
 #include "G4PVPlacement.hh"
 #include "G4VPhysicalVolume.hh"
 
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4VisAttributes.hh"
@@ -151,7 +150,7 @@ void SLArDetSuperCell::BuildSuperCell()
    * Place SuperCell components
    *  *  *  *  *  *  *  *  *  *  *  *  */
 
-  G4double h = 0*mm;
+  G4double h = 0*CLHEP::mm;
   h = 0.5*fhTot - 0.5*fCoating->GetGeoPar("coating_y");
 
   G4cout<<"GetModPV light guide..." << G4endl; 
@@ -217,7 +216,7 @@ void SLArDetSuperCell::SetPerfectQE(G4bool kQE)
     fPerfectQE = kQE;
     G4cout << "SLArDetSuperCell::SetPerfectQE: Setting 100% QE between "
            << "2 and 5 eV" << G4endl;
-    G4double phEne[2] = {2*eV, 5*eV};
+    G4double phEne[2] = {2*CLHEP::eV, 5*CLHEP::eV};
     G4double eff  [2] = {1.0 , 1.0 };
     
     fMatCoating->GetMaterialBuilder()->GetSurface()
@@ -237,10 +236,10 @@ void SLArDetSuperCell::BuildDefalutGeoParMap()
   // * side length 
   // * light guide thickness
   // * coating layer thikness
-  fGeoInfo->RegisterGeoPar("cell_z"   , 50.0*cm);
-  fGeoInfo->RegisterGeoPar("cell_x"   , 10.0*cm);
-  fGeoInfo->RegisterGeoPar("coating_y",  0.5*mm);
-  fGeoInfo->RegisterGeoPar("cell_y"   ,  4.0*mm);
+  fGeoInfo->RegisterGeoPar("cell_z"   , 50.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("cell_x"   , 10.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("coating_y",  0.5*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("cell_y"   ,  4.0*CLHEP::mm);
 }
 
 

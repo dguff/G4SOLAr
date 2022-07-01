@@ -30,7 +30,6 @@
 #include "SLArAnalysisManager.hh"
 #include "detector/Tank/SLArTankSD.hh"
 #include "detector/Tank/SLArTankHit.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
@@ -42,7 +41,6 @@
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4OpticalPhoton.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -97,7 +95,6 @@ G4bool SLArTankSD::ProcessHits(G4Step* step, G4TouchableHistory*)
            //<< "SLArTankSD touchableCopyNo0 id = "  << barID << G4endl;
 
     hit->Add(edep);
-
   }     
 
   return true;

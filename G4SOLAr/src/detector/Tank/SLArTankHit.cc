@@ -15,7 +15,6 @@
 #include "G4AttValue.hh"
 #include "G4UIcommand.hh"
 #include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
 
 

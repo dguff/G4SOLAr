@@ -30,6 +30,11 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/encodings.h"
+#include "rapidjson/stringbuffer.h"
+
 #include "SLArUserPath.hh"
 #include "SLArAnalysisManager.hh"
 
@@ -72,14 +77,8 @@
 
 #include "G4PhysicalConstants.hh"
 #include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
 
 #include <fstream>
-
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/encodings.h"
-#include "rapidjson/stringbuffer.h"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -238,8 +237,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
 // The experimental Hall
 
-  G4Box* expHall_box = new G4Box("World", 1.5*m, 1.5*m, 4*m);
-  //G4Box* expHall_box = new G4Box("World", 0.5*m, 0.5*m, 0.5*m);
+  G4Box* expHall_box = new G4Box("World", 3.5*CLHEP::m, 3.5*CLHEP::m, 8*CLHEP::m);
 
  fWorldLog   
     = new G4LogicalVolume(expHall_box, fColl.fGEOWorld.fMaterial, "World",0,0,0);

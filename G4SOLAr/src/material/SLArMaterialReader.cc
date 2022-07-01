@@ -14,7 +14,7 @@ SLArMaterialReader::SLArMaterialReader() {
   fPath     = "";
   fName     = "";
   fNistName = "";
-  fDensity  = 1e-10*g/mole;
+  fDensity  = 1e-10*CLHEP::g/CLHEP::mole;
   fNComp    = 0;
 }
 
@@ -95,7 +95,7 @@ void SLArMaterialReader::ReadLineDef(TString line) {
   else if (parName == "NIST")
     fNistName = ReadNist(strVal);
   else if (parName == "density")
-    fDensity  = ReadVal(strVal) * (g/cm3);
+    fDensity  = ReadVal(strVal) * (CLHEP::g/CLHEP::cm3);
   else if (parName == "ncomp")
     fNComp    = ReadVal(strVal);
 
@@ -120,7 +120,7 @@ void SLArMaterialReader::ReadLineEle(TString line) {
   else if (parName == "z"   )
     fElVec.back().fZ        = ReadVal(strVal);
   else if (parName == "a"   )
-    fElVec.back().fMolMass  = ReadVal(strVal) * (g/mole);
+    fElVec.back().fMolMass  = ReadVal(strVal) * (CLHEP::g/CLHEP::mole);
   else if (parName == "nAtom")
     fElVec.back().fNAtom    = ReadVal(strVal);
   else if (parName == "frac")
@@ -157,7 +157,7 @@ void SLArMaterialReader::PrintMaterialSummary() {
   G4cout << "* * * * * * * * * * * * * * * * * * * * * * * *" << G4endl;
   G4cout << "* fName     = " << fName     << G4endl;
   G4cout << "* fNistName = " << fNistName << G4endl;
-  G4cout << "* fDensity  = " << fDensity/(g/cm3)  << " g/cm3" <<G4endl;
+  G4cout << "* fDensity  = " << fDensity/(CLHEP::g/CLHEP::cm3)  << " g/cm3" <<G4endl;
   G4cout << "* fNComp    = " << fNComp    << G4endl;
   G4cout << "* * * * * * * * * * * * * * * * * * * * * * * *" << G4endl;
   G4cout << "\n\n" << G4endl;
@@ -172,7 +172,7 @@ void SLArElement::PrintElementSummary() {
   G4cerr << "| fSymb     = " << fSymb << G4endl;
   G4cerr << "| fZ        = " << fZ << G4endl;
   G4cerr << "| fNAtom    = " << fNAtom << G4endl; 
-  G4cerr << "| fMolMass  = " << fMolMass/(g/mole) << " g/mole" << G4endl; 
+  G4cerr << "| fMolMass  = " << fMolMass/(CLHEP::g/CLHEP::mole) << " g/mole" << G4endl; 
   G4cerr << "| fFraction = " << fFraction << G4endl;
   G4cerr << "- -  -  -  -  -  -  -  -  -  -  -  -  -  -  - *" << G4endl;
 }

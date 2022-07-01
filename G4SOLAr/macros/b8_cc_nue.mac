@@ -1,4 +1,22 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : b8_cc_nue.mac
+# @created     : venerdì lug 01, 2022 11:49:20 CEST
+#
+# @description : Produce CC interactions from B-8 solar neutrinos using 
+#                the MARLEY generator
+######################################################################
+
+# Set output path and file name
+/SLAr/manager/SetOutputName slar_b8_cc_nue.root
+/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
+
+# Select MARLEY generator
 /SLAr/gun/mode Marley
+# Set the MARLEY configuration file
 /SLAr/gun/marleyconf marley_cfg/b8_osc_spect_CC_nue.js
+# Generate vertices uniformly distributed in the volume named "Target"
 /SLAr/gun/volume Target
+
+# Fire!
 /run/beamOn 100000

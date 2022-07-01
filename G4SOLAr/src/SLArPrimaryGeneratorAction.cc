@@ -52,7 +52,6 @@
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
-#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -80,11 +79,11 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
 
   fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleTime(0.0*ns);
-  fParticleGun->SetParticleEnergy(3.*GeV);
+  fParticleGun->SetParticleTime(0.0*CLHEP::ns);
+  fParticleGun->SetParticleEnergy(3.*CLHEP::GeV);
 
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, +1) );
-  fParticleGun->SetParticlePosition         (G4ThreeVector(0, 0, -1.5*m));
+  fParticleGun->SetParticlePosition         (G4ThreeVector(0, 0, -1.5*CLHEP::m));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -197,7 +196,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 void SLArPrimaryGeneratorAction::SetOptPhotonPolar()
 {
- G4double angle = G4UniformRand() * 360.0*deg;
+ G4double angle = G4UniformRand() * 360.0*CLHEP::deg;
  SetOptPhotonPolar(angle);
 }
 

@@ -35,7 +35,6 @@
 #include "detector/Tank/SLArTankHit.hh"
 //#include "detector/PMT/SLArPMTHit.hh"
 //#include "detector/Hodoscope/SLArHodoscopeHit.hh"
-#include "SLArAnalysis.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -43,7 +42,6 @@
 #include "G4HCofThisEvent.hh"
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4TrajectoryContainer.hh"
 #include "G4Trajectory.hh"

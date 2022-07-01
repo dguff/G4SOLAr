@@ -11,7 +11,6 @@
 #include "TString.h"
 #include "TPRegexp.h"
 
-#include "G4SystemOfUnits.hh"
 #include "G4Material.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4OpticalSurface.hh"

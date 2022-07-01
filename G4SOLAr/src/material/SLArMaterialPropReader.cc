@@ -206,11 +206,11 @@ G4double SLArMaterialPropReader::ReadVal(TString str) {
 
 void SLArMPropConst::FillValue( G4double val ) {
   if      ( fName == "SCINTILLATIONYIELD" )
-    fVal = val / MeV;
+    fVal = val / CLHEP::MeV;
   else if ( fName == "ISOTHERMAL_COMPRESSIBILITY" )
-    fVal = val * m3/MeV;
+    fVal = val * CLHEP::m3/CLHEP::MeV;
   else if ( fName == "BIRKS_CONSTANT"     )
-    fVal = val * mm/MeV;
+    fVal = val * CLHEP::mm/CLHEP::MeV;
   else 
     fVal = val;
 }
