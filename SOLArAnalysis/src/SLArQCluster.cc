@@ -72,18 +72,18 @@ namespace slarq {
       hn->Fill(xx, point.fCharge);
     }
 
-    adjust_h_range(hn); 
+    adjust_h_range(hn, 0.); 
 
     return;
   }
 
-  void SLArQCluster::adjust_h_range(THnBase* hn) {
+  void adjust_h_range(THnBase* hn, double threshold) {
     int xmin[3]; int xmax[3]; 
-    printf("SLArQCluster::adjust_h_range: hn has dimension %i\n", hn->GetNdimensions()); 
-    for (int ik=0; ik<3; ik++) {
+    printf("adjust_h_range: hn has dimension %i\n", hn->GetNdimensions()); 
+    for (int ik=0; ik<hn->GetNdimensions(); ik++) {
       TH1D* h_tmp = hn->Projection(ik);
-      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(10));
-      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove(10));
+      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(threshold));
+      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove (threshold));
 
       hn->GetAxis(ik)->SetRangeUser(xmin[ik]-1,xmax[ik]+1);
       delete h_tmp;

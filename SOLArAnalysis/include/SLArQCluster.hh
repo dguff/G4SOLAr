@@ -38,6 +38,9 @@ namespace slarq {
       ClassDef(cluster_point, 1);
   };
 
+  void adjust_h_range(THnBase*, double threshold); 
+
+
   class SLArQCluster : public TObject {
     public: 
       SLArQCluster();
@@ -61,7 +64,6 @@ namespace slarq {
       double fCharge;
       std::vector<cluster_point> fPoints;
 
-      void adjust_h_range(THnBase*); 
 
     public:
       ClassDef(slarq::SLArQCluster, 1)

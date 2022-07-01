@@ -73,6 +73,9 @@ namespace slarq {
     hn_cluster->Reset();
     THnSparseD* hn_cluster_rot = 
       (THnSparseD*)hn_cluster->Clone(Form("%s_rot", hn_cluster->GetName())); 
+    for (int idim=0; idim<3; idim++) 
+      hn_cluster_rot->GetAxis(idim)->SetRange(); 
+
     main_cluster->set_cluster_hist(hn_cluster);
 
     ROOT::Math::RotationZYX xrot = fPCA->GetRotation();
@@ -96,31 +99,22 @@ namespace slarq {
       xpoint.SetY(hn_cluster->GetAxis(1)->GetBinCenter(idx[1])); 
       xpoint.SetZ(hn_cluster->GetAxis(2)->GetBinCenter(idx[2])); 
 
-      for (int j=0; j<100; j++) {
-        xdelta = ROOT::Math::XYZPointD(
-            gRandom->Uniform(-0.5*bw[0], +0.5*bw[0]), 
-            gRandom->Uniform(-0.5*bw[1], +0.5*bw[1]), 
-            gRandom->Uniform(-0.5*bw[2], +0.5*bw[2]));
+      auto point = xpoint - anchor;
 
-        ROOT::Math::XYZPointD point = xpoint - anchor + xdelta;
+      auto rpoint = xrot.operator()(point);
 
-        ROOT::Math::XYZPointD rpoint = xrot.operator()(point);
+      rpoint = rpoint + anchor; 
 
-        rpoint.SetX(rpoint.x() + anchor.x()); 
-        rpoint.SetY(rpoint.y() + anchor.y()); 
-        rpoint.SetZ(rpoint.z() + anchor.z()); 
+      double rpoint_[3] = {rpoint.x(), rpoint.y(), rpoint.z()};
 
-        double rpoint_[3] = {rpoint.x(), rpoint.y(), rpoint.z()};
-
-        hn_cluster_rot->Fill(rpoint_, bc*0.01); 
-      }
+      hn_cluster_rot->Fill(rpoint_, bc*0.01); 
       //printf("(%g, %g, %g) -> (%g, %g, %g)\n", 
       //xpoint.x(), xpoint.y(), xpoint.z(),
       //rpoint.x(), rpoint.y(), rpoint.z());
     }
 
-
-
+    adjust_h_range(hn_cluster_rot, 0.); 
+    
     return hn_cluster_rot; 
   }
 
