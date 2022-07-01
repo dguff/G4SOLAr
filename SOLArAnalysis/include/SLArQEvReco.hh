@@ -8,6 +8,8 @@
 
 #define SLARQEVRECO_HH
 
+#include "Math/GenVector/RotationZYX.h"
+#include "Math/Vector3Dfwd.h"
 #include "SLArQReadout.hh"
 #include "SLArQCluster.hh"
 
@@ -42,8 +44,10 @@ namespace slarq {
       void PCA(); 
 
       std::vector<TF1*>& ClusterFit(THnBase* h);
-      double GetCosAngle(ROOT::Math::XYZVectorD); 
+      double GetCosAngle(ROOT::Math::XYZVectorD, ROOT::Math::RotationZYX* rot = 0); 
+      ROOT::Math::XYZVectorD GetDirection(ROOT::Math::RotationZYX* = 0);
       std::vector<TF1*>& GetProjectionLinearFit() {return fProjFit;}
+      SLArQBlipPCA* GetPCA() {return fPCA;}
 
 
       void Reset(); 

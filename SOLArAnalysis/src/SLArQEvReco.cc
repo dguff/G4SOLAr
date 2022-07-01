@@ -5,6 +5,8 @@
  */
 
 #include "SLArQEvReco.hh"
+#include "Math/GenVector/RotationZYX.h"
+#include "Math/Vector3Dfwd.h"
 #include "TRandom3.h"
 #include "TF1.h"
 
@@ -124,7 +126,8 @@ namespace slarq {
 
   std::vector<TF1*>& SLArQEvReco::ClusterFit(THnBase* h) {
     for (auto &f : fProjFit) {delete f;} 
-    fProjFit.clear(); fProjFit.resize(2, nullptr); 
+    fProjFit.resize(2);
+    std::fill(fProjFit.begin(), fProjFit.end(), nullptr);
 
     TH2D* hxy = h->Projection(1,0);
     TH2D* hxz = h->Projection(2,0);
@@ -144,22 +147,33 @@ namespace slarq {
       p2->Fit(fProjFit[1],"QN0","",fVertex.x()-6*bw,fVertex.x()); 
     }
 
+    delete p1;
+    delete p2;
     delete hxy;
     delete hxz;
 
     return fProjFit;
   }
 
-  double SLArQEvReco::GetCosAngle(ROOT::Math::XYZVectorD ref_dir) {
-    double cos_theta = -3.14;
-    if (fProjFit[0] != 0 && fProjFit[1] != 0){
+  ROOT::Math::XYZVectorD SLArQEvReco::GetDirection(ROOT::Math::RotationZYX* rot) {
+    ROOT::Math::XYZVectorD dir(0, 0, 0);
+    if (fProjFit[0]->GetParameter(0) != 0 && fProjFit[1]->GetParameter(0) != 0){
       double a  = fProjFit[0]->GetParameter(0);
       double aa = fProjFit[1]->GetParameter(0);
-      ROOT::Math::XYZVectorD dir;
       dir.SetXYZ(1,aa,a);
       dir = dir.Unit();
-      cos_theta = dir.Dot(ref_dir); 
+      if (rot) {
+        dir = rot->operator()(dir);
+      }
     }
+    return dir;
+  }
+
+  double SLArQEvReco::GetCosAngle(ROOT::Math::XYZVectorD ref_dir, ROOT::Math::RotationZYX* rot) {
+    double cos_theta = -3.14;
+    ROOT::Math::XYZVectorD dir = GetDirection(rot);
+    if(fProjFit[0]->GetParameter(0) != 0 && fProjFit[1]->GetParameter(0) != 0){
+    cos_theta = dir.Dot(ref_dir); }
 
     return cos_theta;
   }

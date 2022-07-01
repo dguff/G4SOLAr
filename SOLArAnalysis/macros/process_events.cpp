@@ -5,6 +5,9 @@
  */
 
 #include <iostream>
+#include "Math/GenVector/RotationZYX.h"
+#include "Math/Point3Dfwd.h"
+#include "Math/Vector3Dfwd.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
@@ -58,11 +61,15 @@ int analyze_file(const char* path, bool do_draw = false) {
   ev_q->BuildHistograms();
   qtree->Branch("qreadout", &ev_q); 
 
-  TCanvas* cTmp = new TCanvas("cTmp", "ev display", 0, 0, 800, 800); 
-  cTmp->Divide(2, 2); 
+  TCanvas* cTmp = new TCanvas("cTmp", "ev display", 0, 0, 1000, 700); 
+  cTmp->Divide(3,2); 
   TTimer  *timer = new TTimer("gSystem->ProcessEvents();", 500, kFALSE);
+  
+  TH1D* cos_theta_hist = new TH1D("cos_theta_hist","cos of scattering angle",100,-1,1);
+  TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
 
-  for (int iev = 0; iev<500; iev++) {
+
+  for (int iev = 0; iev<50; iev++) {
     if (iev%20 == 0) {
       printf("processing ev %i (%.2f%%)\n", iev,  100*iev / (double)t->GetEntries()); 
     }
@@ -75,31 +82,59 @@ int analyze_file(const char* path, bool do_draw = false) {
     for (const auto &p : ev->GetPrimaries()) {
       te += p->GetTotalEdep(); 
       if (p->GetTotalEdep() > temax) {
+        temax = p->GetTotalEdep();
         auto pvertex = p->GetVertex(); 
         vertex[0] = pvertex.at(0) + slarq::xshift[0]; 
         vertex[1] = pvertex.at(1) + slarq::xshift[1];
         vertex[2] = pvertex.at(2) + slarq::xshift[2]; 
-        printf("setting vertex to [%.2f, %.2f, %.2f]\n", 
-            vertex[0], vertex[1], vertex[2]); 
+        //printf("setting vertex to [%.2f, %.2f, %.2f]\n", 
+        //    pvertex.at(0), pvertex.at(1), pvertex.at(2)); 
 
+        //printf("energy deposition = %f \n", temax);
       }
     }
 
     double qtot = q_diff_and_record(ev, ev_q); 
 
-    printf("vertex is (%.2f, %.2f, %.2f)\n", vertex[0], vertex[1], vertex[2]); 
+    //printf("vertex is (%.2f, %.2f, %.2f)\n", vertex[0], vertex[1], vertex[2]); 
     ev_q->Clustering(); 
 
     slarq::SLArQEvReco reco(ev_q); 
     reco.PCA(); 
     auto hn_cluster = ev_q->GetMaxClusterHn();
     reco.SetVertex(&vertex[0]); 
-    reco.ClusterFit(hn_cluster); 
+
+    reco.ClusterFit(hn_cluster);
+    double cos_theta = reco.GetCosAngle( ROOT::Math::XYZVectorD(0, 0, 1) );
     
+    slarq::SLArQBlipPCA* bpca = reco.GetPCA();
+    auto rot = bpca->GetRotation();
+    auto inverse_rot = rot.Inverse();
+    auto rot_cluster = reco.RotateCluster(rot, ROOT::Math::XYZPointD(vertex[0],vertex[1],vertex[2]));
+    reco.ClusterFit(rot_cluster);
+    double rot_cos_theta = reco.GetCosAngle(ROOT::Math::XYZVectorD(0,0,1),&inverse_rot);
+    
+    printf("cos theta before rotation = %f and after rotation = %f \n", cos_theta,rot_cos_theta);
+    cos_theta_hist->Fill(cos_theta);
+    rot_cos_theta_hist->Fill(rot_cos_theta); 
+
 
     timer->TurnOn(); 
     timer->Reset(); 
-    display(ev, ev_q, cTmp); 
+    //display(ev, ev_q, cTmp); 
+    cTmp->cd(1); 
+    hn_cluster->Projection(1, 0)->Draw("col");
+    cTmp->cd(2); 
+    hn_cluster->Projection(2, 0)->Draw("col");
+    cTmp->cd(3);
+    hn_cluster->Projection(0, 1, 2)->Draw("box");
+    cTmp->cd(4); 
+    rot_cluster->Projection(1, 0)->Draw("col");
+    cTmp->cd(5); 
+    rot_cluster->Projection(2, 0)->Draw("col");
+    cTmp->cd(6); 
+    rot_cluster->Projection(0, 1, 2)->Draw("box");
+    
     getchar(); 
 
     timer->TurnOff(); 
@@ -109,11 +144,23 @@ int analyze_file(const char* path, bool do_draw = false) {
     ev_q->ResetEvent(); 
     delete hn_cluster; 
 
-    printf("\n\n"); 
+    printf("\\n"); 
   }
 
+ // timer->TurnOn();
+ // timer->Reset();
+ // cTmp->cd(1);
+ // timer->TurnOff();
+  //getchar();
+
   qtree->Write(); 
-  file_out->Close(); 
+
+  rot_cos_theta_hist->SetLineColor(kRed);
+  rot_cos_theta_hist->Draw("hist");
+  cos_theta_hist->Draw("hist same");
+
+  cTmp->Modified();
+  cTmp->Update();
 
   return 1.;
 }
@@ -124,7 +171,7 @@ double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
 
   size_t ip = 0; 
   for (const auto &p : primaries) {
-    p->PrintParticle(); 
+    //p->PrintParticle(); 
     double primary_edep = 0; 
     auto trajectories = p->GetTrajectories(); 
     printf("%lu associated trajectories\n", trajectories.size()); 
