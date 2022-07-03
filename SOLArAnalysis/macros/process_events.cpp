@@ -1,4 +1,5 @@
 /**
+ *
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : process_events.cpp
  * @created     : lunedì giu 27, 2022 13:54:58 CEST
@@ -62,14 +63,14 @@ int analyze_file(const char* path, bool do_draw = false) {
   qtree->Branch("qreadout", &ev_q); 
 
   TCanvas* cTmp = new TCanvas("cTmp", "ev display", 0, 0, 1000, 700); 
-  cTmp->Divide(3,2); 
+  cTmp->Divide(2,2); 
   TTimer  *timer = new TTimer("gSystem->ProcessEvents();", 500, kFALSE);
   
   TH1D* cos_theta_hist = new TH1D("cos_theta_hist","cos of scattering angle",100,-1,1);
-  TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
+//  TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
 
 
-  for (int iev = 0; iev<50; iev++) {
+  for (int iev = 0; iev<500; iev++) {
     if (iev%20 == 0) {
       printf("processing ev %i (%.2f%%)\n", iev,  100*iev / (double)t->GetEntries()); 
     }
@@ -106,59 +107,60 @@ int analyze_file(const char* path, bool do_draw = false) {
 
     reco.ClusterFit(hn_cluster);
     double cos_theta = reco.GetCosAngle( ROOT::Math::XYZVectorD(0, 0, 1) );
-    
+    /*
     slarq::SLArQBlipPCA* bpca = reco.GetPCA();
     auto rot = bpca->GetRotation();
     auto inverse_rot = rot.Inverse();
     auto rot_cluster = reco.RotateCluster(rot, ROOT::Math::XYZPointD(vertex[0],vertex[1],vertex[2]));
     reco.ClusterFit(rot_cluster);
     double rot_cos_theta = reco.GetCosAngle(ROOT::Math::XYZVectorD(0,0,1),&inverse_rot);
-    
-    printf("cos theta before rotation = %f and after rotation = %f \n", cos_theta,rot_cos_theta);
+    */
+    printf("cos theta = %f  \n", cos_theta);
     cos_theta_hist->Fill(cos_theta);
-    rot_cos_theta_hist->Fill(rot_cos_theta); 
+    //rot_cos_theta_hist->Fill(rot_cos_theta); 
 
-
+/*
     timer->TurnOn(); 
     timer->Reset(); 
     //display(ev, ev_q, cTmp); 
     cTmp->cd(1); 
-    hn_cluster->Projection(1, 0)->Draw("col");
+    hn_cluster->Projection(0,2)->Draw("col");
+   // hn_cluster->Projection(2,0)->ProfileX()->Fit("pol1","","",hn_cluster->GetAxis(0)->GetXmin(),hn_cluster->GetAxis(0)->GetXmax());
     cTmp->cd(2); 
-    hn_cluster->Projection(2, 0)->Draw("col");
+    hn_cluster->Projection(1,2)->Draw("col");
+   // hn_cluster->Projection(1,2)->ProfileX()->Draw("same");
     cTmp->cd(3);
     hn_cluster->Projection(0, 1, 2)->Draw("box");
-    cTmp->cd(4); 
+
+   cTmp->cd(4); 
     rot_cluster->Projection(1, 0)->Draw("col");
     cTmp->cd(5); 
     rot_cluster->Projection(2, 0)->Draw("col");
     cTmp->cd(6); 
     rot_cluster->Projection(0, 1, 2)->Draw("box");
-    
+  
+
+    cTmp->Modified();
+    cTmp->Update();
     getchar(); 
 
     timer->TurnOff(); 
-
+*/
     qtree->Fill(); 
 
     ev_q->ResetEvent(); 
     delete hn_cluster; 
 
-    printf("\\n"); 
+    printf("\n\n"); 
   }
-
- // timer->TurnOn();
- // timer->Reset();
- // cTmp->cd(1);
- // timer->TurnOff();
-  //getchar();
 
   qtree->Write(); 
 
-  rot_cos_theta_hist->SetLineColor(kRed);
-  rot_cos_theta_hist->Draw("hist");
-  cos_theta_hist->Draw("hist same");
+  cos_theta_hist->Draw("hist");
 
+  //rot_cos_theta_hist->SetLineColor(kRed);
+  //rot_cos_theta_hist->Draw("hist same");
+  
   cTmp->Modified();
   cTmp->Update();
 

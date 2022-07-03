@@ -123,28 +123,28 @@ namespace slarq {
     fProjFit.resize(2);
     std::fill(fProjFit.begin(), fProjFit.end(), nullptr);
 
-    TH2D* hxy = h->Projection(1,0);
-    TH2D* hxz = h->Projection(2,0);
+    TH2D* hzx = h->Projection(0,2);
+    TH2D* hzy = h->Projection(1,2);
 
-    TProfile* p1 = hxz->ProfileX("profxz",1,-1,"e");
-    TProfile* p2 = hxy->ProfileX("profxy",1,-1,"e");
+    TProfile* p1 = hzx->ProfileX("profzx",1,-1,"e");
+    TProfile* p2 = hzy->ProfileX("profzy",1,-1,"e");
 
-    fProjFit[0] = new TF1("f1", "pol1", hxz->GetXaxis()->GetXmin(), hxz->GetXaxis()->GetXmax()); 
-    fProjFit[1] = new TF1("f2", "pol1", hxy->GetXaxis()->GetXmin(), hxy->GetXaxis()->GetXmax()); 
+    fProjFit[0] = new TF1("f1", "pol1", hzx->GetXaxis()->GetXmin(), hzx->GetXaxis()->GetXmax()); 
+    fProjFit[1] = new TF1("f2", "pol1", hzy->GetXaxis()->GetXmin(), hzy->GetXaxis()->GetXmax()); 
 
-    double bw = hxy->GetXaxis()->GetBinWidth(1);
-    if( find_direction(hxy, fVertex.x()) == 1) {
-      p1->Fit(fProjFit[0],"QN0","",fVertex.x(),fVertex.x()+bw*6);
-      p2->Fit(fProjFit[1],"QN0","",fVertex.x(),fVertex.x()+bw*6); 
+    double bw = hzx->GetXaxis()->GetBinWidth(1);
+    if( find_direction(hzy, fVertex.z() == 1)) {
+      p1->Fit(fProjFit[0],"QN0","",fVertex.z(),fVertex.z()+bw*6);
+      p2->Fit(fProjFit[1],"QN0","",fVertex.z(),fVertex.z()+bw*6); 
     } else {
-      p1->Fit(fProjFit[0],"QN0","",fVertex.x()-6*bw,fVertex.x());
-      p2->Fit(fProjFit[1],"QN0","",fVertex.x()-6*bw,fVertex.x()); 
+      p1->Fit(fProjFit[0],"QN0","",fVertex.z()-6*bw,fVertex.z());
+      p2->Fit(fProjFit[1],"QN0","",fVertex.z()-6*bw,fVertex.z()); 
     }
 
     delete p1;
     delete p2;
-    delete hxy;
-    delete hxz;
+    delete hzx;
+    delete hzy;
 
     return fProjFit;
   }
@@ -152,9 +152,9 @@ namespace slarq {
   ROOT::Math::XYZVectorD SLArQEvReco::GetDirection(ROOT::Math::RotationZYX* rot) {
     ROOT::Math::XYZVectorD dir(0, 0, 0);
     if (fProjFit[0]->GetParameter(0) != 0 && fProjFit[1]->GetParameter(0) != 0){
-      double a  = fProjFit[0]->GetParameter(0);
-      double aa = fProjFit[1]->GetParameter(0);
-      dir.SetXYZ(1,aa,a);
+      double a  = fProjFit[0]->GetParameter(1);
+      double aa = fProjFit[1]->GetParameter(1);
+      dir.SetXYZ(a,aa,1);
       dir = dir.Unit();
       if (rot) {
         dir = rot->operator()(dir);
