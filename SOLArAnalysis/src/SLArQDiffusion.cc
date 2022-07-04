@@ -33,9 +33,11 @@ namespace slarq {
     xloc[1] = tpt->fY + xshift[1]; 
     xloc[2] = tpt->fZ + xshift[2]; 
     if (xloc[0]*xloc[1]*xloc[2] <=0) {
+#ifdef DEBUG
       std::cerr << "SLArQDiffusion::DiffuseRandom: " 
-             << "WARNING trajectory point coordinate is negative!" << std::endl;
+        << "WARNING trajectory point coordinate is negative!" << std::endl;
       std::cerr << "x: " << xloc[0] << " - y: " << xloc[1] << " - z: " << xloc[2] << std::endl;
+#endif
       return 0.;
     }
 

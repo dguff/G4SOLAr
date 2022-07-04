@@ -42,7 +42,9 @@ namespace slarq {
 
     std::vector<double> bw(3, 0.);
     std::vector<double> xbin(3, 0.); 
+#ifdef DEBUG
     printf("- hn_cluster has %i dimensions\n", hn_cluster->GetNdimensions()); 
+#endif
     for (int k=0; k<3; k++) {
       bw[k] = hn_cluster->GetAxis(k)->GetBinWidth(10); 
     }

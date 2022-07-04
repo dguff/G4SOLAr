@@ -18,6 +18,7 @@ add_library(SLArQReadout
   SLArQReadoutDict.cxx
   )
 target_link_libraries(SLArQReadout ${ROOT_LIBRARIES})
+target_compile_definitions(SLArQReadout PUBLIC $<$<CONFIG:Debug>:DEBUG>)
 
 ROOT_GENERATE_DICTIONARY(SLArQDiffusionDict
   ${PROJECT_SOURCE_DIR}/include/SLArQDiffusion.hh
@@ -30,6 +31,7 @@ add_library(SLArQDiffusion
   SLArQDiffusionDict.cxx
   )
 target_link_libraries(SLArQDiffusion ${ROOT_LIBRARIES} SLArQReadout ${SLArMCPrimaryInfo})
+target_compile_definitions(SLArQDiffusion PUBLIC $<$<CONFIG:Debug>:DEBUG>)
 
 ROOT_GENERATE_DICTIONARY(SLArQEvRecoDict
   ${PROJECT_SOURCE_DIR}/include/SLArQEvReco.hh
@@ -43,3 +45,4 @@ add_library(SLArQEvReco
   )
 
 target_link_libraries(SLArQEvReco ${ROOT_LIBRARIES} ROOT::GenVector SLArQReadout)
+target_compile_definitions(SLArQEvReco PUBLIC $<$<CONFIG:Debug>:DEBUG>)

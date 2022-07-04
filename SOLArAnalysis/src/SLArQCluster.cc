@@ -79,7 +79,6 @@ namespace slarq {
 
   void adjust_h_range(THnBase* hn, double threshold) {
     int xmin[3]; int xmax[3]; 
-    printf("adjust_h_range: hn has dimension %i\n", hn->GetNdimensions()); 
     for (int ik=0; ik<hn->GetNdimensions(); ik++) {
       TH1D* h_tmp = hn->Projection(ik);
       xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(threshold));
