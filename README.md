@@ -48,9 +48,10 @@ Build the project
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
 $ cd G4SOLAr
-$ mkdir build && cd build 
-$ cmake -DCMAKE_PREFIX_PATH=/path/to/bxdecay0/install ../G4SOLAr
+$ mkdir build install && cd build 
+$ cmake -DCMAKE_PREFIX_PATH=/path/to/bxdecay0/install -DCMAKE_INSTALL_PREFIX=../install ../G4SOLAr
 $ make
+$ make install
 ```
 
 ### Step 3 - Run
@@ -59,7 +60,7 @@ It is possible to run the simulation directly from the build folder, but it
 is advised to add the build directory to the executable PATH to be able to run 
 the simulation more flexibly on your machine
 ```bash
-$ cd build
+$ cd install
 $ export PATH=${PWD}:${PATH}
 ```
 
