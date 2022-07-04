@@ -89,10 +89,10 @@ The following script shows how to access the step information.
 void view_trajectories(const char* filename) {
   TFile* file = new TFile(filename); 
   TTree* tree = (TTree*)file->Get("EventTree"); 
-  
+
   SLArMCEvent* ev = nullptr; 
   tree->SetBranchAddress("MCEvent", &ev); 
-  
+
   for (int iev = 0; iev<t->GetEntries(); iev++) {
     tree->GetEntry(iev); 
 
@@ -106,17 +106,15 @@ void view_trajectories(const char* filename) {
 
       auto trajectories = p->GetTrajectories(); 
       int itrj = 0;
-      if (trajectories.size() > 0) {
-        for (const auto &trj : trajectories) {
-          for (const auto &tp : trj->GetPoints()) {
-            double pos_x = tp.fX;     // x coordinate [mm]
-            double pos_y = tp.fY;     // y coordinate [mm]
-            double pos_z = tp.fZ;     // z coordinate [mm]
-            double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
-          }
-          itrj++;
-        } 
-      }
+      for (const auto &trj : trajectories) {
+        for (const auto &tp : trj->GetPoints()) {
+          double pos_x = tp.fX;     // x coordinate [mm]
+          double pos_y = tp.fY;     // y coordinate [mm]
+          double pos_z = tp.fZ;     // z coordinate [mm]
+          double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
+        }
+        itrj++;
+      } 
       ip++;
     }
   }
