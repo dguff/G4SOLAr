@@ -6,6 +6,8 @@
  */
 
 #include <iostream>
+#include <cstdio>
+#include <getopt.h>
 #include "Math/GenVector/RotationZYX.h"
 #include "Math/Point3Dfwd.h"
 #include "Math/Vector3Dfwd.h"
@@ -30,12 +32,11 @@
 #include "SLArQEvReco.hh"
 
 // FUNCTIONS FORWARD DEFINITIONS
-double view_event(SLArMCEvent* ev, bool do_draw = false);
+double view_event(SLArMCEvent* ev);
 double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev); 
 void   display(SLArMCEvent* ev, slarq::SLArQReadout* qev, TCanvas* cv); 
 
-
-int analyze_file(const char* path, bool do_draw = false) {
+int analyze_file(const char* path, const char* out_path, size_t n_events) {
   // Check if coordinate transformation is correctly defined
   printf("slarq::xshift: [%.2f, %.2f, %.2f] mm\n", 
       slarq::xshift[0], slarq::xshift[1], slarq::xshift[2]); 
@@ -47,9 +48,14 @@ int analyze_file(const char* path, bool do_draw = false) {
   t->SetBranchAddress("MCEvent", &ev); 
 
   // Open and setup output file
-  TString outfile_name = path; 
-  outfile_name.Resize( outfile_name.Index(".root") ); 
-  outfile_name += "_analysis.root"; 
+  TString outfile_name = out_path; 
+  if (outfile_name.IsNull()) {
+    outfile_name = path; 
+    outfile_name.Resize( outfile_name.Index(".root") ); 
+    outfile_name += "_analysis.root"; 
+  } else {
+    outfile_name = out_path; 
+  }
   TFile* file_out = new TFile(outfile_name, "recreate"); 
   TTree* qtree = new TTree("qtree", "charge readout tree"); 
 
@@ -64,16 +70,28 @@ int analyze_file(const char* path, bool do_draw = false) {
 
   TCanvas* cTmp = new TCanvas("cTmp", "ev display", 0, 0, 1000, 700); 
   cTmp->Divide(2,2); 
-  TTimer  *timer = new TTimer("gSystem->ProcessEvents();", 500, kFALSE);
+  TTimer  *timer = nullptr; 
+#ifdef DEBUG
+  timer = new TTimer("gSystem->ProcessEvents();", 500, kFALSE);
+#endif
   
   TH1D* cos_theta_hist = new TH1D("cos_theta_hist","cos of scattering angle",100,-1,1);
 //  TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
 
+  size_t N_ENTRIES = 0; 
+  if (n_events > 0) N_ENTRIES = n_events; 
+  else N_ENTRIES = t->GetEntries(); 
 
-  for (int iev = 0; iev<500; iev++) {
+  for (int iev = 0; iev<N_ENTRIES; iev++) {
+#ifdef DEBUG
     if (iev%20 == 0) {
       printf("processing ev %i (%.2f%%)\n", iev,  100*iev / (double)t->GetEntries()); 
     }
+#else
+    if (iev%200 == 0) {
+      printf("processing ev %i (%.2f%%)\n", iev,  100*iev / (double)t->GetEntries()); 
+    }
+#endif
     t->GetEntry(iev); 
 
     ev_q->SetEventNr(iev); 
@@ -115,8 +133,11 @@ int analyze_file(const char* path, bool do_draw = false) {
     reco.ClusterFit(rot_cluster);
     double rot_cos_theta = reco.GetCosAngle(ROOT::Math::XYZVectorD(0,0,1),&inverse_rot);
     */
-    printf("cos theta = %f  \n", cos_theta);
+    
     cos_theta_hist->Fill(cos_theta);
+#ifdef DEBUG
+    printf("cos theta = %f  \n", cos_theta);
+#endif
     //rot_cos_theta_hist->Fill(rot_cos_theta); 
 
 /*
@@ -151,7 +172,9 @@ int analyze_file(const char* path, bool do_draw = false) {
     ev_q->ResetEvent(); 
     delete hn_cluster; 
 
+#ifdef DEBUG
     printf("\n\n"); 
+#endif
   }
 
   qtree->Write(); 
@@ -176,7 +199,9 @@ double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
     //p->PrintParticle(); 
     double primary_edep = 0; 
     auto trajectories = p->GetTrajectories(); 
+#ifdef DEBUG
     printf("%lu associated trajectories\n", trajectories.size()); 
+#endif
     int itrj = 0;
 
     slarq::SLArQDiffusion diff; 
@@ -194,8 +219,9 @@ double q_diff_and_record(SLArMCEvent* ev, slarq::SLArQReadout* qev) {
       itrj++;
     } // end of loop over trajectories
     q_ev_obs += primary_edep; 
+#ifdef DEBUG
     printf("total energy loss in trajectories: %g MeV\n", primary_edep); 
-
+#endif
     ip++;
 
   } // end of loop over primary particles
@@ -271,14 +297,70 @@ void display(SLArMCEvent* ev, slarq::SLArQReadout* qev, TCanvas* cv) {
   for (auto &g : gTz) delete g; 
 }
 
-int main(int argc, const char* argv[]) {
-  
-  if (argc == 1) {
-    printf("please specify input file path\n"); 
-    return 0; 
+void print_help() {
+   printf("process_file usage:\n"); 
+   printf("Arguments:\n"); 
+   printf("\t-i || --input       : input G4SOLAr file\n");
+   printf("\t-o || --output      : output file (default is <input>_analysis.root\n");
+   printf("\t-n || --n_events    : number of events to process\n");
+   printf("\t-h || --help        : print this message\n");
+   return;
+}
+   
+
+int main(int argc, char* argv[]) {
+  const char* short_opts = "i:o:n:h";
+  static struct option long_opts[5] = 
+  {
+    {"input", required_argument, 0, 'i'}, 
+    {"output", required_argument, 0, 'o'}, 
+    {"n_events", required_argument, 0, 'n'},
+    {"help", no_argument, 0, 'h'}, 
+    {nullptr, no_argument, nullptr, 0}
+  };
+
+
+  int c, option_index;
+
+  const char* input_path = ""; 
+  const char* output_path = ""; 
+  size_t n_events = 0; 
+
+  while ((c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
+    switch(c) {
+      case 'i' : 
+        {
+          input_path = optarg;
+          printf("process_file: input path = %s\n", input_path); 
+          break;
+        };
+      case 'o' : 
+        {
+          output_path = optarg;
+          printf("process_file: output path = %s\n", output_path); 
+          break;
+        };
+      case 'n': 
+        {
+          n_events = std::atoi(optarg); 
+          printf("process_file: N events to process =  %lu\n", n_events);           
+          break;
+        }
+      case 'h': 
+        {
+          print_help();
+          break;
+        }
+      case '?' : 
+        {
+          printf("Undefined option flag -%c\n", optopt); 
+          print_help();
+          break;
+        }
+    }
   }
 
-  double q = analyze_file(argv[1], false); 
+  double q = analyze_file(input_path, output_path, n_events); 
 
   return 1; 
 }
