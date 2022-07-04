@@ -16,7 +16,7 @@ const double Dtrns  = 13.2327*1e-4 ;// mm2/μs
 const double Elifetime = 2.9931*1e3;// μs
 
 namespace slarq {
-  const double xshift[3] = {300., 1000., 1500.}; 
+  const double xshift[3] = {600., 1000., 1500.}; 
 }
 #endif /* end of include guard SLARQCONSTANTS_H */
 
