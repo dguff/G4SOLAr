@@ -113,6 +113,25 @@ add_subdirectory(${G4SOLAR_SRC_DIR}/config)
 add_subdirectory(${G4SOLAR_SRC_DIR}/event)
 
 #----------------------------------------------------------------------------
+# configure package config
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${PROJECT_SOURCE_DIR}/cmake/G4SOLArConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
+  INSTALL_DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
+  PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_INSTALL_CMAKE_DIR
+  )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake 
+  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
+
+# configure package config
+export(EXPORT G4SOLArTargets
+  FILE "${G4SOLAR_INSTALL_CMAKE_DIR}/G4SOLArTargets.cmake"
+  NAMESPACE G4SOLAr::
+)
+
+#----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(solar_sim solar_sim.cc ${sources} ${headers})
@@ -140,21 +159,3 @@ install(TARGETS solar_sim
 file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${G4SOLAR_BIN_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${G4SOLAR_BIN_DIR})
 
-#----------------------------------------------------------------------------
-# configure package config
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-  ${PROJECT_SOURCE_DIR}/cmake/G4SOLArConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
-  INSTALL_DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
-  PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_INSTALL_CMAKE_DIR
-  )
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake 
-  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
-
-# configure package config
-export(EXPORT G4SOLArTargets
-  FILE "${G4SOLAR_INSTALL_CMAKE_DIR}/G4SOLArTargets.cmake"
-  NAMESPACE G4SOLAr::
-)
