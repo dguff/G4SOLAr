@@ -9,6 +9,7 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -59,19 +60,22 @@ if (MARLEY)
   message(STATUS "MARLEY library found")
 endif()
 
-set(G4SOLAR_INCLUDE "${PROJECT_SOURCE_DIR}/include")
-set(G4SOLAR_SRC     "${PROJECT_SOURCE_DIR}/src"    )
+set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
+set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
+set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
+set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-include_directories(${G4SOLAR_INCLUDE}
-                    ${G4SOLAR_INCLUDE}/material
-                    ${G4SOLAR_INCLUDE}/detector
-                    ${G4SOLAR_INCLUDE}/detector/Tank
-                    ${G4SOLAR_INCLUDE}/detector/SuperCell
-                    ${G4SOLAR_INCLUDE}/config
-                    ${G4SOLAR_INCLUDE}/event
+include_directories(${G4SOLAR_INCLUDE_DIR}
+                    ${G4SOLAR_INCLUDE_DIR}/material
+                    ${G4SOLAR_INCLUDE_DIR}/detector
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Tank
+                    ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
+                    ${G4SOLAR_INCLUDE_DIR}/config
+                    ${G4SOLAR_INCLUDE_DIR}/event
                     ${BxDecay0_INCLUDE_DIR}
                     ${G4SOLAR_MARLEY}/include
                     ${G4SOLAR_RAPIDJSON_INCLUDE}
@@ -79,34 +83,34 @@ include_directories(${G4SOLAR_INCLUDE}
                     ${ROOT_INCLUDE_DIRS}
 )
 
-file(GLOB sources   ${G4SOLAR_SRC}/*.cc
-                    ${G4SOLAR_SRC}/event/*.cc
-                    ${G4SOLAR_SRC}/config/*.cc
-                    ${G4SOLAR_SRC}/material/*.cc
-                    ${G4SOLAR_SRC}/detector/*.cc
-                    ${G4SOLAR_SRC}/detector/Tank/*.cc
-                    ${G4SOLAR_SRC}/detector/SuperCell/*.cc
+file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
+                    ${G4SOLAR_SRC_DIR}/event/*.cc
+                    ${G4SOLAR_SRC_DIR}/config/*.cc
+                    ${G4SOLAR_SRC_DIR}/material/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/Tank/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
 )
 
-file(GLOB headers   ${G4SOLAR_INCLUDE}/*.hh
-                    ${G4SOLAR_INCLUDE}/event/*.hh
-                    ${G4SOLAR_INCLUDE}/config/*.hh
-                    ${G4SOLAR_INCLUDE}/material/*.hh
-                    ${G4SOLAR_INCLUDE}/detector/*.hh
-                    ${G4SOLAR_INCLUDE}/detector/Tank/*.hh
-                    ${G4SOLAR_INCLUDE}/detector/SuperCell/*.hh
+file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/event/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/config/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/material/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Tank/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     )
 
 add_definitions(${ROOT_CXX_FLAGS})
 
 #----------------------------------------------------------------------------
 # Configure local paths
-configure_file(SLArUserPath.hh.in ${G4SOLAR_INCLUDE}/SLArUserPath.hh @ONLY)
+configure_file(SLArUserPath.hh.in ${G4SOLAR_INCLUDE_DIR}/SLArUserPath.hh @ONLY)
 
 #----------------------------------------------------------------------------
 # Generate SLArEvent and SLArConfig libraries and dictionaries
-add_subdirectory(${G4SOLAR_SRC}/config)
-add_subdirectory(${G4SOLAR_SRC}/event)
+add_subdirectory(${G4SOLAR_SRC_DIR}/config)
+add_subdirectory(${G4SOLAR_SRC_DIR}/event)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
@@ -119,23 +123,38 @@ target_link_libraries(solar_sim SLArMCEvent)
 target_link_libraries(solar_sim SLArPDSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
-
+set_target_properties(solar_sim PROPERTIES 
+  INSTALL_RPATH ${G4SOLAR_LIB_DIR}
+  BUILD_WITH_INSTALL_RPATH 1
+  )
+install(TARGETS solar_sim 
+  LIBRARY DESTINATION ${G4SOLAR_BIN_DIR}
+  RUNTIME DESTINATION ${G4SOLAR_BIN_DIR}
+  )
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build beamCell. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${G4SOLAR_BIN_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${G4SOLAR_BIN_DIR})
+
 #----------------------------------------------------------------------------
-# Copy shared libraries and dictionaries to offline/lib folder
-#
-#add_custom_command(
-  #TARGET SLArMCEvent 
-  #POST_BUILD
-  #COMMAND ${CMAKE_COMMAND} -E copy 
-  #$<TARGET_FILE:SLArMCEvent> libSLArMCEventDict_rdict.pcm libSLArMCEventDict.rootmap
-  #${PROJECT_SOURCE_DIR}/../offline/lib/
-  #)
+# configure package config
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${PROJECT_SOURCE_DIR}/cmake/G4SOLArConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
+  INSTALL_DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
+  PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_INSTALL_CMAKE_DIR
+  )
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake 
+  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
 
+# configure package config
+export(EXPORT G4SOLArTargets
+  FILE "${G4SOLAR_INSTALL_CMAKE_DIR}/G4SOLArTargets.cmake"
+  NAMESPACE G4SOLAr::
+)

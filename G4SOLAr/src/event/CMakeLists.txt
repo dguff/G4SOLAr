@@ -35,3 +35,28 @@ target_link_libraries(SLArMCEvent
                       SLArMCPrimaryInfo)
 
 
+#----------------------------------------------------------------------------
+# Install instructions
+
+set(G4SOLAr_event_libs
+  SLArMCEvent
+  SLArMCPrimaryInfo
+  )
+
+set(G4SOLAr_event_resources 
+  ${CMAKE_CURRENT_BINARY_DIR}/SLArMCPrimaryInfoDict.cxx 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCPrimaryInfoDict.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCPrimaryInfoDict_rdict.pcm
+  ${CMAKE_CURRENT_BINARY_DIR}/SLArMCEventDict.cxx 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventDict.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventDict_rdict.pcm
+  )
+
+foreach(lib IN LISTS G4SOLAr_event_libs)
+  install(TARGETS ${lib}
+    EXPORT                      G4SOLArTargets
+    LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}" 
+    RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
+endforeach()
+
+install(FILES ${G4SOLAr_event_resources} DESTINATION "${G4SOLAR_LIB_DIR}")

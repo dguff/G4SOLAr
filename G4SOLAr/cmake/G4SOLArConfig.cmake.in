@@ -1,0 +1,21 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : G4SOLArConfig.cmake
+# @created     : lunedì lug 04, 2022 16:49:07 CEST
+######################################################################
+
+@PACKAGE_INIT@
+
+set_and_check(G4SOLAR_INCLUDE_DIR "@PACKAGE_G4SOLAR_INCLUDE_DIR@")
+set_and_check(G4SOLAR_LIB_DIR "@PACKAGE_G4SOLAR_LIB_DIR@")
+set_and_check(G4SOLAR_BIN_DIR "@PACKAGE_G4SOLAR_BIN_DIR@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("@PACKAGE_G4SOLAR_INSTALL_CMAKE_DIR@/G4SOLArTargets.cmake")
+
+# These are IMPORTED targets created by WaveDeckTargets.cmake
+set(G4SOLAR_LIBRARIES SLArMCEvent SLArMCPrimaryInfo)
+
+check_required_components(G4SOLAr)
+
+

@@ -21,4 +21,24 @@ add_library(SLArPDSystemConfig
   )
 target_link_libraries(SLArPDSystemConfig ${ROOT_LIBRARIES})
 
+#----------------------------------------------------------------------
+# Install instructions
 
+set(G4SOLAr_cfg_libs
+  SLArPDSystemConfig
+  )
+
+set(G4SOLAr_cfg_resources 
+  ${CMAKE_CURRENT_BINARY_DIR}/SLArPDSystemConfigDict.cxx 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArPDSystemConfigDict.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArPDSystemConfigDict_rdict.pcm
+  )
+
+foreach(lib IN LISTS G4SOLAr_cfg_libs)
+  install(TARGETS ${lib}
+    EXPORT                      G4SOLArTargets
+    LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}" 
+    RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
+endforeach()
+
+install(FILES ${G4SOLAr_cfg_resources} DESTINATION "${G4SOLAR_LIB_DIR}")
