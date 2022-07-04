@@ -58,6 +58,7 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
   }
   TFile* file_out = new TFile(outfile_name, "recreate"); 
   TTree* qtree = new TTree("qtree", "charge readout tree"); 
+  TTree* light_tree = new TTree("light_tree","Energy and scattering angle tree");
 
   slarq::SLArQReadout* ev_q = new slarq::SLArQReadout(0, "ev_q");
   ev_q->SetReadoutAxis(slarq::kTime, 0, 400, 1.874, "Time [#mus]"); 
@@ -68,6 +69,13 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
   ev_q->BuildHistograms();
   qtree->Branch("qreadout", &ev_q); 
 
+  double rec_charge = 0;
+  double cos_theta = 0;
+  int N_clusters = 0;
+  light_tree->Branch("Qrec", &rec_charge);
+  light_tree->Branch("costheta", &cos_theta);
+  light_tree->Branch("Ncluster", &N_clusters);
+
   TCanvas* cTmp = new TCanvas("cTmp", "ev display", 0, 0, 1000, 700); 
   cTmp->Divide(2,2); 
   TTimer  *timer = nullptr; 
@@ -76,7 +84,7 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
 #endif
   
   TH1D* cos_theta_hist = new TH1D("cos_theta_hist","cos of scattering angle",100,-1,1);
-//  TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
+//TH1D* rot_cos_theta_hist = new TH1D("rot_cos_theta_hist","cos of scattering angle after pca",100,-1,1);
 
   size_t N_ENTRIES = 0; 
   if (n_events > 0) N_ENTRIES = n_events; 
@@ -116,15 +124,16 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
     double qtot = q_diff_and_record(ev, ev_q); 
 
     //printf("vertex is (%.2f, %.2f, %.2f)\n", vertex[0], vertex[1], vertex[2]); 
-    ev_q->Clustering(); 
+    N_clusters = ev_q->Clustering(); 
+    rec_charge = ev_q->GetTotalCharge();    
 
     slarq::SLArQEvReco reco(ev_q); 
-    reco.PCA(); 
+   // reco.PCA(); 
     auto hn_cluster = ev_q->GetMaxClusterHn();
     reco.SetVertex(&vertex[0]); 
 
     reco.ClusterFit(hn_cluster);
-    double cos_theta = reco.GetCosAngle( ROOT::Math::XYZVectorD(0, 0, 1) );
+    cos_theta = reco.GetCosAngle( ROOT::Math::XYZVectorD(0, 0, 1) );
     /*
     slarq::SLArQBlipPCA* bpca = reco.GetPCA();
     auto rot = bpca->GetRotation();
@@ -168,6 +177,7 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
     timer->TurnOff(); 
 */
     qtree->Fill(); 
+    light_tree->Fill();
 
     ev_q->ResetEvent(); 
     delete hn_cluster; 
@@ -178,6 +188,7 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
   }
 
   qtree->Write(); 
+  light_tree->Write();
 
   cos_theta_hist->Draw("hist");
 
@@ -186,6 +197,8 @@ int analyze_file(const char* path, const char* out_path, size_t n_events) {
   
   cTmp->Modified();
   cTmp->Update();
+
+  file_out->Close();
 
   return 1.;
 }
