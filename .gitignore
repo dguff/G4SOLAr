@@ -36,10 +36,8 @@ G4SOLAr/extern
 
 # build files
 build/
-SOLArAnalysis/build/
+install/
 
 #cache
 /.cache
 
-# data
-SOLArAnalysis/data/
