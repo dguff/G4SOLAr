@@ -13,7 +13,7 @@ set_and_check(G4SOLAR_BIN_DIR "@PACKAGE_G4SOLAR_BIN_DIR@")
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("@PACKAGE_G4SOLAR_INSTALL_CMAKE_DIR@/G4SOLArTargets.cmake")
 
-# These are IMPORTED targets created by WaveDeckTargets.cmake
+# These are IMPORTED targets created by G4SOLArTargets.cmake
 set(G4SOLAR_LIBRARIES SLArMCEvent SLArMCPrimaryInfo)
 
 check_required_components(G4SOLAr)
