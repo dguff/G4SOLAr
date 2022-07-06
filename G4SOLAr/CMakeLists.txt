@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------
 # Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(G4SOLAr)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS} 
@@ -29,6 +29,16 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 # Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
+
+#----------------------------------------------------------------------------
+# Setup Projects PATHS
+set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
+set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
+set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
+set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
+
+
 #----------------------------------------------------------------------------
 # Find external dependencies
 include(ExternalProject)
@@ -41,30 +51,66 @@ ExternalProject_Add("rapidjson"
   )
 set(G4SOLAR_RAPIDJSON_INCLUDE "${PROJECT_SOURCE_DIR}/extern/rapidjson/include")
 
-find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG) 
-
-set (G4SOLAR_MARLEY $ENV{MARLEY})
-message(STATUS "libMARLEY path: ${G4SOLAR_MARLEY}/build")
-find_library(MARLEY 
-             NAMES MARLEY
-             PATHS "${G4SOLAR_MARLEY}/build"
-             REQUIRED
-             NO_DEFAULT_PATH) 
-           find_library(MARLEY_ROOT 
-             NAMES MARLEY_ROOT
-             PATHS "${G4SOLAR_MARLEY}/build"
-             REQUIRED
-             NO_DEFAULT_PATH) 
-
-if (MARLEY) 
-  message(STATUS "MARLEY library found")
+if(BxDecay0_DIR) 
+  find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG PATHS ${BxDecay0_DIR} NO_DEFAULT_PATH)
+else() 
+  execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE bd0_gean4_dir)
+  ExternalProject_Add("bxdecay0"
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern/bxdecay0
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern/bxdecay0
+    GIT_REPOSITORY "https://github.com/BxCppDev/bxdecay0.git"
+    CMAKE_ARGS 
+      "-DCMAKE_INSTALL_PREFIX=${G4SOLAR_BIN_DIR}/extern/bxdecay"
+      "-DBXDECAY0_WITH_GEANT4_EXTENSION=ON"
+      "-DGeant4_DIR=${bd0_gean4_dir}"
+    BUILD_COMMAND cmake --build .
+    INSTALL_COMMAND cmake --target install
+    )
 endif()
 
-set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
-set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
-set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
-set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
-set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
+if (Marley_DIR) 
+  set (G4SOLAR_MARLEY ${Marley_DIR})
+
+  find_library(MARLEY 
+    NAMES MARLEY
+    PATHS "${G4SOLAR_MARLEY}/build"
+    REQUIRED
+    NO_DEFAULT_PATH
+    ) 
+  find_library(MARLEY_ROOT 
+    NAMES MARLEY_ROOT
+    PATHS "${G4SOLAR_MARLEY}/build"
+    REQUIRED
+    NO_DEFAULT_PATH
+    ) 
+else()
+  if($ENV{MARLEY}) 
+    set (G4SOLAR_MARLEY $ENV{MARLEY})
+
+    find_library(MARLEY 
+      NAMES MARLEY
+      PATHS "${G4SOLAR_MARLEY}/build"
+      REQUIRED
+      NO_DEFAULT_PATH
+      ) 
+    find_library(MARLEY_ROOT 
+      NAMES MARLEY_ROOT
+      PATHS "${G4SOLAR_MARLEY}/build"
+      REQUIRED
+      NO_DEFAULT_PATH
+      ) 
+  else()
+    ExternalProject_Add("marley"
+      SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern/marley
+      BINARY_DIR ${PROJECT_SOURCE_DIR}/extern/marley/build
+      GIT_REPOSITORY "https://github.com/MARLEY-MC/marley.git"
+      BUILD_COMMAND "make"
+      INSTALL_COMMAND cmake -E echo "MARLEY: Skipping install step"
+      )
+    set(G4SOLAR_MARLEY ${PROJECT_SOURCE_DIR}/extern/marley)
+  endif()
+endif()
+
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -154,8 +200,6 @@ install(TARGETS solar_sim
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build beamCell. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
-#
-
 file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${G4SOLAR_BIN_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/macros/vis.mac DESTINATION ${G4SOLAR_BIN_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${G4SOLAR_BIN_DIR})
