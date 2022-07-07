@@ -24,35 +24,35 @@ Hopefully, a more appropriate naming convention will gain ground.
   * **MARLEY**: Low-energy neutrino interactions in LAr
   * **BxDecay0**: Generic radioactive decay generator, with the possibility 
     of producing neutrinoless *ββ*-decay final states.
+- **Utilities**: `G4SOLAr` uses the `RapidJSON` package to parse configuration 
+  files formatted according to the `json` standard. 
     
-  At the preset state of the development, these two packages have to be installed
-  manually by the user 
-  (see [Event Generators installation and configuration](README_GENERATORS.md)). 
+  At the preset state of the development, these three packages have to be installed
+  manually by the user. The `G4SOLAr` package includes a convenient script 
+  to automatically download, build and install the external dependencies
+  (see [External dependencies installation and configuration](README_EXTERNALS.md)). 
   
-## Build the project (sanity check)
+## Download and build the project
 
-### Step 1 - MARLEY check
-Verify that the environmental variable `MARLEY` is defined and properly set.
-
-`MARLEY` comes with a useful setup script that can be sourced in your `.bashrc`
-file and set up an environmental variable with the path to the MARLEY source code.
-You can check out if this variable is properly set by executing 
-```bash
-$ echo $MARLEY
-```
-If the above command will return the path to the MARLEY directory, then you can 
-go to step 2. Otherwise, run the setup script manually. 
-
-### Step 2 - Build
-Build the project
+### Step 1 - Download the project from github and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
-$ cd G4SOLAr
+```
+If the project dependencies are not yet installed, follow the instructions
+on [this page](./README_EXTERNALS.md).
+
+### Step 2 - Build
+Create a build and install directory, then build and install the project
+```bash
 $ mkdir build install && cd build 
-$ cmake -DCMAKE_PREFIX_PATH=/path/to/bxdecay0/install -DCMAKE_INSTALL_PREFIX=../install ../G4SOLAr
+$ cmake -DGeant4_DIR=/path/to/geant4/install -DCMAKE_INSTALL_PREFIX=../install [opts...] ../G4SOLAr
 $ make
 $ make install
 ```
+The project will search for the external dependencies in the 
+`G4SOLAR_EXT_DIR` (by default set to `G4SOLAr/extern/`). You can 
+specify a specific installation directory by setting it in the `cmake`
+command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
 
 ### Step 3 - Run
 

@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------
 # Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 project(G4SOLAr)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS} 
@@ -29,42 +29,57 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 # Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
+
 #----------------------------------------------------------------------------
-# Find external dependencies
-include(ExternalProject)
-ExternalProject_Add("rapidjson"
-  SOURCE_DIR      ${PROJECT_SOURCE_DIR}/extern/rapidjson
-  BINARY_DIR      ${CMAKE_CURRENT_BINARY_DIR}/extern/rapidjson
-  GIT_REPOSITORY  "https://github.com/Tencent/rapidjson.git"
-  BUILD_COMMAND   cmake -E echo "rapidjson: Skipping build step."
-  INSTALL_COMMAND cmake -E echo "rapidjson: Skipping install step."
-  )
-set(G4SOLAR_RAPIDJSON_INCLUDE "${PROJECT_SOURCE_DIR}/extern/rapidjson/include")
-
-find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG) 
-
-set (G4SOLAR_MARLEY $ENV{MARLEY})
-message(STATUS "libMARLEY path: ${G4SOLAR_MARLEY}/build")
-find_library(MARLEY 
-             NAMES MARLEY
-             PATHS "${G4SOLAR_MARLEY}/build"
-             REQUIRED
-             NO_DEFAULT_PATH) 
-           find_library(MARLEY_ROOT 
-             NAMES MARLEY_ROOT
-             PATHS "${G4SOLAR_MARLEY}/build"
-             REQUIRED
-             NO_DEFAULT_PATH) 
-
-if (MARLEY) 
-  message(STATUS "MARLEY library found")
-endif()
-
+# Setup Projects PATHS
 set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
+if (NOT G4SOLAR_EXT_DIR) 
+  set(G4SOLAR_EXT_DIR     "${PROJECT_SOURCE_DIR}/extern")
+endif()
 set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
 set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
 set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
+
+
+#----------------------------------------------------------------------------
+# Find external dependencies of G4SOLAr. 
+# If not already installed cd into the G4SOLAR/extern directory and execute the 
+# cmakelists in there
+#
+# 1. RapidJSON
+include(ExternalProject)
+if(NOT RAPIDJSON_DIR)
+  set(RAPIDJSON_DIR "${G4SOLAR_EXT_DIR}/rapidjson")
+endif()
+find_package(RapidJSON REQUIRED PATHS ${RAPIDJSON_DIR} NO_DEFAULT_PATH)
+
+if(NOT BXDECAY0_DIR) 
+  set(BXDECAY0_DIR "${G4SOLAR_EXT_DIR}/bxdecay0")
+endif() 
+find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG PATHS ${BXDECAY0_DIR} NO_DEFAULT_PATH)
+
+if(BxDecay0_FOUND)
+  message(STATUS "BxDecay0 found: include at ${BxDecay0_INCLUDE_DIR}")
+  list(APPEND CMAKE_PREFIX_PATH ${BXDECAY0_DIR})
+endif()
+  
+if(NOT MARLEY_DIR) 
+  set(MARLEY_DIR "${G4SOLAR_EXT_DIR}/marley")
+endif()
+
+find_library(MARLEY 
+  NAMES MARLEY
+  PATHS "${MARLEY_DIR}/build"
+  REQUIRED
+  NO_DEFAULT_PATH
+  ) 
+find_library(MARLEY_ROOT 
+  NAMES MARLEY_ROOT
+  PATHS "${MARLEY_DIR}/build"
+  REQUIRED
+  NO_DEFAULT_PATH
+  ) 
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -77,8 +92,8 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/config
                     ${G4SOLAR_INCLUDE_DIR}/event
                     ${BxDecay0_INCLUDE_DIR}
-                    ${G4SOLAR_MARLEY}/include
-                    ${G4SOLAR_RAPIDJSON_INCLUDE}
+                    ${MARLEY_DIR}/include
+                    ${RapidJSON_INCLUDE_DIR}
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 )
@@ -135,15 +150,19 @@ export(EXPORT G4SOLArTargets
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(solar_sim solar_sim.cc ${sources} ${headers})
-add_dependencies(solar_sim rapidjson)
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
 target_link_libraries(solar_sim SLArPDSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+
+list(APPEND G4SOLAR_RPATH 
+  "${G4SOLAR_LIB_DIR}" 
+  "${BXDECAY0_DIR}/lib" 
+  "${MARLEY_DIR}/build")
 set_target_properties(solar_sim PROPERTIES 
-  INSTALL_RPATH ${G4SOLAR_LIB_DIR}
+  INSTALL_RPATH "${G4SOLAR_RPATH}"
   BUILD_WITH_INSTALL_RPATH 1
   )
 install(TARGETS solar_sim 
@@ -151,11 +170,9 @@ install(TARGETS solar_sim
   RUNTIME DESTINATION ${G4SOLAR_BIN_DIR}
   )
 #----------------------------------------------------------------------------
-# Copy all scripts to the build directory, i.e. the directory in which we
-# build beamCell. This is so that we can run the executable directly because it
+# Copy all scripts to the install directory.
+# This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
-#
-
 file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${G4SOLAR_BIN_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/macros/vis.mac DESTINATION ${G4SOLAR_BIN_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${G4SOLAR_BIN_DIR})
