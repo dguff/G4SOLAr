@@ -115,6 +115,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
   SLArAnaMgr->GetEvent()->Reset();
 
+  SLArAnaMgr->GetEvent()->SetSunDirection(); 
 
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
@@ -136,6 +137,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
       SetBulkName(fVolumeName); 
     }
+    auto dir_array = SLArAnaMgr->GetEvent()->GetSunDirection(); 
+    G4ThreeVector nu_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
+    fMarleyGen->SetNuDirection(nu_dir); 
     fMarleyGen->GeneratePrimaries(anEvent); 
   }
   else {

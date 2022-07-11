@@ -36,9 +36,12 @@ class SLArMarleyGen : public G4VUserPrimaryGeneratorAction
 
     void SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface*); 
     virtual void GeneratePrimaries(G4Event*) override;
+    void SetNuDirection(G4ThreeVector dir) {marley_nu_direction = dir;} 
+    G4ThreeVector GetNuDirection() {return marley_nu_direction;}
 
   protected:
     // MARLEY event generator object
     marley::Generator marley_generator_;
     bxdecay0_g4::VertexGeneratorInterface* marley_vertex_generator_;
+    G4ThreeVector marley_nu_direction; 
 };

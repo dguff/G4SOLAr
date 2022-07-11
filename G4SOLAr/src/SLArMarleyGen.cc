@@ -34,7 +34,7 @@
 
 SLArMarleyGen::SLArMarleyGen(
   const std::string& config_file_name) 
-  : G4VUserPrimaryGeneratorAction(), marley_vertex_generator_(0)
+  : G4VUserPrimaryGeneratorAction(), marley_vertex_generator_(0), marley_nu_direction(0, 0, 1) 
 {
   // Create a new marley::Generator object using the settings from the
   // configuration file. If the USE_ROOT preprocessor macro is defined, then
@@ -60,6 +60,10 @@ void SLArMarleyGen::GeneratePrimaries(G4Event* anEvent)
   }
 
   G4PrimaryVertex* vertex = new G4PrimaryVertex(vtx, 0.); 
+
+  std::array<double, 3> dir = 
+  {marley_nu_direction.x(), marley_nu_direction.y(), marley_nu_direction.z()};
+  marley_generator_.set_neutrino_direction(dir); 
 
   // Generate a new MARLEY event using the owned marley::Generator object
   marley::Event ev = marley_generator_.create_event();

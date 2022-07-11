@@ -27,6 +27,9 @@ class SLArMCEvent : public TObject
 
     int SetEvNumber    (int nEv);
     int GetEvNumber           ()   {return fEvNumber;}
+
+    void SetSunDirection(double* dir = nullptr); 
+    std::array<double, 3> GetSunDirection() {return fSunDirection;}
     //int ConfigPMTSystem (SLArSystemConfigPMT*   pmtSysCfg);
     //int ConfigHodoSystem(SLArSystemConfigHodo* hodoSysCfg);
 
@@ -43,13 +46,14 @@ class SLArMCEvent : public TObject
     void  Reset();
 
   private:
-    int              fEvNumber ;
+    int fEvNumber ;
+    std::array<double, 3>  fSunDirection; 
     std::vector<SLArMCPrimaryInfo*> fSLArPrimary; 
     //SLArEventSystemPMT*     fSystemPMT;
     //SLArEventSystemHodo*    fSystemHodo;
 
   public:
-    ClassDef(SLArMCEvent, 2);
+    ClassDef(SLArMCEvent, 3);
 };
 
 
