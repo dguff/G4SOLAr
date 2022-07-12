@@ -110,9 +110,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     SLArDetTank*                      fTank;
     SLArDetTankMsgr*                  fTankMsgr;
 
-    //std::map<G4String, SLArDetHodoscope*>
-                                    //fHodoscopes;
-
+    SLArGeoInfo                     fWorldGeoPars;
     SLArDetSuperCell*               fSuperCell;
     G4RotationMatrix*               fRotPMTBDwnStr;  
     G4RotationMatrix*               fRotPMTBTop   ;  

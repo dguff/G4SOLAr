@@ -137,6 +137,27 @@ void SLArDetectorConstruction::Init() {
   rapidjson::Document d;
   d.ParseStream(is);
   assert(d.IsObject());
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  // Parse world dimensions
+  if (d.HasMember("World")) {
+    const auto world = d["World"].GetObj(); 
+    assert(target.HasMember("dimensions"));
+    assert(target["dimensions"].IsArray());
+
+    const auto dimensions = world["dimensions"].GetArray();
+    for (const auto &xx : dimensions) {
+      const auto entry = xx.GetObj(); 
+      const char* name = entry["name"].GetString();
+      const char* unit = entry["unit"].GetString();
+      G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
+      fWorldGeoPars.RegisterGeoPar(name, val); 
+    }
+  } else {
+    fWorldGeoPars.RegisterGeoPar("size_x", 5*CLHEP::m); 
+    fWorldGeoPars.RegisterGeoPar("size_y", 8*CLHEP::m); 
+    fWorldGeoPars.RegisterGeoPar("size_z",20*CLHEP::m); 
+  }
+
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Tank objects
@@ -237,7 +258,10 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
 // The experimental Hall
 
-  G4Box* expHall_box = new G4Box("World", 3.5*CLHEP::m, 3.5*CLHEP::m, 8*CLHEP::m);
+  G4Box* expHall_box = new G4Box("World", 
+      fWorldGeoPars.GetGeoPar("size_x"), 
+      fWorldGeoPars.GetGeoPar("size_y"), 
+      fWorldGeoPars.GetGeoPar("size_z"));  
 
  fWorldLog   
     = new G4LogicalVolume(expHall_box, fColl.fGEOWorld.fMaterial, "World",0,0,0);
@@ -255,52 +279,11 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   // SuperCell
   BuildAndPlaceSuperCells();
 
-  //DumpPMTMap("./output/pmtMapFile.txt");
-
- // ------------- Surfaces --------------
- //
- // Water Tank
- //
- //  G4OpticalSurface* opWaterSurface = new G4OpticalSurface("WaterSurface");
- //  opWaterSurface->SetType(dielectric_dielectric);
- //  opWaterSurface->SetFinish(ground);
- //  opWaterSurface->SetModel(unified);
-   //opWaterSurface->SetType(dielectric_LUTDAVIS);
-   //opWaterSurface->SetFinish(Rough_LUT);
-   //opWaterSurface->SetModel(DAVIS);
- 
-   //G4LogicalBorderSurface* waterSurface =
-           //new G4LogicalBorderSurface("WaterSurface",
-                                  //Liquid_phys,expHall_phys,opWaterSurface);
- 
-   //G4OpticalSurface* opticalSurface = dynamic_cast <G4OpticalSurface*>
-         //(waterSurface->GetSurface(Liquid_phys,expHall_phys)->
-                                                        //GetSurfaceProperty());
-   //if (opticalSurface) opticalSurface->DumpInfo();
- 
- //
- // Generate & Add Material Properties Table attached to the optical surfaces
- //
-   
-   //  opWaterSurface->SetMaterialPropertiesTable(myST1);
- 
-   //OpticalAirSurface
-   //G4double reflectivity[num] = {0.3, 0.5};
-   //G4double efficiency[num]   = {0.8, 1.0};
- 
-   //G4MaterialPropertiesTable *myST2 = new G4MaterialPropertiesTable();
- 
-   //myST2->AddProperty("REFLECTIVITY", ephoton, reflectivity, num);
-   //myST2->AddProperty("EFFICIENCY",   ephoton, efficiency,   num);
- 
-   //G4cout << "Air Surface G4MaterialPropertiesTable" << G4endl;
-   //myST2->DumpTable();
- 
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
 
   fTank->SetVisAttributes();
-  //fSuperCell->SetVisAttributes();
+  fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
@@ -344,19 +327,6 @@ void SLArDetectorConstruction::ConstructSDandField()
           //pmt.second->GetCathode()->GetModLV(), 
           //pmtSD);
 
-    // Set Hodoscope SD
-    //if (fHodoscopes.size())
-    //{
-      //G4VSensitiveDetector* hodoSD
-        //= new SLArHodoSD(SDname="/Hodoscope/Bar");
-      //SDman->AddNewDetector(hodoSD);
-      //for (auto &hodo : fHodoscopes)
-        //SetSensitiveDetector(
-            //hodo.second->GetBar()->GetModLV(), 
-            //hodoSD 
-            //);
-    //}
-
     // Set Tank SD
     G4VSensitiveDetector* targetSD
       = new SLArTankSD(SDname="/Tank/Target");
@@ -372,12 +342,6 @@ SLArDetTank* SLArDetectorConstruction::GetDetTank()
   return fTank;
 }
 
-//SLArDetLAPPD* SLArDetectorConstruction::GetDetLAPPD() 
-//{
-  //return fLAPPD;
-//}
-
-
 //SLArDetPMT* SLArDetectorConstruction::GetDetPMT(const char* mod) 
 //{
   //SLArDetPMT* pmt = nullptr;
@@ -388,11 +352,6 @@ SLArDetTank* SLArDetectorConstruction::GetDetTank()
 //std::map<G4String,SLArDetPMT*>& SLArDetectorConstruction::GetDetPMTs()
 //{
   //return fPMTs;
-//}
-
-//std::map<G4String,SLArDetHodoscope*>& SLArDetectorConstruction::GetDetHodoscopes()
-//{
-  //return fHodoscopes;
 //}
 
 
@@ -450,8 +409,6 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
       rotPMT->rotateY(scinfo.second->GetTheta()); 
       rotPMT->rotateZ(scinfo.second->GetPsi()); 
       
-      G4double pmtShft = 0.0;
-
       G4ThreeVector basePos(
           scinfo.second->GetX(), 
           scinfo.second->GetY(), 
