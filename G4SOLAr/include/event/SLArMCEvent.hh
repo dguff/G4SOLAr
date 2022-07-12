@@ -15,21 +15,26 @@
 
 #include "event/SLArMCPrimaryInfo.hh"
 //#include "config/SLArPDSystemConfig.hh"
-
 //#include "event/SLArEventSystemPMT.hh"
-//#include "event/SLArEventSystemHodo.hh"
+
+
 
 class SLArMCEvent : public TObject
 {
   public: 
+    enum EDirectionMode {kFixed = 0, kRandom = 1};
+
     SLArMCEvent ();
     ~SLArMCEvent();
 
     int SetEvNumber    (int nEv);
     int GetEvNumber           ()   {return fEvNumber;}
 
-    void SetSunDirection(double* dir = nullptr); 
-    std::array<double, 3> GetSunDirection() {return fSunDirection;}
+    void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
+    void SetDirection(double* dir = nullptr); 
+    void SetDirection(double px, double py, double pz); 
+    EDirectionMode GetDirectionMode() {return fDirectionMode;}
+    std::array<double, 3> GetDirection() {return fDirection;}
     //int ConfigPMTSystem (SLArSystemConfigPMT*   pmtSysCfg);
     //int ConfigHodoSystem(SLArSystemConfigHodo* hodoSysCfg);
 
@@ -46,9 +51,10 @@ class SLArMCEvent : public TObject
     void  Reset();
 
   private:
-    int fEvNumber ;
-    std::array<double, 3>  fSunDirection; 
+    int fEvNumber;
+    std::array<double, 3>  fDirection; 
     std::vector<SLArMCPrimaryInfo*> fSLArPrimary; 
+    EDirectionMode fDirectionMode;
     //SLArEventSystemPMT*     fSystemPMT;
     //SLArEventSystemHodo*    fSystemHodo;
 

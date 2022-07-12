@@ -68,15 +68,15 @@ void SLArMCEvent::Reset()
     delete p; p = nullptr; 
   }
   fSLArPrimary.clear(); 
-  fSunDirection = {0, 0, 1};
+  fDirection = {0, 0, 1};
   fEvNumber = -1;
 }
 
-void SLArMCEvent::SetSunDirection(double* dir) {
+void SLArMCEvent::SetDirection(double* dir) {
   if (dir) {
-    fSunDirection.at(0) = dir[0];  
-    fSunDirection.at(1) = dir[1];  
-    fSunDirection.at(2) = dir[2];  
+    fDirection.at(0) = dir[0];  
+    fDirection.at(1) = dir[1];  
+    fDirection.at(2) = dir[2];  
   } else {
     double cosTheta = 2*gRandom->Rndm() - 1.;
     double phi = TMath::TwoPi()*gRandom->Rndm();
@@ -85,11 +85,19 @@ void SLArMCEvent::SetSunDirection(double* dir) {
              uy = sinTheta*std::sin(phi),
              uz = cosTheta;
 
-    fSunDirection.at(0) = ux;  
-    fSunDirection.at(1) = uy;  
-    fSunDirection.at(2) = uz;   
+    fDirection.at(0) = ux;  
+    fDirection.at(1) = uy;  
+    fDirection.at(2) = uz;   
   }
 }
+
+void SLArMCEvent::SetDirection(double px, double py, double pz) {
+    fDirection.at(0) = px;  
+    fDirection.at(1) = py;  
+    fDirection.at(2) = pz;  
+}
+
+
 
 bool SLArMCEvent::CheckIfPrimary(int trkId) {
   bool is_primary = false; 

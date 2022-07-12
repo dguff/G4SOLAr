@@ -40,10 +40,10 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     void                    UpdatePMTs(); 
 
     // define command
-    //G4UIcmdWithAString*         fCmdPMTBottomMap    = nullptr;
-    //G4UIcmdWithAString*         fCmdPMTTopMap       = nullptr;
-    G4UIcmdWithAString*         fCmdOutputFileName  = nullptr;
-    G4UIcmdWithAString*         fCmdOutputPath      = nullptr;
+    G4UIcmdWith3Vector*         fCmdDirection     ; 
+    G4UIcmdWithAString*         fCmdDirectionMode ;  
+    G4UIcmdWithAString*         fCmdOutputFileName;
+    G4UIcmdWithAString*         fCmdOutputPath    ;
 };
 
 #endif /* end of include guard SLArANALYSISMANAGERMSGR_HH */

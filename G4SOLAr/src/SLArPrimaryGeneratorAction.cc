@@ -113,9 +113,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Store Primary information id dst
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  SLArAnaMgr->GetEvent()->Reset();
 
-  SLArAnaMgr->GetEvent()->SetSunDirection(); 
+  if (SLArAnaMgr->GetEvent()->GetDirectionMode() == SLArMCEvent::kRandom)
+    SLArAnaMgr->GetEvent()->SetDirection(); 
 
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
@@ -137,7 +137,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
       SetBulkName(fVolumeName); 
     }
-    auto dir_array = SLArAnaMgr->GetEvent()->GetSunDirection(); 
+    auto dir_array = SLArAnaMgr->GetEvent()->GetDirection(); 
     G4ThreeVector nu_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
     fMarleyGen->SetNuDirection(nu_dir); 
     fMarleyGen->GeneratePrimaries(anEvent); 
@@ -147,7 +147,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Set gun position
     fParticleGun->SetParticlePosition(pos);
     // Set gun direction
-    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
+    auto dir_array = SLArAnaMgr->GetEvent()->GetDirection(); 
+    G4ThreeVector nu_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
+    fParticleGun->SetParticleMomentumDirection(nu_dir);
     // Generate primary vertex
     fParticleGun->GeneratePrimaryVertex(anEvent);
     // Store Primary information id dst
