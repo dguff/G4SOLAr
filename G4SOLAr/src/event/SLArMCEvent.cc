@@ -5,6 +5,7 @@
  */
 
 #include "event/SLArMCEvent.hh"
+#include "TRandom3.h"
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
@@ -67,7 +68,27 @@ void SLArMCEvent::Reset()
     delete p; p = nullptr; 
   }
   fSLArPrimary.clear(); 
+  fSunDirection = {0, 0, 1};
   fEvNumber = -1;
+}
+
+void SLArMCEvent::SetSunDirection(double* dir) {
+  if (dir) {
+    fSunDirection.at(0) = dir[0];  
+    fSunDirection.at(1) = dir[1];  
+    fSunDirection.at(2) = dir[2];  
+  } else {
+    double cosTheta = 2*gRandom->Rndm() - 1.;
+    double phi = TMath::TwoPi()*gRandom->Rndm();
+    double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
+    double ux = sinTheta*std::cos(phi),
+             uy = sinTheta*std::sin(phi),
+             uz = cosTheta;
+
+    fSunDirection.at(0) = ux;  
+    fSunDirection.at(1) = uy;  
+    fSunDirection.at(2) = uz;   
+  }
 }
 
 bool SLArMCEvent::CheckIfPrimary(int trkId) {
