@@ -53,9 +53,9 @@
 
 #include "G4UImanager.hh"
 
+#include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
 #include "SLArDetectorConstruction.hh"
-
 #include "SLArActionInitialization.hh"
 
 #include "G4VisExecutive.hh"
@@ -154,6 +154,7 @@ int main(int argc,char** argv)
   // Get the pointer to the User Interface manager
   //
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  //
 
   if ( macro.size() ) {
      // Batch mode

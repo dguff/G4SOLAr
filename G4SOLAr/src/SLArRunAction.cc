@@ -37,13 +37,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// In case you want to store data in an array see ex. b4/5
 SLArRunAction::SLArRunAction()
  : G4UserRunAction()
 { 
-  // Create custom TestCell Analysis Manager
+  // Create custom SLAr Analysis Manager
   SLArAnalysisManager* anamgr = SLArAnalysisManager::Instance();
-  anamgr->FakeAccess();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
