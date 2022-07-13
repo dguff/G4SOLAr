@@ -114,9 +114,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Store Primary information id dst
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-  if (SLArAnaMgr->GetEvent()->GetDirectionMode() == SLArMCEvent::kRandom)
+  if (SLArAnaMgr->GetEvent()->GetDirectionMode() == SLArMCEvent::kRandom) {
     SLArAnaMgr->GetEvent()->SetDirection(); 
-
+  }
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
   if (fGunMode == kRadio) {
@@ -148,8 +148,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticlePosition(pos);
     // Set gun direction
     auto dir_array = SLArAnaMgr->GetEvent()->GetDirection(); 
-    G4ThreeVector nu_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
-    fParticleGun->SetParticleMomentumDirection(nu_dir);
+    G4ThreeVector gun_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
+    fParticleGun->SetParticleMomentumDirection(gun_dir);
     // Generate primary vertex
     fParticleGun->GeneratePrimaryVertex(anEvent);
     // Store Primary information id dst
@@ -188,12 +188,6 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
     }
   }
-
-  //printf("\nSLArPrimaryGeneratorAction::GeneratePrimaries - MARLEY\n");
-  //printf("primary list:\n"); 
-  //for (const auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
-  //p->PrintParticle(); 
-  //}
 
   return;
 }
