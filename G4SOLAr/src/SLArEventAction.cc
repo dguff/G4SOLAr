@@ -136,6 +136,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     SLArAnaMgr->GetEvent()->SetEvNumber(event->GetEventID());
     
     SLArAnaMgr->FillEvTree();
+
+    SLArAnaMgr->GetEvent()->Reset();
 }
 
 //void SLArEventAction::RecordEventPMT(const G4Event* ev)

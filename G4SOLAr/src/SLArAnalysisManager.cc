@@ -46,6 +46,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
+    fMCEvent         = new SLArMCEvent();
     fAnaMsgr         = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
@@ -83,7 +84,6 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   }
 
   fEventTree = new TTree("EventTree", "Event Tree");
-  fMCEvent   = new SLArMCEvent();
   //fMCEvent->GetPMTSystem() ->Config(fPMTSysCfg );
   //fMCEvent->GetHodoSystem()->Config(fHodoSysCfg);
 
@@ -96,7 +96,10 @@ G4bool SLArAnalysisManager::Save()
 {
   if (!fRootFile) return false;
 
-  if (fEventTree) fEventTree->Write();
+  if (fEventTree) {
+    fEventTree->Write();
+    fEventTree->Delete();
+  }
 
   fRootFile->Close();
 
@@ -111,13 +114,7 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
   else             return true ; 
 }
 
-/*G4bool SLArAnalysisManager::LoadHodoCfg(SLArSystemConfigHodo* hodoCfg)
- *{
- *  fHodoSysCfg = hodoCfg;
- *  if (!fHodoSysCfg) return false;
- *  else              return true ; 
- *}
- *
+/*
  *void SLArAnalysisManager::WriteSysCfg()
  *{
  *  if (!fRootFile)
@@ -137,15 +134,6 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
  *    G4cout << "fPMTSysCfg is nullptr! Quit."      << G4endl;
  *  }
  *
- *  if (fHodoSysCfg) {
- *    fRootFile->cd();
- *    fHodoSysCfg->Write("HodoSysConfig");
- *  }
- *  else 
- *  {
- *    G4cout << "SLArAnalysisManager::WriteSysCfg" << G4endl;
- *    G4cout << "fHodoSysCfg is nullptr! Quit."      << G4endl;
- *  }
  *}
  */
 

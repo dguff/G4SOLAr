@@ -36,22 +36,18 @@ class SLArAnalysisManager
 
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArPDSystemConfig*  pdsCfg );
-    //G4bool LoadHodoCfg        (SLArSystemConfigHodo* hodoCfg);
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
     void   WriteSysCfg        ();
     bool   IsPathValid        (G4String path);
 
-    // Access methods
+    // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
     SLArPDSystemConfig*
            GetPDSCfg()     {return  fPDSysCfg;}
-    //SLArSystemConfigHodo*
-           //GetHodoCfg()    {return fHodoSysCfg;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
-
     G4bool Save ();
 
     // mock fake access
@@ -66,18 +62,6 @@ class SLArAnalysisManager
     // static data members
     static SLArAnalysisManager*               fgMasterInstance;
     static G4ThreadLocal SLArAnalysisManager* fgInstance;    
-
-    // methods
-    //void ClearNtupleManagers();
-    //void CreateNtupleManagers();
-    //G4int  GetNtupleFileNumber();
-    //G4bool ResetNtuple();
-
-    //G4bool WriteH1();
-    //G4bool WriteH2();
-    //G4bool WriteH3();
-    //G4bool WriteP1();
-    //G4bool WriteP2();
 
     // data members 
     G4bool   fIsMaster;
