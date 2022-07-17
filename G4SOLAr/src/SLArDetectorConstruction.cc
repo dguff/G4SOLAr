@@ -140,18 +140,7 @@ void SLArDetectorConstruction::Init() {
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Parse world dimensions
   if (d.HasMember("World")) {
-    const auto world = d["World"].GetObj(); 
-    assert(target.HasMember("dimensions"));
-    assert(target["dimensions"].IsArray());
-
-    const auto dimensions = world["dimensions"].GetArray();
-    for (const auto &xx : dimensions) {
-      const auto entry = xx.GetObj(); 
-      const char* name = entry["name"].GetString();
-      const char* unit = entry["unit"].GetString();
-      G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
-      fWorldGeoPars.RegisterGeoPar(name, val); 
-    }
+    fWorldGeoPars.ReadFromJSON(d, "World");
   } else {
     fWorldGeoPars.RegisterGeoPar("size_x", 5*CLHEP::m); 
     fWorldGeoPars.RegisterGeoPar("size_y", 8*CLHEP::m); 
@@ -164,18 +153,7 @@ void SLArDetectorConstruction::Init() {
   G4cerr << "SLArDetectorConstruction::Init Tank" << G4endl;
   fTank     = new SLArDetTank();
   if (d.HasMember("Tank")) {
-    const auto target = d["Tank"].GetObj(); 
-    assert(target.HasMember("dimensions"));
-    assert(target["dimensions"].IsArray());
-
-    const auto dimensions = target["dimensions"].GetArray();
-    for (const auto &xx : dimensions) {
-      const auto entry = xx.GetObj(); 
-      const char* name = entry["name"].GetString();
-      const char* unit = entry["unit"].GetString();
-      G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
-      fTank->GetGeoInfo()->RegisterGeoPar(name, val);
-    }
+    fTank->GetGeoInfo()->ReadFromJSON(d, "Tank");
   } else {
     fTank->BuildDefalutGeoParMap();
   }
@@ -190,19 +168,11 @@ void SLArDetectorConstruction::Init() {
   SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
 
   fSuperCell = new SLArDetSuperCell(); 
-  fSuperCell->BuildDefalutGeoParMap(); 
 
   if (d.HasMember("SuperCell")) {
     const auto sc = d["SuperCell"].GetObj();
-    if (sc.HasMember("dimensions")) {
-      for (const auto &xx : sc["dimensions"].GetArray()) {
-        const auto entry = xx.GetObj(); 
-        const char* name = entry["name"].GetString(); 
-        const char* unit = entry["unit"].GetString(); 
-        G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
-        fSuperCell->GetGeoInfo()->RegisterGeoPar(name, val);
-      }
-    }
+    fSuperCell->GetGeoInfo()->ReadFromJSON(d, "SuperCell"); 
+    
 
     if (sc.HasMember("modules")) {
       assert(sc["modules"].IsArray());

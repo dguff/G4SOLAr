@@ -8,9 +8,12 @@
                    
 #define SLArGEOINFO_HH
 
-#include "G4ThreeVector.hh"
 #include <ostream>
 #include <map>
+#include "G4ThreeVector.hh"
+
+#include "rapidjson/document.h"
+#include "rapidjson/allocators.h"
 
 class SLArGeoInfo {
 
@@ -29,6 +32,7 @@ class SLArGeoInfo {
     G4double GetGeoPar       (G4String str);
     std::pair<G4String, G4double>
              GetGeoPair      (G4String str);
+    bool     ReadFromJSON    (const rapidjson::Document&, G4String key); 
 
 
   private:
