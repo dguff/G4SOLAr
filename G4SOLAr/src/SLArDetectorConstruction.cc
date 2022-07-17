@@ -46,6 +46,8 @@
 #include "detector/Tank/SLArDetTankMsgr.hh"
 #include "detector/Tank/SLArTankSD.hh"
 
+#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+
 #include "config/SLArPDSystemConfig.hh"
 #include "config/SLArCfgSuperCell.hh"
 
@@ -86,9 +88,6 @@ SLArDetectorConstruction::SLArDetectorConstruction()
  : G4VUserDetectorConstruction(), 
    fTank(nullptr), fTankMsgr(nullptr), 
    fSuperCell(nullptr),
-   fRotPMTBDwnStr(nullptr), fRotPMTBTop(nullptr),
-   fRotPMTBBottom(nullptr), fRotPMTBLeft(nullptr),
-   fRotPMTBRight(nullptr),
    fWorldLog(nullptr)
 { }
 
@@ -100,25 +99,7 @@ SLArDetectorConstruction::~SLArDetectorConstruction(){
   {
     delete fVisAttributes[i];
   }
-  //if (fPMTMsgr     ) delete fPMTMsgr  ;
   
-/*  Let Geant4 to deal with destructing volumes...
- *  for (auto &pmt : fPMTs) 
- *  { if (pmt.second) {delete pmt.second; pmt.second = nullptr;} }
- *  fPMTs.clear();
- *
- *  for (auto &hodo : fHodoscopes) 
- *  { if (hodo.second) {delete hodo.second; hodo.second = nullptr;} }
- *  fHodoscopes.clear();
- *
- *  if (fTank     )    delete fTank;
- *  if (fTankMsgr )    delete fTankMsgr;
- *  if (fLAPPD    )    delete fLAPPD;
- *  if (fLAPPDMsgr)    delete fLAPPDMsgr;
- *  if (fRotPMTtop)    delete fRotPMTtop;
- *  if (fRotPMTbottom) delete fRotPMTbottom;
- *
- */
   G4cerr << "SLArDetectorConstruction DONE" << G4endl;
 }
 
@@ -211,6 +192,13 @@ void SLArDetectorConstruction::Init() {
   fSuperCell->BuildMaterial(); 
 
   G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
+  
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  // Initialize ReadoutTile
+  fReadoutTile = new SLArDetReadoutTile();
+  fReadoutTile->GetGeoInfo()->ReadFromJSON(d, "ReadoutTile"); 
+  fReadoutTile->BuildMaterial();
+  
 
   std::fclose(geo_cfg_file);
 }
@@ -242,18 +230,23 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   // The Cryostat/LAr target
   G4cerr << "\nSLArDetectorConstruction: Building the Tank" << G4endl;
   fTank->BuildTank();
-  fTank->GetModPV("Tank", 0,
-        G4ThreeVector(0, 0, 0), 
-        fWorldLog, false, 20);
+  //fTank->GetModPV("Tank", 0,
+        //G4ThreeVector(0, 0, 0), 
+        //fWorldLog, false, 20);
 
   // SuperCell
-  BuildAndPlaceSuperCells();
+  //BuildAndPlaceSuperCells();
 
- //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  // ReadoutTile 
+  fReadoutTile->BuildReadoutTile(); 
+  fReadoutTile->GetModPV("ReadoutTile", 0, G4ThreeVector(0, 0, 0), 
+      fWorldLog, false, 50); 
+  fReadoutTile->SetVisAttributes();
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
 
-  fTank->SetVisAttributes();
-  fSuperCell->SetVisAttributes();
+  //fTank->SetVisAttributes();
+  //fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);

@@ -1,0 +1,8 @@
+# comment this line 
+# get NIST definition of generic plastic for PCB substrate
+
+beginDef
+  name: PCB
+  NIST: G4_POLYETHYLENE
+endDef
+

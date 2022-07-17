@@ -16,6 +16,7 @@
 #include "G4UnionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
+#include "G4PVReplica.hh"
 #include "G4VPhysicalVolume.hh"
 
 #include "G4UnitsTable.hh"
@@ -94,7 +95,7 @@ void SLArDetReadoutTile::BuildSiPM()
   fSiPM->SetMaterial(fMatSiPM->GetMaterial());
 
   fSiPM->SetSolidVolume(
-        new G4Box("Coating", 
+        new G4Box("SiPMBox", 
           0.5*fSiPM->GetGeoPar("sipm_x"),
           0.5*fSiPM->GetGeoPar("sipm_y"),
           0.5*fSiPM->GetGeoPar("sipm_z"))
@@ -102,7 +103,7 @@ void SLArDetReadoutTile::BuildSiPM()
  
   fSiPM->SetLogicVolume(
       new G4LogicalVolume(fSiPM->GetModSV(), 
-        fSiPM->GetMaterial(), "Coating", 0, 0, 0)
+        fSiPM->GetMaterial(), "SiPM_lv", 0, 0, 0)
       );
 }
 
@@ -117,7 +118,7 @@ void SLArDetReadoutTile::BuildChargePix()
   fChargePix->SetMaterial(fMatSiPM->GetMaterial());
 
   fChargePix->SetSolidVolume(
-        new G4Box("Coating", 
+        new G4Box("pixel_box", 
           0.5*fChargePix->GetGeoPar("pix_x"),
           0.5*fChargePix->GetGeoPar("pix_y"),
           0.5*fChargePix->GetGeoPar("pix_z"))
@@ -125,7 +126,7 @@ void SLArDetReadoutTile::BuildChargePix()
  
   fChargePix->SetLogicVolume(
       new G4LogicalVolume(fChargePix->GetModSV(), 
-        fChargePix->GetMaterial(), "Coating", 0, 0, 0)
+        fChargePix->GetMaterial(), "pixel_lv", 0, 0, 0)
       );
 }
 
@@ -158,35 +159,52 @@ void SLArDetReadoutTile::BuildReadoutTile()
   G4double h = 0*CLHEP::mm;
   G4cout<<"GetModPV PCB base..." << G4endl; 
   fBasePCB->GetModPV("ReadoutTilePCB", 0, 
-      G4ThreeVector(0, h, 0),
+      G4ThreeVector(0, -0.5*(fhTot-fGeoInfo->GetGeoPar("tile_y")), 0),
       fModLV, false, 200);
 
-  // 2. The SiPMs
-  h = fhTot - fGeoInfo->GetGeoPar("sipm_y"); 
-  G4cout<<"GetModPV SiPM..." << G4endl; 
-
+  // 2. The elementary-cell, consisting of 1 SiPM and 5 charge pixels
+  // o X X
+  // o X X
+  // o o o
+  h  = fGeoInfo->GetGeoPar("sipm_y"); 
+  G4double hq = fGeoInfo->GetGeoPar("pix_y"); 
   G4double dx = 3*CLHEP::mm;
-  G4double sipm_x = fSiPM->GetGeoPar("sipm_x"); 
-  G4double x_min = -0.5*fBasePCB->GetGeoPar("tile_x");
-  G4double x_max = +0.5*fBasePCB->GetGeoPar("tile_x");
-  G4double dz = 3*CLHEP::mm;
-  G4double sipm_z = fSiPM->GetGeoPar("sipm_z");  
-  G4double z_min = -0.5*fBasePCB->GetGeoPar("tile_z");
-  G4double z_max = +0.5*fBasePCB->GetGeoPar("tile_z");
+  G4cout<<"Placing sensors in a cell..." << G4endl; 
+  G4Box* cell_box = new G4Box("tileCellBox", 1.5*dx, 0.5*h, 1.5*dx); 
+  G4LogicalVolume* cell_lv = new G4LogicalVolume(
+      cell_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_lv"); 
+  cell_lv->SetVisAttributes( G4VisAttributes(false) ); 
+  // place charge pixels inside cell
+  G4cout << "  - installing pixels" << G4endl; 
+  fChargePix->GetModPV("qpix", 0, G4ThreeVector( -dx, 0.5*(hq-h), -dx), cell_lv); 
+  fChargePix->GetModPV("qpix", 0, G4ThreeVector(  0., 0.5*(hq-h), -dx), cell_lv); 
+  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), -dx), cell_lv); 
+  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h),  0.), cell_lv); 
+  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), +dx), cell_lv); 
+  G4cout << "  - installing sipm" << G4endl; 
+  fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
 
-  G4double x = x_min + dx;
+  // 3. A row of elementary cells
+  G4cout<<"Creating a row of sensor cells..." << G4endl; 
+  G4Box* cell_row_box = new G4Box("tileCellRow", 1.5*dx, 0.5*h, 15*dx); 
+  G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
+  cell_row_lv->SetVisAttributes( G4VisAttributes(false) ); 
+  new G4PVReplica("cell_row", cell_lv, cell_row_lv, kZAxis, 10, 3*dx);  
   
+  // 4. Full sensor plane
+  G4cout<<"Creating replacas of rows..." << G4endl; 
+  G4Box* cell_plane_box = new G4Box("tileCellPlane", 
+      0.5*fGeoInfo->GetGeoPar("tile_x"), 0.5*h, 0.5*fGeoInfo->GetGeoPar("tile_z")); 
+  G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
+      fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
+  cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
+  new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
 
-  while ( x < x_max - 0.5*sipm_x ) {
-    G4double z = z_min + dz; 
-    while (z < z_max - 0.5*sipm_z ) {
-      fSiPM->GetModPV("ReadoutTileSiPM", 0, 
-          G4ThreeVector(x , h, 0),
-          fModLV, false, 200);
-    }
-
-  }
-
+  // 5. Final assembly (PCB + sensor plane)
+  G4cout<<"Final placement..." << G4endl; 
+  new G4PVPlacement(
+      0, G4ThreeVector(0., 0.5*(fhTot-h), 0.), 
+      cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
 
    return;
 }
@@ -194,20 +212,19 @@ void SLArDetReadoutTile::BuildReadoutTile()
 void SLArDetReadoutTile::ResetReadoutTileGeometry() 
 {
   G4cout<< "Reset ReadoutTile Geometry" << G4endl;
-  
   return; 
 }
 
 void SLArDetReadoutTile::SetVisAttributes()
 {
   G4VisAttributes* visAttributes = new G4VisAttributes();
-  visAttributes->SetColor(0.862, 0.952, 0.976, 0.5);
+  visAttributes->SetColor(0.0824, 0.635, 0.019);
   fBasePCB->GetModLV()->SetVisAttributes( visAttributes );
 
-  visAttributes = new G4VisAttributes( G4Color(0.968, 0.494, 0.007) );
+  visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
   fSiPM->GetModLV()->SetVisAttributes( visAttributes );
 
-  visAttributes = new G4VisAttributes( G4Color(0.968, 0.494, 0.007) );
+  visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
   fChargePix->GetModLV()->SetVisAttributes( visAttributes );
 
   visAttributes = new G4VisAttributes();
@@ -219,7 +236,7 @@ void SLArDetReadoutTile::SetVisAttributes()
 
 SLArBaseDetModule* SLArDetReadoutTile::GetSiPM()
 {
-  return fCoating;
+  return fSiPM;
 }
 
 
@@ -252,34 +269,36 @@ void SLArDetReadoutTile::BuildDefalutGeoParMap()
 {
   G4cout  << "SLArDetReadoutTile::BuildGeoParMap()" << G4endl;
   
-  // Light guide and Coating layer size indicates:
-  // * the side width 
-  // * side length 
-  // * light guide thickness
-  // * coating layer thikness
-  fGeoInfo->RegisterGeoPar("cell_z"   , 50.0*CLHEP::cm);
-  fGeoInfo->RegisterGeoPar("cell_x"   , 10.0*CLHEP::cm);
-  fGeoInfo->RegisterGeoPar("coating_y",  0.5*CLHEP::mm);
-  fGeoInfo->RegisterGeoPar("cell_y"   ,  4.0*CLHEP::mm);
+  // ReadoutTile size indicates:
+  fGeoInfo->RegisterGeoPar("tile_z"   , 10.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("tile_x"   , 10.0*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("tile_y"   ,  2.5*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("sipm_z"   ,  6.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("sipm_x"   ,  6.0*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("sipm_y"   ,  1.8*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("pix_z"    ,  6.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("pix_x"    ,  6.0*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("pix_y"    ,  1.0*CLHEP::mm);
 }
 
 
 void SLArDetReadoutTile::BuildMaterial()
 {
-  fMatPCB   = new SLArMaterialInfo();
-  fMatSiPM      = new SLArMaterialInfo();
-  fMatReadoutTile    = new SLArMaterialInfo();
+  fMatPCB         = new SLArMaterialInfo();
+  fMatSiPM        = new SLArMaterialInfo();
+  fMatChargePix   = new SLArMaterialInfo(); 
+  fMatReadoutTile = new SLArMaterialInfo();
 
   fMatReadoutTile->SetMaterialID("LAr");
   fMatReadoutTile->GetMaterialBuilder()->BuildMaterial();
 
-  fMatPCB->SetMaterialID("Plastic");
+  fMatPCB->SetMaterialID("PCB");
   fMatPCB->GetMaterialBuilder()->BuildMaterial();
 
-  fMatChargePix->SetMaterialID("Gold");
+  fMatChargePix->SetMaterialID("Steel");
   fMatChargePix->GetMaterialBuilder()->BuildMaterial();
 
-  fMatSiPM->SetMaterialID("Bialkali");
+  fMatSiPM->SetMaterialID("Silicon");
   fMatSiPM->GetMaterialBuilder()->BuildMaterial();
 }
 

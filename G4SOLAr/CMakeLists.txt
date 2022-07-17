@@ -89,6 +89,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/detector
                     ${G4SOLAR_INCLUDE_DIR}/detector/Tank
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
+                    ${G4SOLAR_INCLUDE_DIR}/detector/ReadoutTile
                     ${G4SOLAR_INCLUDE_DIR}/config
                     ${G4SOLAR_INCLUDE_DIR}/event
                     ${BxDecay0_INCLUDE_DIR}
@@ -105,6 +106,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Tank/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/ReadoutTile/*.cc
 )
 
 file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
@@ -114,6 +116,7 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Tank/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/ReadoutTile/*.hh
                     )
 
 add_definitions(${ROOT_CXX_FLAGS})

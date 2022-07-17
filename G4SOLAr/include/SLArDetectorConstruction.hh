@@ -37,6 +37,7 @@
 #include "detector/SLArDetectorSize.hh"
 #include "detector/Tank/SLArDetTank.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
+#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -83,21 +84,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume*      Construct();
     virtual void                    ConstructSDandField();
     SLArDetTank*                    GetDetTank();
-    //SLArDetPMT*                       GetDetPMT(const char* mod);
-    //std::map<G4String,SLArDetPMT*>&   GetDetPMTs();
-    //std::map<G4String,SLArDetHodoscope*>&   
-                                    //GetDetHodoscopes();
-    //SLArDetLAPPD*                     GetDetLAPPD();
-    //void  [>deprecated<]            LoadPMTMap(G4String path);
     void                            BuildAndPlaceSuperCells();
-    //void                            BuildPMTModel(const char* mod);
-    //void                            BuildAndPlaceLAPPD();
-    //void                            BuildAndPlaceHodoscope();
-    //void                            BuildAndPlaceLAPPD(
-                                      //G4RotationMatrix*    rot, 
-                                      //const G4ThreeVector& pos, 
-                                      //G4String            name, 
-                                      //G4int             copyNo);
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
     void                            DumpSuperCellMap(G4String path = "");
@@ -107,31 +94,15 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //G4GDMLParser                    fParser;
     std::vector<G4VisAttributes*>   fVisAttributes;
 
-    SLArDetTank*                      fTank;
-    SLArDetTankMsgr*                  fTankMsgr;
+    SLArDetTank*                    fTank;
+    SLArDetTankMsgr*                fTankMsgr;
 
     SLArGeoInfo                     fWorldGeoPars;
     SLArDetSuperCell*               fSuperCell;
-    G4RotationMatrix*               fRotPMTBDwnStr;  
-    G4RotationMatrix*               fRotPMTBTop   ;  
-    G4RotationMatrix*               fRotPMTBBottom;  
-    G4RotationMatrix*               fRotPMTBLeft  ;  
-    G4RotationMatrix*               fRotPMTBRight ;  
-    //SLArDetPMTMsgr*                   fPMTMsgr;
-    // TODO: clean up code from fPMTMap
-    //       use SLArSystemConfigPMT instead
-    //std::vector<PMTGeoInfo>         fPMTMap; // deprecated
-                                          
-
-    //bool                            fIsLAPPD;
-    //SLArDetLAPPD*                   fLAPPD;
-    //SLArDetLAPPDMsgr*               fLAPPDMsgr;
-    //void                            SetLAPPD(bool kLAPPD);
-    //bool                            IsLAPPD();
+    SLArDetReadoutTile*             fReadoutTile;                                         
 
     G4LogicalVolume*                fWorldLog;
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
-    //std::vector<G4VPhysicalVolume*> fHodoModulePV;
     G4String                        GetFirstChar(G4String line);
 
 
