@@ -15,14 +15,18 @@
 #include "TFile.h"
 #include "TTree.h"
 
-//#include "config/SLArSystemConfigHodo.hh"
-#include "config/SLArPDSystemConfig.hh"
+#include "config/SLArCfgBaseSystem.hh"
+#include "config/SLArCfgMegaTile.hh"
+#include "config/SLArCfgSuperCellArray.hh"
 #include "event/SLArMCEvent.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
 #include "G4ToolsAnalysisManager.hh"
 #include "globals.hh"
+
+typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSystemConfig; 
+typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixSystemConfig; 
 
 class SLArAnalysisManager 
 {

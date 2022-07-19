@@ -48,8 +48,10 @@
 
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
 
-#include "config/SLArPDSystemConfig.hh"
+#include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgSuperCell.hh"
+#include "config/SLArCfgReadoutTile.hh"
+#include "config/SLArCfgMegaTile.hh"
 
 //#include "G4GDMLParser.hh"
 #include "G4Material.hh"
@@ -178,11 +180,11 @@ void SLArDetectorConstruction::Init() {
             scCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
             scCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
 
-            array->RegisterSuperCell(scCfg); 
+            array->RegisterElement(scCfg); 
           }
         }
         
-        pdsCfg->RegisterArray(array);
+        pdsCfg->RegisterModule(array);
       }
     }
   }
@@ -255,15 +257,15 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
         fWorldLog, false, 20);
 
   // SuperCell
-  //BuildAndPlaceSuperCells();
+  BuildAndPlaceSuperCells();
 
   // ReadoutTile 
   fReadoutTile->BuildReadoutTile(); 
   fReadoutTile->SetVisAttributes();
   for (auto &megatile : fReadoutMegaTile) {
     megatile->BuildReadoutPlane(fReadoutTile); 
-    megatile->GetModPV("megatile", new G4RotationMatrix(0., 0., 0.5*pi), 
-        G4ThreeVector(-1.87*CLHEP::m, 0., 0.), fTank->GetModLV(), false, 1000); 
+    megatile->GetModPV("megatile", new G4RotationMatrix(0., 0., -0.5*pi), 
+        G4ThreeVector(+1.87*CLHEP::m, 0., 0.), fTank->GetModLV(), false, 1000); 
   }
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
@@ -378,7 +380,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
   G4cout << "Getting PDS Cfg (" << pdsCfg->GetName() << ")" << G4endl;
 
 
-  for (auto &pdsArray : pdsCfg->GetArrayMap())
+  for (auto &pdsArray : pdsCfg->GetModuleMap())
   {
     SLArCfgSuperCellArray* arrayCfg = pdsArray.second;
     G4cout << arrayCfg->GetName() <<" map: " 
@@ -402,13 +404,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
           );
 
       G4ThreeVector pmtPos = basePos; 
-      G4cout << "SC #" << scinfo.second->GetIdx() << G4endl;
-      G4cout << "basePos  = " << basePos  << G4endl;
-      //G4cout << "planePos = " << planePos << G4endl;
-      //G4cout << "pre-rotation: " << planePos << G4endl;
-      //G4cout << "post-rotation: " << planePos << "\n"<< G4endl;
-      //getchar();
-
+ 
       fSuperCellsPV.push_back(  
           fSuperCell->GetModPV(
             Form("SC%i", iSC), rotPMT, 
