@@ -25,7 +25,6 @@ public:
   SLArDetReadoutTile            (const SLArDetReadoutTile &detReadoutTile);
   ~SLArDetReadoutTile ();
   
-  void          SetPhotoDetPos(EPhotoDetPosition kPos);
   void          SetPerfectQE(G4bool kQE);
 
   void          BuildMaterial();
@@ -34,11 +33,9 @@ public:
   void          BuildPCB();
   void          BuildSiPM();
   void          BuildChargePix();
-  void          ReadParTable();
   void          ResetReadoutTileGeometry();
   void          SetVisAttributes();
 
-  EPhotoDetPosition    GetReadoutTilePos();
   SLArBaseDetModule*   GetSiPM();
   SLArMaterialInfo*    GetSiPMMaterial();
 
@@ -59,6 +56,8 @@ private:
   SLArMaterialInfo*  fMatPCB;
   SLArMaterialInfo*  fMatChargePix;
   SLArMaterialInfo*  fMatSiPM; 
+
+  friend class SLArDetReadoutPlane;
 };
 
 #endif /* end of include guard SLARDETREADOUTTILE_HH */

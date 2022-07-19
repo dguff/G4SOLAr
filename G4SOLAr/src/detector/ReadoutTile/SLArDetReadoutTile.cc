@@ -135,7 +135,7 @@ void SLArDetReadoutTile::BuildReadoutTile()
   //--------------------------  Build ReadoutTile components
   BuildPCB();
   BuildSiPM();
-  BuildChargePix(); 
+  //BuildChargePix(); 
 
 
   //--------- Building a "empty" LV as ReadoutTile container
@@ -175,12 +175,12 @@ void SLArDetReadoutTile::BuildReadoutTile()
       cell_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_lv"); 
   cell_lv->SetVisAttributes( G4VisAttributes(false) ); 
   // place charge pixels inside cell
-  G4cout << "  - installing pixels" << G4endl; 
-  fChargePix->GetModPV("qpix", 0, G4ThreeVector( -dx, 0.5*(hq-h), -dx), cell_lv); 
-  fChargePix->GetModPV("qpix", 0, G4ThreeVector(  0., 0.5*(hq-h), -dx), cell_lv); 
-  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), -dx), cell_lv); 
-  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h),  0.), cell_lv); 
-  fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), +dx), cell_lv); 
+  //G4cout << "  - installing pixels" << G4endl; 
+  //fChargePix->GetModPV("qpix", 0, G4ThreeVector( -dx, 0.5*(hq-h), -dx), cell_lv); 
+  //fChargePix->GetModPV("qpix", 0, G4ThreeVector(  0., 0.5*(hq-h), -dx), cell_lv); 
+  //fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), -dx), cell_lv); 
+  //fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h),  0.), cell_lv); 
+  //fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), +dx), cell_lv); 
   G4cout << "  - installing sipm" << G4endl; 
   fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
 
@@ -224,8 +224,8 @@ void SLArDetReadoutTile::SetVisAttributes()
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
   fSiPM->GetModLV()->SetVisAttributes( visAttributes );
 
-  visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
-  fChargePix->GetModLV()->SetVisAttributes( visAttributes );
+  //visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
+  //fChargePix->GetModLV()->SetVisAttributes( visAttributes );
 
   visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.305, 0.294, 0.345, 0.0);
@@ -269,7 +269,6 @@ void SLArDetReadoutTile::BuildDefalutGeoParMap()
 {
   G4cout  << "SLArDetReadoutTile::BuildGeoParMap()" << G4endl;
   
-  // ReadoutTile size indicates:
   fGeoInfo->RegisterGeoPar("tile_z"   , 10.0*CLHEP::cm);
   fGeoInfo->RegisterGeoPar("tile_x"   , 10.0*CLHEP::mm);
   fGeoInfo->RegisterGeoPar("tile_y"   ,  2.5*CLHEP::mm);

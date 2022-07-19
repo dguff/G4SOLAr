@@ -16,12 +16,37 @@
       {"name" : "cryo_tk"  , "val" : 1.0, "unit" : "cm"}
     ]
   },
+  "ReadoutTile": {
+    "dimensions" : [
+      {"name" : "tile_x", "val" : 9.5, "unit" : "cm" },
+      {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
+      {"name" : "tile_z", "val" :10.0, "unit" : "cm" },
+      {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
+      {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
+      {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }, 
+      {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
+      {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
+      {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+    ], 
+    "modules" : [
+      {
+        "name" : "ReadoutPlane0", 
+        "copyID" : 1000, 
+        "dimensions" : [
+          {"name" : "rdoutplane_x", "val" :  2.0, "unit" : "m"}, 
+          {"name" : "rdoutplane_z", "val" :  1.0, "unit" : "m"}
+        ], 
+        "position" : {"xyz" : [-1.87, 0.0, 0.0], "unit" : "m", "rot" : [0, 0, 90] }
+      }
+    ]
+  },
   "SuperCell" : {
     "copyID" : 100, 
     "dimensions" : [
-      {"name" : "cell_x" , "val" : 12.0, "unit" : "cm"}, 
-      {"name" : "cell_y" , "val" :  1.0, "unit" : "cm"}, 
-      {"name" : "cell_z" , "val" : 60.0, "unit" : "cm"}
+      {"name" : "cell_x"   , "val" : 12.0, "unit" : "cm"}, 
+      {"name" : "cell_y"   , "val" :  5.0, "unit" : "mm"}, 
+      {"name" : "cell_z"   , "val" : 50.0, "unit" : "cm"},
+      {"name" : "coating_y", "val" :  0.5, "unit" : "mm"}
     ], 
     "modules": [
       {

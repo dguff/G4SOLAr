@@ -154,7 +154,6 @@ void SLArDetectorConstruction::Init() {
     const auto sc = d["SuperCell"].GetObj();
     fSuperCell->GetGeoInfo()->ReadFromJSON(d, "SuperCell"); 
     
-
     if (sc.HasMember("modules")) {
       assert(sc["modules"].IsArray());
       for (const auto &mdl : sc["modules"].GetArray()) {
@@ -195,10 +194,31 @@ void SLArDetectorConstruction::Init() {
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
-  fReadoutTile = new SLArDetReadoutTile();
-  fReadoutTile->GetGeoInfo()->ReadFromJSON(d, "ReadoutTile"); 
-  fReadoutTile->BuildMaterial();
-  
+  if (d.HasMember("ReadoutTile")) {
+    fReadoutTile = new SLArDetReadoutTile();
+    fReadoutTile->GetGeoInfo()->ReadFromJSON(d, "ReadoutTile"); 
+    fReadoutTile->BuildMaterial();
+
+    const auto tile = d["ReadoutTile"].GetObj(); 
+    if (tile.HasMember("modules")) {
+      assert(tile["modules"].IsArray()); 
+
+      for (const auto &mtile : tile["modules"].GetArray()) {
+        SLArDetReadoutPlane* megatile = new SLArDetReadoutPlane(); 
+        assert(mtile.HasMember("dimensions")); 
+        assert(mtile["dimensions"].IsArray()); 
+        for (const auto &dim : mtile["dimensions"].GetArray()) {
+          const char* unit = dim["unit"].GetString(); 
+          const char* name = dim["name"].GetString(); 
+          G4double val = dim["val"].GetDouble()*G4UIcommand::ValueOf(unit); 
+          G4cout << name << " = " << val << G4endl;
+          megatile->SetGeoPar(name, val); 
+        }
+        megatile->BuildMaterial(); 
+        fReadoutMegaTile.push_back(megatile); 
+      }
+    }
+  }
 
   std::fclose(geo_cfg_file);
 }
@@ -230,18 +250,21 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   // The Cryostat/LAr target
   G4cerr << "\nSLArDetectorConstruction: Building the Tank" << G4endl;
   fTank->BuildTank();
-  //fTank->GetModPV("Tank", 0,
-        //G4ThreeVector(0, 0, 0), 
-        //fWorldLog, false, 20);
+  fTank->GetModPV("Tank", 0,
+        G4ThreeVector(0, 0, 0), 
+        fWorldLog, false, 20);
 
   // SuperCell
   //BuildAndPlaceSuperCells();
 
   // ReadoutTile 
   fReadoutTile->BuildReadoutTile(); 
-  fReadoutTile->GetModPV("ReadoutTile", 0, G4ThreeVector(0, 0, 0), 
-      fWorldLog, false, 50); 
   fReadoutTile->SetVisAttributes();
+  for (auto &megatile : fReadoutMegaTile) {
+    megatile->BuildReadoutPlane(fReadoutTile); 
+    megatile->GetModPV("megatile", new G4RotationMatrix(0., 0., 0.5*pi), 
+        G4ThreeVector(-1.87*CLHEP::m, 0., 0.), fTank->GetModLV(), false, 1000); 
+  }
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
 

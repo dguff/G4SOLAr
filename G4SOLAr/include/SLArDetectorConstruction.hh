@@ -38,6 +38,7 @@
 #include "detector/Tank/SLArDetTank.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+#include "detector/ReadoutTile/SLArDetReadoutPlane.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -97,9 +98,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     SLArDetTank*                    fTank;
     SLArDetTankMsgr*                fTankMsgr;
 
-    SLArGeoInfo                     fWorldGeoPars;
-    SLArDetSuperCell*               fSuperCell;
-    SLArDetReadoutTile*             fReadoutTile;                                         
+    SLArGeoInfo                       fWorldGeoPars;
+    SLArDetSuperCell*                 fSuperCell;
+    SLArDetReadoutTile*               fReadoutTile; 
+    std::vector<SLArDetReadoutPlane*> fReadoutMegaTile; 
 
     G4LogicalVolume*                fWorldLog;
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
