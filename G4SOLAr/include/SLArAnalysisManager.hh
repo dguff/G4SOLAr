@@ -40,6 +40,7 @@ class SLArAnalysisManager
 
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArPDSystemConfig*  pdsCfg );
+    G4bool LoadPixCfg         (SLArPixSystemConfig*  pixCfg );
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
@@ -49,8 +50,8 @@ class SLArAnalysisManager
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
-    SLArPDSystemConfig*
-           GetPDSCfg()     {return  fPDSysCfg;}
+    SLArPDSystemConfig* GetPDSCfg() {return  fPDSysCfg;}
+    SLArPixSystemConfig* GetPixCfg() {return fPixSysCfg;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
@@ -76,7 +77,8 @@ class SLArAnalysisManager
     TTree*              fEventTree;
     SLArMCEvent*          fMCEvent;
 
-    SLArPDSystemConfig * fPDSysCfg;
+    SLArPDSystemConfig* fPDSysCfg;
+    SLArPixSystemConfig* fPixSysCfg;
 
 };
 

@@ -33,7 +33,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent  (nullptr), 
-    fPDSysCfg(nullptr)
+    fPDSysCfg(nullptr), fPixSysCfg(nullptr)
 {
   if ( ( isMaster && fgMasterInstance ) || ( fgInstance ) ) {
     G4ExceptionDescription description;
@@ -101,6 +101,8 @@ G4bool SLArAnalysisManager::Save()
     fEventTree->Delete();
   }
 
+  WriteSysCfg(); 
+
   fRootFile->Close();
 
   return true;
@@ -114,28 +116,41 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
   else             return true ; 
 }
 
-/*
- *void SLArAnalysisManager::WriteSysCfg()
- *{
- *  if (!fRootFile)
- *  {
- *    G4cout << "SLArAnalysisManager::WriteSysCfg" << G4endl;
- *    G4cout << "rootfile has null ptr! Quit."   << G4endl;
- *    return;
- *  }
- *
- *  if (fPMTSysCfg) {
- *    fRootFile->cd();
- *    fPMTSysCfg->Write("PMTSysConfig");
- *  }
- *  else 
- *  {
- *    G4cout << "SLArAnalysisManager::WritePMTSysCfg" << G4endl;
- *    G4cout << "fPMTSysCfg is nullptr! Quit."      << G4endl;
- *  }
- *
- *}
- */
+G4bool SLArAnalysisManager::LoadPixCfg(SLArPixSystemConfig* pixCfg)
+{
+  fPixSysCfg = pixCfg;
+  if (!fPixSysCfg) return false;
+  else             return true ; 
+}
+
+
+void SLArAnalysisManager::WriteSysCfg()
+{
+  if (!fRootFile)
+  {
+    G4cout << "SLArAnalysisManager::WriteSysCfg" << G4endl;
+    G4cout << "rootfile has null ptr! Quit."   << G4endl;
+    return;
+  }
+
+  if (fPDSysCfg) {
+    fRootFile->cd();
+    fPDSysCfg->Write("PDSSysConfig");
+  } else {
+    G4cout << "SLArAnalysisManager::WritePDSSysConfig" << G4endl;
+    G4cout << "fPDSysCfg is nullptr! Quit."      << G4endl;
+  }
+
+  if (fPixSysCfg) {
+    fRootFile->cd();
+    fPixSysCfg->Write("PixSysConfig");
+  } else {
+    G4cout << "SLArAnalysisManager::WritePixSysConfig" << G4endl;
+    G4cout << "fPixSysCfg is nullptr! Quit."      << G4endl;
+  }
+
+
+}
 
 G4bool SLArAnalysisManager::FillEvTree()
 {
