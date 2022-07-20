@@ -15,6 +15,8 @@
 #include "TNamed.h"
 #include "TVector3.h"
 #include "TH2Poly.h"
+#include "config/SLArCfgReadoutTile.hh"
+#include "config/SLArCfgSuperCell.hh"
 #include "config/SLArCfgBaseModule.hh"
 
 template<class TBaseModule>
@@ -43,7 +45,7 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     virtual void BuildPolyBinHist();
 
   public:
-    ClassDef(SLArCfgAssembly,1);
+    ClassDefOverride(SLArCfgAssembly,1);
 }; 
 
 
