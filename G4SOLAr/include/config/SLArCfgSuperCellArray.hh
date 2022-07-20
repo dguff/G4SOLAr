@@ -12,9 +12,6 @@
 #include <fstream>
 #include <map>
 
-#include "TNamed.h"
-#include "TVector3.h"
-#include "TH2Poly.h"
 #include "config/SLArCfgAssembly.hh"
 #include "config/SLArCfgSuperCell.hh"
 
@@ -27,10 +24,7 @@ class SLArCfgSuperCellArray : public SLArCfgAssembly<SLArCfgSuperCell> {
 
     void DumpMap(); 
 
-  private:
-
-  public:
-    ClassDefOverride(SLArCfgSuperCellArray,1);
+    ClassDefOverride(SLArCfgSuperCellArray, 1);
 };
 
 #endif /* end of include guard BCCFGARRAYPMT_HH */

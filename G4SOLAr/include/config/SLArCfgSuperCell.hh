@@ -10,11 +10,6 @@
 
 #define SLARCFGSUPERCELL_HH
 
-#include "TObject.h"
-#include "TPRegexp.h"
-#include "TVector3.h"
-#include "TGraph.h"
-
 #include "config/SLArCfgBaseModule.hh"
 
 class SLArCfgSuperCell : public SLArCfgBaseModule
@@ -32,7 +27,7 @@ class SLArCfgSuperCell : public SLArCfgBaseModule
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
     void   DumpInfo();
 
-  private:
+  protected:
     float   f2DSize_X; 
     float   f2DSize_Y;
     void    BuildGShape();

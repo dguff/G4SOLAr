@@ -8,12 +8,9 @@
 #include <string>
 #include <fstream>
 
-#include "TSystemDirectory.h"
-#include "TList.h"
-#include "TRegexp.h"
-#include "TMath.h"
-
 #include "config/SLArCfgSuperCell.hh"
+
+ClassImp(SLArCfgSuperCell)
 
 SLArCfgSuperCell::SLArCfgSuperCell() : SLArCfgBaseModule(), f2DSize_X(0.), f2DSize_Y(0.)
 {}

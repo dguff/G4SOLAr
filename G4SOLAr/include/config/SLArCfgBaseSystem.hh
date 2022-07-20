@@ -36,7 +36,7 @@ class SLArCfgBaseSystem : public TNamed
     std::map<TString, TAssemblyModule*> fModulesMap;
 
   public:
-    ClassDef(SLArCfgBaseSystem, 1);
+    ClassDefOverride(SLArCfgBaseSystem, 1);
 };
 
 #endif /* end of include guard BCPMTMAP_HH */
