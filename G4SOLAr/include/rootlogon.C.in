@@ -1,0 +1,17 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : rootlogon.C
+ * @created     : mercoledì lug 20, 2022 16:33:35 CEST
+ */
+
+#include <iostream>
+#include "TInterpreter.h"
+
+void rootlogon()
+{
+  gInterpreter->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
+  gInterpreter->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
+  gInterpreter->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
+  gInterpreter->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
+}
+
