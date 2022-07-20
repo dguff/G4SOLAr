@@ -112,14 +112,9 @@ void SLArGeoInfo::DumpParMap()
    
 }
 
-bool SLArGeoInfo::ReadFromJSON(const rapidjson::Document& cfg, G4String key) {
-  assert(cfg.HasMember(key));
-  const rapidjson::Value& obj = cfg[key.c_str()];
-  assert(obj.HasMember("dimensions"));
-  const rapidjson::Value& dimensions = obj["dimensions"];
-
-  assert(dimensions.IsArray()); 
-  for (const auto &xx : dimensions.GetArray()) {
+bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value& dim) {
+  assert(dim.IsArray()); 
+  for (const auto &xx : dim.GetArray()) {
     const auto entry = xx.GetObj(); 
     const char* name = entry["name"].GetString();
     const char* unit = entry["unit"].GetString();
