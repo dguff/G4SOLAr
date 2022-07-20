@@ -22,9 +22,7 @@ SLArCfgReadoutTile::SLArCfgReadoutTile(int idx, float xc, float yc, float zc,
              float phi, float theta, float psi) 
   : SLArCfgBaseModule(idx, xc, yc, zc, phi, theta, psi), 
   f2DSize_X(0.), f2DSize_Y(0.)
-{
-  BuildGShape();
-}
+{}
 
 SLArCfgReadoutTile::~SLArCfgReadoutTile()
 {

@@ -22,15 +22,15 @@ class SLArCfgReadoutTile : public SLArCfgBaseModule
     double Set2DSize_Y() {return f2DSize_Y;}
     void   Set2DSize_X(float _x) {f2DSize_X = _x;}
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
-    void   DumpInfo();
+    void   DumpInfo() override;
+    void   BuildGShape() override;
 
-  private:
+  protected:
     float   f2DSize_X; 
     float   f2DSize_Y;
-    void    BuildGShape();
 
   public:
-    ClassDef(SLArCfgReadoutTile, 1);
+    ClassDefOverride(SLArCfgReadoutTile, 1);
 }; 
 
 

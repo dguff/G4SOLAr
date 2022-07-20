@@ -25,15 +25,15 @@ class SLArCfgSuperCell : public SLArCfgBaseModule
     double Set2DSize_Y() {return f2DSize_Y;}
     void   Set2DSize_X(float _x) {f2DSize_X = _x;}
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
-    void   DumpInfo();
+    void   DumpInfo() override;
+    void   BuildGShape() override;
 
   protected:
     float   f2DSize_X; 
     float   f2DSize_Y;
-    void    BuildGShape();
 
   public:
-    ClassDef(SLArCfgSuperCell, 1);
+    ClassDefOverride(SLArCfgSuperCell, 1);
 };
 
 

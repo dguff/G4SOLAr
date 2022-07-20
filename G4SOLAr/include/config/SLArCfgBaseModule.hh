@@ -48,6 +48,7 @@ class SLArCfgBaseModule : public TNamed {
     inline void SetNormal(double x, double y, double z) {fNormal = TVector3(x, y, z);};
     inline void SetNormal(TVector3 vN) {fNormal = vN;}
     inline TVector3 GetNormal() {return fNormal;}
+    virtual void BuildGShape() {}; 
 
   protected: 
     int                 fIdx   ; //!< Module index
@@ -64,7 +65,6 @@ class SLArCfgBaseModule : public TNamed {
     TVector3            fNormal; //!< Module normal vector
     TGraph*             fGShape; //!< Module shape in the TH2Poly projection
 
-    virtual void BuildGShape() {}; 
 
   public:
     ClassDef(SLArCfgBaseModule, 1); 

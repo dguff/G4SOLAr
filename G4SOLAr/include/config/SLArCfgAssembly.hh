@@ -34,15 +34,14 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     TH2Poly* GetTH2(); 
     void RegisterElement(TBaseModule* element);
     void SetTH2BinIdx();
+    void BuildPolyBinHist() ;
 
   protected: 
     TH2Poly* fH2Bins; 
     int fSerie;
     int fNElements; 
     std::map<int, TBaseModule*> fElementsMap;
-    
-    // private methods
-    virtual void BuildPolyBinHist();
+
 
   public:
     ClassDefOverride(SLArCfgAssembly,1);
