@@ -86,6 +86,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     virtual void                    ConstructSDandField();
     SLArDetTank*                    GetDetTank();
     void                            BuildAndPlaceSuperCells();
+    void                            BuildAndPlaceReadoutTiles();
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
     void                            DumpSuperCellMap(G4String path = "");
@@ -101,11 +102,13 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     SLArGeoInfo                       fWorldGeoPars;
     SLArDetSuperCell*                 fSuperCell;
     SLArDetReadoutTile*               fReadoutTile; 
-    std::vector<SLArDetReadoutPlane*> fReadoutMegaTile; 
+    std::map<G4String, SLArDetReadoutPlane*> fReadoutMegaTile; 
 
     G4LogicalVolume*                fWorldLog;
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String                        GetFirstChar(G4String line);
+    void InitPDS(const rapidjson::Value&); 
+    void InitPix(const rapidjson::Value&); 
 
 
   protected:

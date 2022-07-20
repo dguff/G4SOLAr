@@ -123,7 +123,9 @@ void SLArDetectorConstruction::Init() {
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Parse world dimensions
   if (d.HasMember("World")) {
-    fWorldGeoPars.ReadFromJSON(d, "World");
+    const rapidjson::Value& wrld = d["World"]; 
+    assert(wrld.HasMember("dimensions")); 
+    fWorldGeoPars.ReadFromJSON(wrld["dimensions"]);
   } else {
     fWorldGeoPars.RegisterGeoPar("size_x", 5*CLHEP::m); 
     fWorldGeoPars.RegisterGeoPar("size_y", 8*CLHEP::m); 
@@ -136,7 +138,9 @@ void SLArDetectorConstruction::Init() {
   G4cerr << "SLArDetectorConstruction::Init Tank" << G4endl;
   fTank     = new SLArDetTank();
   if (d.HasMember("Tank")) {
-    fTank->GetGeoInfo()->ReadFromJSON(d, "Tank");
+    const rapidjson::Value& tk = d["Tank"]; 
+    assert(tk.HasMember("dimensions")); 
+    fTank->GetGeoInfo()->ReadFromJSON(tk["dimensions"]);
   } else {
     fTank->BuildDefalutGeoParMap();
   }
@@ -148,130 +152,160 @@ void SLArDetectorConstruction::Init() {
   // Initialize Photodetectors
   G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
   
-  SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
-
-  fSuperCell = new SLArDetSuperCell(); 
-
   if (d.HasMember("SuperCell")) {
     const auto sc = d["SuperCell"].GetObj();
-    fSuperCell->GetGeoInfo()->ReadFromJSON(d, "SuperCell"); 
-    
-    if (sc.HasMember("modules")) {
-      assert(sc["modules"].IsArray());
-      for (const auto &mdl : sc["modules"].GetArray()) {
-        SLArCfgSuperCellArray* array = 
-          new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
-        
-        if (mdl.HasMember("positions")) {
-          assert(mdl["positions"].IsArray());
-          for (const auto &isc : mdl["positions"].GetArray()) {
-            SLArCfgSuperCell* scCfg = new SLArCfgSuperCell(); 
-            const char* cunit = isc["unit"].GetString(); 
-            auto xyz = isc["xyz"].GetArray(); 
-            auto rot = isc["rot"].GetArray(); 
-
-            scCfg->SetIdx(isc["copy"].GetInt()); 
-
-            scCfg->SetX(xyz[0].GetDouble()*G4UIcommand::ValueOf(cunit)); 
-            scCfg->SetY(xyz[1].GetDouble()*G4UIcommand::ValueOf(cunit)); 
-            scCfg->SetZ(xyz[2].GetDouble()*G4UIcommand::ValueOf(cunit)); 
-            
-            scCfg->SetPhi  (rot[0].GetDouble()*TMath::DegToRad()); 
-            scCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
-            scCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
-
-            array->RegisterElement(scCfg); 
-          }
-        }
-        
-        pdsCfg->RegisterModule(array);
-      }
-    }
+    InitPDS(sc); 
   }
 
-  SLArAnaMgr->LoadPDSCfg(pdsCfg);
-  fSuperCell->BuildMaterial(); 
 
   G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
+
   if (d.HasMember("ReadoutTile")) {
-    fReadoutTile = new SLArDetReadoutTile();
-    fReadoutTile->GetGeoInfo()->ReadFromJSON(d, "ReadoutTile"); 
-    fReadoutTile->BuildMaterial();
-
-    const auto tile = d["ReadoutTile"].GetObj(); 
-    if (tile.HasMember("modules")) {
-      assert(tile["modules"].IsArray()); 
-
-      for (const auto &mtile : tile["modules"].GetArray()) {
-        SLArDetReadoutPlane* megatile = new SLArDetReadoutPlane(); 
-        assert(mtile.HasMember("dimensions")); 
-        assert(mtile["dimensions"].IsArray()); 
-        for (const auto &dim : mtile["dimensions"].GetArray()) {
-          const char* unit = dim["unit"].GetString(); 
-          const char* name = dim["name"].GetString(); 
-          G4double val = dim["val"].GetDouble()*G4UIcommand::ValueOf(unit); 
-          G4cout << name << " = " << val << G4endl;
-          megatile->SetGeoPar(name, val); 
-        }
-        megatile->BuildMaterial(); 
-        fReadoutMegaTile.push_back(megatile); 
-      }
-    }
+    InitPix(d["ReadoutTile"].GetObj()); 
   }
 
   std::fclose(geo_cfg_file);
 }
 
+void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
+  fSuperCell = new SLArDetSuperCell(); 
+  assert(pds.HasMember("dimensions")); 
+  fSuperCell->GetGeoInfo()->ReadFromJSON(pds["dimensions"]); 
+  fSuperCell->BuildMaterial(); 
+
+  SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
+  if (pds.HasMember("modules")) {
+    assert(sc["modules"].IsArray());
+    for (const auto &mdl : pds["modules"].GetArray()) {
+      SLArCfgSuperCellArray* array = 
+        new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
+
+      if (mdl.HasMember("positions")) {
+        assert(mdl["positions"].IsArray());
+        for (const auto &isc : mdl["positions"].GetArray()) {
+          SLArCfgSuperCell* scCfg = new SLArCfgSuperCell(); 
+          const char* cunit = isc["unit"].GetString(); 
+          auto xyz = isc["xyz"].GetArray(); 
+          auto rot = isc["rot"].GetArray(); 
+
+          scCfg->SetIdx(isc["copy"].GetInt()); 
+
+          scCfg->SetX(xyz[0].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+          scCfg->SetY(xyz[1].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+          scCfg->SetZ(xyz[2].GetDouble()*G4UIcommand::ValueOf(cunit)); 
+
+          scCfg->SetPhi  (rot[0].GetDouble()*TMath::DegToRad()); 
+          scCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
+          scCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
+
+          scCfg->Set2DSize_X(fSuperCell->GetGeoPar("cell_z")); 
+          scCfg->Set2DSize_Y(fSuperCell->GetGeoPar("cell_y")); 
+
+          array->RegisterElement(scCfg); 
+        }
+      }
+
+      pdsCfg->RegisterModule(array);
+    }
+  }
+
+  SLArAnalysisManager::Instance()->LoadPDSCfg(pdsCfg);
+
+}
+
+void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
+  SLArPixSystemConfig* pixCfg = new SLArPixSystemConfig("PixCfg");
+
+  fReadoutTile = new SLArDetReadoutTile();
+  fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"]); 
+  fReadoutTile->BuildMaterial();
+
+  if (pixsys.HasMember("modules")) {
+    assert(tile["modules"].IsArray()); 
+
+    for (const auto &mtile : pixsys["modules"].GetArray()) {
+      // Setup megatile
+      SLArDetReadoutPlane* megatile = new SLArDetReadoutPlane(); 
+      assert(mtile.HasMember("dimensions")); 
+      megatile->GetGeoInfo()->ReadFromJSON(mtile["dimensions"]); 
+      megatile->BuildMaterial(); 
+      fReadoutMegaTile.insert(std::make_pair(mtile["name"].GetString(),megatile)); 
+
+      assert(mtile.HasMember("positions")); 
+      assert(mtile["positions"].IsArray()); 
+
+      for (const auto &pos : mtile["positions"].GetArray()) {
+        SLArCfgMegaTile* mtileCfg = new SLArCfgMegaTile(); 
+        if (pos.HasMember("copy")) mtileCfg->SetIdx(pos["copy"].GetInt()); 
+        if (mtile.HasMember("name")) {
+          G4String mtname =Form("%s_%i", mtile["name"].GetString(), mtileCfg->GetIdx());
+          mtileCfg->SetName(mtname);
+        }
+        
+        assert(pos.HasMember("xyz")); 
+        assert(pos.HasMember("rot")); 
+        auto xyz = pos["xyz"].GetArray(); 
+        auto rot = pos["rot"].GetArray(); 
+        const char* unit = pos["unit"].GetString(); 
+
+        mtileCfg->SetX(xyz[0].GetDouble()*G4UIcommand::ValueOf(unit)); 
+        mtileCfg->SetY(xyz[1].GetDouble()*G4UIcommand::ValueOf(unit)); 
+        mtileCfg->SetZ(xyz[2].GetDouble()*G4UIcommand::ValueOf(unit)); 
+
+        mtileCfg->SetPhi  (rot[0].GetDouble()*TMath::DegToRad()); 
+        mtileCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
+        mtileCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
+
+        printf("SLArDetectorConstruction::InitPix()\n"); 
+        printf("Registering module %s at [%.2f, %.2f, %.2f]\n",
+            mtileCfg->GetName(), mtileCfg->GetX(), mtileCfg->GetY(), mtileCfg->GetZ()); 
+        printf("size: [%.2f, %.2f, %.2f] × %g mm\n", 
+            xyz[0].GetDouble(), xyz[1].GetDouble(), xyz[2].GetDouble(), 
+            G4UIcommand::ValueOf(unit)); 
+        pixCfg->RegisterModule(mtileCfg);
+      } // end of positions loop
+    } // end of Megatile models loop
+    SLArAnalysisManager::Instance()->LoadPixCfg(pixCfg); 
+  } // endif pixsys.HasMember("modules")
+}
+
 G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 {
-
-// Init modules size
   Init();
 
-//// ------------- Volumes --------------
-
-  G4RotationMatrix* rotY = new G4RotationMatrix();
-  rotY->rotateX(pi*0.5);
-
-// The experimental Hall
-
+  // ------------- Volumes --------------
+  // 1. Build and place WORLD volume
   G4Box* expHall_box = new G4Box("World", 
       fWorldGeoPars.GetGeoPar("size_x"), 
       fWorldGeoPars.GetGeoPar("size_y"), 
       fWorldGeoPars.GetGeoPar("size_z"));  
 
- fWorldLog   
+  fWorldLog   
     = new G4LogicalVolume(expHall_box, fColl.fGEOWorld.fMaterial, "World",0,0,0);
 
   G4VPhysicalVolume* expHall_phys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
-  
-  // The Cryostat/LAr target
+
+  // 2. Build and place the Cryostat/LAr target
   G4cerr << "\nSLArDetectorConstruction: Building the Tank" << G4endl;
   fTank->BuildTank();
   fTank->GetModPV("Tank", 0,
-        G4ThreeVector(0, 0, 0), 
-        fWorldLog, false, 20);
+      G4ThreeVector(0, 0, 0), 
+      fWorldLog, false, 20);
 
-  // SuperCell
+  // 3. Build and place the "conventional" Photon Detection System 
   BuildAndPlaceSuperCells();
 
-  // ReadoutTile 
-  fReadoutTile->BuildReadoutTile(); 
-  fReadoutTile->SetVisAttributes();
-  for (auto &megatile : fReadoutMegaTile) {
-    megatile->BuildReadoutPlane(fReadoutTile); 
-    megatile->GetModPV("megatile", new G4RotationMatrix(0., 0., -0.5*pi), 
-        G4ThreeVector(+1.87*CLHEP::m, 0., 0.), fTank->GetModLV(), false, 1000); 
-  }
+  // 4. Build and place the "pixel-based" readout system 
+  BuildAndPlaceReadoutTiles(); 
+
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
-
-  //fTank->SetVisAttributes();
-  //fSuperCell->SetVisAttributes();
+  fTank->SetVisAttributes();
+  fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
@@ -362,7 +396,6 @@ G4String SLArDetectorConstruction::GetFirstChar(G4String line)
 
 void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 {
-  G4cout << "\nSLArDetectorConstruction:BuildSuperCell" << G4endl;
   fSuperCell->BuildSuperCell();
 
   new G4LogicalSkinSurface("SCCoating_skin", 
@@ -371,14 +404,10 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
       GetMaterialBuilder()->GetSurface()
       );
 
-  G4cout << "\nSLArDetectorConstruction:PlaceSuperCells" << G4endl;
 
   // Get PMTSystem Configuration
-  G4cout << "Getting BCAnaManager" << G4endl;
   SLArAnalysisManager* SLArAnaMgr  = SLArAnalysisManager::Instance();
   SLArPDSystemConfig*  pdsCfg = SLArAnaMgr->GetPDSCfg();
-  G4cout << "Getting PDS Cfg (" << pdsCfg->GetName() << ")" << G4endl;
-
 
   for (auto &pdsArray : pdsCfg->GetModuleMap())
   {
@@ -419,65 +448,55 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
       iSC++;
     }
 
-    //break;
-
   }
    G4cout << "SLArDetectorConstruction::BuildAndPlacePMTs DONE" << G4endl;
   return;
 }
 
-//int SLArDetectorConstruction::RemovePMTs() 
-//{
+void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
+  fReadoutTile->BuildReadoutTile(); 
+  fReadoutTile->SetVisAttributes();
 
-  //int npmts = fPMTPV.size();
-  //G4cout << "SLArDetectorConstruction::RemovePMTs:" << G4endl;
-  //G4cout << "Removing " << npmts << " extisting PMTs\n" << G4endl;
-
-  //if (npmts > 0) {
-    //for (auto &&pmtpv : fPMTPV) {
-      //G4LogicalVolume* target = pmtpv->GetLogicalVolume();
-      //target->RemoveDaughter( pmtpv );
-      //delete pmtpv; pmtpv = nullptr;
-    //}
-  //}
-  //// clear vector of physical volume
-  //fPMTPV.clear();
+  SLArPixSystemConfig* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
   
-  //// clear map of SLArDetPMTs used in previous cfg
-  /*
-   *  for (auto &detPmt : fPMTs)
-   *    if (detPmt.second) 
-   *    {delete detPmt.second; detPmt.second = nullptr;}
-   *  fPMTs.clear();
-   *
-   */
-  //G4RunManager::GetRunManager()->GeometryHasBeenModified();
+  printf("SLArDetectorConstruction::BuildAndPlaceReadoutTiles\n"); 
+  printf("Registered readout tiles models:\n"); 
+  for (const auto &models : fReadoutMegaTile) {
+    printf("- %s\n", models.first.c_str());
+  }
+  printf("Nr of readout tiles modules: %lu\n", pixCfg->GetModuleMap().size()); 
 
-  //return npmts;
-//}
+  for (auto &mtileCfg_ : pixCfg->GetModuleMap()) {
+    SLArCfgMegaTile* mtileCfg = mtileCfg_.second;
+    G4String mtile_module_name = mtileCfg->GetName();
+    mtile_module_name.resize(mtile_module_name.index("_"));
+    printf("mtile model: %s\n", mtile_module_name.c_str()); 
+    if (fReadoutMegaTile.count(mtile_module_name)) {
+      SLArDetReadoutPlane* megatile = fReadoutMegaTile[mtile_module_name];
+      if (!megatile->GetModLV()) {
+        printf("SLArDetectorConstruction::BuildAndPlaceReadoutTiles\n"); 
+        printf("Building readout megatile %s\n", mtile_module_name.c_str());
+        fReadoutMegaTile[mtile_module_name]->BuildReadoutPlane(fReadoutTile); 
+      }
 
-//int SLArDetectorConstruction::RemoveHodoModules() 
-//{
+      G4ThreeVector tile_pos(
+          mtileCfg->GetX(), 
+          mtileCfg->GetY(), 
+          mtileCfg->GetZ()); 
+      G4RotationMatrix* tile_rot = new G4RotationMatrix(
+          mtileCfg->GetPhi(), 
+          mtileCfg->GetTheta(), 
+          mtileCfg->GetPsi());
 
-  //int nmod = fHodoModulePV.size();
-  //G4cout << "SLArDetectorConstruction::RemoveHodoPlanes:" << G4endl;
-  //G4cout << "Removing " << nmod << " extisting Hodo planes\n" 
-         //<< G4endl;
+      megatile->GetModPV(mtileCfg->GetName(), 
+          tile_rot, tile_pos, fTank->GetModLV(), false, mtileCfg->GetIdx());
+    } else {
+      G4cerr << "MegaTile model " << mtile_module_name 
+        << " is not registered in fReadoutMegaTile!" << G4endl; 
+    }
+  }
 
-  //if (nmod > 0) {
-    //for (auto &&module : fHodoModulePV) {
-      //G4LogicalVolume* target = module->GetLogicalVolume();
-      //target->RemoveDaughter( module );
-      //delete module; module = nullptr;
-    //}
-  //}
-  //// clear vector of physical volume
-  //fHodoModulePV.clear();
-  
-  //G4RunManager::GetRunManager()->GeometryHasBeenModified();
-
-  //return nmod;
-//}
+}
 
 //void SLArDetectorConstruction::BuildPMTModel(const char* mod)
 //{
@@ -485,16 +504,6 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
   //pmt->LoadPMTModel(mod);
   //pmt->BuildPMT();
   //fPMTs.insert(std::make_pair(mod, pmt));
-//}
-
-//void SLArDetectorConstruction::SetLAPPD(bool kLAPPD)
-//{
-  //fIsLAPPD = kLAPPD;
-//}
-
-//bool SLArDetectorConstruction::IsLAPPD()
-//{
-  //return fIsLAPPD;
 //}
 
 //std::vector<G4VPhysicalVolume*>& SLArDetectorConstruction::GetVecPMT()
