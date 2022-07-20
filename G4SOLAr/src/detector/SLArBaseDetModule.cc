@@ -12,7 +12,10 @@
 #include "G4RotationMatrix.hh"
 
 
-SLArBaseDetModule::SLArBaseDetModule() {
+SLArBaseDetModule::SLArBaseDetModule() 
+  : fMaterial(nullptr), fModLV(nullptr), fModSV(nullptr), 
+  fRot(nullptr), fVec(0., 0., 0.), fName("")
+{
   fGeoInfo = new SLArGeoInfo();
 }
 
