@@ -202,7 +202,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
           scCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
 
           scCfg->Set2DSize_X(fSuperCell->GetGeoPar("cell_z")); 
-          scCfg->Set2DSize_Y(fSuperCell->GetGeoPar("cell_y")); 
+          scCfg->Set2DSize_Y(fSuperCell->GetGeoPar("cell_x")); 
 
           array->RegisterElement(scCfg); 
         }
@@ -442,9 +442,10 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
             )
           );
       // set physical placement in pmt cfg
-      scinfo.second->SetPhysX(pmtPos[0]);
-      scinfo.second->SetPhysY(pmtPos[1]);
-      scinfo.second->SetPhysZ(pmtPos[2]);
+      scinfo.second->SetPhysX(pmtPos.x());
+      scinfo.second->SetPhysY(pmtPos.y());
+      scinfo.second->SetPhysZ(pmtPos.z());
+      scinfo.second->BuildGShape();
       iSC++;
     }
 
