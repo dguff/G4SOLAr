@@ -197,6 +197,7 @@ void SLArDetTank::SetVisAttributes()
 
   visAttributes = new G4VisAttributes();
   visAttributes->SetColour(0.611, 0.847, 0.988, 0.6);
+  visAttributes->SetVisibility(false); 
   if (fVessel)
     fVessel->GetModLV()->SetVisAttributes( visAttributes );
 
@@ -204,6 +205,7 @@ void SLArDetTank::SetVisAttributes()
   visAttributes->SetColor(0.607, 0.847, 0.992, 0.4);
   if (fTarget)
     fTarget->GetModLV()->SetVisAttributes(visAttributes);
+  fModLV->SetVisAttributes( G4VisAttributes(false) );
 
   return;
 }
