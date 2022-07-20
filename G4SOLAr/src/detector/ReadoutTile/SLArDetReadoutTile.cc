@@ -194,7 +194,7 @@ void SLArDetReadoutTile::BuildReadoutTile()
   // 4. Full sensor plane
   G4cout<<"Creating replacas of rows..." << G4endl; 
   G4Box* cell_plane_box = new G4Box("tileCellPlane", 
-      0.5*fGeoInfo->GetGeoPar("tile_x"), 0.5*h, 0.5*fGeoInfo->GetGeoPar("tile_z")); 
+      15*dx, 0.5*h, 15*dx); 
   G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
       fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
   cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
