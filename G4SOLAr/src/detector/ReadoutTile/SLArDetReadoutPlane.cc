@@ -60,16 +60,22 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
 
   G4int n_z = std::floor(plane_z / tile_z); 
   G4int n_x = std::floor(plane_x / tile_x); 
+
+  G4double true_plane_x = tile_x*n_x;
+  G4double true_plane_z = tile_z*n_z;
   
-  G4Box* tile_row_z_box = new G4Box("tile_row_z_box", 0.5*tile_x, 0.5*tile_y, 0.5*plane_z); 
+  G4Box* tile_row_z_box = new G4Box("tile_row_z_box", 
+      0.5*tile_x, 0.5*tile_y, 0.5*true_plane_z); 
   G4LogicalVolume* tile_row_z_lv = new G4LogicalVolume(tile_row_z_box, 
       fMatReadoutPlane->GetMaterial(), "tile_row_z_lv"); 
+  tile_row_z_lv->SetVisAttributes( G4VisAttributes(false) ); 
   new G4PVReplica("tile_row_z", tile->fModLV, tile_row_z_lv, kZAxis, n_z, tile_z); 
   
   G4VSolid* ReadoutPlane_box = new G4Box("ReadoutPlane_box", 
-      plane_x*0.5, plane_y*0.5, plane_z*0.5);
+      true_plane_x*0.5, plane_y*0.5, true_plane_z*0.5);
   fModLV = new G4LogicalVolume(ReadoutPlane_box, 
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
+  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
   new G4PVReplica("ReadoutPlane", tile_row_z_lv, fModLV, kXAxis, n_x, tile_x); 
 }
 
