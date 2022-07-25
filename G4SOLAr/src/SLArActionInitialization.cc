@@ -51,16 +51,7 @@ SLArActionInitialization::~SLArActionInitialization()
 
 void SLArActionInitialization::BuildForMaster() const
 {
-  SLArEventAction* eventAction = new SLArEventAction();
-  SLArTrackingAction* trkAction = new SLArTrackingAction();
-  SetUserAction(eventAction);
-
-
-  SetUserAction(new SLArPrimaryGeneratorAction());
   SetUserAction(new SLArRunAction());
-  SetUserAction(trkAction);
-  SetUserAction(new SLArSteppingAction(eventAction, trkAction));
-  SetUserAction(new SLArStackingAction(eventAction));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
