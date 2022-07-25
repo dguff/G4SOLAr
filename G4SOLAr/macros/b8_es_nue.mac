@@ -9,7 +9,6 @@
 
 # Set output path and file name
 /SLAr/manager/SetOutputName slar_b8_nue_es.root
-/SLAr/manager/SetOutputFolder ../SOLArAnalysis/
 
 # Select MARLEY generator
 /SLAr/gun/mode Marley
