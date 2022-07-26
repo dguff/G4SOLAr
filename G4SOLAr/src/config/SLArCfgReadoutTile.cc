@@ -32,11 +32,11 @@ SLArCfgReadoutTile::~SLArCfgReadoutTile()
 void SLArCfgReadoutTile::BuildGShape() 
 {
   fGShape = new TGraph(5);
-  fGShape->SetPoint(0, fX-0.45*f2DSize_X, fY-0.45*f2DSize_Y);
-  fGShape->SetPoint(1, fX-0.45*f2DSize_X, fY+0.45*f2DSize_Y);
-  fGShape->SetPoint(2, fX+0.45*f2DSize_X, fY+0.45*f2DSize_Y);
-  fGShape->SetPoint(3, fX+0.45*f2DSize_X, fY-0.45*f2DSize_Y);
-  fGShape->SetPoint(4, fX-0.45*f2DSize_X, fY-0.45*f2DSize_Y);
+  fGShape->SetPoint(0, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  fGShape->SetPoint(1, fPhysZ-0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
+  fGShape->SetPoint(2, fPhysZ+0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
+  fGShape->SetPoint(3, fPhysZ+0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  fGShape->SetPoint(4, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
 
   if (fGShape) fGShape->SetName(Form("gShape%i", fIdx)); 
 }
