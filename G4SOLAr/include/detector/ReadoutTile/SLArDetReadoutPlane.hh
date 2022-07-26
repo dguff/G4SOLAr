@@ -23,11 +23,15 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
     void BuildMaterial(); 
     void BuildDefalutGeoParMap(); 
     void BuildReadoutPlane(SLArDetReadoutTile*); 
+    SLArBaseDetModule* GetTileRow() {return fTileRow;}
 
   protected:
 
   private: 
     SLArMaterialInfo* fMatReadoutPlane; 
+    SLArBaseDetModule* fTileRow;
+    void BuildTileRow(SLArDetReadoutTile*);
+
 };
 
 
