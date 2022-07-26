@@ -52,7 +52,7 @@ class SLArBaseDetModule
 
     void               ResetGeometry();
 
-
+    void SetModPV(G4VPhysicalVolume* pv) {fModPV = pv;}
     G4VPhysicalVolume* GetModPV();
     G4VPhysicalVolume* GetModPV(
         G4String                          name, 
@@ -63,16 +63,16 @@ class SLArBaseDetModule
         G4int                             pCopyNo = 0);
 
   protected:
-    G4Material*       fMaterial;
-    SLArGeoInfo*        fGeoInfo ;
+    G4Material*        fMaterial;
+    SLArGeoInfo*       fGeoInfo ;
 
-    G4LogicalVolume*  fModLV   ;
-    G4VSolid*         fModSV   ;
-    G4PVPlacement*    fModPV   ;
+    G4LogicalVolume*   fModLV   ;
+    G4VSolid*          fModSV   ;
+    G4VPhysicalVolume* fModPV   ;
 
-    G4RotationMatrix* fRot     ;
-    G4ThreeVector     fVec     ;
-    G4String          fName    ;
+    G4RotationMatrix*  fRot     ;
+    G4ThreeVector      fVec     ;
+    G4String           fName    ;
 };
 
 
