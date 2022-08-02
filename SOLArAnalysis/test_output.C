@@ -30,11 +30,30 @@ void test_output(const char* path)
   SLArPDSCfg* pdsCfg = (SLArPDSCfg*)file->Get("PDSSysConfig"); 
   SLArPixCfg* pixCfg = (SLArPixCfg*)file->Get("PixSysConfig"); 
 
-  for (auto &array : pdsCfg->GetModuleMap()) {
-    SLArCfgSuperCellArray* scArray = array.second; 
-    scArray->BuildPolyBinHist();
+  if (pdsCfg) {
+    for (auto &array : pdsCfg->GetModuleMap()) {
+      SLArCfgSuperCellArray* scArray = array.second; 
+      scArray->BuildPolyBinHist();
+      new TCanvas(); 
+      scArray->GetTH2()->Draw("col");
+    }
+  }
+
+  if (pixCfg) {
+    TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
     new TCanvas(); 
-    scArray->GetTH2()->Draw("colz");
+    h2frame->Draw("axis"); 
+
+    for (auto &mod : pixCfg->GetModuleMap()) {
+      SLArCfgMegaTile* mgTile = mod.second; 
+      for (const auto &cell : mgTile->GetMap()) {
+        printf("cell pos [phys]: [%.2f, %.2f, %.2f]\n", 
+            cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ()); 
+      }
+      mgTile->BuildPolyBinHist(); 
+      mgTile->GetTH2()->Draw("colsame"); 
+
+    }
   }
 
   TTree* tree = (TTree*)file->Get("EventTree"); 
