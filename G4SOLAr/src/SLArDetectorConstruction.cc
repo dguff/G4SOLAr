@@ -162,7 +162,6 @@ void SLArDetectorConstruction::Init() {
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
-
   if (d.HasMember("ReadoutTile")) {
     InitPix(d["ReadoutTile"].GetObj()); 
   }
@@ -297,7 +296,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
       fWorldLog, false, 20);
 
   // 3. Build and place the "conventional" Photon Detection System 
-  BuildAndPlaceSuperCells();
+  if (fSuperCell) BuildAndPlaceSuperCells();
 
   // 4. Build and place the "pixel-based" readout system 
   BuildAndPlaceReadoutTiles(); 
@@ -305,7 +304,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
   fTank->SetVisAttributes();
-  fSuperCell->SetVisAttributes();
+  if (fSuperCell) fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
@@ -489,8 +488,74 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           mtileCfg->GetTheta(), 
           mtileCfg->GetPsi());
 
-      megatile->GetModPV(mtileCfg->GetName(), 
+      auto pv = megatile->GetModPV(mtileCfg->GetName(), 
           tile_rot, tile_pos, fTank->GetModLV(), false, mtileCfg->GetIdx());
+      auto lv = megatile->GetModLV();
+      auto row = megatile->GetTileRow();
+
+      EAxis kRowAxis = kZAxis, kTileAxis = kXAxis;
+      G4int nRowReplicas = 0, nTileReplicas = 0;
+      G4double wdtRow = 0., wdtTile = 0.;
+      G4double oftRow = 0., oftTile = 0.;
+      G4bool   cnsRow = kFALSE, cnsTile = kFALSE;
+
+      if (lv->GetDaughter(0)->IsReplicated()) {
+        lv->GetDaughter(0)->GetReplicationData(kRowAxis, nRowReplicas, wdtRow, oftRow, cnsRow);
+        printf("%s is replicated %i times along axis %i\n", 
+            pv->GetName().c_str(), nRowReplicas, kRowAxis); 
+        //getchar(); 
+      } else {
+        printf("%s is not replicated! Why??\n", pv->GetName().c_str()); 
+        getchar(); 
+      }
+
+
+      auto row_pv = (G4PVReplica*)row->GetModPV();
+      if (row_pv->IsReplicated()) {
+        row_pv->GetReplicationData(kTileAxis, nTileReplicas, wdtTile, oftTile, cnsTile);
+        printf("%s is replicated %i times along axis %i\n", 
+            row_pv->GetName().c_str(), nTileReplicas, kTileAxis); 
+        //getchar(); 
+      } else {
+        printf("%s is not replicated! Why??\n", row_pv->GetName().c_str()); 
+        getchar(); 
+      }
+
+      oftRow -= megatile->GetGeoPar("rdoutplane_x")*0.5; 
+      oftTile -= megatile->GetGeoPar("rdoutplane_z")*0.5; 
+
+      for (int ii =0; ii<nRowReplicas; ii++) {
+        
+        for (int jj=0; jj<nTileReplicas; jj++) {
+          SLArCfgReadoutTile* cell_cfg = new SLArCfgReadoutTile((ii+1)*100 + jj);
+          G4ThreeVector cell_pos(ii*wdtRow + oftRow, 0., jj*wdtTile + oftTile);
+          cell_cfg->SetZ(cell_pos.z()); 
+          cell_cfg->SetY(cell_pos.y());
+          cell_cfg->SetX(cell_pos.z());
+          
+          G4ThreeVector phys_pos = tile_pos 
+            + cell_pos.rotate(tile_rot->getPhi(), tile_rot->getTheta(), tile_rot->getPsi()); 
+          
+          cell_cfg->SetPhysX( (phys_pos).x() ); 
+          cell_cfg->SetPhysY( (phys_pos).y() ); 
+          cell_cfg->SetPhysZ( (phys_pos).z() );  
+
+          // TODO: check positioning is ok
+          // seems ok, but better check it twice
+          //printf("%s megatile pos: [%.2f, %.2f, %.2f]: cell %i pos [%.2f, %.2f, %.2f]: phys pos [%.2f, %.2f, %.2f]\n", 
+              //mtileCfg->GetName(), tile_pos.x(), tile_pos.y(), tile_pos.z(), 
+              //cell_cfg->GetIdx(), cell_pos.x(), cell_pos.y(), cell_pos.z(),
+              //phys_pos.x(), phys_pos.y(), phys_pos.z()
+              //);
+
+          cell_cfg->Set2DSize_X(0.8*fReadoutTile->GetGeoPar("tile_z")); 
+          cell_cfg->Set2DSize_Y(0.8*fReadoutTile->GetGeoPar("tile_x")); 
+          cell_cfg->BuildGShape(); 
+          mtileCfg->RegisterElement(cell_cfg); 
+        }
+        //getchar(); 
+
+      }
     } else {
       G4cerr << "MegaTile model " << mtile_module_name 
         << " is not registered in fReadoutMegaTile!" << G4endl; 
