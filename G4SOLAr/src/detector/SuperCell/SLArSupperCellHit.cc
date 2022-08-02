@@ -154,13 +154,13 @@ std::vector<G4AttValue>* SLArSuperCellHit::CreateAttValues() const
     values
       ->push_back(G4AttValue("Energy",G4BestUnit(fEnergy,"Energy"), ""));
     values
-      ->push_back(G4AttValue("Time", fTime,""));
+      ->push_back(G4AttValue("Time", G4BestUnit(fTime,"Time"), ""));
     values
       ->push_back(G4AttValue("Pos",G4BestUnit(fWorldPos,"Length"),""));
     values
-      ->push_back(G4AttValue("Idx", fPMTIdx, ""));
+      ->push_back(G4AttValue("Idx", G4UIcommand::ConvertToString(fPMTIdx), ""));
     values
-      ->push_back(G4AttValue("PhType", fPhType, ""));
+      ->push_back(G4AttValue("PhType", G4UIcommand::ConvertToString(fPhType), ""));
     
     return values;
 }
