@@ -20,7 +20,6 @@
 #include "G4OpticalSurface.hh"
 #include "G4OpRayleigh.hh"
 #include "G4PhysicalConstants.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
 #include "TSystemDirectory.h"
 #include "TIterator.h"
 
