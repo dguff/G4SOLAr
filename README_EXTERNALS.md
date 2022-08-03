@@ -25,7 +25,7 @@ $ git clone https://github.com/dguff/G4SOLAr.git
 ```bash
 $ cd G4SOLAr/G4SOLAr/extern
 $ mkdir build && cd build/
-$ cmake -DCMAKE_INSTALL_PREFIX=.. ..
+$ cmake -DCMAKE_INSTALL_PREFIX=. ..
 & make 
 ```
 
