@@ -469,7 +469,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
   for (auto &mtileCfg_ : pixCfg->GetModuleMap()) {
     SLArCfgMegaTile* mtileCfg = mtileCfg_.second;
     G4String mtile_module_name = mtileCfg->GetName();
-    mtile_module_name.resize(mtile_module_name.index("_"));
+    mtile_module_name.resize(mtile_module_name.find("_"));
     printf("mtile model: %s\n", mtile_module_name.c_str()); 
     if (fReadoutMegaTile.count(mtile_module_name)) {
       SLArDetReadoutPlane* megatile = fReadoutMegaTile[mtile_module_name];

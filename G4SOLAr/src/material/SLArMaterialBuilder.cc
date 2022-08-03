@@ -354,8 +354,8 @@ SLArMaterialBuilder::CalculateRayleighMeanFreePaths() {
   else
     temperature = fMaterial->GetTemperature();
 
-  G4PhysicsOrderedFreeVector* rayleighMeanFreePaths =
-    new G4PhysicsOrderedFreeVector();
+  G4PhysicsFreeVector* rayleighMeanFreePaths =
+    new G4PhysicsFreeVector();
   // This calculates the meanFreePath via the Einstein-Smoluchowski formula
   const G4double c1 = scaleFactor * betat * temperature * k_Boltzmann / 
     ( 6.0 * pi );
