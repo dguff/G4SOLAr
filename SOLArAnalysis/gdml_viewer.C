@@ -70,6 +70,7 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
   TGLViewer* glviewer = (TGLViewer*)gPad->GetViewer3D(); 
   glviewer->SetStyle(TGLRnrCtx::kOutline); 
 
+  //---------------------------------------------------------------------------
   // reading mc event file
   TFile* file = new TFile(mc_file); 
 
@@ -109,7 +110,7 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
 
   TH1D* hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
 
-  for (int iev = 0; iev<5; iev++) {
+  for (int iev = 0; iev<100; iev++) {
     tree->GetEntry(iev); 
 
     auto primaries = ev->GetPrimaries(); 
@@ -122,6 +123,8 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
       int pTrkID = p->GetTrackID();  // Get primary trak id   
       double primary_edep = 0; 
 
+      if (pPDGID == 12 || pPDGID == -12) continue;
+
       auto trajectories = p->GetTrajectories(); 
       int itrj = 0;
       for (const auto &trj : trajectories) {
@@ -130,20 +133,30 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
         std::vector<double> step_y(npoints);
         std::vector<double> step_z(npoints);
 
-        int istep =0; 
+        int istep = 0; 
+        double trj_edep = 0.;
+        double point[3] = {0}; 
         for (const auto &tp : trj->GetPoints()) {
-          step_x.at(istep) = tp.fX;     // x coordinate [mm]
-          step_y.at(istep) = tp.fY;     // y coordinate [mm]
-          step_z.at(istep) = tp.fZ;     // z coordinate [mm]
-          double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
-          ev_edep += edep; 
-          istep++; 
+          point[0] = tp.fX; point[1] = tp.fY, point[2] = tp.fZ; 
+          if (gvTarget->Contains(point)) {
+            step_x.at(istep) = tp.fX;     // x coordinate [mm]
+            step_y.at(istep) = tp.fY;     // y coordinate [mm]
+            step_z.at(istep) = tp.fZ;     // z coordinate [mm]
+            double edep      = tp.fEdep;  // Energy deposited in the step [MeV]
+            ev_edep += edep; 
+            trj_edep += edep; 
+
+            istep++; 
+          } else {
+            break;
+          }
         }
 
-        if (trj->GetPDGID() != 12 && trj->GetPDGID() != -12) {
-          TPolyLine3D _trj(npoints, &step_x[0], &step_y[0], &step_z[0]); 
+        if (trj->GetPDGID() != 12 && trj->GetPDGID() != -12 && 
+            trj->GetInitKineticEne() > 0.5) {
+          TPolyLine3D _trj(istep, &step_x[0], &step_y[0], &step_z[0]); 
           _trj.SetLineWidth(2); 
-          if (trj->GetPDGID() == 11) {_trj.SetLineColor(kYellow);}
+          if      (trj->GetPDGID() == 11) {_trj.SetLineColor(kYellow);}
           else if (trj->GetPDGID() == 22) {_trj.SetLineColor(kGreen);}
           else if (trj->GetPDGID() == 1000000010) {_trj.SetLineColor(kBlue+1);}
           else if (trj->GetPDGID() == 1000010010) {_trj.SetLineColor(kRed+1);}
@@ -162,8 +175,6 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
 
   hvis->Draw("hist");
  
-  
-
   return;
 }
 

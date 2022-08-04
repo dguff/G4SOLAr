@@ -71,7 +71,7 @@ void SLArDetReadoutTile::BuildPCB()
   fBasePCB->SetMaterial(fMatPCB->GetMaterial());
 
   G4VSolid* lgbox = 
-    new G4Box("LightGuideSlab", 
+    new G4Box("PCBBaseSolid", 
         0.5*fBasePCB->GetGeoPar("tile_x"),
         0.5*fBasePCB->GetGeoPar("tile_y"),
         0.5*fBasePCB->GetGeoPar("tile_z"));
@@ -80,7 +80,7 @@ void SLArDetReadoutTile::BuildPCB()
   fBasePCB->SetLogicVolume(
     new G4LogicalVolume(fBasePCB->GetModSV(), 
       fBasePCB->GetMaterial(),
-      "LightGuideLV", 0, 0, 0)
+      "PCBBaseLV", 0, 0, 0)
     );
 }
 
