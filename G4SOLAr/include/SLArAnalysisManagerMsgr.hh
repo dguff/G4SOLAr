@@ -44,6 +44,10 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdDirectionMode ;  
     G4UIcmdWithAString*         fCmdOutputFileName;
     G4UIcmdWithAString*         fCmdOutputPath    ;
+    G4UIcmdWithAString*         fCmdGDMLFileName  ; 
+    G4UIcmdWithAString*         fCmdGDMLExport    ;
+
+    G4String                    fGDMLFileName     ; 
 };
 
 #endif /* end of include guard SLArANALYSISMANAGERMSGR_HH */

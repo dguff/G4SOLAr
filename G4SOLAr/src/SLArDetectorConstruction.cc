@@ -326,7 +326,6 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
    *}
    */
   
-  //fParser.Write("beamCell_v0.gdml", expHall_phys);
 
   //always return the physical World
   return expHall_phys;
