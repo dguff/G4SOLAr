@@ -17,6 +17,7 @@
 #include "TGeoManager.h"
 #include "TGeoPainter.h"
 #include "TPolyLine3D.h"
+#include "TPolyMarker3D.h"
 #include "TGLViewer.h"
 
 #include "config/SLArCfgBaseSystem.hh"
@@ -88,18 +89,14 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
 
   if (pixCfg) {
     TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
-    new TCanvas(); 
+    TCanvas* cPix = new TCanvas("cPix", "Pixel system readout", 0, 0, 1000, 400);
+    cPix->cd(); 
     h2frame->Draw("axis"); 
 
     for (auto &mod : pixCfg->GetModuleMap()) {
       SLArCfgMegaTile* mgTile = mod.second; 
-      //for (const auto &cell : mgTile->GetMap()) {
-        //printf("cell pos [phys]: [%.2f, %.2f, %.2f]\n", 
-            //cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ()); 
-      //}
       mgTile->BuildPolyBinHist(); 
       mgTile->GetTH2()->Draw("colsame"); 
-
     }
   }
 
@@ -110,7 +107,7 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
 
   TH1D* hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
 
-  for (int iev = 0; iev<100; iev++) {
+  for (int iev = 0; iev<1; iev++) {
     tree->GetEntry(iev); 
 
     auto primaries = ev->GetPrimaries(); 
@@ -152,7 +149,9 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
           }
         }
 
-        if (trj->GetPDGID() != 12 && trj->GetPDGID() != -12 && 
+        if (trj->GetPDGID() !=  12 && 
+            trj->GetPDGID() != -12 && 
+            trj->GetPDGID() !=  22 &&
             trj->GetInitKineticEne() > 0.5) {
           TPolyLine3D _trj(istep, &step_x[0], &step_y[0], &step_z[0]); 
           _trj.SetLineWidth(2); 
@@ -164,6 +163,17 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
           else {_trj.SetLineColor(kBlack);}
 
           _trj.DrawClone("ogl same"); 
+        } 
+        // Draw gamma rays steps as markers
+        else if (trj->GetPDGID() == 22 &&
+                   trj->GetInitKineticEne() > 0.5) {
+          TPolyMarker3D _trj(istep, 20); 
+          for (int igs =0; igs<istep; igs++) {
+            _trj.SetPoint(igs, step_x[igs], step_y[igs], step_z[igs]); 
+          }
+          _trj.SetMarkerSize(4); 
+          _trj.SetMarkerColor(kGreen); 
+          _trj.DrawClone("ogl same"); 
         }
         itrj++;
       } 
@@ -173,7 +183,6 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
     hvis->Fill(ev_edep); 
   }
 
-  hvis->Draw("hist");
  
   return;
 }
