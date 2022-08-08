@@ -1,0 +1,53 @@
+{
+  "name" : "LAr", 
+  "density" : 1.390, 
+  "components" : [
+    {"name" : "Argon", "symb" : "Ar", "Z" : 18, "A" : 39.95, "nAtom" : 1}
+  ], 
+
+  "ProportiesTable" : [
+    {"property" : "RINDEX", "value" : [
+      {"var" : "Energy", "unit" : "eV", "val" : [ 1.18626, 1.68626, 2.18626, 2.68626, 3.18626, 3.68626, 4.18626, 4.68626, 5.18626, 5.68626, 6.18626, 6.68626, 7.18626, 7.68626, 8.18626, 8.68626, 9.18626, 9.68626, 10.1863, 10.6863, 11.1863 ]
+      },
+      {"var" : "RINDEX", "val" : [ 1.24664, 1.2205, 1.22694, 1.22932, 1.23124, 1.23322, 1.23545, 1.23806, 1.24116, 1.24489, 1.24942, 1.25499, 1.26197, 1.2709, 1.28263, 1.29865, 1.32169, 1.35747, 1.42039, 1.56011, 2.16626 ]
+      }
+    ]}, 
+    {"property" : "ABSLENGTH", "value" : [
+      {"var" : "Energy", "unit" : "eV", "val" : [ 4, 5, 6, 7, 8, 9, 10, 11]},
+      {"var" : "ABSLENGTH", "val" : [ 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]}
+    ]}, 
+    {"property" : "RAYLEIGH", "value" : [
+      {"var" : "Energy", "unit" : "eV", "val" : [ 1.18626, 1.68626, 2.18626, 2.68626, 3.18626, 3.68626, 4.18626, 4.68626, 5.18626, 5.68626, 6.18626, 6.68626, 7.18626, 7.68626, 8.18626, 8.68626, 9.18626, 9.68626, 10.1863, 10.6863, 11.1863 ]
+      },
+      {"var" : "RAILEIGH", "unit" : "cm", "val" : [ 1200800, 390747, 128633, 54969.1, 27191.8, 14853.7, 8716.9, 5397.42, 3481.37, 2316.51, 1577.63, 1092.02, 763.045, 534.232, 371.335, 252.942, 165.38, 99.9003, 51.2653, 17.495, 0.964341 ]
+      }
+    ]
+    }, 
+    {"property" : "RS_SCALE_FACTOR", "value" : 1.00}, 
+    {"property" : "SCINTILLATIONCOMPONENT1", "value" : [
+      {"var" : "Energy", "unit" : "eV", "val" : [ 7.2,  7.9,  8.3,  8.6,  8.9,  9.1,  9.3,  9.6,  9.7,  9.8,  10,  10.2,  10.3,  10.6,  11,  11.6,  11.9]},
+      {"var" : "SlowScintSpectrum", "val" : [ 0.0,  0.04, 0.12, 0.27, 0.44, 0.62, 0.80, 0.91, 0.92, 0.85, 0.70, 0.50, 0.31, 0.13, 0.04,  0.01, 0.0]}
+    ]}, 
+    {"property" : "SCINTILLATIONCOMPONENT2", "value" : [
+      {"var" : "Energy", "unit" : "eV", "val" : [ 7.2,  7.9,  8.3,  8.6,  8.9,  9.1,  9.3,  9.6,  9.7,  9.8,  10,  10.2,  10.3,  10.6,  11,  11.6,  11.9]},
+      {"var" : "FastScintSpectrum", "val" : [ 0.0,  0.04, 0.12, 0.27, 0.44, 0.62, 0.80, 0.91, 0.92, 0.85, 0.70, 0.50, 0.31, 0.13, 0.04,  0.01, 0.0]}
+    ]}, 
+    {"property" : "SCINTILLATIONTIMECONSTANT1", "value" : 1590, "unit" : "ns"}, 
+    {"property" : "SCINTILLATIONTIMECONSTANT2", "value" :    6, "unit" : "ns"}, 
+    {"property" : "SCINTILLATIONYIELD", "value" : 24000}, 
+    {"property" : "SCINTILLATIONYIELD1", "value" : 0.77}, 
+    {"property" : "SCINTILLATIONYIELD2", "value" : 0.23}, 
+    {"property" : "RESOLUTIONSCALE", "value" : 1.000}, 
+    {"property" : "ALPHASCINTILLATIONYIELD", "value" : 16800}, 
+    {"property" : "ALPHASCINTILLATIONYIELD1", "value" : 0.44},  
+    {"property" : "ALPHASCINTILLATIONYIELD2", "value" : 0.56},  
+    {"property" : "PROTONSCINTILLATIONYIELD", "value" : 19200}, 
+    {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
+    {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  
+    {"property" : "ELECTRONSCINTILLATIONYIELD", "value" : 20000}, 
+    {"property" : "ELECTRONSCINTILLATIONYIELD1", "value" : 0.73},  
+    {"property" : "ELECTRONSCINTILLATIONYIELD2", "value" : 0.27}, 
+    {"property" : "BIRKSCONSTANT", "value" : 0.069},
+    {"property" : "RESOLUTIONSCALE", "value" : 1.00}
+  ]
+}
