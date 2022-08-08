@@ -28,7 +28,7 @@ SLArDetReadoutPlane::SLArDetReadoutPlane()
 SLArDetReadoutPlane::SLArDetReadoutPlane(const SLArDetReadoutPlane& detReadoutPlane) 
   : SLArBaseDetModule(detReadoutPlane), fMatReadoutPlane(nullptr), fTileRow(nullptr) 
 {
-  fMatReadoutPlane = new SLArMaterialInfo(*detReadoutPlane.fMatReadoutPlane);
+  fMatReadoutPlane = new SLArMaterial(*detReadoutPlane.fMatReadoutPlane);
 }
 
 SLArDetReadoutPlane::~SLArDetReadoutPlane()
@@ -44,9 +44,9 @@ void SLArDetReadoutPlane::BuildDefalutGeoParMap()
 
 void SLArDetReadoutPlane::BuildMaterial()
 {
-  fMatReadoutPlane = new SLArMaterialInfo(); 
+  fMatReadoutPlane = new SLArMaterial(); 
   fMatReadoutPlane->SetMaterialID("LAr");
-  fMatReadoutPlane->GetMaterialBuilder()->BuildMaterial();
+  fMatReadoutPlane->BuildMaterialFromDB();
 }
 
 void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {

@@ -9,7 +9,6 @@
 #define SLARDETREADOUTPLANE_HH
 
 #include "detector/SLArBaseDetModule.hh"
-#include "material/SLArMaterialInfo.h"
 
 class SLArDetReadoutTile;
 
@@ -28,7 +27,7 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
   protected:
 
   private: 
-    SLArMaterialInfo* fMatReadoutPlane; 
+    SLArMaterial* fMatReadoutPlane; 
     SLArBaseDetModule* fTileRow;
     void BuildTileRow(SLArDetReadoutTile*);
 

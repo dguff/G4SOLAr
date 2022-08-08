@@ -48,18 +48,18 @@ SLArDetTank::~SLArDetTank() {
 void SLArDetTank::BuildMaterial() 
 {
   // TODO: IMPLEMENT PROPER MATERIALS IN /materials
-  fMatWorld  = new SLArMaterialInfo();
-  fMatVessel = new SLArMaterialInfo();
-  fMatTarget = new SLArMaterialInfo();
+  fMatWorld  = new SLArMaterial();
+  fMatVessel = new SLArMaterial();
+  fMatTarget = new SLArMaterial();
 
   fMatVessel->SetMaterialID("Steel");
-  fMatVessel->GetMaterialBuilder()->BuildMaterial();
+  fMatVessel->BuildMaterialFromDB();
 
   fMatTarget->SetMaterialID("LAr");
-  fMatTarget->GetMaterialBuilder()->BuildMaterial();
+  fMatTarget->BuildMaterialFromDB();
 
   fMatWorld ->SetMaterialID("Air");
-  fMatWorld ->GetMaterialBuilder()->BuildMaterial();
+  fMatWorld ->BuildMaterialFromDB("");
 }
 
 void SLArDetTank::BuildDefalutGeoParMap() 

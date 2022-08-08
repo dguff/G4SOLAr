@@ -9,7 +9,6 @@
 #define SLARDETSUPERCELL_HH
 
 #include "detector/SLArBaseDetModule.hh"
-#include "material/SLArMaterialInfo.h"
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
@@ -37,19 +36,19 @@ public:
   void          ResetSuperCellGeometry();
   void          SetVisAttributes();
 
-  EPhotoDetPosition    GetSuperCellPos();
-  SLArBaseDetModule*   GetCoating();
-  SLArMaterialInfo*    GetCoatingMaterial();
+  EPhotoDetPosition  GetSuperCellPos();
+  SLArBaseDetModule* GetCoating();
+  SLArMaterial* GetCoatingMaterial();
 
-  G4double           GetTotalHeight();
-  G4double           GetSize();
+  G4double GetTotalHeight();
+  G4double GetSize();
 
 protected:
 
 private:
   /* data */
-  G4double                fhTot;
-  G4double                fSize;
+  G4double  fhTot;
+  G4double  fSize;
 
   EPhotoDetPosition  fPos;
   G4bool             fPerfectQE;
@@ -57,9 +56,9 @@ private:
   SLArBaseDetModule* fLightGuide;
   SLArBaseDetModule* fCoating; 
 
-  SLArMaterialInfo*  fMatSuperCell;
-  SLArMaterialInfo*  fMatLightGuide;
-  SLArMaterialInfo*  fMatCoating; 
+  SLArMaterial* fMatSuperCell;
+  SLArMaterial* fMatLightGuide;
+  SLArMaterial* fMatCoating; 
 };
 
 #endif /* end of include guard SLARDETSUPERCELL_HH */

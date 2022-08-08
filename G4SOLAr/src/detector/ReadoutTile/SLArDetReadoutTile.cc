@@ -39,9 +39,9 @@ SLArDetReadoutTile::SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile)
   fGeoInfo     = detReadoutTile.fGeoInfo;
   fMatReadoutTile= detReadoutTile.fMatReadoutTile;
 
-  fMatReadoutTile = new SLArMaterialInfo(*detReadoutTile.fMatReadoutTile); 
-  fMatPCB = new SLArMaterialInfo(*detReadoutTile.fMatPCB);
-  fMatSiPM   = new SLArMaterialInfo(*detReadoutTile.fMatSiPM);
+  fMatReadoutTile = new SLArMaterial(*detReadoutTile.fMatReadoutTile); 
+  fMatPCB = new SLArMaterial(*detReadoutTile.fMatPCB);
+  fMatSiPM   = new SLArMaterial(*detReadoutTile.fMatSiPM);
 
 }
 
@@ -240,7 +240,7 @@ SLArBaseDetModule* SLArDetReadoutTile::GetSiPM()
 }
 
 
-SLArMaterialInfo* SLArDetReadoutTile::GetSiPMMaterial()
+SLArMaterial* SLArDetReadoutTile::GetSiPMMaterial()
 {
   return fMatSiPM;
 }
@@ -257,9 +257,9 @@ void SLArDetReadoutTile::SetPerfectQE(G4bool kQE)
     G4double phEne[2] = {1*CLHEP::eV, 5*CLHEP::eV};
     G4double eff  [2] = {1.0 , 1.0 };
     
-    fMatSiPM->GetMaterialBuilder()->GetSurface()
-               ->GetMaterialPropertiesTable()
-               ->AddProperty("EFFICIENCY", phEne, eff, 2);  
+    //fMatSiPM->GetMaterialBuilder()->GetSurface()
+               //->GetMaterialPropertiesTable()
+               //->AddProperty("EFFICIENCY", phEne, eff, 2);  
   }
 
   return;
@@ -283,22 +283,22 @@ void SLArDetReadoutTile::BuildDefalutGeoParMap()
 
 void SLArDetReadoutTile::BuildMaterial()
 {
-  fMatPCB         = new SLArMaterialInfo();
-  fMatSiPM        = new SLArMaterialInfo();
-  fMatChargePix   = new SLArMaterialInfo(); 
-  fMatReadoutTile = new SLArMaterialInfo();
+  fMatPCB         = new SLArMaterial();
+  fMatSiPM        = new SLArMaterial();
+  fMatChargePix   = new SLArMaterial(); 
+  fMatReadoutTile = new SLArMaterial();
 
   fMatReadoutTile->SetMaterialID("LAr");
-  fMatReadoutTile->GetMaterialBuilder()->BuildMaterial();
+  fMatReadoutTile->BuildMaterialFromDB();
 
   fMatPCB->SetMaterialID("PCB");
-  fMatPCB->GetMaterialBuilder()->BuildMaterial();
+  fMatPCB->BuildMaterialFromDB();
 
   fMatChargePix->SetMaterialID("Steel");
-  fMatChargePix->GetMaterialBuilder()->BuildMaterial();
+  fMatChargePix->BuildMaterialFromDB();
 
   fMatSiPM->SetMaterialID("Silicon");
-  fMatSiPM->GetMaterialBuilder()->BuildMaterial();
+  fMatSiPM->BuildMaterialFromDB();
 }
 
 

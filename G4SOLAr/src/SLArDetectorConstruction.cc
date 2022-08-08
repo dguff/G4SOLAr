@@ -112,7 +112,7 @@ void SLArDetectorConstruction::Init() {
   SLArAnaMgr->fAnaMsgr->AssignDetectorConstruction(this);
 
   // open geometry configuration file
-  const char* geo_cfg_file_path = Form("%s/geometry.json", SLAR_BASE_DIR);
+  const char* geo_cfg_file_path = Form("%s/geometry_light.json", SLAR_BASE_DIR);
   FILE* geo_cfg_file = std::fopen(geo_cfg_file_path, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(geo_cfg_file, readBuffer, sizeof(readBuffer));
@@ -396,11 +396,11 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 {
   fSuperCell->BuildSuperCell();
 
-  new G4LogicalSkinSurface("SCCoating_skin", 
-      fSuperCell->GetCoating()->GetModLV(), 
-      fSuperCell->GetCoatingMaterial()->
-      GetMaterialBuilder()->GetSurface()
-      );
+  //new G4LogicalSkinSurface("SCCoating_skin", 
+      //fSuperCell->GetCoating()->GetModLV(), 
+      //fSuperCell->GetCoatingMaterial()->
+      //GetMaterialBuilder()->GetSurface()
+      //);
 
 
   // Get PMTSystem Configuration

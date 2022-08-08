@@ -37,9 +37,9 @@ SLArDetSuperCell::SLArDetSuperCell(const SLArDetSuperCell &detSuperCell)
   fGeoInfo     = detSuperCell.fGeoInfo;
   fMatSuperCell= detSuperCell.fMatSuperCell;
 
-  fMatSuperCell = new SLArMaterialInfo(*detSuperCell.fMatSuperCell); 
-  fMatLightGuide = new SLArMaterialInfo(*detSuperCell.fMatLightGuide);
-  fMatCoating   = new SLArMaterialInfo(*detSuperCell.fMatCoating);
+  fMatSuperCell = new SLArMaterial(*detSuperCell.fMatSuperCell); 
+  fMatLightGuide = new SLArMaterial(*detSuperCell.fMatLightGuide);
+  fMatCoating   = new SLArMaterial(*detSuperCell.fMatCoating);
 
 }
 
@@ -197,7 +197,7 @@ SLArBaseDetModule* SLArDetSuperCell::GetCoating()
 }
 
 
-SLArMaterialInfo* SLArDetSuperCell::GetCoatingMaterial()
+SLArMaterial* SLArDetSuperCell::GetCoatingMaterial()
 {
   return fMatCoating;
 }
@@ -219,9 +219,9 @@ void SLArDetSuperCell::SetPerfectQE(G4bool kQE)
     G4double phEne[2] = {2*CLHEP::eV, 5*CLHEP::eV};
     G4double eff  [2] = {1.0 , 1.0 };
     
-    fMatCoating->GetMaterialBuilder()->GetSurface()
-               ->GetMaterialPropertiesTable()
-               ->AddProperty("EFFICIENCY", phEne, eff, 2);  
+    //fMatCoating->GetMaterialBuilder()->GetSurface()
+               //->GetMaterialPropertiesTable()
+               //->AddProperty("EFFICIENCY", phEne, eff, 2);  
   }
 
   return;
@@ -245,18 +245,18 @@ void SLArDetSuperCell::BuildDefalutGeoParMap()
 
 void SLArDetSuperCell::BuildMaterial()
 {
-  fMatLightGuide   = new SLArMaterialInfo();
-  fMatCoating      = new SLArMaterialInfo();
-  fMatSuperCell    = new SLArMaterialInfo();
+  fMatLightGuide   = new SLArMaterial();
+  fMatCoating      = new SLArMaterial();
+  fMatSuperCell    = new SLArMaterial();
 
   fMatSuperCell->SetMaterialID("Vacuum");
-  fMatSuperCell->GetMaterialBuilder()->BuildMaterial();
+  fMatSuperCell->BuildMaterialFromDB();
 
   fMatLightGuide->SetMaterialID("Plastic");
-  fMatLightGuide->GetMaterialBuilder()->BuildMaterial();
+  fMatLightGuide->BuildMaterialFromDB();
 
   fMatCoating->SetMaterialID("Bialkali");
-  fMatCoating->GetMaterialBuilder()->BuildMaterial();
+  fMatCoating->BuildMaterialFromDB();
 }
 
 

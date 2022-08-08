@@ -9,7 +9,6 @@
 #define SLARDETREADOUTTILE_HH
 
 #include "detector/SLArBaseDetModule.hh"
-#include "material/SLArMaterialInfo.h"
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
@@ -36,8 +35,8 @@ public:
   void          ResetReadoutTileGeometry();
   void          SetVisAttributes();
 
-  SLArBaseDetModule*   GetSiPM();
-  SLArMaterialInfo*    GetSiPMMaterial();
+  SLArBaseDetModule*       GetSiPM();
+  SLArMaterial*    GetSiPMMaterial();
 
 
 protected:
@@ -52,10 +51,10 @@ private:
   SLArBaseDetModule* fChargePix;
   SLArBaseDetModule* fSiPM; 
 
-  SLArMaterialInfo*  fMatReadoutTile; 
-  SLArMaterialInfo*  fMatPCB;
-  SLArMaterialInfo*  fMatChargePix;
-  SLArMaterialInfo*  fMatSiPM; 
+  SLArMaterial*  fMatReadoutTile; 
+  SLArMaterial*  fMatPCB;
+  SLArMaterial*  fMatChargePix;
+  SLArMaterial*  fMatSiPM; 
 
   friend class SLArDetReadoutPlane;
 };

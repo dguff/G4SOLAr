@@ -8,7 +8,7 @@
 
 #define SLArABSMODULE_HH
 
-#include "material/SLArMaterialInfo.h"
+#include "material/SLArMaterial.hh"
 #include "detector/SLArGeoInfo.hh"
 
 #include "G4ThreeVector.hh"

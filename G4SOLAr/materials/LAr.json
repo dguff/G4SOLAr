@@ -1,8 +1,9 @@
 {
   "name" : "LAr", 
-  "density" : 1.390, 
+  "density" : {"val" : 1.390, "unit" : "g/cm3"},
+  "temperature" : {"val" : 87, "unit"  : "K"},
   "components" : [
-    {"name" : "Argon", "symb" : "Ar", "Z" : 18, "A" : 39.95, "nAtom" : 1}
+    {"name" : "Argon", "symb" : "Ar", "Z" : 18, "A" : 39.95, "nAtom" : 1, "fraction" : 1.0}
   ], 
 
   "ProportiesTable" : [

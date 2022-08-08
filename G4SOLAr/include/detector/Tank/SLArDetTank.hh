@@ -8,8 +8,6 @@
 
 #define SLArDETTANK_HH
 
-#include "material/SLArMaterialInfo.h"
-
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/Tank/SLArDetTankMsgr.hh"
@@ -55,9 +53,9 @@ private:
   G4VSolid*        fBoxTrg;
 
   // Some useful global variables
-  SLArMaterialInfo* fMatWorld;
-  SLArMaterialInfo* fMatVessel;
-  SLArMaterialInfo* fMatTarget;
+  SLArMaterial* fMatWorld;
+  SLArMaterial* fMatVessel;
+  SLArMaterial* fMatTarget;
 };
 
 struct SLArExtrusion{
