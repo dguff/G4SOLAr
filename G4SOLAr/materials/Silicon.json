@@ -1,5 +1,22 @@
 {
   "name" : "Silicon",
-  "NIST": "G4_Si"
+  "NIST": "G4_Si", 
+  "SurfaceProperties" : {
+    "name" : "SiPM_Surf", 
+    "model" : "glisur", 
+    "type" : "dielectric_metal",
+    "finished" : "ground", 
+    "polished" : 0.8,
+    "PropertiesTable" : [
+      {"property" : "EFFICIENCY", "value" : [
+        {"var": "Energy", "unit" : "eV", "val": [2.0, 11.0]}, 
+        {"var": "EFFICIENCY", "val" : [1.0, 1.0]}
+      ]}, 
+      {"property" : "REFLECTIVITY", "value" : [
+        {"var": "Energy", "unit" : "eV", "val": [2.0, 11.0]}, 
+        {"var": "REFLECTIVITY", "val" : [0.22, 0.22]}
+      ]}
+    ]
+  }
 }
 
