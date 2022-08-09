@@ -174,7 +174,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
 
   SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
   if (pds.HasMember("modules")) {
-    assert(sc["modules"].IsArray());
+    assert(pds["modules"].IsArray());
     for (const auto &mdl : pds["modules"].GetArray()) {
       SLArCfgSuperCellArray* array = 
         new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
@@ -220,7 +220,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   fReadoutTile->BuildMaterial();
 
   if (pixsys.HasMember("modules")) {
-    assert(tile["modules"].IsArray()); 
+    assert(pixsys["modules"].IsArray()); 
 
     for (const auto &mtile : pixsys["modules"].GetArray()) {
       // Setup megatile
