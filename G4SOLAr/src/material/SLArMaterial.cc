@@ -53,11 +53,20 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
   if (mat_id.empty()) mat_id = fMaterialID;
   else SetMaterialID(mat_id);
    
+  auto mtable = G4Material::GetMaterialTable(); 
+  for (const auto &m : *mtable) {
+    if (std::strcmp(mat_id, m->GetName()) == 0) {
+      printf("SLArMaterial::BuildMaterialFromDB(%s) Material already defined. Using stored object.\n", 
+          mat_id.c_str()); 
+      fMaterial = m; 
+      return; 
+    }
+  }
   
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // open material description file
-  const char* mat_cfg_file_path = 
-    Form("%s/%s.json", SLAR_MATERIAL_DIR, mat_id.c_str());
+  char mat_cfg_file_path[100]; 
+  sprintf(mat_cfg_file_path, "%s/%s.json", SLAR_MATERIAL_DIR, mat_id.c_str());
   FILE* mat_cfg_file = std::fopen(mat_cfg_file_path, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(mat_cfg_file, readBuffer, sizeof(readBuffer));
@@ -65,12 +74,17 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
   rapidjson::Document d;
   d.ParseStream(is);
   assert(d.IsObject());
+  assert(d.HasMember("name")); 
 
   auto nistManager = G4NistManager::Instance(); 
 
+  printf("SLArMaterial::BuildMaterialFromDB(%s)\n", mat_id.c_str()); 
   if (d.HasMember("NIST")) {
+    printf("Building %s from NIST database\n", mat_id.c_str()); 
     fMaterial = nistManager->FindOrBuildMaterial(d["NIST"].GetString(), true); 
+    fMaterial->SetName(d["name"].GetString()); 
   } else if (d.HasMember("components")) {
+    printf("Building %s based on listed components\n", mat_id.c_str()); 
     assert(d.HasMember("name"));
     assert(d.HasMember("density"));
     assert(d["components"].IsArray());

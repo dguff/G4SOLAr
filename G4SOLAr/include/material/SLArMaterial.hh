@@ -8,7 +8,6 @@
 
 #define SLARMATERIALINFO_H
 
-#include "SLArMaterialBuilder.hh"
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4OpticalSurface.hh"
