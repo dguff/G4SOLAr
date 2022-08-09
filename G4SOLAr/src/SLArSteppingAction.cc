@@ -74,14 +74,23 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
   
-  SLArTrajectory* trajectory =
-    (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
-  double edep = step->GetTotalEnergyDeposit();
-  trajectory->AddEdep(edep);
-
+  if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
+    SLArTrajectory* trajectory =
+      (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
+    double edep = step->GetTotalEnergyDeposit();
+    trajectory->AddEdep(edep);
+    //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
+        //track->GetTrackID(), 
+        //trajectory->GetTrackID(), 
+        //track->GetParticleDefinition()->GetPDGEncoding(),
+        //trajectory->GetPDGEncoding(), 
+        //trajectory->GetEdep().size(), 
+        //trajectory->GetPointEntries());
+  }
 
   const std::vector<const G4Track*>* secondaries =
     step->GetSecondaryInCurrentStep();
+
 
 /*
  *  if (secondaries->size()>0) {
@@ -111,8 +120,8 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
  *      }
  *    }
  *  }
- *
  */
+
 
   if (!thePostPV) return;
 

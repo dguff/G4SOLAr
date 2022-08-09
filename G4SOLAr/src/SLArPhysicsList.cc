@@ -101,9 +101,10 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   }
 
   fAbsorptionOn = true;
+  fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn); 
 
   RegisterPhysics(new SLArExtraPhysics());
-  RegisterPhysics(fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn));
+  RegisterPhysics(fOpticalPhysics);
   RegisterPhysics(new G4RadioactiveDecayPhysics());
   ReplacePhysics(new G4EmLivermorePhysics());
 

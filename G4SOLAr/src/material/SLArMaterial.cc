@@ -137,9 +137,7 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
 
   if (d.HasMember("PropertiesTable")) {
     auto ptable = new G4MaterialPropertiesTable(); 
-
     ParseMPT(d["PropertiesTable"], ptable); 
-    
     fMaterial->SetMaterialPropertiesTable(ptable); 
   }
 
@@ -182,18 +180,22 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
           } 
         }
       }
-      mpt->AddProperty(pname, vE, vP); 
+      G4bool is_custom = false; 
+      if (p.HasMember("custom")) is_custom = p["custom"].GetBool(); 
+      mpt->AddProperty(pname, vE, vP, is_custom); 
     } else {
       G4double punit = 1.0; 
       if (p.HasMember("unit")) 
         punit = G4UIcommand::ValueOf(p["unit"].GetString()); 
       G4double pvalue = p["value"].GetDouble(); 
+      G4bool is_custom = false; 
+      if (p.HasMember("custom")) is_custom = p["custom"].GetBool(); 
 
 
       if (pname == "BIRKSCONSTANT") {
-        fMaterial->GetIonisation()->SetBirksConstant(pvalue*punit); 
+        fMaterial->GetIonisation()->SetBirksConstant(pvalue*CLHEP::mm/CLHEP::MeV); 
       } else {
-        mpt->AddConstProperty(pname, pvalue*punit);
+        mpt->AddConstProperty(pname, pvalue*punit, is_custom);
       }
     }
   }

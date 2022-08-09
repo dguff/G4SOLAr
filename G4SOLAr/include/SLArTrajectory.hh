@@ -46,6 +46,8 @@ class SLArTrajectory : public G4Trajectory
 
     G4float GetTime() {return fTime;}
 
+    void MergeTrajectory(SLArTrajectory* secondTrajectory);
+
   private:
     G4bool fWls;
     G4bool fDrawit;
@@ -55,6 +57,7 @@ class SLArTrajectory : public G4Trajectory
     G4float fTime;
     G4ParticleDefinition* fParticleDefinition;
     std::vector<float>  fEdepContainer;
+    using G4Trajectory::MergeTrajectory; 
 };
 
 extern G4ThreadLocal G4Allocator<SLArTrajectory>* SLArTrajectoryAllocator;

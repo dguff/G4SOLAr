@@ -1,8 +1,9 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArTrackingAction
- * @created     : lunedì ago 31, 2020 18:35:48 CEST
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArTrackingAction.cc
+ * @created     : martedì ago 09, 2022 22:04:56 CEST
  */
+
 #include "SLArAnalysisManager.hh"
 
 #include "SLArTrajectory.hh"
@@ -13,6 +14,8 @@
 #include "G4TrackingManager.hh"
 #include "G4Track.hh"
 #include "G4ParticleTypes.hh"
+#include "G4EventManager.hh"
+#include "G4Event.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -34,11 +37,6 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
   //This user track information is only relevant to the photons
   fpTrackingManager->SetUserTrackInformation(
       new SLArUserPhotonTrackInformation);
-
-  /*  const G4VProcess* creator = aTrack->GetCreatorProcess();
-  if(creator)
-    G4cout<<creator->GetProcessName()<<G4endl;
-  */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -61,10 +59,10 @@ void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
      *}
      */
 
-    if((trackInformation->GetTrackStatus()&hitPMT)|| 
-       (trackInformation->GetTrackStatus()&absorbed) ||
-       (trackInformation->GetTrackStatus()&boundaryAbsorbed) )
-      trajectory->SetDrawTrajectory(true);
+    //if((trackInformation->GetTrackStatus()&hitPMT)|| 
+       //(trackInformation->GetTrackStatus()&absorbed) ||
+       //(trackInformation->GetTrackStatus()&boundaryAbsorbed) )
+    trajectory->SetDrawTrajectory(true);
   }
   else //draw all other trajectories and store them in SLArMCPrimaryInfo
   {

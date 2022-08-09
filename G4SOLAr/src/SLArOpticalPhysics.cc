@@ -67,15 +67,19 @@ void SLArOpticalPhysics::ConstructProcess()
   G4cout << "SLArOpticalPhysics:: Add Optical Physics Processes"
     << G4endl;
 
-  fWLSProcess = new G4OpWLS("WLS");
 
   fScintProcess = new G4Scintillation("Scintillation");
-  //fScintProcess->SetScintillationYieldFactor(1.);
-  fScintProcess->SetTrackSecondariesFirst(true);
+  fScintProcess->SetTrackSecondariesFirst(false);
+  fScintProcess->SetScintillationByParticleType(true); 
+  // Use Birks Correction in the Scintillation process
+  //G4EmSaturation* emSaturation = 
+    //G4LossTableManager::Instance()->EmSaturation();
+  //fScintProcess->AddSaturation(emSaturation);
+
 
   fCerenkovProcess = new G4Cerenkov("Cerenkov");
-  fCerenkovProcess->SetMaxNumPhotonsPerStep(300);
-  fCerenkovProcess->SetTrackSecondariesFirst(true);
+  fCerenkovProcess->SetMaxNumPhotonsPerStep(100);
+  fCerenkovProcess->SetTrackSecondariesFirst(false);
 
   fAbsorptionProcess      = new G4OpAbsorption();
   fRayleighScattering     = new G4OpRayleigh();
@@ -95,24 +99,9 @@ void SLArOpticalPhysics::ConstructProcess()
   if (fAbsorptionOn) pManager->AddDiscreteProcess(fAbsorptionProcess);
 
   pManager->AddDiscreteProcess(fRayleighScattering);
-  //pManager->AddDiscreteProcess(fMieHGScatteringProcess);
 
   pManager->AddDiscreteProcess(fBoundaryProcess);
 
-  //fWLSProcess->UseTimeProfile("delta");
-  fWLSProcess->UseTimeProfile("exponential");
-
-  pManager->AddDiscreteProcess(fWLSProcess);
-
-  //fScintProcess->SetScintillationYieldFactor(1.);
-  //fScintProcess->SetScintillationExcitationRatio(0.0);
-  fScintProcess->SetTrackSecondariesFirst(true);
-
-  // Use Birks Correction in the Scintillation process
-
-  G4EmSaturation* emSaturation = 
-    G4LossTableManager::Instance()->EmSaturation();
-  fScintProcess->AddSaturation(emSaturation);
 
   auto particleIterator=GetParticleIterator();
   particleIterator->reset();
