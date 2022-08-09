@@ -10,7 +10,6 @@
 
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
-#include "detector/Tank/SLArDetTankMsgr.hh"
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"

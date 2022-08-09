@@ -34,7 +34,6 @@
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
-#include "detector/SLArDetectorSize.hh"
 #include "detector/Tank/SLArDetTank.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
@@ -95,7 +94,6 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::vector<G4VisAttributes*>   fVisAttributes;
 
     SLArDetTank*                    fTank;
-    SLArDetTankMsgr*                fTankMsgr;
 
     SLArGeoInfo                       fWorldGeoPars;
     SLArDetSuperCell*                 fSuperCell;
@@ -107,10 +105,6 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4String                        GetFirstChar(G4String line);
     void InitPDS(const rapidjson::Value&); 
     void InitPix(const rapidjson::Value&); 
-
-
-  protected:
-    SLArDetectorSize::SLArGEOcoll fColl;    
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

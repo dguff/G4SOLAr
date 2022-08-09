@@ -39,11 +39,9 @@
 #include "SLArAnalysisManager.hh"
 
 #include "SLArDetectorConstruction.hh"
-#include "detector/SLArDetectorSize.hh"
 
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/Tank/SLArDetTank.hh"
-#include "detector/Tank/SLArDetTankMsgr.hh"
 #include "detector/Tank/SLArTankSD.hh"
 
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
@@ -88,7 +86,7 @@
 
 SLArDetectorConstruction::SLArDetectorConstruction()
  : G4VUserDetectorConstruction(), 
-   fTank(nullptr), fTankMsgr(nullptr), 
+   fTank(nullptr),
    fSuperCell(nullptr),
    fWorldLog(nullptr)
 { }
@@ -145,7 +143,6 @@ void SLArDetectorConstruction::Init() {
     fTank->BuildDefalutGeoParMap();
   }
   fTank->BuildMaterial();
-  fTankMsgr = new SLArDetTankMsgr(this); 
   G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -282,8 +279,11 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
       fWorldGeoPars.GetGeoPar("size_y"), 
       fWorldGeoPars.GetGeoPar("size_z"));  
 
+  SLArMaterial* matWorld = new SLArMaterial("Air"); 
+  matWorld->BuildMaterialFromDB(); 
+
   fWorldLog   
-    = new G4LogicalVolume(expHall_box, fColl.fGEOWorld.fMaterial, "World",0,0,0);
+    = new G4LogicalVolume(expHall_box, matWorld->GetMaterial(), "World",0,0,0);
 
   G4VPhysicalVolume* expHall_phys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
