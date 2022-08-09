@@ -1,5 +1,5 @@
 # Use this open statement to create an OpenGL view:
-/vis/open OGL 600x600-0+0
+/vis/open OGLIQt 600x600-0+0
 #
 # Use this open statement to create a .prim file suitable for
 # viewing in DAWN:
@@ -33,8 +33,6 @@
 # Draw coordinate axes:
 #/vis/scene/add/axes 0 0 0 1 m
 #
-# Specify tank dimensions
-#/TestCell/detector/Tank/SetTankRadius 10 cm
 # Draw smooth trajectories at end of event, showing trajectory points
 # as markers 2 pixels wide:
 /vis/scene/add/trajectories smooth
