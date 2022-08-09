@@ -6,7 +6,7 @@
     {"name" : "Argon", "symb" : "Ar", "Z" : 18, "A" : 39.95, "nAtom" : 1, "fraction" : 1.0}
   ], 
 
-  "ProportiesTable" : [
+  "PropertiesTable" : [
     {"property" : "RINDEX", "value" : [
       {"var" : "Energy", "unit" : "eV", "val" : [ 1.18626, 1.68626, 2.18626, 2.68626, 3.18626, 3.68626, 4.18626, 4.68626, 5.18626, 5.68626, 6.18626, 6.68626, 7.18626, 7.68626, 8.18626, 8.68626, 9.18626, 9.68626, 10.1863, 10.6863, 11.1863 ]
       },
@@ -38,16 +38,25 @@
     {"property" : "SCINTILLATIONYIELD", "value" : 24000}, 
     {"property" : "SCINTILLATIONYIELD1", "value" : 0.77}, 
     {"property" : "SCINTILLATIONYIELD2", "value" : 0.23}, 
-    {"property" : "RESOLUTIONSCALE", "value" : 1.000}, 
-    {"property" : "ALPHASCINTILLATIONYIELD", "value" : 16800}, 
-    {"property" : "ALPHASCINTILLATIONYIELD1", "value" : 0.44},  
-    {"property" : "ALPHASCINTILLATIONYIELD2", "value" : 0.56},  
-    {"property" : "PROTONSCINTILLATIONYIELD", "value" : 19200}, 
-    {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
-    {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  
-    {"property" : "ELECTRONSCINTILLATIONYIELD", "value" : 20000}, 
+    {"property" : "ELECTRONSCINTILLATIONYIELD", "value" : [
+      {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 2e4]},  
+      {"var" : "Yield", "val" : [4.0, 4.0e8]} 
+    ]}, 
     {"property" : "ELECTRONSCINTILLATIONYIELD1", "value" : 0.73},  
     {"property" : "ELECTRONSCINTILLATIONYIELD2", "value" : 0.27}, 
+
+    {"property" : "ALPHASCINTILLATIONYIELD", "value" : [
+      {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 10e3]},  
+      {"var" : "Yield", "val" : [3.36, 1.68e8]}
+    ]}, 
+    {"property" : "ALPHASCINTILLATIONYIELD1", "value" : 0.44},  
+    {"property" : "ALPHASCINTILLATIONYIELD2", "value" : 0.56},  
+    {"property" : "PROTONSCINTILLATIONYIELD",  "value" : [
+      {"var" : "Energy", "unit" : "MeV", "val" : [0.0, 10.0e3]},  
+      {"var" : "Yield", "val" : [3.84, 1.92e8]} 
+    ]}, 
+    {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
+    {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  
     {"property" : "BIRKSCONSTANT", "value" : 0.069},
     {"property" : "RESOLUTIONSCALE", "value" : 1.00}
   ]
