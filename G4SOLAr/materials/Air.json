@@ -1,6 +1,6 @@
 {
   "name" : "Air",
-  "NIST" : "G4_Air", 
+  "NIST" : "G4_AIR", 
   "PropertiesTable" : [
     {"property" : "RINDEX" , 
       "value" : [
