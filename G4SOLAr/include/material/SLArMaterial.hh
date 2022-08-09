@@ -11,6 +11,7 @@
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4OpticalSurface.hh"
+#include "rapidjson/document.h"
 
 class SLArMaterial {
   public:
@@ -26,11 +27,13 @@ class SLArMaterial {
     void                SetMaterialID(G4String matID) {fMaterialID = matID;}
 
   protected:
+    void                ParseSurfaceProperties(const rapidjson::Value& jptable);
+    void                ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertiesTable* mpt);
 
   private:
-    G4String            fMaterialID;
-    G4Material*         fMaterial  ;
-    G4Material*         optSurf    ;
+    G4String            fMaterialID ;
+    G4Material*         fMaterial   ;
+    G4OpticalSurface*   fOpticalSurf;
 };
 
 

@@ -14,16 +14,17 @@
 
 #include "G4UIcommand.hh"
 #include "G4NistManager.hh"
+#include <cassert>
 
 SLArMaterial::SLArMaterial() : 
-  fMaterialID(""), fMaterial(nullptr), optSurf(nullptr)
+  fMaterialID(""), fMaterial(nullptr), fOpticalSurf(nullptr)
 {}
 
 SLArMaterial::SLArMaterial(const SLArMaterial &mat)
 {
   fMaterialID    = mat.fMaterialID   ; 
   fMaterial      = mat.fMaterial     ; 
-  optSurf        = mat.optSurf       ; 
+  fOpticalSurf   = mat.fOpticalSurf       ; 
 }
 
 SLArMaterial::SLArMaterial(G4String matID)
@@ -134,5 +135,114 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
     }
   }
 
+  if (d.HasMember("PropertiesTable")) {
+    auto ptable = new G4MaterialPropertiesTable(); 
+
+    ParseMPT(d["PropertiesTable"], ptable); 
+    
+    fMaterial->SetMaterialPropertiesTable(ptable); 
+  }
+
+  if (d.HasMember("SurfaceProperties")) {
+  }
+
   fclose(mat_cfg_file);
+}
+
+void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertiesTable* mpt) {
+
+  assert(jptable.IsArray());
+  const auto properties = jptable.GetArray(); 
+
+  for (const auto& p : properties) {
+    assert(p.HasMember("property")); 
+    assert(p.HasMember("value")); 
+
+    G4String pname = p["property"].GetString(); 
+
+    if (p["value"].IsArray()) {
+      assert(p["value"].GetArray().Size() == 2); 
+      std::vector<double> vE; vE.reserve(500); 
+      std::vector<double> vP; vP.reserve(500); 
+      for (const auto &v : p["value"].GetArray()) {
+        assert(v.HasMember("var")); 
+        assert(v.HasMember("val")); 
+        assert(v["val"].IsArray()); 
+        G4double vunit = 1.0; 
+        if (v.HasMember("unit")) {
+          vunit = G4UIcommand::ValueOf(v["unit"].GetString());
+        }
+        if (strcmp("Energy", v["var"].GetString()) == 0) {
+          for (const auto &val : v["val"].GetArray()) {
+            vE.push_back( val.GetDouble()*vunit ); 
+          }
+        } else {
+          for (const auto &val : v["val"].GetArray()) {
+            vP.push_back( val.GetDouble()*vunit ); 
+          } 
+        }
+      }
+      mpt->AddProperty(pname, vE, vP); 
+    } else {
+      G4double punit = 1.0; 
+      if (p.HasMember("unit")) 
+        punit = G4UIcommand::ValueOf(p["unit"].GetString()); 
+      G4double pvalue = p["value"].GetDouble(); 
+
+
+      if (pname == "BIRKSCONSTANT") {
+        fMaterial->GetIonisation()->SetBirksConstant(pvalue*punit); 
+      } else {
+        mpt->AddConstProperty(pname, pvalue*punit);
+      }
+    }
+  }
+  return;
+}
+
+void SLArMaterial::ParseSurfaceProperties(const rapidjson::Value& jptable) {
+  assert(jptable.IsObject());
+  auto surfcfg = jptable.GetObject(); 
+  assert(surfcfg.HasMember("name"));
+  G4String surfName = surfcfg["name"].GetString();
+  fOpticalSurf = new G4OpticalSurface(surfcfg["name"].GetString());
+
+  assert(surfcfg.HasMember("model"));
+  assert(surfcfg.HasMember("type"));
+  assert(surfcfg.HasMember("finished")); 
+
+  G4String model_str = surfcfg["model"].GetString(); 
+  G4String type_str  = surfcfg["type"].GetString(); 
+  G4String finished_str = surfcfg["finished"].GetString(); 
+
+  if (G4StrUtil::contains(model_str, "unified")) {
+    fOpticalSurf->SetModel(G4OpticalSurfaceModel::unified); 
+  } else { 
+    fOpticalSurf->SetModel(G4OpticalSurfaceModel::glisur); 
+  }
+
+  if (G4StrUtil::contains(type_str, "dielectric_metal")) {
+    fOpticalSurf->SetType( G4SurfaceType::dielectric_metal );
+  } else {
+    fOpticalSurf->SetType( G4SurfaceType::dielectric_dielectric );
+  }
+
+  if (G4StrUtil::contains(finished_str, "polished")) {
+    fOpticalSurf->SetFinish( G4OpticalSurfaceFinish::polished );
+  } else { 
+    fOpticalSurf->SetFinish( G4OpticalSurfaceFinish::ground ); 
+  }
+
+  if (surfcfg.HasMember("polished")) {
+    fOpticalSurf->SetPolish( surfcfg["polished"].GetDouble() );
+  }
+
+
+  if (surfcfg.HasMember("PropertiesTable")) {
+    G4MaterialPropertiesTable* srf_ptable = new G4MaterialPropertiesTable();
+    ParseMPT(surfcfg["PropertiesTable"], srf_ptable);
+    fOpticalSurf->SetMaterialPropertiesTable(srf_ptable);
+  }
+
+  return;
 }
