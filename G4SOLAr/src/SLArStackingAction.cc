@@ -62,10 +62,15 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
     { // particle is secondary
       if(aTrack->GetCreatorProcess()->GetProcessName() == "Scintillation")
         fEventAction->IncPhotonCount_Scnt();
-      if(aTrack->GetCreatorProcess()->GetProcessName() == "Cerenkov")
+      else if(aTrack->GetCreatorProcess()->GetProcessName() == "Cerenkov")
         fEventAction->IncPhotonCount_Cher();
-      if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS")
+      else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS")
         fEventAction->IncPhotonCount_WLS();
+#ifdef SLAR_DEBUG
+      else 
+        printf("SLArStackingAction::ClassifyNewTrack unknown photon creation process %s\n", 
+            aTrack->GetCreatorProcess()->GetProcessName().c_str());
+#endif
     }
   }
   return fUrgent;

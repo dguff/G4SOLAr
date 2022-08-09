@@ -36,6 +36,14 @@ SLArTrajectory::SLArTrajectory()
 SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
   :G4Trajectory(aTrack),fWls(false),fDrawit(false), fTime(0.)
 {
+#ifdef SLAR_DEBUG
+  if (aTrack->GetDynamicParticle()->GetParticleDefinition() != 
+      G4OpticalPhoton::Definition()) {
+    printf("SLArTrajectory: Create new SLArTrajectory for trk %i\n", 
+        aTrack->GetTrackID());
+  }
+#endif
+
   fEdepContainer.reserve(500);
   fParticleDefinition=aTrack->GetDefinition();
   
@@ -71,6 +79,24 @@ SLArTrajectory::SLArTrajectory(SLArTrajectory &right)
 
 SLArTrajectory::~SLArTrajectory() {
   fEdepContainer.clear();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void SLArTrajectory::MergeTrajectory(SLArTrajectory* secondTrajectory) {
+#ifdef SLAR_DEBUG
+  printf("calling SLArTrajectory::MergeTrajectory\n");
+#endif
+
+  G4int ent = secondTrajectory->GetPointEntries();
+  for(G4int i=1; i<ent; ++i) // initial pt of 2nd trajectory shouldn't be merged
+  {
+    AddEdep(secondTrajectory->GetEdep().at(i)); 
+  }
+  secondTrajectory->GetEdep().clear(); 
+
+  G4Trajectory::MergeTrajectory(secondTrajectory); 
+  return; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

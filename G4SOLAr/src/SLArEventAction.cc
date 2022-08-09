@@ -31,10 +31,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArEventAction.hh"
 #include "SLArTrajectory.hh"
-//#include "detector/LAPPD/SLArLAPPDHit.hh"
 #include "detector/Tank/SLArTankHit.hh"
-//#include "detector/PMT/SLArPMTHit.hh"
-//#include "detector/Hodoscope/SLArHodoscopeHit.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -80,6 +77,10 @@ SLArEventAction::~SLArEventAction()
 void SLArEventAction::BeginOfEventAction(const G4Event*)
 {
 
+#ifdef SLAR_DEBUG
+  printf("SLArEventAction::BeginOfEventAction()\n");
+#endif
+
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     //if (fLAPPDHCollID==-1) 
       //fLAPPDHCollID= sdManager->GetCollectionID("LAPPDColl");
@@ -113,6 +114,10 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 
 void SLArEventAction::EndOfEventAction(const G4Event* event)
 {
+#ifdef SLAR_DEBUG
+  printf("SLArEventAction::EndOfEventAction()\n"); 
+#endif
+
     G4HCofThisEvent* hce = event->GetHCofThisEvent();
     if (!hce) 
     {
@@ -136,6 +141,10 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     SLArAnaMgr->GetEvent()->SetEvNumber(event->GetEventID());
     
     SLArAnaMgr->FillEvTree();
+
+    printf("SLArEventAction::EndOfEventAction()\n"); 
+    printf("OpticalPhoton Monitor:\nCherenkov: %i\nScintillation: %i\n\n", 
+        fPhotonCount_Cher, fPhotonCount_Scnt);
 
     SLArAnaMgr->GetEvent()->Reset();
 }
@@ -351,6 +360,10 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 
 void SLArEventAction::RecordEventTarget(const G4Event* ev)
 {
+#ifdef SLAR_DEBUG
+  printf("  -> RecordEventTarget()\n");
+#endif
+
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
   if (fTargetHCollID == -4) return;
   else 
@@ -372,8 +385,11 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
       for (auto const t : *trj_vec)
       {
         SLArTrajectory* SLArTrj = (SLArTrajectory*)t;
-        if (SLArTrj->GetPDGEncoding()!=0)              // filter optical photons
+        // filter optical photons
+        // NOTE that in Geant4 v11.0.1 OpticalPhoton PDG encoding is -22
+        if (SLArTrj->GetPDGEncoding()!=0 && SLArTrj->GetPDGEncoding() != -22)
         {
+
           // Copy relevant attributes into SLArEvTrajectory
           SLArEventTrajectory* evTrajectory = new SLArEventTrajectory();
           evTrajectory->SetParticleName(SLArTrj->GetParticleName());
@@ -383,16 +399,29 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
           evTrajectory->SetCreatorProcess(SLArTrj->GetCreatorProcess());
           evTrajectory->SetInitKineticEne(SLArTrj->GetInitialKineticEnergy());
           evTrajectory->SetTime(SLArTrj->GetTime()); 
+
+#ifdef SLAR_DEBUG
+  printf("%*cRecording trk %i to register: PGD ID %i (%s) -- %i points\n", 6, ' ', 
+      SLArTrj->GetTrackID(), 
+      SLArTrj->GetPDGEncoding(), 
+      SLArTrj->GetParticleName().c_str(),
+      SLArTrj->GetPointEntries()); 
+#endif
           // store trajectory points
-          //size_t npoints = SLArTrj->GetPointEntries(); 
-          //size_t nedeps = SLArTrj->GetEdep().size();
-          /*
-           *if ( npoints != nedeps) {
-           *  printf("SLArEventAction::RecordEventTarget WARNING:\n");
-           *  printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
-           *      npoints, nedeps);
-           *}
-           */
+          size_t npoints = SLArTrj->GetPointEntries(); 
+          size_t nedeps = SLArTrj->GetEdep().size();
+          if ( npoints != nedeps+1) {
+            printf("SLArEventAction::RecordEventTarget WARNING:\n");
+            printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
+                npoints, nedeps);
+            //for (int iip =0; iip < SLArTrj->GetPointEntries(); iip++) {
+                //double x = SLArTrj->GetPoint(iip)->GetPosition().getX();
+                //double y = SLArTrj->GetPoint(iip)->GetPosition().getY();
+                //double z = SLArTrj->GetPoint(iip)->GetPosition().getZ();
+                //printf("Trj points: [%.2f, %.2f, %.2f]\n", 
+                    //x/CLHEP::m, y/CLHEP::m, z/CLHEP::m);
+            //}
+          }
           G4double trj_edep = 0; 
           for (const auto &edep : SLArTrj->GetEdep()) trj_edep += edep; 
           float edep = 0; 
@@ -426,6 +455,10 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
       } 
     }
   }
+
+#ifdef SLAR_DEBUG
+  printf("     DONE\n"); 
+#endif
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

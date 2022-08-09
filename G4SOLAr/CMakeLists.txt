@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+set(CMAKE_CONFIGURATION_TYPES Debug Release)
+
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -163,6 +165,7 @@ target_link_libraries(solar_sim SLArMCEvent)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+target_compile_definitions(solar_sim PUBLIC $<$<CONFIG:Debug>:SLAR_DEBUG>)
 
 list(APPEND G4SOLAR_RPATH 
   "${G4SOLAR_LIB_DIR}" 
