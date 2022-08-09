@@ -31,12 +31,16 @@
 *.out
 *.app
 
+# Output files
+*.root
+
 # External dependencies
 G4SOLAr/extern
 
 # build files
 build/
 install/
+_deprecated/
 
 #cache
 /.cache

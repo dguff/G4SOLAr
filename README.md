@@ -17,7 +17,8 @@ Hopefully, a more appropriate naming convention will gain ground.
 
 ## Prerequisites (on a Linux machine)
 
-- **Core:** `Geant4`, `ROOT` (possibly compiled from source *with the same C++ std*)
+- **Core:** `Geant4` `v11.0` and newer, **compiled without `MULTI_THREAD` support**, 
+  `ROOT` (possibly compiled from source)
   and respective dependencies (`cmake`, `g++`, `gcc`)
 - **Generators:** `G4SOLAr` integrates some external events generators that
   are relevant for the physics goal of the project. 
