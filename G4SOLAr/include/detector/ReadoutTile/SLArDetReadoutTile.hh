@@ -9,12 +9,8 @@
 #define SLARDETREADOUTTILE_HH
 
 #include "detector/SLArBaseDetModule.hh"
+#include "G4LogicalSkinSurface.hh"
 
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
 
 class SLArDetReadoutTile : public SLArBaseDetModule
 {
@@ -28,6 +24,7 @@ public:
 
   void          BuildMaterial();
   void          BuildDefalutGeoParMap();
+  G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
   void          BuildReadoutTile();
   void          BuildPCB();
   void          BuildSiPM();
@@ -37,6 +34,7 @@ public:
 
   SLArBaseDetModule*       GetSiPM();
   SLArMaterial*    GetSiPMMaterial();
+  G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
 
 
 protected:
@@ -55,6 +53,8 @@ private:
   SLArMaterial*  fMatPCB;
   SLArMaterial*  fMatChargePix;
   SLArMaterial*  fMatSiPM; 
+
+  G4LogicalSkinSurface* fSkinSurface;
 
   friend class SLArDetReadoutPlane;
 };

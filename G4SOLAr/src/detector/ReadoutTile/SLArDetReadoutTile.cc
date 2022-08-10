@@ -27,7 +27,8 @@
 SLArDetReadoutTile::SLArDetReadoutTile() : SLArBaseDetModule(),
   fPerfectQE(false),
   fBasePCB(nullptr), fChargePix(nullptr), fSiPM(nullptr),
-  fMatReadoutTile(nullptr), fMatPCB(nullptr), fMatSiPM(nullptr)
+  fMatReadoutTile(nullptr), fMatPCB(nullptr), fMatSiPM(nullptr), 
+  fSkinSurface(nullptr)
 {  
   fGeoInfo = new SLArGeoInfo();
 }
@@ -254,12 +255,12 @@ void SLArDetReadoutTile::SetPerfectQE(G4bool kQE)
     fPerfectQE = kQE;
     G4cout << "SLArDetReadoutTile::SetPerfectQE: Setting 100% QE between "
            << "1 and 5 eV" << G4endl;
-    G4double phEne[2] = {1*CLHEP::eV, 5*CLHEP::eV};
+    G4double phEne[2] = {1*CLHEP::eV, 13*CLHEP::eV};
     G4double eff  [2] = {1.0 , 1.0 };
     
-    //fMatSiPM->GetMaterialBuilder()->GetSurface()
-               //->GetMaterialPropertiesTable()
-               //->AddProperty("EFFICIENCY", phEne, eff, 2);  
+    fMatSiPM->GetMaterialOpticalSurf()
+               ->GetMaterialPropertiesTable()
+                  ->AddProperty("EFFICIENCY", phEne, eff, 2);  
   }
 
   return;
@@ -301,4 +302,12 @@ void SLArDetReadoutTile::BuildMaterial()
   fMatSiPM->BuildMaterialFromDB();
 }
 
+G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
+  fSkinSurface = 
+    new G4LogicalSkinSurface(
+        "SiPM_LgSkin", 
+        fModLV, 
+        fMatSiPM->GetMaterialOpticalSurf());
 
+  return fSkinSurface;
+}
