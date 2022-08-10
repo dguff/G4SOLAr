@@ -84,8 +84,8 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   }
 
   fEventTree = new TTree("EventTree", "Event Tree");
-  //fMCEvent->GetPMTSystem() ->Config(fPMTSysCfg );
-  //fMCEvent->GetHodoSystem()->Config(fHodoSysCfg);
+  fMCEvent->GetReadoutTileSystem()->ConfigSystem(fPixSysCfg);
+  SLArEventReadoutTileSystem* evPix = fMCEvent->GetReadoutTileSystem(); 
 
   fEventTree->Branch("MCEvent", &fMCEvent);
 
@@ -116,7 +116,7 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
   else             return true ; 
 }
 
-G4bool SLArAnalysisManager::LoadPixCfg(SLArPixSystemConfig* pixCfg)
+G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgPixSys* pixCfg)
 {
   fPixSysCfg = pixCfg;
   if (!fPixSysCfg) return false;
@@ -134,16 +134,28 @@ void SLArAnalysisManager::WriteSysCfg()
   }
 
   if (fPDSysCfg) {
+#ifdef SLAR_DEBUG
+    printf("SLArAnalysisManager::WriteSysCfg(): Writing PDSSysConfig... ");
+#endif
     fRootFile->cd();
     fPDSysCfg->Write("PDSSysConfig");
+#ifdef SLAR_DEBUG
+    printf("OK\n");
+#endif
   } else {
     G4cout << "SLArAnalysisManager::WritePDSSysConfig" << G4endl;
     G4cout << "fPDSysCfg is nullptr! Quit."      << G4endl;
   }
 
   if (fPixSysCfg) {
+#ifdef SLAR_DEBUG
+    printf("SLArAnalysisManager::WriteSysCfg(): Writing PixSysConfig... ");
+#endif 
     fRootFile->cd();
     fPixSysCfg->Write("PixSysConfig");
+#ifdef SLAR_DEBUG
+    printf("OK\n");
+#endif
   } else {
     G4cout << "SLArAnalysisManager::WritePixSysConfig" << G4endl;
     G4cout << "fPixSysCfg is nullptr! Quit."      << G4endl;
@@ -154,9 +166,20 @@ void SLArAnalysisManager::WriteSysCfg()
 
 G4bool SLArAnalysisManager::FillEvTree()
 {
-  if (!fEventTree) return false;
+#ifdef SLAR_DEBUG
+  printf("SLArAnalysisManager::FillEvTree...");
+#endif
+  if (!fEventTree) {
+#ifdef SLAR_DEBUG
+    printf(" EventTree is NULL!\n");
+#endif
+    return false;
+  }
   
   fEventTree->Fill();
+#ifdef SLAR_DEBUG
+  printf(" OK\n");
+#endif
   return true;
 }
 
@@ -185,7 +208,7 @@ void SLArAnalysisManager::SetOutputPath(G4String path)
     if (s.st_mode & S_IFDIR)
     { // append '/' if necessary 
       G4String last = &spath.operator[](spath.length()-1);
-      if ( last.compareTo("/") ) spath.append("/");
+      if ( G4StrUtil::icompare(last, "/") ) spath.append("/");
       fOutputPath = spath;
       return;
     }
@@ -207,7 +230,7 @@ void SLArAnalysisManager::SetOutputPath(G4String path)
     else
     {
       G4String last = &spath.operator[](spath.length()-1);
-      if ( last.compareTo("/") ) spath.append("/");
+      if ( G4StrUtil::icompare(last, "/") ) spath.append("/");
       fOutputPath = spath;
       std::cout << "Directory created" << std::endl; 
     }
@@ -216,6 +239,6 @@ void SLArAnalysisManager::SetOutputPath(G4String path)
 
 void SLArAnalysisManager::SetOutputName(G4String filename)
 {
-  if (!filename.contains(".root")) filename.append(".root");
+  if (! G4StrUtil::contains(filename, ".root") ) filename.append(".root");
   fOutputFileName = filename;
 }

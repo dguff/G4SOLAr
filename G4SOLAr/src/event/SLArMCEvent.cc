@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArMCEvent
- * @created     : giovedì feb 13, 2020 12:17:11 CET
+ * @created     : mercoledì ago 10, 2022 11:52:40 CEST
  */
 
 #include "event/SLArMCEvent.hh"
@@ -9,17 +9,15 @@
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
-  fEvNumber(0)
+  fEvNumber(0), fDirection{0, 0, 1}, fEvSystemTile(nullptr)
 {
-  //fSystemPMT  = new SLArEventSystemPMT();
-  //fSystemHodo = new SLArEventSystemHodo();
+  fEvSystemTile = new SLArEventReadoutTileSystem();
 }
 
 SLArMCEvent::~SLArMCEvent()
 {
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
-  //if (fSystemPMT)  delete fSystemPMT; 
-  //if (fSystemHodo) delete fSystemPMT; 
+  if (fEvSystemTile)  delete fEvSystemTile; 
   for (auto &p : fSLArPrimary) {
     delete p; p = nullptr; 
   }
@@ -27,30 +25,17 @@ SLArMCEvent::~SLArMCEvent()
   std::cerr << "SLArMCEvent DONE" << std::endl;
 }
 
-//int SLArMCEvent::ConfigPMTSystem(SLArSystemConfigPMT* pmtSysCfg)
-//{
-  //if (!fSystemPMT) {
-    //std::cout << "SLArMCEvent::ConfigPMTSystem: fSystemPMT is null!"
-              //<< std::endl;
-    //return 0;
-  //}
+int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgPixSys* pixSysCfg)
+{
+  if (!fEvSystemTile) {
+    std::cout << "SLArMCEvent::ConfigReadoutTileSystem: fEvSystemTile is null!"
+              << std::endl;
+    return 0;
+  }
 
-  //fSystemPMT->Config(pmtSysCfg);
-  //return fSystemPMT->GetNPMTs();
-//}
-
-//int SLArMCEvent::ConfigHodoSystem(SLArSystemConfigHodo* hodoSysCfg)
-//{
-  //if (!fSystemHodo) {
-    //std::cout << "SLArMCEvent::ConfigHodoSystem: fSystemHodo is null!"
-              //<< std::endl;
-    //return 0;
-  //}
-
-  //fSystemHodo->Config(hodoSysCfg);
-
-  //return fSystemHodo->GetModuleMap().size();
-//}
+  fEvSystemTile->ConfigSystem(pixSysCfg);
+  return fEvSystemTile->GetMegaTilesMap().size();
+}
 
 int SLArMCEvent::SetEvNumber(int nEv)
 {
@@ -60,11 +45,8 @@ int SLArMCEvent::SetEvNumber(int nEv)
 
 void SLArMCEvent::Reset()
 {
-  //if (fSystemPMT ) fSystemPMT ->ResetHits();
-  //if (fSystemHodo) fSystemHodo->Reset();
+  if (fEvSystemTile ) fEvSystemTile->ResetHits();
   for (auto &p : fSLArPrimary) {
-    //printf("deleting primary...\n"); 
-    //p->PrintParticle(); 
     delete p; p = nullptr; 
   }
   fSLArPrimary.clear(); 

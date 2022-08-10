@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArMCEvent
- * @created     : giovedì feb 13, 2020 12:12:39 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArMCEvent.hh
+ * @created     : mercoledì ago 10, 2022 11:52:04 CEST
  */
 
 #ifndef SLArMCEVENT_HH
@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "event/SLArMCPrimaryInfo.hh"
-//#include "config/SLArPDSystemConfig.hh"
-//#include "event/SLArEventSystemPMT.hh"
-
+#include "event/SLArEventReadoutTileSystem.hh"
+#include "config/SLArCfgBaseSystem.hh"
+#include "config/SLArCfgMegaTile.hh"
 
 
 class SLArMCEvent : public TObject
@@ -24,22 +24,20 @@ class SLArMCEvent : public TObject
   public: 
     enum EDirectionMode {kFixed = 0, kRandom = 1};
 
-    SLArMCEvent ();
+    SLArMCEvent();
     ~SLArMCEvent();
 
-    int SetEvNumber    (int nEv);
-    int GetEvNumber           ()   {return fEvNumber;}
+    int SetEvNumber(int nEv);
+    int GetEvNumber() {return fEvNumber;}
 
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
     void SetDirection(double* dir = nullptr); 
     void SetDirection(double px, double py, double pz); 
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
     std::array<double, 3> GetDirection() {return fDirection;}
-    //int ConfigPMTSystem (SLArSystemConfigPMT*   pmtSysCfg);
-    //int ConfigHodoSystem(SLArSystemConfigHodo* hodoSysCfg);
+    int ConfigReadoutTileSystem (SLArCfgPixSys* pixSysCfg);
 
-    //SLArEventSystemPMT*   GetPMTSystem() {return fSystemPMT ;}
-    //SLArEventSystemHodo*  GetHodoSystem(){return fSystemHodo;}
+    SLArEventReadoutTileSystem* GetReadoutTileSystem() {return fEvSystemTile;}
 
     std::vector<SLArMCPrimaryInfo*>& GetPrimaries() {return fSLArPrimary ;}
     SLArMCPrimaryInfo* GetPrimary(int ip) {return fSLArPrimary.at(ip);}
@@ -55,11 +53,10 @@ class SLArMCEvent : public TObject
     std::array<double, 3>  fDirection; 
     std::vector<SLArMCPrimaryInfo*> fSLArPrimary; 
     EDirectionMode fDirectionMode;
-    //SLArEventSystemPMT*     fSystemPMT;
-    //SLArEventSystemHodo*    fSystemHodo;
+    SLArEventReadoutTileSystem* fEvSystemTile;
 
   public:
-    ClassDef(SLArMCEvent, 3);
+    ClassDef(SLArMCEvent, 1);
 };
 
 
