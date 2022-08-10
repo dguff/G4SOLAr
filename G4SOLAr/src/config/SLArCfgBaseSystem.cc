@@ -117,5 +117,19 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(TString name)
   return array;
 }
 
+template<class TAssemblyModule>
+TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(int idx)
+{
+  TAssemblyModule* module_cfg = nullptr;
+  for (const auto& mod : fModulesMap) {
+    if (mod.second->GetIdx() == idx) {
+      module_cfg = mod.second; 
+      break;
+    }
+  }
+
+  return module_cfg;
+}
+
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
 template class SLArCfgBaseSystem<SLArCfgMegaTile>;

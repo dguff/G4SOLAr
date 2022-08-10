@@ -27,7 +27,7 @@ class SLArCfgBaseSystem : public TNamed
     int  RegisterModule(TString name);
     int  RegisterModule(TAssemblyModule* array);
 
-    TAssemblyModule* GetModuleInfo(int idx);
+    TAssemblyModule* GetModule(int idx);
     TAssemblyModule* GetModule(TString name);
     std::map<TString, TAssemblyModule*>& GetModuleMap() {return fModulesMap;}
 
