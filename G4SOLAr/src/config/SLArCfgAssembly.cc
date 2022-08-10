@@ -99,8 +99,9 @@ void SLArCfgAssembly<TBaseModule>::BuildPolyBinHist()
   for (auto &pmt : fElementsMap) 
   {
     TString gBinName = Form("gBin%i", iBin);
-    fH2Bins->AddBin(
+    int bin_idx = fH2Bins->AddBin(
         pmt.second->GetGraphShape()->Clone(gBinName));
+    pmt.second->SetBinIdx(bin_idx);
     iBin ++;
   }
 }
