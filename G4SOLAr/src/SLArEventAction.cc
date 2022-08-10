@@ -30,6 +30,7 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArEventAction.hh"
+#include "SLArReadoutTileHit.hh"
 #include "SLArTrajectory.hh"
 #include "detector/Tank/SLArTankHit.hh"
 
@@ -50,9 +51,7 @@
 
 SLArEventAction::SLArEventAction()
 : G4UserEventAction(), 
-  fLAPPDHCollID(-1),
-  fPMTHCollID  (-2), 
-  fHodoHCollID (-3), 
+  fTileHCollID  (-2), 
   fTargetHCollID(-4)
 {
   // set printing per each event
@@ -82,18 +81,16 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 #endif
 
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    //if (fLAPPDHCollID==-1) 
-      //fLAPPDHCollID= sdManager->GetCollectionID("LAPPDColl");
-    //if (fPMTHCollID == -2) 
-      //fPMTHCollID  = sdManager->GetCollectionID("PMTColl"  );
+    if (fTileHCollID == -2) 
+      fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
     if (fTargetHCollID == -4)
       fTargetHCollID = sdManager->GetCollectionID("TargetColl");
 
-    //G4cout << "SLArEventAction::BeginOfEventAction(): ";
-    //G4cout << "LAPPD  ID = " << fLAPPDHCollID  << G4endl;
-    //G4cout << "PMT    ID = " << fPMTHCollID    << G4endl;
-    //G4cout << "Hod    ID = " << fHodoHCollID   << G4endl;
-    //G4cout << "Target ID = " << fTargetHCollID << G4endl;
+#ifdef SLAR_DEBUG
+    G4cout << "SLArEventAction::BeginOfEventAction(): ";
+    G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
+    G4cout << "Target ID      = " << fTargetHCollID << G4endl;
+#endif
 
     // Reset hits in DST event 
     //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
@@ -130,11 +127,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 
     RecordEventTarget( event );
 
-    //RecordEventLAPPD ( event );
-
-    //RecordEventPMT   ( event );
-  
-    //RecordEventHodo ( event );
+    RecordEventReadoutTile ( event );
 
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     
@@ -149,214 +142,82 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     SLArAnaMgr->GetEvent()->Reset();
 }
 
-//void SLArEventAction::RecordEventPMT(const G4Event* ev)
-//{
+void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
+{
 
-  //G4HCofThisEvent* hce = ev->GetHCofThisEvent();
+  G4HCofThisEvent* hce = ev->GetHCofThisEvent();
 
-  //if (fPMTHCollID!= -2) 
-  //{
-    //// Get hits collections 
-    //SLArPMTHitsCollection* hHC1 
-      //= static_cast<SLArPMTHitsCollection*>(hce->GetHC(fPMTHCollID));
+  if (fTileHCollID!= -2) 
+  {
+    // Get hits collections 
+    SLArReadoutTileHitsCollection* hHC1 
+      = static_cast<SLArReadoutTileHitsCollection*>(hce->GetHC(fTileHCollID));
 
-    //if ( (!hHC1) ) 
-    //{
-      //G4ExceptionDescription msg;
-      //msg << "Some of hits collections of this event not found." 
-        //<< G4endl; 
-      //G4Exception("SLArEventAction::RecordEventPMT",
-          //"SLArCode001", JustWarning, msg);
-      //return;
-    //}   
+    if ( (!hHC1) ) 
+    {
+      G4ExceptionDescription msg;
+      msg << "Some of hits collections of this event not found." 
+        << G4endl; 
+      G4Exception("SLArEventAction::RecordEventReadoutTile",
+          "SLArCode001", JustWarning, msg);
+      return;
+    }   
 
-    ////
-    //// Fill histograms & ntuple
-    //// 
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-    //// Get analysis manager
-    //G4AnalysisManager* analysisManager = 
-      //G4AnalysisManager::Instance();
+    // Fill histograms
+    G4int n_hit = hHC1->entries();
 
-    //SLArAnalysisManager* SLArAnaMgr = 
-      //SLArAnalysisManager::Instance();
+    for (G4int i=0;i<n_hit;i++) {
+      SLArReadoutTileHit* hit = (*hHC1)[i];
+      if (!hit) { 
+        G4cout << "SLArEventAction::RecordEventReadoutTile(): "
+          << "No hits on SiPMs or "
+          << "issue in hit collection readout";
+        break;
+      }
 
-    //// Fill histograms
+      G4ThreeVector localPos = hit->GetLocalPos();
+      G4ThreeVector worldPos = hit->GetWorldPos();
+      G4double      time     = hit->GetTime();
+      G4double      wavelen  = hit->GetPhotonWavelength(); 
+      G4int         mgtile_idx = hit->GetMegaTileIdx(); 
+      G4int         rowtile_nr = hit->GetRowTileIdx(); 
+      G4int         tile_nr    = hit->GetTileIdx(); 
 
-    //G4int n_hit = hHC1->entries();
-
-    //for (G4int i=0;i<n_hit;i++)
-    //{
-      //SLArPMTHit* hit = (*hHC1)[i];
-      //if (!hit) { 
-        //G4cout << "SLArEventAction::RecordEventPMT(): "
-          //<< "No hits on PMTs or "
-          //<< "issue in hit collection readout";
-        //break;
-      //}
-
-      //G4ThreeVector localPos = hit->GetLocalPos();
-      //G4ThreeVector worldPos = hit->GetWorldPos();
-      //G4double      time     = hit->GetTime();
-      /*
-       *G4cout << "SLArEventAction::RecordEventPMT()" << G4endl;
-       *G4cout << "pmt idx = " << hit->GetPMTIdx() << G4endl;
-       *G4cout << "x    = " << G4BestUnit(worldPos.x(), "Length") << "; "
-       *       << "y    = " << G4BestUnit(worldPos.y(), "Length") << "; "
-       *       << "time = " << G4BestUnit(time, "Time") << G4endl;
-       */
-      //analysisManager->FillH2(1, 
-                              //worldPos.x() / cm, 
-                              //worldPos.z() / cm);
+#ifdef SLAR_DEBUG
+      G4cout << "SLArEventAction::RecordEventPMT()" << G4endl;
+      printf("Tile idx [%i, %i, %i]\n", mgtile_idx, rowtile_nr, tile_nr);
+      G4cout << "x    = " << G4BestUnit(worldPos.x(), "Length") << "; "
+             << "y    = " << G4BestUnit(worldPos.y(), "Length") << "; "
+             << "time = " << G4BestUnit(time, "Time") << G4endl;
+#endif
       
-    //// Fill ntuple
-    //// ntuple id = 0: PMT hits
-      //analysisManager->FillNtupleIColumn(0, 0,
-          //G4EventManager::GetEventManager()->GetConstCurrentEvent()
-          //->GetEventID());
-      //analysisManager->FillNtupleIColumn(0, 1,hit->GetPhotonProcessId());
-      //analysisManager->FillNtupleIColumn(0, 2,hit->GetPMTIdx());
-      //analysisManager->FillNtupleDColumn(0, 3,hit->GetTime()  );
-      //analysisManager->FillNtupleDColumn(0, 4,hit->GetWorldPos().x());
-      //analysisManager->FillNtupleDColumn(0, 5,hit->GetWorldPos().z());
-      //analysisManager->FillNtupleDColumn(0, 6,hit->GetPhotonEnergy());
-      //analysisManager->AddNtupleRow(0);
+      SLArEventPhotonHit* dstHit = new SLArEventPhotonHit(
+          time, 
+          hit->GetPhotonProcessId(), 
+          wavelen);
+      dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
+      dstHit->SetTileInfo(mgtile_idx, rowtile_nr, tile_nr); 
 
-      //SLArEventHitPMT* dstHit     = new SLArEventHitPMT(
-          //hit->GetTime(), 
-          //hit->GetPhotonProcessId(), 
-          //1.0);
-      //dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
-
-      //SLArAnaMgr->GetEvent()->GetPMTSystem()
-              //->RegisterHit(hit->GetPMTIdx(), 
-                            //(SLArEventHitPMT*)dstHit->Clone("evNew"));
+      SLArAnaMgr->GetEvent()->GetReadoutTileSystem()->RegisterHit(
+                            (SLArEventPhotonHit*)dstHit->Clone());
       
-      //delete dstHit;
-    //}
+      delete dstHit;
+    }
 
-    //// Sort hits on PMTs
-    //SLArAnaMgr->GetEvent()->GetPMTSystem()->SortHits();
+    // Sort hits on PMTs
+    SLArAnaMgr->GetEvent()->GetReadoutTileSystem()->SortHits();
     
 
-    //// Print diagnostics
-    //G4int printModulo = 
-      //G4RunManager::GetRunManager()->GetPrintProgress();
-    //if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
+    // Print diagnostics
+    G4int printModulo = 
+      G4RunManager::GetRunManager()->GetPrintProgress();
+    if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
+  }
 
-    ////G4PrimaryParticle* primary = ev->GetPrimaryVertex(0)->GetPrimary(0);
-    ////G4cout << G4endl
-      ////<< ">>> Event " << ev->GetEventID() << " >>> Simulation truth : "
-      ////<< primary->GetG4code()->GetParticleName()
-      ////<< " " << primary->GetMomentum() << G4endl;
+}
 
-    //// Photodetector
-    ////G4cout << "PMTs had " << n_hit << " hits." << G4endl;
-    ////for (G4int i=0;i<n_hit;i++)
-    ////{
-      ////SLArPMTHit * hit = (*hHC1)[i];
-      ////hit->Print();
-    ////}
-  //}
-
-//}
-
-
-//void SLArEventAction::RecordEventLAPPD(const G4Event* ev)
-//{
-
-  //G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-
-  //if (fLAPPDHCollID!= -1) 
-  //{
-    //// Get hits collections 
-    //SLArLAPPDHitsCollection* hHC1 
-      //= static_cast<SLArLAPPDHitsCollection*>(hce->GetHC(fLAPPDHCollID));
-
-    //if ( (!hHC1) ) 
-    //{
-      //G4ExceptionDescription msg;
-      //msg << "Some of hits collections of this event not found." 
-        //<< G4endl; 
-      //G4Exception("SLArEventAction::RecordEventLAPPD",
-          //"SLArCode001", JustWarning, msg);
-      //return;
-    //}   
-
-    ////
-    //// Fill histograms & ntuple
-    //// 
-
-    //// Get analysis manager
-    //G4AnalysisManager* analysisManager = 
-      //G4AnalysisManager::Instance();
-
-    //// Fill histograms
-
-    //G4int n_hit = hHC1->entries();
-
-    //for (G4int i=0;i<n_hit;i++)
-    //{
-      //SLArLAPPDHit* hit = (*hHC1)[i];
-      //if (!hit) { 
-        //G4cout << "SLArEventAction::RecordEventLAPPD(): "
-          //<< "No hits on LAPPD or "
-          //<< "issue in hit collection readout";
-        //break;
-      //}
-
-      //G4ThreeVector localPos = hit->GetLocalPos();
-      //G4ThreeVector worldPos = hit->GetWorldPos();
-      //G4double      time     = hit->GetTime();
-      ////G4cout << "x = " << worldPos.x() / cm << "; "
-        ////<< "y = " << worldPos.y() / cm << "; "
-        ////<< "z = " << worldPos.z() / cm << "; "
-        ////<< "time = " << time / ns << G4endl;
-      //analysisManager->FillH3(0, 
-                              //worldPos.x() / cm, 
-                              //worldPos.z() / cm, 
-                              //time / ns);
-      //analysisManager->FillH2(0, 
-                              //worldPos.x() / cm, 
-                              //worldPos.z() / cm);
-
-      //// Fill ntuple
-      //// ntuple id = 0: PMT hits
-      //// ntuple id = 1: LAPPD hits
-      //analysisManager->FillNtupleIColumn(1, 0, 
-          //G4EventManager::GetEventManager()->GetConstCurrentEvent()
-          //->GetEventID());
-      //analysisManager->FillNtupleIColumn(1, 1, hit->GetPhotonProcessId());
-      //analysisManager->FillNtupleDColumn(1, 2, hit->GetTime());
-      //analysisManager->FillNtupleDColumn(1, 3, hit->GetWorldPos().x());
-      //analysisManager->FillNtupleDColumn(1, 4, hit->GetWorldPos().z());
-      //analysisManager->FillNtupleDColumn(1, 5, hit->GetPhotonEnergy());
-      //analysisManager->AddNtupleRow(1);
-    //}
-
-    ////
-    //// Print diagnostics
-    //// 
-
-    //G4int printModulo = 
-      //G4RunManager::GetRunManager()->GetPrintProgress();
-    //if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
-
-    //G4PrimaryParticle* primary = ev->GetPrimaryVertex(0)->GetPrimary(0);
-    //G4cout << G4endl
-      //<< ">>> Event " << ev->GetEventID() << " >>> Simulation truth : "
-      //<< primary->GetG4code()->GetParticleName()
-      //<< " " << primary->GetMomentum() << G4endl;
-
-    //// Photodetector
-    //G4cout << "LAPPD has " << n_hit << " hits." << G4endl;
-    //for (G4int i=0;i<n_hit;i++)
-    //{
-      //SLArLAPPDHit * hit = (*hHC1)[i];
-      //hit->Print();
-    //}
-  //}
-//}
 
 void SLArEventAction::RecordEventTarget(const G4Event* ev)
 {
@@ -463,59 +324,3 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-//void SLArEventAction::RecordEventHodo(const G4Event* ev)
-//{
-  //G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-
-  //if (fHodoHCollID == -3) return;
-  //else 
-  //{
-    //// Get hits collections 
-    //SLArHodoHitsCollection* hHC1 
-      //= static_cast<SLArHodoHitsCollection*>(hce->GetHC(fHodoHCollID));
-
-    //if ( (!hHC1) ) 
-    //{
-      //G4ExceptionDescription msg;
-      //msg << "Some of hits collections of this event not found." 
-        //<< G4endl; 
-      //G4Exception("SLArEventAction::RecordEventHodo",
-          //"SLArCode001", JustWarning, msg);
-      //return;
-    //}   
-
-    //// Fill histograms & ntuple
-
-    //// Get analysis manager
-    //SLArAnalysisManager* SLArAnaMgr = 
-      //SLArAnalysisManager::Instance();
-
-    //// Fill histograms
-
-    //G4int n_hit = hHC1->entries();
-
-    //for (G4int i=0;i<n_hit;i++)
-    //{
-      //SLArHodoHit* hit = (*hHC1)[i];
-      //if (!hit) { 
-        //G4cout << "SLArEventAction::RecordEventHodo(): "
-          //<< "No hits on Hodo or "
-          //<< "issue in hit collection readout";
-        //break;
-      //}
-
-      //if (hit->GetDepositedEnergy() > 0.)
-      //{
-        ////hit->Print();
-        //SLArAnaMgr->GetEvent()->GetHodoSystem()->RegisterHit(
-            //new SLArEventHitHodo(
-              //hit->GetTime(), 
-              //hit->GetDepositedEnergy(), 
-              //hit->GetHodoNumber(), 
-              //hit->GetBarNumber())
-            //);
-      //}
-    //}
-    
-  //}
-//}

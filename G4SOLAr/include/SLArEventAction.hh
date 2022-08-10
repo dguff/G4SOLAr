@@ -66,9 +66,7 @@ public:
 
     
 private:
-    G4int fLAPPDHCollID;
-    G4int fPMTHCollID;
-    G4int fHodoHCollID;
+    G4int fTileHCollID;
     G4int fTargetHCollID;
 
     G4int fHitCount;
@@ -79,9 +77,7 @@ private:
     G4int fBoundaryAbsorptionCount;
     G4double fTotEdep;
 
-    //void RecordEventLAPPD (const G4Event* ev);
-    //void RecordEventPMT   (const G4Event* ev);
-    //void RecordEventHodo  (const G4Event* ev);
+    void RecordEventReadoutTile (const G4Event* ev);
     void RecordEventTarget(const G4Event* ev);
 };
 
