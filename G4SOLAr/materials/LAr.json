@@ -57,6 +57,13 @@
     ]}, 
     {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
     {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  
+    {"property" : "IONSCINTILLATIONYIELD", "value" : [
+      {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 10e3]},  
+      {"var" : "Yield", "val" : [3.36, 1.68e8]}
+    ]}, 
+    {"property" : "IONSCINTILLATIONYIELD1", "value" : 0.44},  
+    {"property" : "IONSCINTILLATIONYIELD2", "value" : 0.56},  
+
     {"property" : "BIRKSCONSTANT", "value" : 0.069},
     {"property" : "RESOLUTIONSCALE", "value" : 1.00}
   ]
