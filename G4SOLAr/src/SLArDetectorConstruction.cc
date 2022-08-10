@@ -45,6 +45,7 @@
 #include "detector/Tank/SLArTankSD.hh"
 
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+#include "detector/ReadoutTile/SLArReadoutTileSD.hh"
 
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgSuperCell.hh"
@@ -110,7 +111,7 @@ void SLArDetectorConstruction::Init() {
   SLArAnaMgr->fAnaMsgr->AssignDetectorConstruction(this);
 
   // open geometry configuration file
-  const char* geo_cfg_file_path = Form("%s/geometry_light.json", SLAR_BASE_DIR);
+  const char* geo_cfg_file_path = Form("%s/geometry.json", SLAR_BASE_DIR);
   FILE* geo_cfg_file = std::fopen(geo_cfg_file_path, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(geo_cfg_file, readBuffer, sizeof(readBuffer));
@@ -339,13 +340,12 @@ void SLArDetectorConstruction::ConstructSDandField()
     G4String SDname;
     
     //Set PMT SD
-    //G4VSensitiveDetector* pmtSD
-      //= new SLArPMTSD(SDname="/PMT/Cathode");
-    //SDman->AddNewDetector(pmtSD);
-    //for (auto &pmt : fPMTs)
-      //SetSensitiveDetector(
-          //pmt.second->GetCathode()->GetModLV(), 
-          //pmtSD);
+    G4VSensitiveDetector* sipmSD
+      = new SLArReadoutTileSD(SDname="/tile/sipm");
+    SDman->AddNewDetector(sipmSD);
+    SetSensitiveDetector(
+          fReadoutTile->GetSiPM()->GetModLV(), 
+          sipmSD);
 
     // Set Tank SD
     G4VSensitiveDetector* targetSD
@@ -456,6 +456,8 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
   fReadoutTile->BuildReadoutTile(); 
   fReadoutTile->SetVisAttributes();
 
+  fReadoutTile->BuildLogicalSkinSurface(); 
+
   SLArPixSystemConfig* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
   
   printf("SLArDetectorConstruction::BuildAndPlaceReadoutTiles\n"); 
@@ -488,7 +490,8 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           mtileCfg->GetPsi());
 
       auto pv = megatile->GetModPV(mtileCfg->GetName(), 
-          tile_rot, tile_pos, fTank->GetModLV(), false, mtileCfg->GetIdx());
+          tile_rot, tile_pos, fTank->GetTarget()->GetModLV(), 
+          false, mtileCfg->GetIdx());
       auto lv = megatile->GetModLV();
       auto row = megatile->GetTileRow();
 
@@ -539,6 +542,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           cell_cfg->SetPhysY( (phys_pos).y() ); 
           cell_cfg->SetPhysZ( (phys_pos).z() );  
 
+#ifdef SLAR_DEBUG
           // TODO: check positioning is ok
           // seems ok, but better check it twice
           //printf("%s megatile pos: [%.2f, %.2f, %.2f]: cell %i pos [%.2f, %.2f, %.2f]: phys pos [%.2f, %.2f, %.2f]\n", 
@@ -546,6 +550,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
               //cell_cfg->GetIdx(), cell_pos.x(), cell_pos.y(), cell_pos.z(),
               //phys_pos.x(), phys_pos.y(), phys_pos.z()
               //);
+#endif
 
           cell_cfg->Set2DSize_X(0.8*fReadoutTile->GetGeoPar("tile_z")); 
           cell_cfg->Set2DSize_Y(0.8*fReadoutTile->GetGeoPar("tile_x")); 
@@ -563,15 +568,3 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
 }
 
-//void SLArDetectorConstruction::BuildPMTModel(const char* mod)
-//{
-  //SLArDetPMT* pmt = new SLArDetPMT();
-  //pmt->LoadPMTModel(mod);
-  //pmt->BuildPMT();
-  //fPMTs.insert(std::make_pair(mod, pmt));
-//}
-
-//std::vector<G4VPhysicalVolume*>& SLArDetectorConstruction::GetVecPMT()
-//{
-  //return fPMTPV;
-//}
