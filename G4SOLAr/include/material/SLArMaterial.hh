@@ -25,6 +25,7 @@ class SLArMaterial {
     G4MaterialPropertiesTable* GetMaterialPropTable(); 
     G4String            GetMaterialID();
     void                SetMaterialID(G4String matID) {fMaterialID = matID;}
+    G4OpticalSurface*   GetMaterialOpticalSurf() {return fOpticalSurf;}
 
   protected:
     void                ParseSurfaceProperties(const rapidjson::Value& jptable);

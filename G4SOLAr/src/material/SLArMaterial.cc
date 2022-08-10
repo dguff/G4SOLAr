@@ -142,6 +142,7 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
   }
 
   if (d.HasMember("SurfaceProperties")) {
+    ParseSurfaceProperties(d["SurfaceProperties"]);
   }
 
   fclose(mat_cfg_file);
