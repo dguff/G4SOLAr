@@ -112,9 +112,9 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   {
     EGunMode gunMode = kFixed;
     G4String strMode = newValue;
-    if      (strMode.contains("Fixed" )) gunMode = kFixed;
-    else if (strMode.contains("Radio")) gunMode = kRadio;
-    else if (strMode.contains("Marley")) gunMode = kMarley;
+    if      (G4StrUtil::contains(strMode, "Fixed" )) gunMode = kFixed;
+    else if (G4StrUtil::contains(strMode, "Radio" )) gunMode = kRadio;
+    else if (G4StrUtil::contains(strMode, "Marley")) gunMode = kMarley;
 
     fSLArAction->SetGunMode(gunMode);
   } 

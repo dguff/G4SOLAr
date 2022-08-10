@@ -214,7 +214,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
 }
 
 void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
-  SLArPixSystemConfig* pixCfg = new SLArPixSystemConfig("PixCfg");
+  SLArCfgPixSys* pixCfg = new SLArCfgPixSys("PixCfg");
 
   fReadoutTile = new SLArDetReadoutTile();
   fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"]); 
@@ -458,7 +458,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
   fReadoutTile->BuildLogicalSkinSurface(); 
 
-  SLArPixSystemConfig* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
+  SLArCfgPixSys* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
   
   printf("SLArDetectorConstruction::BuildAndPlaceReadoutTiles\n"); 
   printf("Registered readout tiles models:\n"); 
