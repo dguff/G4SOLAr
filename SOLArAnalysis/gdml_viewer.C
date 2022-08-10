@@ -87,18 +87,6 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
     }
   }
 
-  if (pixCfg) {
-    TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
-    TCanvas* cPix = new TCanvas("cPix", "Pixel system readout", 0, 0, 1000, 400);
-    cPix->cd(); 
-    h2frame->Draw("axis"); 
-
-    for (auto &mod : pixCfg->GetModuleMap()) {
-      SLArCfgMegaTile* mgTile = mod.second; 
-      mgTile->BuildPolyBinHist(); 
-      mgTile->GetTH2()->Draw("colsame"); 
-    }
-  }
 
   TTree* tree = (TTree*)file->Get("EventTree"); 
   
@@ -183,7 +171,46 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
     hvis->Fill(ev_edep); 
   }
 
+  TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
+  TCanvas* cPix = new TCanvas("cPix", "Pixel system readout", 0, 0, 1000, 400);
+  cPix->cd(); 
+  h2frame->Draw("axis"); 
+  double hmax = 0; 
+
+  auto pixSys = ev->GetReadoutTileSystem(); 
+  for (const auto &mtile : pixSys->GetMegaTilesMap()) {
+    printf("ReadoutTile System: %s [%i]\n", 
+        mtile.second->GetName(), mtile.first);
+    auto mgTileCfg = pixCfg->GetModule(mtile.first);
+    mgTileCfg->BuildPolyBinHist(); 
+
+    for (const auto &tile : mtile.second->GetTileMap()) {
+      SLArEventTile* evTile = tile.second; 
+      if (!evTile->GetHits().empty()) {
+        int tile_idx = evTile->GetIdx();
+        int bin_idx = mgTileCfg->GetBaseElement(tile_idx)->GetBinIdx();
+        int nhits = evTile->GetNhits(); 
+        if (nhits > hmax) hmax = nhits; 
+        mgTileCfg->GetTH2()->SetBinContent(
+            bin_idx,
+            evTile->GetNhits()
+            );
+      }
+    }
+  }
  
+  
+  gStyle->SetPalette(kSunset);
+  printf("hmax is %g\n", hmax);
+
+  int imap = 0; 
+  for (auto &mtilecfg : pixCfg->GetModuleMap()) {
+    mtilecfg.second->GetTH2()->GetZaxis()->SetRangeUser(0., 1.1*hmax); 
+    if (imap == 0) mtilecfg.second->GetTH2()->Draw("colz same");
+    else mtilecfg.second->GetTH2()->Draw("col same");
+    imap++;
+  }
+
   return;
 }
 
