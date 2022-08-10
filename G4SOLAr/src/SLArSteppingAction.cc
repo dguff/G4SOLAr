@@ -31,6 +31,8 @@
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArTrajectory.hh"
 
+#include "detector/ReadoutTile/SLArReadoutTileSD.hh"
+
 #include "G4VPhysicalVolume.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
@@ -40,9 +42,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
-//#include "detector/LAPPD/SLArLAPPDSD.hh"
-//#include "detector/PMT/SLArPMTSD.hh"
-//#include "detector/Hodoscope/SLArHodoscopeSD.hh"
+#include "G4PVReplica.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,8 +65,8 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 {
   G4Track* track = step->GetTrack();
 
-  G4String ParticleName = track->GetDynamicParticle()->
-    GetParticleDefinition()->GetParticleName();
+  const G4ParticleDefinition* particleDef = track->GetDynamicParticle()->
+    GetParticleDefinition();
 
   G4StepPoint* thePrePoint = step->GetPreStepPoint();
   G4VPhysicalVolume* thePrePV = thePrePoint->GetPhysicalVolume();
@@ -88,47 +88,12 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //trajectory->GetPointEntries());
   }
 
-  const std::vector<const G4Track*>* secondaries =
-    step->GetSecondaryInCurrentStep();
-
-
-/*
- *  if (secondaries->size()>0) {
- *    for(unsigned int i=0; i<secondaries->size(); ++i) {
- *      if (secondaries->at(i)->GetParentID()>0) {
- *          
- *        if(secondaries->at(i)->GetDynamicParticle()->
- *            GetParticleDefinition()
- *            == G4OpticalPhoton::OpticalPhotonDefinition())
- *        {
- *          SLArUserPhotonTrackInformation* phInfo = 
- *            (SLArUserPhotonTrackInformation*)track->GetUserInformation();
- *
- *          if 
- *            (secondaries->at(i)->GetCreatorProcess()->GetProcessName()
- *              == "Scintillation")
- *              fEventAction->IncPhotonCount_Scnt();
- *          else if 
- *            (secondaries->at(i)->GetCreatorProcess()->GetProcessName()
- *              == "Cerenkov")
- *              fEventAction->IncPhotonCount_Cher();
- *          else if 
- *            (secondaries->at(i)->GetCreatorProcess()->GetProcessName()
- *              == "WLS")
- *             fEventAction->IncPhotonCount_WLS(); 
- *        }
- *      }
- *    }
- *  }
- */
-
-
   if (!thePostPV) return;
 
   G4OpBoundaryProcessStatus boundaryStatus=Undefined;
   static G4ThreadLocal G4OpBoundaryProcess* boundary = nullptr;
 
-  if (ParticleName == "opticalphoton" && 
+  if (particleDef == G4OpticalPhoton::OpticalPhotonDefinition() && 
       thePrePV != thePostPV) {
 
     SLArUserPhotonTrackInformation* phInfo = 
@@ -149,6 +114,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       }
     }
 
+
     //Was the photon absorbed by the absorption process
     // [from LXe example]
     if(thePostPoint->GetProcessDefinedStep()->GetProcessName()
@@ -156,8 +122,6 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       fEventAction->IncAbsorption();
       phInfo->AddTrackStatusFlag(absorbed);
     }
-
-
 
     boundaryStatus=boundary->GetStatus();
 
@@ -181,7 +145,9 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       switch(boundaryStatus){
         case Absorption:
           {
-            //G4cout << "SLArSteppingAction Absorption" << G4endl;
+#ifdef SLAR_DEBUG
+            G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
+#endif
             phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
             break;
@@ -193,38 +159,39 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
           {
             //Triger sensitive detector manually since photon is
             //absorbed but status was Detection
-            //G4cout << "SLArSteppingAction Detection" << G4endl;
+            G4TouchableHistory* touchable = 
+              (G4TouchableHistory*)thePostPoint->GetTouchable(); 
+#ifdef SLAR_DEBUG
+            G4cout << "SLArSteppingAction::UserSteppingAction Detection" << G4endl;
+#endif
             phInfo->AddTrackStatusFlag(hitPMT);
-            //G4SDManager* SDman = G4SDManager::GetSDMpointer();
-            //G4String volName = 
-              //step->GetPostStepPoint()->GetPhysicalVolume()->GetName();
-            //G4String sdNameLAPPD="/LAPPD/Cathode";
-            //G4String sdNamePMT  ="/PMT/Cathode";
+            G4SDManager* SDman = G4SDManager::GetSDMpointer();
+            G4String volName = 
+              touchable->GetVolume()->GetName();
+            G4String sdNameSiPM  ="/tile/sipm";
+
+            SLArReadoutTileSD* sipmSD = nullptr; 
+            sipmSD = (SLArReadoutTileSD*)SDman->FindSensitiveDetector(sdNameSiPM);
+
+#ifdef SLAR_DEBUG
+             printf("Detection in %s - copy id [%i, %i, %i]\n", 
+                 volName.c_str(), 
+                 touchable->GetCopyNumber(0), 
+                 touchable->GetCopyNumber(1), 
+                 touchable->GetCopyNumber(2)); 
+#endif
+            if (volName=="tile_row_z") {
+              if(sipmSD) { 
+                sipmSD->ProcessHits_constStep(step, nullptr);
+              } else {
+#ifdef SLAR_DEBUG
+                printf("SLArSteppingAction::UserSteppingAction::Detection WARNING\n"); 
+                printf("%s is not recognized as SD\n", volName.c_str());
+#endif
+              }
+            }
             
-            // Set LAPPD SD null unless the photon hit the LAPPD Cathode
-            // (proving that LAPPD exists)
-            //SLArLAPPDSD* lappdSD  = 0;
-            //SLArPMTSD* pmtSD = 
-              //(SLArPMTSD*)SDman->FindSensitiveDetector(sdNamePMT);
-            //G4cout << "Detection in " << volName << G4endl;
-            //if (volName=="PMTCathode")
-            //{
-              //if(pmtSD) 
-              //{ 
-                //pmtSD  ->ProcessHits_constStep(step, nullptr);
-                ////G4cout << "PMT hit processed" << G4endl;
-              //}
-            //}
-            //else if (volName=="LAPPDCathode")
-            //{
-              //lappdSD = (SLArLAPPDSD*)SDman->FindSensitiveDetector(sdNameLAPPD);
-              //if(lappdSD)
-              //{
-                //lappdSD->ProcessHits_constStep(step, nullptr);
-                ////G4cout << "LAPPD hit processed" << G4endl;
-              //}
-            //}
-            //track->SetTrackStatus( fStopAndKill );
+            track->SetTrackStatus( fStopAndKill );
             break;
           }
         default:
