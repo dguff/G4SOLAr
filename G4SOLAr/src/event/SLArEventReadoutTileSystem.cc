@@ -56,6 +56,7 @@ int SLArEventReadoutTileSystem::RegisterHit(SLArEventPhotonHit* hit) {
   int mgtile_idx = hit->GetMegaTileIdx(); 
   if (fMegaTilesMap.count(mgtile_idx)) {
     fMegaTilesMap.find(mgtile_idx)->second->RegisterHit(hit);
+    fNhits++;
     return 1; 
   } else {
     printf("SLArEventReadoutTileSystem::RegisterHit WARNING\n"); 
