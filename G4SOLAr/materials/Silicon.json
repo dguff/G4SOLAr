@@ -9,11 +9,11 @@
     "polished" : 0.8,
     "PropertiesTable" : [
       {"property" : "EFFICIENCY", "value" : [
-        {"var": "Energy", "unit" : "eV", "val": [2.0, 11.0]}, 
+        {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
         {"var": "EFFICIENCY", "val" : [1.0, 1.0]}
       ]}, 
       {"property" : "REFLECTIVITY", "value" : [
-        {"var": "Energy", "unit" : "eV", "val": [2.0, 11.0]}, 
+        {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
         {"var": "REFLECTIVITY", "val" : [0.22, 0.22]}
       ]}
     ]
