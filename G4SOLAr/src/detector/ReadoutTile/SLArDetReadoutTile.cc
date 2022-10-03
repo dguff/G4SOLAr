@@ -183,29 +183,63 @@ void SLArDetReadoutTile::BuildReadoutTile()
   //fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h),  0.), cell_lv); 
   //fChargePix->GetModPV("qpix", 0, G4ThreeVector( +dx, 0.5*(hq-h), +dx), cell_lv); 
   G4cout << "  - installing sipm" << G4endl; 
-  fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
-
+  //-------------------------------------------------------- BENCHMARK GEOMETRY
+  fSiPM->GetModPV("sipm", 0, G4ThreeVector(0, 0, 0), cell_lv, 2); 
   // 3. A row of elementary cells
   G4cout<<"Creating a row of sensor cells..." << G4endl; 
-  G4Box* cell_row_box = new G4Box("tileCellRow", 1.5*dx, 0.5*h, 15*dx); 
-  G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
+  G4Box* cell_row_box = new G4Box("tileCellRow", 
+      0.25*fGeoInfo->GetGeoPar("tile_x"), 
+      0.50*h, 
+      0.50*fGeoInfo->GetGeoPar("tile_z")); 
+  G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, 
+      fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
   cell_row_lv->SetVisAttributes( G4VisAttributes(false) ); 
-  new G4PVReplica("cell_row", cell_lv, cell_row_lv, kZAxis, 10, 3*dx);  
+  new G4PVReplica("cell_row", cell_lv, cell_row_lv, kZAxis, 2, 
+      fGeoInfo->GetGeoPar("sipm_z"));  
   
   // 4. Full sensor plane
   G4cout<<"Creating replacas of rows..." << G4endl; 
   G4Box* cell_plane_box = new G4Box("tileCellPlane", 
-      15*dx, 0.5*h, 15*dx); 
+      0.50*fGeoInfo->GetGeoPar("tile_x"), 
+      0.50*h, 
+      0.50*fGeoInfo->GetGeoPar("tile_z"));  
   G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
       fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
   cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
-  new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
+  new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 2, 
+      fGeoInfo->GetGeoPar("sipm_x")); 
 
   // 5. Final assembly (PCB + sensor plane)
   G4cout<<"Final placement..." << G4endl; 
   new G4PVPlacement(
       0, G4ThreeVector(0., 0.5*(fhTot-h), 0.), 
       cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
+
+  
+  //--------------------------------------------------------- Standard Geometry
+  //fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
+
+  // 3. A row of elementary cells
+  //G4cout<<"Creating a row of sensor cells..." << G4endl; 
+  //G4Box* cell_row_box = new G4Box("tileCellRow", 1.5*dx, 0.5*h, 15*dx); 
+  //G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
+  //cell_row_lv->SetVisAttributes( G4VisAttributes(false) ); 
+  //new G4PVReplica("cell_row", cell_lv, cell_row_lv, kZAxis, 10, 3*dx);  
+  
+  //// 4. Full sensor plane
+  //G4cout<<"Creating replacas of rows..." << G4endl; 
+  //G4Box* cell_plane_box = new G4Box("tileCellPlane", 
+      //15*dx, 0.5*h, 15*dx); 
+  //G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
+      //fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
+  //cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
+  //new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
+
+  //// 5. Final assembly (PCB + sensor plane)
+  //G4cout<<"Final placement..." << G4endl; 
+  //new G4PVPlacement(
+      //0, G4ThreeVector(0., 0.5*(fhTot-h), 0.), 
+      //cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
 
    return;
 }
