@@ -176,13 +176,22 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
   cPix->cd(); 
   h2frame->Draw("axis"); 
   double hmax = 0; 
+  double tmax = 0; 
 
   auto pixSys = ev->GetReadoutTileSystem(); 
+
+  std::map<int, TH2Poly*> hpTime;
+
   for (const auto &mtile : pixSys->GetMegaTilesMap()) {
     printf("ReadoutTile System: %s [%i]\n", 
         mtile.second->GetName(), mtile.first);
     auto mgTileCfg = pixCfg->GetModule(mtile.first);
     mgTileCfg->BuildPolyBinHist(); 
+
+    hpTime.insert(
+        std::make_pair(mgTileCfg->GetIdx(), 
+          (TH2Poly*)mgTileCfg->GetTH2()->Clone(Form("%s_time", mgTileCfg->GetName()))
+          )); 
 
     for (const auto &tile : mtile.second->GetTileMap()) {
       SLArEventTile* evTile = tile.second; 
@@ -190,15 +199,17 @@ void gdml_viewer(const char* mc_file, const char* gdml_world = "slar_world.gdml"
         int tile_idx = evTile->GetIdx();
         int bin_idx = mgTileCfg->GetBaseElement(tile_idx)->GetBinIdx();
         int nhits = evTile->GetNhits(); 
+        double tfirst = evTile->GetTime(); 
         if (nhits > hmax) hmax = nhits; 
+        if (tfirst > tmax) tmax = tfirst; 
         mgTileCfg->GetTH2()->SetBinContent(
             bin_idx,
-            evTile->GetNhits()
+            nhits
             );
+        hpTime[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, tfirst); 
       }
     }
   }
- 
   
   gStyle->SetPalette(kSunset);
   printf("hmax is %g\n", hmax);
