@@ -103,9 +103,9 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
     hit->SetTime(preStepPoint->GetGlobalTime());
-    hit->SetMegaTileIdx(touchable->GetCopyNumber(2));
-    hit->SetRowTileIdx(touchable->GetCopyNumber(1));
-    hit->SetTileIdx(touchable->GetCopyNumber(0));
+    hit->SetMegaTileIdx(touchable->GetCopyNumber(6));
+    hit->SetRowTileIdx(touchable->GetCopyNumber(5));
+    hit->SetTileIdx(touchable->GetCopyNumber(4));
     hit->SetPhotonProcess(procName);
     
     fHitsCollection->insert(hit);
