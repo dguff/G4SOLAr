@@ -76,7 +76,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
   friend class SLArAnalysisManagerMsgr;
 
   public:
-    SLArDetectorConstruction();
+    SLArDetectorConstruction(G4String, G4String);
     virtual ~SLArDetectorConstruction();
 
   public:
@@ -91,6 +91,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
   private:
     void                            Init();
+    G4String                        fGeometryCfgFile; 
+    G4String                        fMaterialDBFile; 
     std::vector<G4VisAttributes*>   fVisAttributes;
 
     SLArDetTank*                    fTank;

@@ -43,6 +43,7 @@
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include <getopt.h>
 #include "G4Types.hh"
 
 #ifdef G4MULTITHREADED
@@ -53,6 +54,7 @@
 
 #include "G4UImanager.hh"
 
+#include "SLArUserPath.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
 #include "SLArDetectorConstruction.hh"
@@ -65,10 +67,12 @@
 namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
-    G4cerr << " testCube [-m macro ] [-u UIsession] [-t nThreads] [-r seed] "
-           << G4endl;
-    G4cerr << "   note: -t option is available only for multi-threaded mode."
-           << G4endl;
+    fprintf(stderr, " solar_sim\t[-m/--macro macro_file]]\n");
+    fprintf(stderr, " \t\t[-u/--session session]\n");
+    fprintf(stderr, " \t\t[-r/--seed user_seed]\n");
+    fprintf(stderr, " \t\t[-g/--geometry geometry_cfg_file]\n");
+    fprintf(stderr, " \t\t[-p/--materials material_db_file]\n");
+    fprintf(stderr, " \t\t[-h/--help print usage]\n");
   }
 }
 
@@ -76,32 +80,85 @@ namespace {
 
 int main(int argc,char** argv)
 {
-  // Evaluate arguments
-  //
-  if ( argc > 9 ) {
-    PrintUsage();
-    return 1;
-  }
 
   G4String macro;
   G4String session;
+  G4String geometry_file = Form("%s/geometry.json", SLAR_BASE_DIR); 
+  G4String material_file = Form("%s/materials_db.json", SLAR_MATERIAL_DIR); 
+
 #ifdef G4MULTITHREADED
   G4int nThreads = 0;
 #endif
 
   G4long myseed = 345354;
-  for ( G4int i=1; i<argc; i=i+2 ) {
-     if      ( G4String(argv[i]) == "-m" ) macro   = argv[i+1];
-     else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
-     else if ( G4String(argv[i]) == "-r" ) myseed  = atoi(argv[i+1]);
+  const char* short_opts = "m:u:t:r:g:p:h";
+  static struct option long_opts[8] = 
+  {
+    {"macro", required_argument, 0, 'm'}, 
+    {"session", required_argument, 0, 'u'}, 
+    {"threads", required_argument, 0, 't'}, 
+    {"seed", required_argument, 0, 'r'}, 
+    {"geometry", required_argument, 0, 'g'}, 
+    {"materials", required_argument, 0, 'p'},
+    {"help", no_argument, 0, 'h'}, 
+    {nullptr, no_argument, nullptr, 0}
+  };
+
+  int c, option_index; 
+
+  while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
+    switch(c) {
+      case 'm' : 
+      {
+        macro = optarg;
+        printf("solar_sim config macro: %s\n", macro.c_str());
+        break;
+      };
+      case 'u' : 
+      {
+        session = optarg; 
+        printf("solar_sim session: %s\n", session.c_str());
+        break;
+      };
+      case 'r':
+      {
+        myseed = std::atoi(optarg); 
+        printf("solar_sim seed: %lu\n", myseed);
+        break;
+      }; 
+      case 'g':
+      {
+        geometry_file = optarg; 
+        printf("solar_sim geometry configuration file: %s\n", geometry_file.c_str());
+        break;
+      };
+      case 'p' : 
+      {
+        material_file = optarg; 
+        printf("solar_sim material database: %s\n", material_file.c_str());
+        break;
+      };
+      case 'h' : 
+      {
+        PrintUsage(); 
+        return 4;
+        break;
+      };
+      case '?' : 
+      {
+        printf("solar_sim error: unknown flag %c\n", optopt);
+        PrintUsage(); 
+        return 4;
+        break;
+      }; 
 #ifdef G4MULTITHREADED
-     else if ( G4String(argv[i]) == "-t" ) {
-                    nThreads = G4UIcommand::ConvertToInt(argv[i+1]);
-    }
+      case 't':
+      {
+        nThreads = std::atoi(optarg); 
+        printf("solar_sim running on %i threads\n", nThreads);
+        break;
+      };
 #endif
-    else {
-      PrintUsage();
-      return 1;
     }
   }
 
@@ -134,14 +191,18 @@ int main(int argc,char** argv)
   // Set mandatory initialization classes
   //
   // Detector construction
-  runManager-> SetUserInitialization(new SLArDetectorConstruction());
+  printf("Creating Detector Construction...\n");
+  runManager-> SetUserInitialization(new SLArDetectorConstruction(geometry_file, material_file));
   // Physics list
+  printf("Creating Phiscs Lists...\n");
   runManager-> SetUserInitialization(new SLArPhysicsList(physName));
   // User action initialization
+  printf("Creating User Action...\n");
   runManager->SetUserInitialization (new SLArActionInitialization());
 
   // Initialize G4 kernel
   //
+  printf("RunManager initialization...\n");
   runManager->Initialize();
 
   // Initialize visualization
@@ -149,6 +210,7 @@ int main(int argc,char** argv)
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
+  printf("visManager initialization...\n");
   visManager->Initialize();
 
   // Get the pointer to the User Interface manager

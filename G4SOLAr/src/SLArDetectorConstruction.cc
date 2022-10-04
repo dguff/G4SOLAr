@@ -85,12 +85,22 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArDetectorConstruction::SLArDetectorConstruction()
- : G4VUserDetectorConstruction(), 
+SLArDetectorConstruction::SLArDetectorConstruction(
+    G4String geometry_cfg_file, G4String material_db_file)
+ : G4VUserDetectorConstruction(),
+   fGeometryCfgFile(""), 
+   fMaterialDBFile(""),
    fTank(nullptr),
    fSuperCell(nullptr),
    fWorldLog(nullptr)
-{ }
+{ 
+  fGeometryCfgFile = geometry_cfg_file; 
+  fMaterialDBFile  = material_db_file; 
+#ifdef SLAR_DEBUG
+  printf("SLArDetectorConstruction Build with\ngeometry %s\nmaterials %s\n",
+      fGeometryCfgFile.c_str(), fMaterialDBFile.c_str());
+#endif
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -107,12 +117,15 @@ SLArDetectorConstruction::~SLArDetectorConstruction(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SLArDetectorConstruction::Init() {
+#ifdef SLAR_DEBUG
+  printf("SLArDetectorConstruction::Init\ngeometry: %s\nmaterials: %s\n", 
+      fGeometryCfgFile.c_str(), fMaterialDBFile.c_str());
+#endif
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
   SLArAnaMgr->fAnaMsgr->AssignDetectorConstruction(this);
 
   // open geometry configuration file
-  const char* geo_cfg_file_path = Form("%s/geometry.json", SLAR_BASE_DIR);
-  FILE* geo_cfg_file = std::fopen(geo_cfg_file_path, "r");
+  FILE* geo_cfg_file = std::fopen(fGeometryCfgFile, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(geo_cfg_file, readBuffer, sizeof(readBuffer));
 
@@ -143,7 +156,7 @@ void SLArDetectorConstruction::Init() {
   } else {
     fTank->BuildDefalutGeoParMap();
   }
-  fTank->BuildMaterial();
+  fTank->BuildMaterial(fMaterialDBFile);
   G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -171,7 +184,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
   fSuperCell = new SLArDetSuperCell(); 
   assert(pds.HasMember("dimensions")); 
   fSuperCell->GetGeoInfo()->ReadFromJSON(pds["dimensions"]); 
-  fSuperCell->BuildMaterial(); 
+  fSuperCell->BuildMaterial(fMaterialDBFile); 
 
   SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
   if (pds.HasMember("modules")) {
@@ -218,7 +231,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
 
   fReadoutTile = new SLArDetReadoutTile();
   fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"]); 
-  fReadoutTile->BuildMaterial();
+  fReadoutTile->BuildMaterial(fMaterialDBFile);
 
   if (pixsys.HasMember("modules")) {
     assert(pixsys["modules"].IsArray()); 
@@ -228,7 +241,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
       SLArDetReadoutPlane* megatile = new SLArDetReadoutPlane(); 
       assert(mtile.HasMember("dimensions")); 
       megatile->GetGeoInfo()->ReadFromJSON(mtile["dimensions"]); 
-      megatile->BuildMaterial(); 
+      megatile->BuildMaterial(fMaterialDBFile); 
       fReadoutMegaTile.insert(std::make_pair(mtile["name"].GetString(),megatile)); 
 
       assert(mtile.HasMember("positions")); 
@@ -271,6 +284,10 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
 
 G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 {
+#ifdef SLAR_DEBUG
+  printf("SLArDetectorConstruction::Construct\ngeometry: %s\nmaterials: %s\n", 
+      fGeometryCfgFile.c_str(), fMaterialDBFile.c_str());
+#endif
   Init();
 
   // ------------- Volumes --------------
@@ -281,7 +298,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
       fWorldGeoPars.GetGeoPar("size_z"));  
 
   SLArMaterial* matWorld = new SLArMaterial("Air"); 
-  matWorld->BuildMaterialFromDB(); 
+  matWorld->BuildMaterialFromDB(fMaterialDBFile); 
 
   fWorldLog   
     = new G4LogicalVolume(expHall_box, matWorld->GetMaterial(), "World",0,0,0);
