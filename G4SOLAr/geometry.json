@@ -18,12 +18,12 @@
   },
   "ReadoutTile": {
     "dimensions" : [
-      {"name" : "tile_x", "val" :20.0, "unit" : "cm" },
+      {"name" : "tile_x", "val" :10.0, "unit" : "cm" },
       {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
-      {"name" : "tile_z", "val" :20.0, "unit" : "cm" },
-      {"name" : "sipm_x", "val" :10.0, "unit" : "cm" },
+      {"name" : "tile_z", "val" :10.0, "unit" : "cm" },
+      {"name" : "sipm_x", "val" : 5.0, "unit" : "cm" },
       {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
-      {"name" : "sipm_z", "val" :10.0, "unit" : "cm" }, 
+      {"name" : "sipm_z", "val" : 5.0, "unit" : "cm" }, 
       {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
       {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
       {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
