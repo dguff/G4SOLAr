@@ -30,7 +30,7 @@ public:
 
   void          BuildTank();
 
-  void          BuildMaterial();
+  void          BuildMaterial(G4String);
   void          BuildDefalutGeoParMap();
 
   void          ResetTankGeometry();

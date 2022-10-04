@@ -19,7 +19,7 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
     SLArDetReadoutPlane(const SLArDetReadoutPlane& detReadoutPlane); 
     ~SLArDetReadoutPlane(); 
 
-    void BuildMaterial(); 
+    void BuildMaterial(G4String materials_db); 
     void BuildDefalutGeoParMap(); 
     void BuildReadoutPlane(SLArDetReadoutTile*); 
     SLArBaseDetModule* GetTileRow() {return fTileRow;}

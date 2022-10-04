@@ -243,20 +243,20 @@ void SLArDetSuperCell::BuildDefalutGeoParMap()
 }
 
 
-void SLArDetSuperCell::BuildMaterial()
+void SLArDetSuperCell::BuildMaterial(G4String materials_db)
 {
   fMatLightGuide   = new SLArMaterial();
   fMatCoating      = new SLArMaterial();
   fMatSuperCell    = new SLArMaterial();
 
   fMatSuperCell->SetMaterialID("Vacuum");
-  fMatSuperCell->BuildMaterialFromDB();
+  fMatSuperCell->BuildMaterialFromDB(materials_db);
 
   fMatLightGuide->SetMaterialID("Plastic");
-  fMatLightGuide->BuildMaterialFromDB();
+  fMatLightGuide->BuildMaterialFromDB(materials_db);
 
   fMatCoating->SetMaterialID("Bialkali");
-  fMatCoating->BuildMaterialFromDB();
+  fMatCoating->BuildMaterialFromDB(materials_db);
 }
 
 

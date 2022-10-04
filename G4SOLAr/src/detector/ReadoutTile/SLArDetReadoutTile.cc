@@ -322,7 +322,7 @@ void SLArDetReadoutTile::BuildDefalutGeoParMap()
 }
 
 
-void SLArDetReadoutTile::BuildMaterial()
+void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
 {
   fMatPCB         = new SLArMaterial();
   fMatSiPM        = new SLArMaterial();
@@ -330,16 +330,16 @@ void SLArDetReadoutTile::BuildMaterial()
   fMatReadoutTile = new SLArMaterial();
 
   fMatReadoutTile->SetMaterialID("LAr");
-  fMatReadoutTile->BuildMaterialFromDB();
+  fMatReadoutTile->BuildMaterialFromDB(materials_db);
 
   fMatPCB->SetMaterialID("PCB");
-  fMatPCB->BuildMaterialFromDB();
+  fMatPCB->BuildMaterialFromDB(materials_db);
 
   fMatChargePix->SetMaterialID("Steel");
-  fMatChargePix->BuildMaterialFromDB();
+  fMatChargePix->BuildMaterialFromDB(materials_db);
 
   fMatSiPM->SetMaterialID("Silicon");
-  fMatSiPM->BuildMaterialFromDB();
+  fMatSiPM->BuildMaterialFromDB(materials_db);
 }
 
 G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {

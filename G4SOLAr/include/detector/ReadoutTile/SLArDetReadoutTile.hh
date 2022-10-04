@@ -22,7 +22,7 @@ public:
   
   void          SetPerfectQE(G4bool kQE);
 
-  void          BuildMaterial();
+  void          BuildMaterial(G4String materials_db);
   void          BuildDefalutGeoParMap();
   G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
   void          BuildReadoutTile();

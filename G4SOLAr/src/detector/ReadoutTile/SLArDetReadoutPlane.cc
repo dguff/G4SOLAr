@@ -42,11 +42,11 @@ void SLArDetReadoutPlane::BuildDefalutGeoParMap()
   fGeoInfo->RegisterGeoPar("rdoutplane_x"   ,  2.0*CLHEP::m);
 }
 
-void SLArDetReadoutPlane::BuildMaterial()
+void SLArDetReadoutPlane::BuildMaterial(G4String materials_db)
 {
   fMatReadoutPlane = new SLArMaterial(); 
   fMatReadoutPlane->SetMaterialID("LAr");
-  fMatReadoutPlane->BuildMaterialFromDB();
+  fMatReadoutPlane->BuildMaterialFromDB(materials_db);
 }
 
 void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {

@@ -49,7 +49,7 @@ G4String SLArMaterial::GetMaterialID()
   return fMaterialID;
 }
 
-void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
+void SLArMaterial::BuildMaterialFromDB(G4String db_file, G4String mat_id) {
 
   if (mat_id.empty()) mat_id = fMaterialID;
   else SetMaterialID(mat_id);
@@ -66,50 +66,68 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // open material description file
-  char mat_cfg_file_path[100]; 
-  sprintf(mat_cfg_file_path, "%s/%s.json", SLAR_MATERIAL_DIR, mat_id.c_str());
-  FILE* mat_cfg_file = std::fopen(mat_cfg_file_path, "r");
+  FILE* mat_cfg_file = std::fopen(db_file, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(mat_cfg_file, readBuffer, sizeof(readBuffer));
 
   rapidjson::Document d;
   d.ParseStream(is);
   assert(d.IsObject());
-  assert(d.HasMember("name")); 
+  assert(d.HasMember("materials")); 
+  assert(d["materials"].IsArray()); 
 
+
+  for (const auto &material : d["materials"].GetArray()) {
+    assert(material.HasMember("name"));
+    if ( !G4StrUtil::contains(material["name"].GetString(), mat_id) ) {
+      continue;
+    } else {
+      ParseMaterial(material);
+      fclose(mat_cfg_file); 
+      return; 
+    }
+  }
+
+  printf("SLArMaterial::BuildMaterialFromDB(%s) ERROR: Unable to find %s in material DB (%s)\n",
+      mat_id.c_str(), mat_id.c_str(), db_file.c_str());
+
+  fclose(mat_cfg_file);
+}
+
+void SLArMaterial::ParseMaterial(const rapidjson::Value& jmaterial) {
   auto nistManager = G4NistManager::Instance(); 
 
-  printf("SLArMaterial::BuildMaterialFromDB(%s)\n", mat_id.c_str()); 
-  if (d.HasMember("NIST")) {
-    printf("Building %s from NIST database\n", mat_id.c_str()); 
-    fMaterial = nistManager->FindOrBuildMaterial(d["NIST"].GetString(), true); 
-    fMaterial->SetName(d["name"].GetString()); 
-  } else if (d.HasMember("components")) {
-    printf("Building %s based on listed components\n", mat_id.c_str()); 
-    assert(d.HasMember("name"));
-    assert(d.HasMember("density"));
-    assert(d["components"].IsArray());
+  printf("SLArMaterial::BuildMaterialFromDB(%s)\n", jmaterial["name"].GetString()); 
+  if (jmaterial.HasMember("NIST")) {
+    printf("Building %s from NIST database\n", jmaterial["name"].GetString()); 
+    fMaterial = nistManager->FindOrBuildMaterial(jmaterial["NIST"].GetString(), true); 
+    fMaterial->SetName(jmaterial["name"].GetString()); 
+  } else if (jmaterial.HasMember("components")) {
+    printf("Building %s based on listed components\n", jmaterial["name"].GetString()); 
+    assert(jmaterial.HasMember("name"));
+    assert(jmaterial.HasMember("density"));
+    assert(jmaterial["components"].IsArray());
 
-    auto components = d["components"].GetArray();
-    auto density = d["density"].GetObj(); 
+    auto components = jmaterial["components"].GetArray();
+    auto density = jmaterial["density"].GetObj(); 
     double vunit = 1.0; 
     if (density.HasMember("unit")) 
       vunit = G4UIcommand::ValueOf(density["unit"].GetString()); 
 
-    if (d.HasMember("temperature")) {
-      auto temperature = d["temperature"].GetObj();
+    if (jmaterial.HasMember("temperature")) {
+      auto temperature = jmaterial["temperature"].GetObj();
       G4double tunit = 1.0; 
       if (temperature.HasMember("unit")) 
         tunit = G4UIcommand::ValueOf(temperature["unit"].GetString()); 
 
       fMaterial = new G4Material(
-          d["name"].GetString(), 
+          jmaterial["name"].GetString(), 
           density["val"].GetDouble()*vunit, 
           components.Size(), G4State::kStateLiquid, 
           temperature["val"].GetDouble()*tunit);
     } else {
       fMaterial = new G4Material(
-          d["name"].GetString(), 
+          jmaterial["name"].GetString(), 
           density["val"].GetDouble()*vunit, 
           components.Size()); 
     }
@@ -135,21 +153,21 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
     }
   }
 
-  if (d.HasMember("PropertiesTable")) {
+  if (jmaterial.HasMember("PropertiesTable")) {
     printf("SLArMaterial::BuildMaterial(%s): Building MaterialPropertiesTable\n", 
-        mat_id.c_str());
+        jmaterial["name"].GetString());
     auto ptable = new G4MaterialPropertiesTable(); 
-    ParseMPT(d["PropertiesTable"], ptable); 
+    ParseMPT(jmaterial["PropertiesTable"], ptable); 
     fMaterial->SetMaterialPropertiesTable(ptable); 
   }
 
-  if (d.HasMember("SurfaceProperties")) {
+  if (jmaterial.HasMember("SurfaceProperties")) {
     printf("SLArMaterial::BuildMaterial(%s): Building Material Surface Properties\n", 
-        mat_id.c_str());
-    ParseSurfaceProperties(d["SurfaceProperties"]);
+        jmaterial["name"].GetString());
+    ParseSurfaceProperties(jmaterial["SurfaceProperties"]);
   }
 
-  fclose(mat_cfg_file);
+
 }
 
 void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertiesTable* mpt) {

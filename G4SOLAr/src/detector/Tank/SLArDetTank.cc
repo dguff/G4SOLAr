@@ -45,7 +45,7 @@ SLArDetTank::~SLArDetTank() {
   std::cerr << "SLArDetTank DONE" << std::endl;
 }
 
-void SLArDetTank::BuildMaterial() 
+void SLArDetTank::BuildMaterial(G4String db_file) 
 {
   // TODO: IMPLEMENT PROPER MATERIALS IN /materials
   fMatWorld  = new SLArMaterial();
@@ -53,13 +53,13 @@ void SLArDetTank::BuildMaterial()
   fMatTarget = new SLArMaterial();
 
   fMatVessel->SetMaterialID("Steel");
-  fMatVessel->BuildMaterialFromDB();
+  fMatVessel->BuildMaterialFromDB(db_file);
 
   fMatTarget->SetMaterialID("LAr");
-  fMatTarget->BuildMaterialFromDB();
+  fMatTarget->BuildMaterialFromDB(db_file);
 
   fMatWorld ->SetMaterialID("Air");
-  fMatWorld ->BuildMaterialFromDB("");
+  fMatWorld ->BuildMaterialFromDB(db_file);
 }
 
 void SLArDetTank::BuildDefalutGeoParMap() 

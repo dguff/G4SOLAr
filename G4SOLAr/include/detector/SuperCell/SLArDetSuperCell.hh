@@ -27,7 +27,7 @@ public:
   void          SetPhotoDetPos(EPhotoDetPosition kPos);
   void          SetPerfectQE(G4bool kQE);
 
-  void          BuildMaterial();
+  void          BuildMaterial(G4String materials_db);
   void          BuildDefalutGeoParMap();
   void          BuildSuperCell();
   void          BuildLightGuide();
