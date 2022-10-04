@@ -335,7 +335,6 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 void SLArDetectorConstruction::ConstructSDandField()
 {
     // sensitive detectors 
-    
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
     G4String SDname;
     
@@ -503,9 +502,12 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
       if (lv->GetDaughter(0)->IsReplicated()) {
         lv->GetDaughter(0)->GetReplicationData(kRowAxis, nRowReplicas, wdtRow, oftRow, cnsRow);
-        printf("%s is replicated %i times along axis %i\n", 
-            pv->GetName().c_str(), nRowReplicas, kRowAxis); 
+#ifdef SLAR_DEBUG
+        printf("%s is replicated %i times along axis %i (wdt=%g mm, offset= %g mm)\n", 
+            pv->GetName().c_str(), nRowReplicas, kRowAxis, wdtRow, oftRow); 
         //getchar(); 
+
+#endif
       } else {
         printf("%s is not replicated! Why??\n", pv->GetName().c_str()); 
         getchar(); 
@@ -515,25 +517,28 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
       auto row_pv = (G4PVReplica*)row->GetModPV();
       if (row_pv->IsReplicated()) {
         row_pv->GetReplicationData(kTileAxis, nTileReplicas, wdtTile, oftTile, cnsTile);
-        printf("%s is replicated %i times along axis %i\n", 
-            row_pv->GetName().c_str(), nTileReplicas, kTileAxis); 
+#ifdef SLAR_DEBUG
+        printf("%s is replicated %i times along axis %i (wdt=%g mm, offset=%g mm)\n", 
+            row_pv->GetName().c_str(), nTileReplicas, kTileAxis, 
+            wdtTile, oftTile); 
         //getchar(); 
+#endif
       } else {
         printf("%s is not replicated! Why??\n", row_pv->GetName().c_str()); 
         getchar(); 
       }
 
-      oftRow -= megatile->GetGeoPar("rdoutplane_x")*0.5; 
+      oftRow  += megatile->GetGeoPar("rdoutplane_x")*0.5; 
       oftTile -= megatile->GetGeoPar("rdoutplane_z")*0.5; 
 
       for (int ii =0; ii<nRowReplicas; ii++) {
         
         for (int jj=0; jj<nTileReplicas; jj++) {
           SLArCfgReadoutTile* cell_cfg = new SLArCfgReadoutTile((ii+1)*100 + jj);
-          G4ThreeVector cell_pos(ii*wdtRow + oftRow, 0., jj*wdtTile + oftTile);
+          G4ThreeVector cell_pos(-ii*wdtRow + oftRow, 0., jj*wdtTile + oftTile);
           cell_cfg->SetZ(cell_pos.z()); 
           cell_cfg->SetY(cell_pos.y());
-          cell_cfg->SetX(cell_pos.z());
+          cell_cfg->SetX(cell_pos.x());
           
           G4ThreeVector phys_pos = tile_pos 
             + cell_pos.rotate(tile_rot->getPhi(), tile_rot->getTheta(), tile_rot->getPsi()); 
@@ -545,15 +550,15 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 #ifdef SLAR_DEBUG
           // TODO: check positioning is ok
           // seems ok, but better check it twice
-          //printf("%s megatile pos: [%.2f, %.2f, %.2f]: cell %i pos [%.2f, %.2f, %.2f]: phys pos [%.2f, %.2f, %.2f]\n", 
+          // printf("%s megatile pos: [%.2f, %.2f, %.2f]: cell %i pos [%.2f, %.2f, %.2f]: phys pos [%.2f, %.2f, %.2f]\n", 
               //mtileCfg->GetName(), tile_pos.x(), tile_pos.y(), tile_pos.z(), 
               //cell_cfg->GetIdx(), cell_pos.x(), cell_pos.y(), cell_pos.z(),
               //phys_pos.x(), phys_pos.y(), phys_pos.z()
               //);
 #endif
 
-          cell_cfg->Set2DSize_X(0.8*fReadoutTile->GetGeoPar("tile_z")); 
-          cell_cfg->Set2DSize_Y(0.8*fReadoutTile->GetGeoPar("tile_x")); 
+          cell_cfg->Set2DSize_X(0.9*fReadoutTile->GetGeoPar("tile_z")); 
+          cell_cfg->Set2DSize_Y(0.9*fReadoutTile->GetGeoPar("tile_x")); 
           cell_cfg->BuildGShape(); 
           mtileCfg->RegisterElement(cell_cfg); 
         }
