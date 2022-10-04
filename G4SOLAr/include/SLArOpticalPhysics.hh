@@ -45,6 +45,7 @@
 #include "G4OpRayleigh.hh"
 #include "G4OpAbsorption.hh"
 #include "G4OpBoundaryProcess.hh"
+#include "SLArScintillation.h"
 
 #include "G4VPhysicsConstructor.hh"
 
@@ -58,19 +59,19 @@ class SLArOpticalPhysics : public G4VPhysicsConstructor
     virtual void ConstructParticle();
     virtual void ConstructProcess();
 
-    G4OpWLS*         GetWLSProcess() 
+    G4OpWLS*         GetWLSProcess()
                                            {return fWLSProcess;}
-    G4Cerenkov*      GetCerenkovProcess() 
+    G4Cerenkov*      GetCerenkovProcess()
                                            {return fCerenkovProcess;}
-    G4Scintillation* GetScintillationProcess() 
+    SLArScintillation* GetScintillationProcess()
                                            {return fScintProcess;}
-    G4OpAbsorption*  GetAbsorptionProcess() 
+    G4OpAbsorption*  GetAbsorptionProcess()
                                            {return fAbsorptionProcess;}
-    G4OpRayleigh*    GetRayleighScatteringProcess() 
+    G4OpRayleigh*    GetRayleighScatteringProcess()
                                            {return fRayleighScattering;}
-    G4OpMieHG* GetMieHGScatteringProcess() 
+    G4OpMieHG* GetMieHGScatteringProcess()
                                            {return fMieHGScatteringProcess;}
-    G4OpBoundaryProcess* GetBoundaryProcess() 
+    G4OpBoundaryProcess* GetBoundaryProcess()
                                            {return fBoundaryProcess;}
 
     void SetNbOfPhotonsCerenkov(G4int);
@@ -79,7 +80,7 @@ class SLArOpticalPhysics : public G4VPhysicsConstructor
 
     G4OpWLS*             fWLSProcess;
     G4Cerenkov*          fCerenkovProcess;
-    G4Scintillation*     fScintProcess;
+    SLArScintillation*     fScintProcess;
     G4OpAbsorption*      fAbsorptionProcess;
     G4OpRayleigh*        fRayleighScattering;
     G4OpMieHG*           fMieHGScatteringProcess;
