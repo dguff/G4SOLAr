@@ -49,6 +49,7 @@ SLArOpticalPhysics::SLArOpticalPhysics(G4bool toggle)
   fMieHGScatteringProcess    = NULL;
 
   fAbsorptionOn              = toggle;
+
 }
 
 SLArOpticalPhysics::~SLArOpticalPhysics() { }
@@ -67,18 +68,13 @@ void SLArOpticalPhysics::ConstructProcess()
   G4cout << "SLArOpticalPhysics:: Add Optical Physics Processes"
     << G4endl;
 
+  fWLSProcess = new G4OpWLS("WLS");
 
-  fScintProcess = new G4Scintillation("Scintillation");
-  fScintProcess->SetTrackSecondariesFirst(false);
-  fScintProcess->SetScintillationByParticleType(true); 
-  // Use Birks Correction in the Scintillation process
-  //G4EmSaturation* emSaturation = 
-    //G4LossTableManager::Instance()->EmSaturation();
-  //fScintProcess->AddSaturation(emSaturation);
-
+  fScintProcess = new SLArScintillation("Scintillation");
+  //fScintProcess = new G4Scintillation("Scintillation");
 
   fCerenkovProcess = new G4Cerenkov("Cerenkov");
-  fCerenkovProcess->SetMaxNumPhotonsPerStep(100);
+  fCerenkovProcess->SetMaxNumPhotonsPerStep(300);
   fCerenkovProcess->SetTrackSecondariesFirst(false);
 
   fAbsorptionProcess      = new G4OpAbsorption();
@@ -99,9 +95,26 @@ void SLArOpticalPhysics::ConstructProcess()
   if (fAbsorptionOn) pManager->AddDiscreteProcess(fAbsorptionProcess);
 
   pManager->AddDiscreteProcess(fRayleighScattering);
+  //pManager->AddDiscreteProcess(fMieHGScatteringProcess);
 
   pManager->AddDiscreteProcess(fBoundaryProcess);
 
+  //fWLSProcess->UseTimeProfile("delta");
+  fWLSProcess->UseTimeProfile("exponential");
+
+  pManager->AddDiscreteProcess(fWLSProcess);
+
+  //fScintProcess->SetScintillationYieldFactor(1.);
+  //fScintProcess->SetScintillationExcitationRatio(0.0);
+  fScintProcess->SetTrackSecondariesFirst(false);
+  fScintProcess->SetScintillationByParticleType(true); // Needs to be set for the current LArQL model
+  // In the future one can probably define a new type of variable for this.
+
+  // Use Birks Correction in the Scintillation process
+
+  G4EmSaturation* emSaturation =
+    G4LossTableManager::Instance()->EmSaturation();
+  fScintProcess->AddSaturation(emSaturation);
 
   auto particleIterator=GetParticleIterator();
   particleIterator->reset();
