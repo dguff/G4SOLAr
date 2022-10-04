@@ -136,12 +136,16 @@ void SLArMaterial::BuildMaterialFromDB(G4String mat_id) {
   }
 
   if (d.HasMember("PropertiesTable")) {
+    printf("SLArMaterial::BuildMaterial(%s): Building MaterialPropertiesTable\n", 
+        mat_id.c_str());
     auto ptable = new G4MaterialPropertiesTable(); 
     ParseMPT(d["PropertiesTable"], ptable); 
     fMaterial->SetMaterialPropertiesTable(ptable); 
   }
 
   if (d.HasMember("SurfaceProperties")) {
+    printf("SLArMaterial::BuildMaterial(%s): Building Material Surface Properties\n", 
+        mat_id.c_str());
     ParseSurfaceProperties(d["SurfaceProperties"]);
   }
 
