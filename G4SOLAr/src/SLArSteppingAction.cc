@@ -109,6 +109,9 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       for( i=0;i<nprocesses;i++){
         if((*pv)[i]->GetProcessName()=="OpBoundary"){
           boundary = (G4OpBoundaryProcess*)(*pv)[i];
+#ifdef SLAR_DEBUG
+          G4cout<< "Optical ph at boundary!" << G4endl; 
+#endif
           break;
         }
       }
@@ -124,7 +127,6 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
     }
 
     boundaryStatus=boundary->GetStatus();
-
     //Check to see if the partcile was actually at a boundary
     //Otherwise the boundary status may not be valid
     //Prior to Geant4.6.0-p1 this would not have been enough to check
@@ -152,6 +154,14 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
             fEventAction->IncBoundaryAbsorption();
             break;
           }
+        case NoRINDEX:
+#ifdef SLAR_DEBUG
+          //printf("SLArSteppingAction::UserSteppingAction NoRINDEX\n");
+          //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+              //track->GetTotalEnergy()*1e6,
+              //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
+#endif
+          break;
         case Detection: 
           //Note, this assumes that the volume causing detection
           //is the photocathode because it is the only one with
@@ -166,21 +176,24 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 #endif
             phInfo->AddTrackStatusFlag(hitPMT);
             G4SDManager* SDman = G4SDManager::GetSDMpointer();
-            G4String volName = 
-              touchable->GetVolume()->GetName();
+            G4String volName = touchable->GetVolume()->GetName();
             G4String sdNameSiPM  ="/tile/sipm";
 
             SLArReadoutTileSD* sipmSD = nullptr; 
             sipmSD = (SLArReadoutTileSD*)SDman->FindSensitiveDetector(sdNameSiPM);
 
 #ifdef SLAR_DEBUG
-             printf("Detection in %s - copy id [%i, %i, %i]\n", 
+             printf("Detection in %s - copy id [%i, %i, %i, %i, %i, %i, %i]\n", 
                  volName.c_str(), 
                  touchable->GetCopyNumber(0), 
                  touchable->GetCopyNumber(1), 
-                 touchable->GetCopyNumber(2)); 
+                 touchable->GetCopyNumber(2), 
+                 touchable->GetCopyNumber(3),
+                 touchable->GetCopyNumber(4), 
+                 touchable->GetCopyNumber(5),
+                 touchable->GetCopyNumber(6)); 
 #endif
-            if (volName=="tile_row_z") {
+            if (volName=="sipm") {
               if(sipmSD) { 
                 sipmSD->ProcessHits_constStep(step, nullptr);
               } else {
