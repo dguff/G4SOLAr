@@ -175,6 +175,7 @@ target_compile_definitions(solar_sim PUBLIC $<$<CONFIG:Debug>:SLAR_DEBUG>)
 list(APPEND G4SOLAR_RPATH
   "${G4SOLAR_LIB_DIR}"
   "${BXDECAY0_DIR}/lib"
+  "${BXDECAY0_DIR}/lib64"
   "${MARLEY_DIR}/build")
 set_target_properties(solar_sim PROPERTIES
   INSTALL_RPATH "${G4SOLAR_RPATH}"
