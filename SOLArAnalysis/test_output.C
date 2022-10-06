@@ -26,14 +26,17 @@
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSCfg;
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 
-void test_output(const char* path, int iev = 0) 
+void test_output(const char* path) 
 {
+  //--------------------------------------------------------- Source plot style 
   slide_default(); 
   gROOT->SetStyle("slide_default");
   gStyle->SetPalette(kSunset); 
 
+  //-------------------------------------------------------------- Open MC file
   TFile* file = new TFile(path); 
-
+  
+  // Get the configuration of the pixel/SuperCell readout system
   SLArPDSCfg* pdsCfg = (SLArPDSCfg*)file->Get("PDSSysConfig"); 
   SLArPixCfg* pixCfg = (SLArPixCfg*)file->Get("PixSysConfig"); 
 
@@ -50,10 +53,7 @@ void test_output(const char* path, int iev = 0)
   std::map<int, TH2Poly*> hTPhMap; 
 
   if (pixCfg) {
-    TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
-    new TCanvas(); 
-    h2frame->Draw("axis"); 
-
+    // prepare the histograms for the hit maps
     for (auto &mod : pixCfg->GetModuleMap()) {
       SLArCfgMegaTile* mgTile = mod.second; 
       //for (const auto &cell : mgTile->GetMap()) {
@@ -69,11 +69,7 @@ void test_output(const char* path, int iev = 0)
     }
   }
 
-  TTree* tree = (TTree*)file->Get("EventTree"); 
-  
-  SLArMCEvent* ev = nullptr; 
-  tree->SetBranchAddress("MCEvent", &ev); 
-
+  // Book histograms for analysis
   TH1D* hvis = new TH1D("hvis", "Visible Energy", 200, 0., 10); 
   TH1D* hNPhotons = new TH1D("hNPhotons", 
       "Nr of collected photons;Nr of collected photons (true);Entries/ev",
@@ -84,6 +80,13 @@ void test_output(const char* path, int iev = 0)
   
   double hmax = 0; 
   double tmax = 0; 
+
+
+  //---------------------------------------------------- Readout the event tree
+  TTree* tree = (TTree*)file->Get("EventTree"); 
+  
+  SLArMCEvent* ev = nullptr; 
+  tree->SetBranchAddress("MCEvent", &ev); 
 
   for (int iev = 0; iev<tree->GetEntries(); iev++) {
     tree->GetEntry(iev); 
@@ -113,7 +116,7 @@ void test_output(const char* path, int iev = 0)
     }
     hvis->Fill(ev_edep); 
 
-    //------------------------------------------ Readout detected optical photons
+    //---------------------------------------- Readout detected optical photons
     double htot = 0; 
     auto evpds = ev->GetReadoutTileSystem(); 
     for (const auto &mtile : evpds->GetMegaTilesMap()) {

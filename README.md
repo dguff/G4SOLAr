@@ -133,62 +133,56 @@ respectively.
 ## Interpreting the output
 
 The output file consists in a ROOT Tree containing the full development of 
-an event at the step-level. The event information is stored in the 
-`SLArMCEvent` class, which in turn contains a vector of `SLArMCPrimaryInfo`
-(one for each particle in the initial state). 
+an event at the step-level and the information from the photon detection 
+system. These two distinct set of informations are stored into a 
+`SLArMCEvent` object, which in turn contains a vector of `SLArMCPrimaryInfo`
+(one for each particle in the initial state) and the PDS event object 
+(`SLArEventReadoutTileSystem`). 
+
+### Primary info
 
 In addition to its own trajectory, each "primary" carries 
 the trajectories of all secondary particles associated with the primary track.
 The points of each trajectory are defined by their spatial coordinates and by 
 the energy deposited in the step. 
 
+The "hierarchical" structure of the primary information object is represented 
+in the figure below (Fig. 1)
+
+| ![SLArMCPrimaryInfo diagram](./docs/figures/SLArMCPrimaryInfo.png)           |
+| :--:                                                                         |
+| **Fig. 1** Box diagram showing the structure of a SLArMCPrimaryInfo object   |
+
+
+### Photon Detection System Info
+
+The photon hits recorded by the photon detection system are recorded in 
+a dedicated event object. In the case of readout tiles, with each tile mounting
+up to 100 SiPM, the detected photons are grouped together in a single score. 
+
+TODO: add to the photon hit attributes the identification of the specific SiPM
+responsible for the detection. 
+
+Figure 2 schematically represents the structure of the ReadoutTile-based 
+PDS event object.
+
+| ![PDS event diagram](./docs/figures/SLArEventPDS.png)                                                |
+| :--:                                                                                                 |
+| **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
+
+
+### G4SOLAr Event Dictionaries
+
 To be able to access the event information in an interactive ROOT session, 
-one should load the `SLArMCEvent` and `SLArMCPrimaryInfo` shared libraries 
-(manually by invoking `gSystem->Load("/path/to/libSLArMCEvent.so")`, or by 
-adding the same command to a `rootlogon.C` file). 
-The following script shows how to access the step information. 
-
-```C++
-void view_trajectories(const char* filename) {
-  TFile* file = new TFile(filename); 
-  TTree* tree = (TTree*)file->Get("EventTree"); 
-
-  SLArMCEvent* ev = nullptr; 
-  tree->SetBranchAddress("MCEvent", &ev); 
-
-  for (int iev = 0; iev<t->GetEntries(); iev++) {
-    tree->GetEntry(iev); 
-
-    auto primaries = ev->GetPrimaries(); 
-
-    size_t ip = 0; 
-    for (const auto &p : primaries) {
-      int pPDGID = p->GetCode();     // Get primary PDG code 
-      int pTrkID = p->GetTrackID();  // Get primary trak id   
-      double primary_edep = 0; 
-
-      auto trajectories = p->GetTrajectories(); 
-      int itrj = 0;
-      for (const auto &trj : trajectories) {
-        for (const auto &tp : trj->GetPoints()) {
-          double pos_x = tp.fX;     // x coordinate [mm]
-          double pos_y = tp.fY;     // y coordinate [mm]
-          double pos_z = tp.fZ;     // z coordinate [mm]
-          double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
-        }
-        itrj++;
-      } 
-      ip++;
-    }
-  }
-
-  reutrn;
-}
-```
+one should load the shared libraries defining the event and configuration 
+objects. 
+These libraries are built when compiling `G4SOLAr` and are installed in 
+the `G4SOLAR_INSTALL_DIR/lib` folder. During the installation process, 
+a `rootlogon.C` file loading the libraries is created in 
 
 If you want to get a better idea of the output structure, the source files 
-can be found in 
-```
-G4SOLAr/include/event/*.hh
-G4SOLAr/src/event/*.cc
-```
+can be found in `G4SOLAR_BASE_DIR/SOLArAnalysis`. In the same folder, one can
+find the script `test_output.C`, which can serve as an example for accessing
+simulated MC event. 
+
+
