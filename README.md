@@ -179,9 +179,7 @@ objects.
 These libraries are built when compiling `G4SOLAr` and are installed in 
 the `G4SOLAR_INSTALL_DIR/lib` folder. During the installation process, 
 a `rootlogon.C` file loading the libraries is created in 
-
-If you want to get a better idea of the output structure, the source files 
-can be found in `G4SOLAR_BASE_DIR/SOLArAnalysis`. In the same folder, one can
+`G4SOLAR_BASE_DIR/SOLArAnalysis`. In the same folder, one can
 find the script `test_output.C`, which can serve as an example for accessing
 simulated MC event. 
 
