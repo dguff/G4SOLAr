@@ -35,14 +35,52 @@ Hopefully, a more appropriate naming convention will gain ground.
   
 ## Download and build the project
 
-### Step 1 - Download the project from github and install dependencies
+The procedure to build the code have some subtle differences wether one is 
+installing the simulation on a [generic machine](#installing-g4solar-on-a-generic-machine)
+or on a more complex system 
+such as the [Fermilab computing environment](#installing-g4solar-on-fermilab-gpvm). 
+
+### Installing G4SOLAr on Fermilab gpvm
+#### Step 1 - Download the project from github, setup the environment and install dependencies
+```bash
+$ git clone https://github.com/dguff/G4SOLAr.git
+```
+After cloning the repository, setup the needed dependencies that are already 
+installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
+```bash
+$ cd G4SOLAr
+$ source setup_g4solar.sh
+```
+If the project dependencies are not yet installed, follow the instructions
+on [this page](./README_EXTERNALS.md).
+
+
+#### Step 2 - Build
+
+Create a build and install directory, then build and install the project
+```bash
+$ mkdir build install && cd build 
+$ cmake -DGeant4_DIR=${GEANT4_DIR} -DCLHEP_EXTERNAL=${CLHEP_INC} -DCMAKE_INSTALL_PREFIX=../install [opts...] ../G4SOLAr
+$ make
+$ make install
+```
+The project will search for the external dependencies in the 
+`G4SOLAR_EXT_DIR` (by default set to `G4SOLAr/extern/`). You can 
+specify a specific installation directory by setting it in the `cmake`
+command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
+Note that the geant4 version installed on `dunegpvm` nodes is compiled 
+against an independent installation of `CLHEP`, so one has to specify the 
+`CLHEP` include directory when calling `cmake`.
+
+### Installing G4SOLAr on a generic machine
+#### Step 1 - Download the project from github and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
 
-### Step 2 - Build
+#### Step 2 - Build
 Create a build and install directory, then build and install the project
 ```bash
 $ mkdir build install && cd build 
@@ -55,9 +93,9 @@ The project will search for the external dependencies in the
 specify a specific installation directory by setting it in the `cmake`
 command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
 
-### Step 3 - Run
+### Run G4SOLAr
 
-It is possible to run the simulation directly from the build folder, but it
+It is possible to run the simulation directly from the installation folder, but it
 is advised to add the build directory to the executable PATH to be able to run 
 the simulation more flexibly on your machine
 ```bash
@@ -65,9 +103,32 @@ $ cd install
 $ export PATH=${PWD}:${PATH}
 ```
 
-The run can be configured via macro files. A collection of examples can 
+The `solar_sim` executable can take the following inputs:
+```bash
+solar_sim      [-m/--macro macro_file]            #<< Geant4 mac file
+               [-r/--seed user_seed]              #<< User defined seed
+               [-g/--geometry geometry_cfg_file]  #<< Geometry description
+               [-p/--materials material_db_file]  #<< Material definition table
+               [-h/--help print usage]
+```
+
+The first input (`-m`, `--macro`) is the configuration file for the 
+Geant4 run. There one can specify the type of generated events, 
+their number, the output file, etc. A collection of examples can 
 be found in the `macros/` folder. The commands defined in the messenger
 classes are briefly commented in the macro files. 
+
+The second input (`-s`, `--seed`) is the random engine seed provided by the user.
+
+The third input (`-g`, `--geometry`) is the `json` configuration file describing
+the dimensions of the detector and of all the sub-systemd. 
+
+Finally, the fourth input (`-p`, `--materials`) is a json table containing
+the definitions of all materials used in the simulation. 
+
+If no geometry or material table are provided, the simulation will take 
+by default `G4SOLAr/geometry.json` and `G4SOLAr/materials/materials_db.json`
+respectively. 
 
 ## Interpreting the output
 
