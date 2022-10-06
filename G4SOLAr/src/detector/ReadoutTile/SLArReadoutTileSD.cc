@@ -102,12 +102,17 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
     hit->SetPhotonWavelength( CLHEP::h_Planck * CLHEP::c_light / phEne * 1e6);
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
-    hit->SetTime(preStepPoint->GetGlobalTime());
+    hit->SetTime(postStepPoint->GetGlobalTime());
     hit->SetMegaTileIdx(touchable->GetCopyNumber(6));
     hit->SetRowTileIdx(touchable->GetCopyNumber(5));
     hit->SetTileIdx(touchable->GetCopyNumber(4));
     hit->SetPhotonProcess(procName);
     
+    #ifdef SLAR_DEBUG
+      printf("SLArReadoutTileSD::ProcessHits_constStep\n");
+      printf("%s photon hit at t = %g ns\n", procName.c_str(), hit->GetTime());
+      if (hit->GetTime() < 1*CLHEP::ns) getchar(); 
+    #endif
     fHitsCollection->insert(hit);
   }
   return true;
