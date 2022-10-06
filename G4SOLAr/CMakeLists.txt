@@ -103,6 +103,10 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 )
 
+if (CLHEP_EXTERNAL) 
+  include_directories(${CLHEP_EXTERNAL})
+endif()
+
 file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/event/*.cc
                     ${G4SOLAR_SRC_DIR}/config/*.cc
