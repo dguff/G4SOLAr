@@ -44,7 +44,6 @@
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
-#include "G4VPhysicalVolume.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -60,7 +59,9 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
    fParticleGun(0), fDecay0Gen(0), fMarleyGen(0), fGunMessenger(0), 
    fBulkGenerator(0), 
    fVolumeName("Target"), 
-   fGunMode(kFixed)
+   fGunMode(kGun), 
+   fGunPosition(0, 0, 0),
+   fGunDirection(0, 0, 1) 
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
@@ -82,8 +83,8 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fParticleGun->SetParticleTime(0.0*CLHEP::ns);
   fParticleGun->SetParticleEnergy(3.*CLHEP::GeV);
 
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, +1) );
-  fParticleGun->SetParticlePosition         (G4ThreeVector(0, 0, -1.5*CLHEP::m));
+  fParticleGun->SetParticleMomentumDirection( fGunDirection );
+  fParticleGun->SetParticlePosition         ( fGunPosition  );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -114,8 +115,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Store Primary information id dst
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-  if (SLArAnaMgr->GetEvent()->GetDirectionMode() == SLArMCEvent::kRandom) {
-    SLArAnaMgr->GetEvent()->SetDirection(); 
+  if (fDirectionMode == kRandom) {
+    fGunDirection = SampleRandomDirection();
   }
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
@@ -137,19 +138,15 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
       SetBulkName(fVolumeName); 
     }
-    auto dir_array = SLArAnaMgr->GetEvent()->GetDirection(); 
-    G4ThreeVector nu_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
-    fMarleyGen->SetNuDirection(nu_dir); 
+    fMarleyGen->SetNuDirection(fGunDirection);
+    SLArAnaMgr->GetEvent()->SetDirection(fGunDirection.x(), fGunDirection.y(), fGunDirection.z()); 
     fMarleyGen->GeneratePrimaries(anEvent); 
   }
   else {
-    G4ThreeVector pos(0, 0, 0);
     // Set gun position
-    fParticleGun->SetParticlePosition(pos);
+    fParticleGun->SetParticlePosition( fGunPosition );
     // Set gun direction
-    auto dir_array = SLArAnaMgr->GetEvent()->GetDirection(); 
-    G4ThreeVector gun_dir = {dir_array[0], dir_array[1], dir_array[2]}; 
-    fParticleGun->SetParticleMomentumDirection(gun_dir);
+    fParticleGun->SetParticleMomentumDirection( fGunDirection );
     // Generate primary vertex
     fParticleGun->GeneratePrimaryVertex(anEvent);
     // Store Primary information id dst
@@ -194,39 +191,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArPrimaryGeneratorAction::SetOptPhotonPolar()
-{
- G4double angle = G4UniformRand() * 360.0*CLHEP::deg;
- SetOptPhotonPolar(angle);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void SLArPrimaryGeneratorAction::SetGunMode(EGunMode gunMode)
 {
   fGunMode = gunMode;
-}
-
-void SLArPrimaryGeneratorAction::SetOptPhotonPolar(G4double angle)
-{
- if (fParticleGun->GetParticleDefinition()->GetParticleName()!="opticalphoton")
-   {
-     G4cout << "--> warning from PrimaryGeneratorAction::SetOptPhotonPolar() :"
-               "the particleGun is not an opticalphoton" << G4endl;
-     return;
-   }
-
- G4ThreeVector normal (1., 0., 0.);
- G4ThreeVector kphoton = fParticleGun->GetParticleMomentumDirection();
- G4ThreeVector product = normal.cross(kphoton);
- G4double modul2       = product*product;
- 
- G4ThreeVector e_perpend (0., 0., 1.);
- if (modul2 > 0.) e_perpend = (1./std::sqrt(modul2))*product;
- G4ThreeVector e_paralle    = e_perpend.cross(kphoton);
- 
- G4ThreeVector polar = std::cos(angle)*e_paralle + std::sin(angle)*e_perpend;
- fParticleGun->SetParticlePolarization(polar);
 }
 
 void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
@@ -249,6 +216,19 @@ void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
 
   fMarleyGen->SetVertexGenerator(fBulkGenerator); 
   return; 
+}
+
+G4ThreeVector SLArPrimaryGeneratorAction::SampleRandomDirection() {
+  double cosTheta = 2*G4UniformRand() - 1.;
+  double phi = TMath::TwoPi()*G4UniformRand();
+  double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
+  double ux = sinTheta*std::cos(phi),
+         uy = sinTheta*std::sin(phi),
+         uz = cosTheta;
+
+  G4ThreeVector dir(ux, uy, uz);
+  
+  return dir; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

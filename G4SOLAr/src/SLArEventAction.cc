@@ -171,9 +171,12 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
     for (G4int i=0;i<n_hit;i++) {
       SLArReadoutTileHit* hit = (*hHC1)[i];
       if (!hit) { 
+#ifdef SLAR_DEBUG
         G4cout << "SLArEventAction::RecordEventReadoutTile(): "
           << "No hits on SiPMs or "
           << "issue in hit collection readout";
+#endif
+
         break;
       }
 

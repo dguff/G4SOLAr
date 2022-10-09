@@ -9,7 +9,7 @@
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
-  fEvNumber(0), fDirection{0, 0, 1}, fEvSystemTile(nullptr)
+  fEvNumber(0), fDirection{0, 0, 0}, fEvSystemTile(nullptr)
 {
   fEvSystemTile = new SLArEventReadoutTileSystem();
 }
@@ -59,18 +59,7 @@ void SLArMCEvent::SetDirection(double* dir) {
     fDirection.at(0) = dir[0];  
     fDirection.at(1) = dir[1];  
     fDirection.at(2) = dir[2];  
-  } else {
-    double cosTheta = 2*gRandom->Rndm() - 1.;
-    double phi = TMath::TwoPi()*gRandom->Rndm();
-    double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
-    double ux = sinTheta*std::cos(phi),
-             uy = sinTheta*std::sin(phi),
-             uz = cosTheta;
-
-    fDirection.at(0) = ux;  
-    fDirection.at(1) = uy;  
-    fDirection.at(2) = uz;   
-  }
+  } 
 }
 
 void SLArMCEvent::SetDirection(double px, double py, double pz) {
@@ -78,8 +67,6 @@ void SLArMCEvent::SetDirection(double px, double py, double pz) {
     fDirection.at(1) = py;  
     fDirection.at(2) = pz;  
 }
-
-
 
 bool SLArMCEvent::CheckIfPrimary(int trkId) {
   bool is_primary = false; 

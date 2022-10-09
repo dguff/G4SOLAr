@@ -22,7 +22,6 @@
 class SLArMCEvent : public TObject
 {
   public: 
-    enum EDirectionMode {kFixed = 0, kRandom = 1};
 
     SLArMCEvent();
     ~SLArMCEvent();
@@ -30,10 +29,8 @@ class SLArMCEvent : public TObject
     int SetEvNumber(int nEv);
     int GetEvNumber() {return fEvNumber;}
 
-    void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
     void SetDirection(double* dir = nullptr); 
     void SetDirection(double px, double py, double pz); 
-    EDirectionMode GetDirectionMode() {return fDirectionMode;}
     std::array<double, 3> GetDirection() {return fDirection;}
     int ConfigReadoutTileSystem (SLArCfgPixSys* pixSysCfg);
 
@@ -52,7 +49,6 @@ class SLArMCEvent : public TObject
     int fEvNumber;
     std::array<double, 3>  fDirection; 
     std::vector<SLArMCPrimaryInfo*> fSLArPrimary; 
-    EDirectionMode fDirectionMode;
     SLArEventReadoutTileSystem* fEvSystemTile;
 
   public:

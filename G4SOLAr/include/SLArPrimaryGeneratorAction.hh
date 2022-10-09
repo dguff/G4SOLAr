@@ -1,4 +1,3 @@
-//
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -35,6 +34,7 @@
 #define SLArPrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4VPhysicalVolume.hh"
 #include "globals.hh"
 
 class G4ParticleGun;
@@ -49,22 +49,27 @@ class SLArMarleyGen;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGunMode {kFixed = 0, kRadio = 1, kMarley = 2};
+enum  EGunMode {kGun = 0, kRadio = 1, kMarley = 2};
+enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+
   public:
     SLArPrimaryGeneratorAction();
     virtual ~SLArPrimaryGeneratorAction();
 
-  public:
     virtual void GeneratePrimaries(G4Event*);
 
-    void SetOptPhotonPolar(                );
-    void SetOptPhotonPolar(G4double        );
+    EDirectionMode GetDirectionMode() {return fDirectionMode;}
+    void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
+
     void SetGunMode       (EGunMode gunMode);
+    void SetGunPosition   (G4ThreeVector pos) {fGunPosition = pos;}
+    void SetGunDirection  (G4ThreeVector dir) {fGunDirection = dir;}
     void SetBulkName      (G4String vol);
     void SetMarleyConf    (G4String marley_conf); 
+
 
   private:
     G4ParticleGun* fParticleGun;
@@ -74,10 +79,15 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     SLArBulkVertexGenerator* fBulkGenerator;
 
+    EDirectionMode fDirectionMode; 
     G4String       fVolumeName;
     G4String       fMarleyCfg; 
 
     EGunMode       fGunMode;
+    G4ThreeVector  fGunPosition;
+    G4ThreeVector  fGunDirection;
+
+    G4ThreeVector  SampleRandomDirection(); 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

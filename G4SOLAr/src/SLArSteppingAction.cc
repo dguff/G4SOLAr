@@ -109,9 +109,9 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       for( i=0;i<nprocesses;i++){
         if((*pv)[i]->GetProcessName()=="OpBoundary"){
           boundary = (G4OpBoundaryProcess*)(*pv)[i];
-#ifdef SLAR_DEBUG
-          G4cout<< "Optical ph at boundary!" << G4endl; 
-#endif
+//#ifdef SLAR_DEBUG
+          //G4cout<< "Optical ph at boundary!" << G4endl; 
+//#endif
           break;
         }
       }

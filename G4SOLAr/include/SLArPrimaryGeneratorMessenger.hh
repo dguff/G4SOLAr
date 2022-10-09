@@ -42,6 +42,8 @@
 class SLArPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWith3VectorAndUnit;
+class G4UIcmdWith3Vector;
 class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -56,12 +58,14 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
  
   private:
     SLArPrimaryGeneratorAction*         fSLArAction;
-    G4UIdirectory*                      fGunDir;
-    G4UIcmdWithADoubleAndUnit*          fPolarCmd;
+    G4UIdirectory*                      fCmdGunDir;
+    G4UIcmdWith3VectorAndUnit*          fCmdGunPosition;
+    G4UIcmdWith3Vector*                 fCmdGunDirection;
 
-    G4UIcmdWithAString*                 fModeCmd;
-    G4UIcmdWithAString*                 fVolCmd;
-    G4UIcmdWithAString*                 fMarleyCmd;
+    G4UIcmdWithAString*                 fCmdDirectionMode;
+    G4UIcmdWithAString*                 fCmdGunMode;
+    G4UIcmdWithAString*                 fCmdBulkVol;
+    G4UIcmdWithAString*                 fCmdMarley;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

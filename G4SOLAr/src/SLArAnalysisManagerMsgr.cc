@@ -24,12 +24,11 @@
 
 SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
-  fCmdDirection(nullptr), fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
+  fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
   fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
 {
   TString UIManagerPath = "/SLAr/manager/";
-  TString UIGunPath = "/SLAr/gun/";
   TString UIExportPath = "/SLAr/export/"; 
 
   fMsgrDir = new G4UIdirectory(UIManagerPath);
@@ -50,18 +49,6 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdOutputPath->SetParameterName("Path", "./output/");
   fCmdOutputPath->SetDefaultValue("./output/");
   
-  fCmdDirection = 
-    new G4UIcmdWith3Vector(UIGunPath+"SetDirection", this);
-  fCmdDirection->SetGuidance("Set primary event direction (ν or particle gun)");
-  fCmdDirection->SetParameterName("px", "py", "pz", true); 
-  fCmdDirection->SetDefaultValue(G4ThreeVector(0, 0, 1));
-
-  fCmdDirectionMode = 
-    new G4UIcmdWithAString(UIGunPath+"SetDirectionMode", this);
-  fCmdOutputPath->SetGuidance("Set direction mode (fixed, isotropic)");
-  fCmdOutputPath->SetParameterName("DirectionMode", true);
-  fCmdOutputPath->SetDefaultValue("fixed");
-
   fCmdGDMLFileName = 
     new G4UIcmdWithAString(UIExportPath+"SetGDMLFileName", this); 
   fCmdGDMLFileName->SetGuidance("Set file name for GDML volume export"); 
@@ -79,8 +66,6 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
 {
   G4cerr << "Deleting SLArAnalysisManagerMsgr..." << G4endl;
   if (fMsgrDir          ) delete fMsgrDir          ;
-  if (fCmdDirection     ) delete fCmdDirection     ;
-  if (fCmdDirectionMode ) delete fCmdDirectionMode ;
   if (fCmdOutputPath    ) delete fCmdOutputPath    ;
   if (fCmdOutputFileName) delete fCmdOutputFileName;
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
@@ -97,26 +82,6 @@ void SLArAnalysisManagerMsgr::SetNewValue
     SLArAnaMgr->SetOutputPath(newVal);
   else if (cmd == fCmdOutputFileName)
     SLArAnaMgr->SetOutputName(newVal);
-  else if (cmd == fCmdDirectionMode) {
-    if (G4StrUtil::contains(newVal, "fixed")) {
-      SLArAnaMgr->GetEvent()->SetDirectionMode(SLArMCEvent::kFixed); 
-    } else if (
-        G4StrUtil::contains(newVal, "random") || 
-        G4StrUtil::contains(newVal, "isotropic")) 
-    {
-      SLArAnaMgr->GetEvent()->SetDirectionMode(SLArMCEvent::kRandom);
-    } else {
-      G4cout << "WARNING: unknown key " << newVal 
-        << ". I will assume you want it isotropic" << G4endl; 
-      SLArAnaMgr->GetEvent()->SetDirectionMode(SLArMCEvent::kRandom);
-    }
-  }
-  else if (cmd == fCmdDirection) {
-    G4ThreeVector dir = G4UIcmdWith3Vector::GetNew3VectorValue(newVal); 
-    auto event = SLArAnaMgr->GetEvent(); 
-    if (event) event->SetDirection( dir.x(), dir.y(), dir.z() ); 
-    else printf("SLArAnalysisManagerMsgr::SetDirection: WARNING event is null!\n"); 
-  }
   else if (cmd == fCmdGDMLFileName) {
     fGDMLFileName = newVal; 
   }

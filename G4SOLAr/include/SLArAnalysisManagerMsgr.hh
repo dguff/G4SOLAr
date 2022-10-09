@@ -40,8 +40,6 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     void                    UpdatePMTs(); 
 
     // define command
-    G4UIcmdWith3Vector*         fCmdDirection     ; 
-    G4UIcmdWithAString*         fCmdDirectionMode ;  
     G4UIcmdWithAString*         fCmdOutputFileName;
     G4UIcmdWithAString*         fCmdOutputPath    ;
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 

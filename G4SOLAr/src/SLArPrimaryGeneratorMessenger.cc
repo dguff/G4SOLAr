@@ -39,6 +39,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
+#include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWithAString.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -48,50 +50,61 @@ SLArPrimaryGeneratorMessenger::
   : G4UImessenger(),
     fSLArAction(SLArGun)
 {
-  fGunDir = new G4UIdirectory("/SLAr/gun/");
-  fGunDir->SetGuidance("PrimaryGenerator control");
+  fCmdGunDir = new G4UIdirectory("/SLAr/gun/");
+  fCmdGunDir->SetGuidance("PrimaryGenerator control");
 
-  fPolarCmd =
-    new G4UIcmdWithADoubleAndUnit("/BeamCell/gun/optPhotonPolar",this);
-  fPolarCmd->SetGuidance("Set linear polarization");
-  fPolarCmd->SetGuidance("  angle w.r.t. (k,n) plane");
-  fPolarCmd->SetParameterName("angle",true);
-  fPolarCmd->SetUnitCategory("Angle");
-  fPolarCmd->SetDefaultValue(-360.0);
-  fPolarCmd->SetDefaultUnit("deg");
-  fPolarCmd->AvailableForStates(G4State_Idle);
+  fCmdGunMode= 
+   new G4UIcmdWithAString("/SLAr/gun/mode", this);
+  fCmdGunMode->SetGuidance("Set SOLAr gun mode");
+  fCmdGunMode->SetGuidance("(Fixed, Radio, ...)");
+  fCmdGunMode->SetParameterName("Mode", false);
+  fCmdGunMode->SetDefaultValue("Fixed");
+  fCmdGunMode->SetCandidates("Fixed Radio Marley");
 
-  fModeCmd = 
-    new G4UIcmdWithAString("/SLAr/gun/mode", this);
-  fModeCmd->SetGuidance("Set SOLAr gun mode");
-  fModeCmd->SetGuidance("(Fixed, Radio, ...)");
-  fModeCmd->SetParameterName("Mode", false);
-  fModeCmd->SetDefaultValue("Fixed");
-  fModeCmd->SetCandidates("Fixed Radio Marley");
-
-  fVolCmd = 
+  fCmdBulkVol= 
     new G4UIcmdWithAString("/SLAr/gun/volume", this); 
-  fVolCmd->SetGuidance("Set bulk volume for bulk event generation"); 
-  fVolCmd->SetGuidance("(Physical Volume name)"); 
-  fVolCmd->SetParameterName("PhysVol", true, false); 
-  fVolCmd->SetDefaultValue("Target"); 
+  fCmdBulkVol->SetGuidance("Set bulk volume for bulk event generation"); 
+  fCmdBulkVol->SetGuidance("(Physical Volume name)"); 
+  fCmdBulkVol->SetParameterName("PhysVol", true, false); 
+  fCmdBulkVol->SetDefaultValue("Target"); 
 
-  fMarleyCmd = 
+  fCmdMarley= 
     new G4UIcmdWithAString("/SLAr/gun/marleyconf", this); 
-  fMarleyCmd->SetGuidance("Set MARLEY configuration file"); 
-  fMarleyCmd->SetGuidance("(configuration file path)"); 
-  fMarleyCmd->SetParameterName("marley_config", true, false); 
-  fMarleyCmd->SetDefaultValue("marley_default.json"); 
+  fCmdMarley->SetGuidance("Set MARLEY configuration file"); 
+  fCmdMarley->SetGuidance("(configuration file path)"); 
+  fCmdMarley->SetParameterName("marley_config", true, false); 
+  fCmdMarley->SetDefaultValue("marley_default.json"); 
 
+  fCmdDirectionMode = 
+    new G4UIcmdWithAString("/SLAr/gun/SetDirectionMode", this);
+  fCmdDirectionMode->SetGuidance("Set direction mode (fixed, isotropic)");
+  fCmdDirectionMode->SetParameterName("DirectionMode", true);
+  fCmdDirectionMode->SetDefaultValue("fixed");
+
+
+  fCmdGunPosition = 
+    new G4UIcmdWith3VectorAndUnit("/SLAr/gun/position", this);
+  fCmdGunPosition->SetGuidance("Set position of the generated events");
+  fCmdGunPosition->SetParameterName("posX", "posY", "posZ", false);
+  fCmdGunPosition->SetDefaultValue(G4ThreeVector(0*CLHEP::cm, 0*CLHEP::cm, 0*CLHEP::cm));
+
+  fCmdGunDirection = 
+    new G4UIcmdWith3Vector("/SLAr/gun/direction", this);
+  fCmdGunDirection->SetGuidance("Set event momentum direction");
+  fCmdGunDirection->SetParameterName("p_x", "p_y", "p_z", false); 
+  fCmdGunDirection->SetDefaultValue( G4ThreeVector(0, 0, 1)); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
 {
-  delete fPolarCmd;
-  delete fModeCmd;
-  delete fGunDir;
+  delete fCmdGunMode;
+  delete fCmdBulkVol;
+  delete fCmdMarley;
+  delete fCmdGunPosition;
+  delete fCmdGunDirection;
+  delete fCmdGunDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -99,31 +112,45 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
 void SLArPrimaryGeneratorMessenger::SetNewValue(
               G4UIcommand* command, G4String newValue)
 {
-  if( command == fPolarCmd ) 
+
+  if (command == fCmdGunMode) 
   {
-    G4double angle = fPolarCmd->GetNewDoubleValue(newValue);
-    if ( angle == -360.0*CLHEP::deg ) {
-      fSLArAction->SetOptPhotonPolar();
-    } else {
-      fSLArAction->SetOptPhotonPolar(angle);
-    }
-  }
-  else if (command == fModeCmd) 
-  {
-    EGunMode gunMode = kFixed;
+    EGunMode gunMode = kGun;
     G4String strMode = newValue;
-    if      (G4StrUtil::contains(strMode, "Fixed" )) gunMode = kFixed;
+    if      (G4StrUtil::contains(strMode, "Gun"   )) gunMode = kGun;
     else if (G4StrUtil::contains(strMode, "Radio" )) gunMode = kRadio;
     else if (G4StrUtil::contains(strMode, "Marley")) gunMode = kMarley;
 
     fSLArAction->SetGunMode(gunMode);
   } 
-  else if (command == fVolCmd) { 
+  else if (command == fCmdBulkVol) { 
     G4String vol = newValue; 
     fSLArAction->SetBulkName(vol); 
   }
-  else if (command == fMarleyCmd) {
+  else if (command == fCmdMarley) {
     fSLArAction->SetMarleyConf(newValue); 
+  } 
+  else if (command == fCmdDirectionMode) {
+    if (G4StrUtil::contains(newValue, "fixed")) {
+      fSLArAction->SetDirectionMode(kFixed); 
+    } else if (
+        G4StrUtil::contains(newValue, "random") || 
+        G4StrUtil::contains(newValue, "isotropic")) 
+    {
+      fSLArAction->SetDirectionMode(kRandom);
+    } else {
+      G4cout << "WARNING: unknown key " << newValue
+        << ". I will assume you want it isotropic" << G4endl; 
+      fSLArAction->SetDirectionMode(kRandom);
+    }
+  }
+  else if (command == fCmdGunPosition) {
+    G4ThreeVector pos = fCmdGunPosition->GetNew3VectorValue(newValue); 
+    fSLArAction->SetGunPosition( pos ); 
+  }
+  else if (command == fCmdGunDirection) {
+    G4ThreeVector dir = fCmdGunDirection->GetNew3VectorValue(newValue); 
+    fSLArAction->SetGunDirection(dir); 
   }
 }
 
