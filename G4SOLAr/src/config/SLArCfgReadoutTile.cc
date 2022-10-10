@@ -24,6 +24,13 @@ SLArCfgReadoutTile::SLArCfgReadoutTile(int idx, float xc, float yc, float zc,
   f2DSize_X(0.), f2DSize_Y(0.)
 {}
 
+SLArCfgReadoutTile::SLArCfgReadoutTile(const SLArCfgReadoutTile& ref)
+{
+  f2DSize_X = ref.f2DSize_X; 
+  f2DSize_Y = ref.f2DSize_Y; 
+  SLArCfgBaseModule( (const SLArCfgBaseModule&)ref );
+}
+
 SLArCfgReadoutTile::~SLArCfgReadoutTile()
 {
   if (fGShape) {delete fGShape; fGShape = nullptr;}
