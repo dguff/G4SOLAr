@@ -42,6 +42,7 @@
 #include "G4UIcmdWithADoubleAndUnit.hh"
 
 #include "G4PhaseSpaceDecayChannel.hh"
+#include "G4ProcessTable.hh"
 #include "G4PionRadiativeDecayChannel.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

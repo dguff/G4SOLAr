@@ -42,9 +42,10 @@
 #include "G4ParticleTable.hh"
 
 //#include "G4PhysListFactory.hh"
-#include "FTFP_BERT.hh"
+#include "FTFP_BERT_HP.hh"
 #include "QGSP_BERT_HP.hh"
 #include "G4EmLivermorePhysics.hh"
+#include "G4EmStandardPhysics_option4.hh"
 
 #include "G4Gamma.hh"
 #include "G4Electron.hh"
@@ -83,7 +84,7 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   if (physName == "QGSP_BERT_HP") {
     phys = new QGSP_BERT_HP;
   } else {
-    phys = new FTFP_BERT;
+    phys = new FTFP_BERT_HP;
   }
   //    if (factory.IsReferencePhysList(physName)) {
   //       phys = factory.GetReferencePhysList(physName);
@@ -105,8 +106,8 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
 
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics);
-  RegisterPhysics(new G4RadioactiveDecayPhysics());
-  ReplacePhysics(new G4EmLivermorePhysics());
+  //RegisterPhysics(new G4RadioactiveDecayPhysics());
+  ReplacePhysics(new G4EmStandardPhysics_option4());
 
   fStepMaxProcess = new SLArStepMax();
 }
@@ -225,22 +226,29 @@ void SLArPhysicsList::ConstructProcess()
 
 void SLArPhysicsList::RemoveFromPhysicsList(const G4String& name)
 {
-  G4bool success = false;
-  for (G4PhysConstVector::iterator p  = fPhysicsVector->begin();
-      p != fPhysicsVector->end(); ++p) {
-    G4VPhysicsConstructor* e = (*p);
-    if (e->GetPhysicsName() == name) {
-      fPhysicsVector->erase(p);
-      success = true;
-      break;
-    }
-  }
-  if (!success) {
-    G4ExceptionDescription message;
-    message << "PhysicsList::RemoveFromEMPhysicsList "<< name << "not found";
-    G4Exception("example SLArPhysicsList::RemoveFromPhysicsList()",
-        "ExamSLArPhysicsList01",FatalException,message);
-  }
+  RemovePhysics(name); 
+  //G4bool success = false;
+  //if (fPhysicsVector) {
+    //printf("Physics vector has size %lu\n", fPhysicsVector->size());
+  //} else {
+    //printf("fPhysicsVector is NULL!\n");
+  //}
+  //for (G4PhysConstVector::iterator p  = fPhysicsVector->begin();
+      //p != fPhysicsVector->end(); ++p) {
+    //G4VPhysicsConstructor* e = (*p);
+    //printf("physics name: %s\n", e->GetPhysicsName().c_str());
+    //if (e->GetPhysicsName() == name) {
+      //fPhysicsVector->erase(p);
+      //success = true;
+      //break;
+    //}
+  //}
+  //if (!success) {
+    //G4ExceptionDescription message;
+    //message << "PhysicsList::RemoveFromEMPhysicsList "<< name << "not found";
+    //G4Exception("example SLArPhysicsList::RemoveFromPhysicsList()",
+        //"ExamSLArPhysicsList01",FatalException,message);
+  //}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
