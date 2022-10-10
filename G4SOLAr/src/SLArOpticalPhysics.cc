@@ -40,7 +40,7 @@
 SLArOpticalPhysics::SLArOpticalPhysics(G4bool toggle)
   : G4VPhysicsConstructor("Optical")
 {
-  fWLSProcess                = NULL;
+  //fWLSProcess                = NULL;
   fScintProcess              = NULL;
   fCerenkovProcess           = NULL;
   fBoundaryProcess           = NULL;
@@ -68,7 +68,7 @@ void SLArOpticalPhysics::ConstructProcess()
   G4cout << "SLArOpticalPhysics:: Add Optical Physics Processes"
     << G4endl;
 
-  fWLSProcess = new G4OpWLS("WLS");
+  //fWLSProcess = new G4OpWLS("WLS");
 
   fScintProcess = new SLArScintillation("Scintillation");
   //fScintProcess = new G4Scintillation("Scintillation");
@@ -100,18 +100,19 @@ void SLArOpticalPhysics::ConstructProcess()
   pManager->AddDiscreteProcess(fBoundaryProcess);
 
   //fWLSProcess->UseTimeProfile("delta");
-  fWLSProcess->UseTimeProfile("exponential");
+  //fWLSProcess->UseTimeProfile("exponential");
 
-  pManager->AddDiscreteProcess(fWLSProcess);
+  //pManager->AddDiscreteProcess(fWLSProcess);
 
   //fScintProcess->SetScintillationYieldFactor(1.);
   //fScintProcess->SetScintillationExcitationRatio(0.0);
   fScintProcess->SetTrackSecondariesFirst(false);
-  fScintProcess->SetScintillationByParticleType(true); // Needs to be set for the current LArQL model
+
+  // Needs to be set for the current LArQL model
+  fScintProcess->SetScintillationByParticleType(true); 
   // In the future one can probably define a new type of variable for this.
 
   // Use Birks Correction in the Scintillation process
-
   G4EmSaturation* emSaturation =
     G4LossTableManager::Instance()->EmSaturation();
   fScintProcess->AddSaturation(emSaturation);
@@ -136,6 +137,7 @@ void SLArOpticalPhysics::ConstructProcess()
       pManager->SetProcessOrdering(fCerenkovProcess,idxPostStep);
     }
     if(fScintProcess->IsApplicable(*particle)){
+      printf("Add scintillation process to %s\n", particle->GetParticleName().c_str());
       pManager->AddProcess(fScintProcess);
       pManager->SetProcessOrderingToLast(fScintProcess,idxAtRest);
       pManager->SetProcessOrderingToLast(fScintProcess,idxPostStep);
