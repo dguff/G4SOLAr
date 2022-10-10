@@ -77,6 +77,18 @@ void test_output(const char* path)
   TH1D* hTPhotons = new TH1D("hTPhotons", 
       "Time of photons hits;Time of first photon hit on sensor (true); Entries", 
       2000, 0, 3000); 
+  TH1D *hWavelength = new TH1D("hWavelength", 
+      "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
+      500, 100, 400); 
+  TH1D *hPosition[3]; 
+  double  _dimensions[3] = {1.8, 3, 7}; 
+  TString _positions[3] = {"x", "y", "z"};
+  for (int i=0; i<3; i++) {
+    hPosition[i] = new TH1D(Form("hPosition%s", _positions[i].Data()), 
+        Form("Event starting point #it{%s};#it{%s} [mm];Entries", 
+          _positions[i].Data(), _positions[i].Data()), 
+        200, -_dimensions[i]*1000, _dimensions[i]*1000); 
+  }
   
   double hmax = 0; 
   double tmax = 0; 
@@ -103,6 +115,11 @@ void test_output(const char* path)
       auto trajectories = p->GetTrajectories(); 
       int itrj = 0;
       for (const auto &trj : trajectories) {
+        if (trj->GetTrackID() == pTrkID) {
+          hPosition[0]->Fill(trj->GetPoints().front().fX); 
+          hPosition[1]->Fill(trj->GetPoints().front().fY); 
+          hPosition[2]->Fill(trj->GetPoints().front().fZ); 
+        }
         for (const auto &tp : trj->GetPoints()) {
           double pos_x = tp.fX;     // x coordinate [mm]
           double pos_y = tp.fY;     // y coordinate [mm]
@@ -137,6 +154,8 @@ void test_output(const char* path)
 
           for (const auto &hit : evTile->GetHits()) {
             hTPhotons->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
+            
+            hWavelength->Fill( hit->GetWavelength()); 
           }
         }
       }
@@ -145,11 +164,22 @@ void test_output(const char* path)
     hNPhotons->Fill(htot); 
   }
 
+  printf("------------------------------------------ Drawing MC truth info\n");
+  TCanvas* cVisibleEnergy = new TCanvas(); 
+  hvis->Draw("hist"); 
+  TCanvas* cPosition = new TCanvas("cPosition", "cPosition", 0, 0, 1200, 500); 
+  cPosition->Divide(3, 1); 
+  for (int j=0; j<3; j++) {
+    cPosition->cd(j+1); 
+    hPosition[j]->Draw("hist"); 
+  }
  
+
+  printf("------------------------------------------ Drawing Nhits (hmax = %g)\n",
+      hmax);
   TH2D* h2frame = new TH2D("h2frame", "Pix Readout", 700, -7e3, 7e3, 600, -3e3, +3e3);
   TCanvas* cPixN = new TCanvas("cPixN", "Pixel system readout - Nhits", 0, 0, 1500, 600);
 
-  printf("---------------------- Drawing Nhits (hmax = %g)\n", hmax);
   cPixN->cd(); 
   int imap = 0; 
   h2frame->DrawClone("axis"); 
@@ -184,6 +214,9 @@ void test_output(const char* path)
   auto txt_th = add_preliminary(1, 1); 
   txt_th->Draw(); 
 
+  TCanvas* cWavelength = new TCanvas("cWavelength", "cWavelength", 0, 0, 600, 600); 
+  cWavelength->cd(); 
+  hWavelength->Draw("hist");
   
 
   return;
