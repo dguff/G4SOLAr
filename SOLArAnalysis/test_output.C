@@ -5,8 +5,10 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include "TFile.h"
 #include "TROOT.h"
+#include "TChain.h"
 #include "TTree.h"
 #include "TSystem.h"
 #include "TStyle.h"
@@ -15,6 +17,7 @@
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TRandom3.h"
+#include "TH2Poly.h"
 
 #include "config/SLArCfgBaseSystem.hh"
 #include "event/SLArMCEvent.hh"
@@ -25,6 +28,84 @@
 
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSCfg;
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
+
+struct  SLArHistoSet {
+  public: 
+    SLArHistoSet(); 
+    ~SLArHistoSet(); 
+
+    int BuildHitMapHist(SLArPixCfg* pixCfg); 
+
+    SLArPixCfg* fPixCfg; 
+    std::map<int, TH2Poly*> hNPhMap; 
+    std::map<int, TH2Poly*> hTPhMap; 
+    TH1D* hvis; 
+    TH1D* hNPhotons; 
+    TH1D* hTPhotons; 
+    TH1D* hWavelength; 
+    std::vector<TH1D*> hPosition; 
+
+}; 
+
+SLArHistoSet::SLArHistoSet() : 
+  fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), hTPhotons(nullptr), hWavelength(nullptr), 
+  hPosition(3, nullptr)
+{
+  hvis = new TH1D("hvis", "Visible Energy", 200, 0., 10); 
+  hNPhotons = new TH1D("hNPhotons", 
+      "Nr of collected photons;Nr of collected photons (true);Entries/ev",
+      100, 0, 25e3);
+  hTPhotons = new TH1D("hTPhotons", 
+      "Time of photons hits;Time of first photon hit on sensor (true); Entries", 
+      2000, 0, 3000); 
+  hWavelength = new TH1D("hWavelength", 
+      "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
+      500, 100, 400); 
+
+  double  _dimensions[3] = {1.8, 3, 7}; 
+  TString _positions[3] = {"x", "y", "z"};
+  for (int i=0; i<3; i++) {
+    hPosition[i] = new TH1D(Form("hPosition%s", _positions[i].Data()), 
+        Form("Event starting point #it{%s};#it{%s} [mm];Entries", 
+          _positions[i].Data(), _positions[i].Data()), 
+        200, -_dimensions[i]*1000, _dimensions[i]*1000); 
+  }
+}
+
+SLArHistoSet::~SLArHistoSet() {
+  if (hvis) delete hvis; 
+  if (hNPhotons) delete hNPhotons; 
+  if (hTPhotons) delete hTPhotons; 
+  if (hWavelength) delete hWavelength; 
+  for (auto &h : hPosition) {
+    if (h) delete h; 
+  }
+  hPosition.clear(); 
+}
+
+int SLArHistoSet::BuildHitMapHist(SLArPixCfg* pixCfg) {
+  fPixCfg = new SLArPixCfg( *pixCfg );
+  int nmodules = 0; 
+  for (auto &mod : fPixCfg->GetModuleMap()) {
+    SLArCfgMegaTile* mgTile = mod.second; 
+    for (auto &cell : mgTile->GetMap()) {
+      cell.second->BuildGShape(); 
+      //printf("cell pos [phys]: [%.2f, %.2f, %.2f] - %g × %g\n", 
+          //cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ(),
+          //cell.second->Get2DSize_X(), cell.second->Get2DSize_Y()); 
+    }
+    mgTile->BuildPolyBinHist(); 
+    TH2Poly* h2p = (TH2Poly*)mgTile->GetTH2(); 
+    hNPhMap.insert(std::make_pair(mgTile->GetIdx(), 
+          (TH2Poly*)h2p->Clone(Form("nhits_map_%i", mgTile->GetIdx()))));
+    hTPhMap.insert(std::make_pair(mgTile->GetIdx(), 
+          (TH2Poly*)h2p->Clone(Form("thits_map_%i", mgTile->GetIdx()))));
+  }
+  nmodules = hNPhMap.size(); 
+  return nmodules; 
+}
+
+void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h); 
 
 void test_output(const char* path) 
 {
@@ -37,68 +118,67 @@ void test_output(const char* path)
   TFile* file = new TFile(path); 
   
   // Get the configuration of the pixel/SuperCell readout system
-  SLArPDSCfg* pdsCfg = (SLArPDSCfg*)file->Get("PDSSysConfig"); 
   SLArPixCfg* pixCfg = (SLArPixCfg*)file->Get("PixSysConfig"); 
 
-  if (pdsCfg) {
-    for (auto &array : pdsCfg->GetModuleMap()) {
-      SLArCfgSuperCellArray* scArray = array.second; 
-      scArray->BuildPolyBinHist();
-      new TCanvas(); 
-      scArray->GetTH2()->Draw("col");
-    }
-  }
 
-  std::map<int, TH2Poly*> hNPhMap; 
-  std::map<int, TH2Poly*> hTPhMap; 
-
+  // create histograms
+  SLArHistoSet* h = new SLArHistoSet(); 
   if (pixCfg) {
-    // prepare the histograms for the hit maps
-    for (auto &mod : pixCfg->GetModuleMap()) {
-      SLArCfgMegaTile* mgTile = mod.second; 
-      //for (const auto &cell : mgTile->GetMap()) {
-        //printf("cell pos [phys]: [%.2f, %.2f, %.2f]\n", 
-            //cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ()); 
-      //}
-      mgTile->BuildPolyBinHist(); 
-      mgTile->GetTH2()->Draw("colsame"); 
-      hNPhMap.insert(std::make_pair(mgTile->GetIdx(), 
-            (TH2Poly*)mgTile->GetTH2()->Clone(Form("nhits_map_%i", mgTile->GetIdx()))));
-      hTPhMap.insert(std::make_pair(mgTile->GetIdx(), 
-            (TH2Poly*)mgTile->GetTH2()->Clone(Form("thits_map_%i", mgTile->GetIdx()))));
-    }
+    h->BuildHitMapHist(pixCfg); 
   }
-
-  // Book histograms for analysis
-  TH1D* hvis = new TH1D("hvis", "Visible Energy", 200, 0., 10); 
-  TH1D* hNPhotons = new TH1D("hNPhotons", 
-      "Nr of collected photons;Nr of collected photons (true);Entries/ev",
-      100, 0, 25e3);
-  TH1D* hTPhotons = new TH1D("hTPhotons", 
-      "Time of photons hits;Time of first photon hit on sensor (true); Entries", 
-      2000, 0, 3000); 
-  TH1D *hWavelength = new TH1D("hWavelength", 
-      "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
-      500, 100, 400); 
-  TH1D *hPosition[3]; 
-  double  _dimensions[3] = {1.8, 3, 7}; 
-  TString _positions[3] = {"x", "y", "z"};
-  for (int i=0; i<3; i++) {
-    hPosition[i] = new TH1D(Form("hPosition%s", _positions[i].Data()), 
-        Form("Event starting point #it{%s};#it{%s} [mm];Entries", 
-          _positions[i].Data(), _positions[i].Data()), 
-        200, -_dimensions[i]*1000, _dimensions[i]*1000); 
-  }
-  
-  double hmax = 0; 
-  double tmax = 0; 
 
 
   //---------------------------------------------------- Readout the event tree
   TTree* tree = (TTree*)file->Get("EventTree"); 
+
+  readout_event_tree(tree, pixCfg, h); 
   
+ return;
+}
+
+void merge_and_plot(const char* root_file_list) {
+  slide_default(); 
+  gROOT->SetStyle("slide_default"); 
+
+  std::ifstream file_list; 
+  file_list.open( root_file_list ); 
+  if (!file_list.is_open()) {
+    printf("%s root file list is not opened. Quit.\n", root_file_list);
+    return;
+  }
+
+  SLArPixCfg* pixCfg = new SLArPixCfg();
+  SLArHistoSet* h = new SLArHistoSet(); 
+
+  TChain* ch = new TChain("EventTree", "G4SOLAr event tree"); 
+  std::string str; 
+  int ifile = 0; 
+  while ( std::getline(file_list, str) ) {
+    if (ifile == 0) {
+      printf("Reading readout configuration from %s\n", str.c_str());
+      TFile* f = new TFile(str.c_str()); 
+      pixCfg = (SLArPixCfg*)f->Get("PixSysConfig")->Clone("local_pix_cfg");
+
+      h->BuildHitMapHist(pixCfg); 
+    }
+
+    printf("Adding to %s to chain\n", str.c_str());
+    ch->AddFile(str.c_str());  
+    
+    ifile++; 
+  } 
+
+  readout_event_tree(ch, pixCfg, h);
+
+  return; 
+}
+
+void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
   SLArMCEvent* ev = nullptr; 
   tree->SetBranchAddress("MCEvent", &ev); 
+
+  double tmax = 0; 
+  double hmax = 0; 
 
   for (int iev = 0; iev<tree->GetEntries(); iev++) {
     tree->GetEntry(iev); 
@@ -116,9 +196,9 @@ void test_output(const char* path)
       int itrj = 0;
       for (const auto &trj : trajectories) {
         if (trj->GetTrackID() == pTrkID) {
-          hPosition[0]->Fill(trj->GetPoints().front().fX); 
-          hPosition[1]->Fill(trj->GetPoints().front().fY); 
-          hPosition[2]->Fill(trj->GetPoints().front().fZ); 
+          h->hPosition[0]->Fill(trj->GetPoints().front().fX); 
+          h->hPosition[1]->Fill(trj->GetPoints().front().fY); 
+          h->hPosition[2]->Fill(trj->GetPoints().front().fZ); 
         }
         for (const auto &tp : trj->GetPoints()) {
           double pos_x = tp.fX;     // x coordinate [mm]
@@ -131,13 +211,13 @@ void test_output(const char* path)
       } 
       ip++;
     }
-    hvis->Fill(ev_edep); 
+    h->hvis->Fill(ev_edep); 
 
     //---------------------------------------- Readout detected optical photons
     double htot = 0; 
     auto evpds = ev->GetReadoutTileSystem(); 
     for (const auto &mtile : evpds->GetMegaTilesMap()) {
-      auto mgTileCfg = pixCfg->GetModule(mtile.first);
+      auto mgTileCfg = h->fPixCfg->GetModule(mtile.first);
       for (const auto &tile : mtile.second->GetTileMap()) {
         SLArEventTile* evTile = tile.second; 
         if (!evTile->GetHits().empty()) {
@@ -146,32 +226,32 @@ void test_output(const char* path)
           int nhits = evTile->GetNhits(); 
           double tfirst = evTile->GetTime(); 
           if (tfirst > tmax) tmax = tfirst; 
-          double bc_ = hNPhMap[mgTileCfg->GetIdx()]->GetBinContent(bin_idx); 
-          hNPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
-          hTPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, tfirst); 
+          double bc_ = h->hNPhMap[mgTileCfg->GetIdx()]->GetBinContent(bin_idx); 
+          h->hNPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
+          h->hTPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, tfirst); 
 
           htot += nhits; 
 
           for (const auto &hit : evTile->GetHits()) {
-            hTPhotons->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
-            
-            hWavelength->Fill( hit->GetWavelength()); 
+            h->hTPhotons->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
+            h->hWavelength->Fill( hit->GetWavelength()); 
           }
         }
       }
     }
 
-    hNPhotons->Fill(htot); 
+    h->hNPhotons->Fill(htot); 
   }
 
   printf("------------------------------------------ Drawing MC truth info\n");
-  TCanvas* cVisibleEnergy = new TCanvas(); 
-  hvis->Draw("hist"); 
+  TCanvas* cVisibleEnergy = new TCanvas("cVisibleEnergy", "cVisibleEnergy", 0, 0, 800, 600);
+  cVisibleEnergy->cd(); 
+  h->hvis->Draw("hist"); 
   TCanvas* cPosition = new TCanvas("cPosition", "cPosition", 0, 0, 1200, 500); 
   cPosition->Divide(3, 1); 
   for (int j=0; j<3; j++) {
     cPosition->cd(j+1); 
-    hPosition[j]->Draw("hist"); 
+    h->hPosition[j]->Draw("hist"); 
   }
  
 
@@ -183,13 +263,13 @@ void test_output(const char* path)
   cPixN->cd(); 
   int imap = 0; 
   h2frame->DrawClone("axis"); 
-  for (const auto &hmap : hNPhMap) {
+  for (const auto &hmap : h->hNPhMap) {
     hmap.second->Scale(1./tree->GetEntries()); 
     if (hmax < hmap.second->GetMaximum()) 
       hmax = hmap.second->GetMaximum(); 
   }
 
-  for (auto &hmap : hNPhMap) {
+  for (auto &hmap : h->hNPhMap) {
     hmap.second->GetZaxis()->SetRangeUser(0, 1.1*hmax); 
     if (imap == 0) hmap.second->Draw("colz0 same"); 
     else hmap.second->Draw("col0 same"); 
@@ -204,21 +284,19 @@ void test_output(const char* path)
 
   TCanvas* cNhits = new TCanvas("cNhits", "cNhits", 0, 0, 600, 600); 
   cNhits->cd(); 
-  hNPhotons->Draw("hist");
+  h->hNPhotons->Draw("hist");
   auto txt_nh = add_preliminary(0, 1); 
   txt_nh->Draw(); 
 
   TCanvas* cTime = new TCanvas("cTime", "cTime", 0, 0, 900, 600); 
   cTime->cd(); 
-  hTPhotons->Draw("hist");
+  h->hTPhotons->Draw("hist");
   auto txt_th = add_preliminary(1, 1); 
   txt_th->Draw(); 
 
   TCanvas* cWavelength = new TCanvas("cWavelength", "cWavelength", 0, 0, 600, 600); 
   cWavelength->cd(); 
-  hWavelength->Draw("hist");
-  
+  h->hWavelength->Draw("hist");
 
   return;
 }
-
