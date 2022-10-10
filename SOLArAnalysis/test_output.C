@@ -51,10 +51,10 @@ SLArHistoSet::SLArHistoSet() :
   fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), hTPhotons(nullptr), hWavelength(nullptr), 
   hPosition(3, nullptr)
 {
-  hvis = new TH1D("hvis", "Visible Energy", 200, 0., 10); 
+  hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
   hNPhotons = new TH1D("hNPhotons", 
       "Nr of collected photons;Nr of collected photons (true);Entries/ev",
-      100, 0, 25e3);
+      500, 0, 1e5);
   hTPhotons = new TH1D("hTPhotons", 
       "Time of photons hits;Time of first photon hit on sensor (true); Entries", 
       2000, 0, 3000); 
