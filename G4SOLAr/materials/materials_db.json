@@ -73,8 +73,8 @@
           }
         ]}, 
         {"property" : "ABSLENGTH", "value" : [
-          {"var" : "Energy", "unit" : "eV", "val" : [ 4, 5, 6, 7, 8, 9, 10, 11]},
-          {"var" : "ABSLENGTH", "unit" : "cm", "val" : [ 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]}
+          {"var" : "Energy", "unit" : "eV", "val" : [ 4, 5, 6, 7, 8, 9, 10, 11, 13]},
+          {"var" : "ABSLENGTH", "unit" : "m", "val" : [ 20, 20, 20, 20, 20, 20, 20, 20, 20]}
         ]}, 
         {"property" : "RAYLEIGH", "value" : [
           {"var" : "Energy", "unit" : "eV", "val" : [ 1.18626, 1.68626, 2.18626, 2.68626, 3.18626, 3.68626, 4.18626, 4.68626, 5.18626, 5.68626, 6.18626, 6.68626, 7.18626, 7.68626, 8.18626, 8.68626, 9.18626, 9.68626, 10.1863, 10.6863, 11.1863 ]
@@ -135,7 +135,7 @@
         "model" : "glisur", 
         "type" : "dielectric_metal",
         "finished" : "polished", 
-        "polished" : 0.8,
+        "polished" :  0.9,
         "PropertiesTable" : [
           {"property" : "EFFICIENCY", "value" : [
             {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
