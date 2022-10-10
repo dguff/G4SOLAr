@@ -32,8 +32,10 @@
 
 #include "SLArStackingAction.hh"
 #include "SLArEventAction.hh"
+#include "SLArAnalysisManager.hh"
 
 #include "G4VProcess.hh"
+#include "G4RunManager.hh"
 
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTypes.hh"
@@ -56,16 +58,51 @@ SLArStackingAction::~SLArStackingAction()
 G4ClassificationOfNewTrack
 SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 {
-  if(aTrack->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition())
+  if(aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
+    if (aTrack->GetParentID() == 0) {
+      fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetTrackID()); 
+    } else {
+      fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetParentID()); 
+    }
+  }
+  else 
   { // particle is optical photon
     if(aTrack->GetParentID()>0)
     { // particle is secondary
-      if(aTrack->GetCreatorProcess()->GetProcessName() == "Scintillation")
+      SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
+      SLArMCPrimaryInfo* primary = nullptr; 
+      auto primaries = anaMngr->GetEvent()->GetPrimaries();
+
+      int primary_parent_id = fEventAction->FindTopParentID(aTrack->GetParentID()); 
+#ifdef SLAR_DEBUG
+      printf("Primart parent ID %i\n", primary_parent_id);
+#endif
+      for (auto &p : primaries) {
+        if (p->GetTrackID() == primary_parent_id) {
+          primary = p; 
+#ifdef SLAR_DEBUG
+          printf("primary parent found\n");
+#endif
+
+          break; 
+        }
+      }
+       
+#ifdef SLAR_DEBUG
+      if (!primary) printf("Unable to find corresponding primary particle\n");
+#endif
+
+      if(aTrack->GetCreatorProcess()->GetProcessName() == "Scintillation") {
         fEventAction->IncPhotonCount_Scnt();
-      else if(aTrack->GetCreatorProcess()->GetProcessName() == "Cerenkov")
+        if (primary) primary->IncrementScintPhotons(); 
+      }
+      else if(aTrack->GetCreatorProcess()->GetProcessName() == "Cerenkov") {
         fEventAction->IncPhotonCount_Cher();
-      else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS")
+        if (primary) primary->IncrementCherPhotons();
+      }
+      else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS") {
         fEventAction->IncPhotonCount_WLS();
+      }
 #ifdef SLAR_DEBUG
       else 
         printf("SLArStackingAction::ClassifyNewTrack unknown photon creation process %s\n", 

@@ -36,6 +36,7 @@
 #include "G4HCofThisEvent.hh"
 #include "globals.hh"
 
+#include <map>
 #include <vector>
 
 /// Event action
@@ -64,6 +65,8 @@ public:
     G4int GetAbsorptionCount()const     {return fAbsorptionCount;}
     G4int GetBoundaryAbsorptionCount()const {return fBoundaryAbsorptionCount;}
 
+    void  RegisterNewTrackPID(int, int); 
+    int   FindTopParentID(int); 
     
 private:
     G4int fTileHCollID;
@@ -76,6 +79,8 @@ private:
     G4int fAbsorptionCount ;
     G4int fBoundaryAbsorptionCount;
     G4double fTotEdep;
+
+    std::map<int, int> fParentIDMap;
 
     void RecordEventReadoutTile (const G4Event* ev);
     void RecordEventTarget(const G4Event* ev);

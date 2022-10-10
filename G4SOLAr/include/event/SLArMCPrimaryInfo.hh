@@ -37,7 +37,11 @@ class SLArMCPrimaryInfo : public TNamed
     int       GetTrackID     () {return fTrkID    ;}
     std::vector<SLArEventTrajectory*>&
               GetTrajectories() {return fTrajectories;}
-    
+    int       GetTotalScintPhotons() {return fTotalScintPhotons;}
+    int       GetTotalCerenkovPhotons() {return fTotalCerenkovPhotons;}
+
+    void      IncrementScintPhotons() {fTotalScintPhotons++;}
+    void      IncrementCherPhotons() {fTotalCerenkovPhotons++;}
 
     void PrintParticle();
 
@@ -52,6 +56,8 @@ class SLArMCPrimaryInfo : public TNamed
     double   fEnergy  ;
     double   fTime    ;
     double   fTotalEdep;
+    int      fTotalScintPhotons;
+    int      fTotalCerenkovPhotons; 
     std::vector<double>   fVertex  ;
     std::vector<double>   fMomentum;
     std::vector<SLArEventTrajectory*> fTrajectories;

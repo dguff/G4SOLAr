@@ -138,6 +138,15 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     printf("SLArEventAction::EndOfEventAction()\n"); 
     printf("OpticalPhoton Monitor:\nCherenkov: %i\nScintillation: %i\n\n", 
         fPhotonCount_Cher, fPhotonCount_Scnt);
+    printf("Primary particles:\n");
+    for (const auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
+      printf("%s - %g MeV - trk ID %i\n", 
+          p->GetParticleName().Data(), p->GetEnergy(), p->GetTrackID());
+      printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
+          p->GetTotalScintPhotons(), p->GetTotalCerenkovPhotons()); 
+    }
+
+    fParentIDMap.clear(); 
 
     SLArAnaMgr->GetEvent()->Reset();
 }
@@ -323,6 +332,47 @@ void SLArEventAction::RecordEventTarget(const G4Event* ev)
 #ifdef SLAR_DEBUG
   printf("     DONE\n"); 
 #endif
+}
+
+void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
+  fParentIDMap.insert( std::make_pair(trk_id, p_id) ); 
+  return;
+}
+
+int SLArEventAction::FindTopParentID(int trkid) {
+  int primary = -1; 
+  int pid = trkid; 
+
+  SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
+  auto primaries = anaMngr->GetEvent()->GetPrimaries(); 
+  bool caught = false; 
+#ifdef SLAR_DEBUG
+  printf("Lookging for primary parent of %i among\n", trkid);
+  for (const auto& _pid : fParentIDMap) {
+    printf("%i - PID: %i\n", _pid.first, _pid.second); 
+  }
+#endif
+
+  while ( !caught ) {
+    pid = fParentIDMap[trkid];
+#ifdef SLAR_DEBUG
+    printf("local pid: %i\n", pid);
+#endif
+
+    for (const auto &p : primaries) {
+      if (pid == p->GetTrackID()) {
+        primary = pid; 
+        caught = true;
+      }
+    }
+
+    trkid = pid; 
+#ifdef SLAR_DEBUG
+    getchar(); 
+#endif
+  }
+
+  return primary; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

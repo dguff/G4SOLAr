@@ -12,7 +12,7 @@ ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
   fID(0), fTrkID(0), fName("noParticle"), fEnergy(0.),
-  fTotalEdep(0.),
+  fTotalEdep(0.), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
   fVertex(3, 0.), fMomentum(3, 0.)
 {}
 
@@ -25,6 +25,8 @@ void SLArMCPrimaryInfo::SetPosition(double x, double y,
   fVertex[1] = y;
   fVertex[2] = z;
   fTime   = t;
+  fTotalCerenkovPhotons = 0; 
+  fTotalScintPhotons = 0; 
 }
 
 void SLArMCPrimaryInfo::SetMomentum(double px, double py, double pz, 
@@ -44,6 +46,8 @@ void SLArMCPrimaryInfo::ResetParticle()
   fEnergy       = 0.;
   fTime         = 0.;
   fTotalEdep    = 0.;
+  fTotalScintPhotons = 0; 
+  fTotalCerenkovPhotons = 0; 
 
   for (auto &tt : fTrajectories) {delete tt;}
   fTrajectories.clear();
