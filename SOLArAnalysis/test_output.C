@@ -36,6 +36,8 @@ struct  SLArHistoSet {
 
     int BuildHitMapHist(SLArPixCfg* pixCfg); 
 
+    void Write(const char* output_path); 
+
     SLArPixCfg* fPixCfg; 
     std::map<int, TH2Poly*> hNPhMap; 
     std::map<int, TH2Poly*> hTPhMap; 
@@ -105,9 +107,38 @@ int SLArHistoSet::BuildHitMapHist(SLArPixCfg* pixCfg) {
   return nmodules; 
 }
 
+void SLArHistoSet::Write(const char* output_path) {
+  TFile* output = new TFile(output_path, "recreate");
+
+  hvis->Write(); 
+  hNPhotons->Write(); 
+  hTPhotons->Write(); 
+  hWavelength->Write(); 
+
+  TH2D* h2hits = new TH2D("h2hits_avg", "Average nr of hits;#it{z} [mm];#it{y} [mm]", 
+      140, -7000, +7000, 60, -3000, +3000); 
+  for (const auto &mtile : hNPhMap) {
+    for (const auto &&tbin : *(mtile.second->GetBins())) {
+      TH2PolyBin* bin = (TH2PolyBin*)tbin; 
+      TGraph* g = (TGraph*)bin->GetPolygon();
+      double _x = 0.5*(g->GetPointX(0) + g->GetPointX(2)); 
+      double _y = 0.5*(g->GetPointY(0) + g->GetPointY(2)); 
+      printf("_x = 0.5*(%g + %g)\n_y = 0.5*(%g + %g)\n\n", 
+          g->GetPointX(0), g->GetPointX(1), 
+          g->GetPointY(0), g->GetPointY(2));
+      int iibin = h2hits->FindBin(_x, _y);
+      h2hits->SetBinContent(iibin, bin->GetContent()); 
+    }
+  }
+
+  h2hits->Write(); 
+
+  output->Close(); 
+}
+
 void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h); 
 
-void test_output(const char* path) 
+void test_output(const char* path, const char* output_path = "") 
 {
   //--------------------------------------------------------- Source plot style 
   slide_default(); 
@@ -133,10 +164,13 @@ void test_output(const char* path)
 
   readout_event_tree(tree, pixCfg, h); 
   
- return;
+  if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
+    h->Write(output_path); 
+  }
+  return;
 }
 
-void merge_and_plot(const char* root_file_list) {
+void merge_and_plot(const char* root_file_list, const char* output_path) {
   slide_default(); 
   gROOT->SetStyle("slide_default"); 
 
@@ -169,6 +203,10 @@ void merge_and_plot(const char* root_file_list) {
   } 
 
   readout_event_tree(ch, pixCfg, h);
+
+  if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
+    h->Write(output_path); 
+  }
 
   return; 
 }
