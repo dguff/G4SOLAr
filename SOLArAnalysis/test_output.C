@@ -43,22 +43,27 @@ struct  SLArHistoSet {
     std::map<int, TH2Poly*> hTPhMap; 
     TH1D* hvis; 
     TH1D* hNPhotons; 
-    TH1D* hTPhotons; 
+    TH1D* hNHits;
+    TH1D* hTHits; 
     TH1D* hWavelength; 
     std::vector<TH1D*> hPosition; 
 
 }; 
 
 SLArHistoSet::SLArHistoSet() : 
-  fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), hTPhotons(nullptr), hWavelength(nullptr), 
+  fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), 
+  hNHits(nullptr), hTHits(nullptr), hWavelength(nullptr), 
   hPosition(3, nullptr)
 {
   hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
   hNPhotons = new TH1D("hNPhotons", 
-      "Nr of collected photons;Nr of collected photons (true);Entries/ev",
+      "Nr of photons produced;Nr of photons produced (true);Entries",
+      1000, 0, 1e6);
+  hNHits = new TH1D("hNHits", 
+      "Nr of collected photons;Nr of collected photons (true);Entries",
       500, 0, 1e5);
-  hTPhotons = new TH1D("hTPhotons", 
-      "Time of photons hits;Time of first photon hit on sensor (true); Entries", 
+  hTHits = new TH1D("hTHits", 
+      "Time of photons hits;Time of first photon hit on sensor (true);Entries", 
       2000, 0, 3000); 
   hWavelength = new TH1D("hWavelength", 
       "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
@@ -76,8 +81,9 @@ SLArHistoSet::SLArHistoSet() :
 
 SLArHistoSet::~SLArHistoSet() {
   if (hvis) delete hvis; 
+  if (hNHits) delete hNHits;
   if (hNPhotons) delete hNPhotons; 
-  if (hTPhotons) delete hTPhotons; 
+  if (hTHits) delete hTHits; 
   if (hWavelength) delete hWavelength; 
   for (auto &h : hPosition) {
     if (h) delete h; 
@@ -111,8 +117,9 @@ void SLArHistoSet::Write(const char* output_path) {
   TFile* output = new TFile(output_path, "recreate");
 
   hvis->Write(); 
-  hNPhotons->Write(); 
-  hTPhotons->Write(); 
+  hNPhotons->Write();
+  hNHits->Write(); 
+  hTHits->Write(); 
   hWavelength->Write(); 
 
   TH2D* h2hits = new TH2D("h2hits_avg", "Average nr of hits;#it{z} [mm];#it{y} [mm]", 
@@ -123,9 +130,9 @@ void SLArHistoSet::Write(const char* output_path) {
       TGraph* g = (TGraph*)bin->GetPolygon();
       double _x = 0.5*(g->GetPointX(0) + g->GetPointX(2)); 
       double _y = 0.5*(g->GetPointY(0) + g->GetPointY(2)); 
-      printf("_x = 0.5*(%g + %g)\n_y = 0.5*(%g + %g)\n\n", 
-          g->GetPointX(0), g->GetPointX(1), 
-          g->GetPointY(0), g->GetPointY(2));
+      //printf("_x = 0.5*(%g + %g)\n_y = 0.5*(%g + %g)\n\n", 
+          //g->GetPointX(0), g->GetPointX(1), 
+          //g->GetPointY(0), g->GetPointY(2));
       int iibin = h2hits->FindBin(_x, _y);
       h2hits->SetBinContent(iibin, bin->GetContent()); 
     }
@@ -226,10 +233,12 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
 
     //--------------------------------------------- Readout primaries and MC true
     size_t ip = 0; 
+    int nphotons = 0; 
     for (const auto &p : primaries) {
       int pPDGID = p->GetCode();     // Get primary PDG code 
       int pTrkID = p->GetTrackID();  // Get primary trak id   
 
+      nphotons += p->GetTotalScintPhotons(); 
       auto trajectories = p->GetTrajectories(); 
       int itrj = 0;
       for (const auto &trj : trajectories) {
@@ -250,6 +259,7 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
       ip++;
     }
     h->hvis->Fill(ev_edep); 
+    h->hNPhotons->Fill(nphotons); 
 
     //---------------------------------------- Readout detected optical photons
     double htot = 0; 
@@ -271,20 +281,23 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
           htot += nhits; 
 
           for (const auto &hit : evTile->GetHits()) {
-            h->hTPhotons->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
+            h->hTHits->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
             h->hWavelength->Fill( hit->GetWavelength()); 
           }
         }
       }
     }
 
-    h->hNPhotons->Fill(htot); 
+    h->hNHits->Fill(htot); 
   }
 
   printf("------------------------------------------ Drawing MC truth info\n");
-  TCanvas* cVisibleEnergy = new TCanvas("cVisibleEnergy", "cVisibleEnergy", 0, 0, 800, 600);
-  cVisibleEnergy->cd(); 
-  h->hvis->Draw("hist"); 
+  TCanvas* cVisibleEnergy = new TCanvas("cVisibleEnergy", "cVisibleEnergy", 0, 0, 800, 500);
+  cVisibleEnergy->Divide(2, 1); 
+  cVisibleEnergy->cd(1); 
+  h->hvis->Draw("hist");
+  cVisibleEnergy->cd(2); 
+  h->hNPhotons->Draw("hist"); 
   TCanvas* cPosition = new TCanvas("cPosition", "cPosition", 0, 0, 1200, 500); 
   cPosition->Divide(3, 1); 
   for (int j=0; j<3; j++) {
@@ -322,13 +335,13 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
 
   TCanvas* cNhits = new TCanvas("cNhits", "cNhits", 0, 0, 600, 600); 
   cNhits->cd(); 
-  h->hNPhotons->Draw("hist");
+  h->hNHits->Draw("hist");
   auto txt_nh = add_preliminary(0, 1); 
   txt_nh->Draw(); 
 
   TCanvas* cTime = new TCanvas("cTime", "cTime", 0, 0, 900, 600); 
   cTime->cd(); 
-  h->hTPhotons->Draw("hist");
+  h->hTHits->Draw("hist");
   auto txt_th = add_preliminary(1, 1); 
   txt_th->Draw(); 
 
