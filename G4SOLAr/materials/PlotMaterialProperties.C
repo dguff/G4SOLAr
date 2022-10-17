@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <fstream>
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -110,6 +111,18 @@ void PlotMaterialProperties(const char* json_path)
     else if (titl.Contains("RAYLEIGH")) {
       titl = "LAr Rayleigh scattering length"; 
       g->GetYaxis()->SetTitle("Scattering length [mm]");
+
+      // scale Rayleigh scattering length to 90 cm @ 128 nm
+      /*
+       *double scale = 900 / g->Eval(128); 
+       *printf("RAYLEIGH SCALE FACTOR IS %g\n", scale); 
+       *FILE* rayleigh_file; 
+       *rayleigh_file = std::fopen("rayleigh90.txt", "w");
+       *for (int ip=0; ip<g->GetN(); ip++) {
+       *  fprintf(rayleigh_file, "%.2f, ", g->GetY()[ip]*scale); 
+       *}
+       *std::fclose(rayleigh_file); 
+       */
     } 
     else if (titl.Contains("ABSLENGTH")) {
       titl = "LAr absorption length";
