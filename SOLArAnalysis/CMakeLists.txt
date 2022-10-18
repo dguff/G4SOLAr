@@ -32,6 +32,9 @@ include_directories(
     ${Geant4_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
     )
+if (CLHEP_EXTERNAL) 
+  include_directories(${CLHEP_EXTERNAL})
+endif()
 
 add_subdirectory(VisMap)
 
