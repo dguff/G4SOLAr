@@ -1,10 +1,11 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : build_vis_map.C
+ * @file        : build_vis_map.cc
  * @created     : Monday Oct 17, 2022 17:56:23 CEST
  */
 
 #include <iostream>
+#include <getopt.h>
 #include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
@@ -21,7 +22,7 @@
 #include "config/SLArCfgBaseSystem.hh"
 #include "event/SLArMCEvent.hh"
 #include "config/SLArCfgMegaTile.hh"
-#include "SLArCfgSuperCellArray.hh"
+#include "config/SLArCfgSuperCellArray.hh"
 
 #include "solar_root_style.hpp"
 
@@ -82,3 +83,44 @@ void build_vis_map(const char* data_file_path, const char* output_path = "")
   return;
 }
 
+void PrintUsage() {
+  printf("build_vis_map: Build a visibility map based on the semi-analytical light propagation model\n");
+  printf("Usage:\nbuild_vis_map\n");
+  printf("\t-i(--input) input file with PDS configuration\n");
+  printf("\t-o(--output) output file with visibility map\n"); 
+  printf("\t-h(--help) print this message\n");
+}
+
+int main(int argc, char *argv[])
+{
+  const char* short_opts = "i:o:h";
+  static struct option long_opts[4] = 
+  {
+    {"input", required_argument, 0, 'i'}, 
+    {"output", required_argument, 0, 'o'}, 
+    {"help", no_argument, 0, 'h'}, 
+    {nullptr, no_argument, nullptr, 0} 
+  };
+
+  int c, option_index; 
+
+  const char* input_file = ""; 
+  const char* output_file = ""; 
+
+  while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
+    switch(c) {
+      case 'i' : 
+        input_file = optarg; 
+        break;
+      case 'o':
+        output_file = optarg; 
+        break;
+      case 'h':
+        PrintUsage(); 
+        break;
+    }
+  }
+  
+  build_vis_map(input_file, output_file); 
+  return 0;
+}

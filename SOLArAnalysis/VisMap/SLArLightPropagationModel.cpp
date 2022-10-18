@@ -156,6 +156,11 @@ namespace slarAna {
     // apply correction
     double vis_vuv = 0 ;
     vis_vuv = GH_correction*vis_geo/costheta;
+
+    //printf("\tGH_correction = %g\n", GH_correction);
+    //printf("\tvis_vuv = %g\n", vis_vuv);
+    //getchar(); 
+
     return vis_vuv;
   }
 
@@ -189,8 +194,8 @@ namespace slarAna {
 
     // TODO: Fix to make it independent of detector plane
     // detector size
-    double Dx_ = cfgTile->Get2DSize_X()*G4UIcommand::ValueOf("cm"); 
-    double Dy_ = cfgTile->Get2DSize_Y()*G4UIcommand::ValueOf("cm");
+    double Dx_ = cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm"); 
+    double Dy_ = cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm");
 
     // project scintillation point onto the photon detector plane
     TVector3 vv = v - OpDetNorm.Dot(v)*OpDetNorm; 

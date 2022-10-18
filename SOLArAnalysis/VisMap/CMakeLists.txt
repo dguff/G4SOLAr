@@ -38,5 +38,6 @@ add_library(SLArLightPropagation SHARED
   ${PROJECT_SOURCE_DIR}/SLArLightPropagationModel.h
   )
 
+target_link_libraries(SLArLightPropagation PUBLIC ${ROOT_LIBRARIES})
 target_link_libraries(SLArLightPropagation PUBLIC G4SOLAr::SLArReadoutSystemConfig)
 
