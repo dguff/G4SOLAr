@@ -38,6 +38,11 @@ endif()
 
 add_subdirectory(VisMap)
 
+add_executable(build_vis_map ${PROJECT_SOURCE_DIR}/build_vis_map.cc)
+target_link_libraries(build_vis_map PUBLIC ${ROOT_LIBRARIES})
+target_link_libraries(build_vis_map PUBLIC ${Geant4_LIBRARIES})
+target_link_libraries(build_vis_map PUBLIC SLArLightPropagation)
+
 add_executable(test_output ${PROJECT_SOURCE_DIR}/test_output.cc)
 target_link_libraries(test_output PRIVATE ${ROOT_LIBRARIES})
 target_link_libraries(test_output PRIVATE G4SOLAr::SLArReadoutSystemConfig G4SOLAr::SLArMCEvent)
