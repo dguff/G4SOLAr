@@ -75,7 +75,7 @@ SLArHistoSet::SLArHistoSet() :
       "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
       500, 100, 400); 
   hEReco = new TH1D("hEReco", 
-      "Reconstructed Energy;#it{E_{L}} [MeV];Entries", 200, 0, 30);
+      "Reconstructed Energy;#it{E_{L}} [MeV];Entries", 600, 0, 30);
 
   double  _dimensions[3] = {1.8, 3, 7}; 
   TString _positions[3] = {"x", "y", "z"};
@@ -307,6 +307,10 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* 
 
     //-------------------------------------------- Compute reconstructed energy
     if (hvis) {
+      if (iev%50 == 0) {
+        printf("primary position: %g, %g, %g mm\n", 
+            primary_pos[0], primary_pos[1], primary_pos[2]); 
+      }
       int ibin = hvis->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
       double vis = hvis->GetBinContent(ibin); 
 

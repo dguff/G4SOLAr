@@ -46,14 +46,15 @@ void build_vis_map(const char* data_file_path, const char* output_path = "")
 
   // create TH3D for storing the visibility map
   TH3D* hvis = new TH3D("hvis", Form("%s visibility", pixCfg->GetName()), 
-      18, -1800, +1800, 
-      30, -3000, +3000, 
-      70, -7000, 7000); 
+      36, -1800, +1800, 
+      60, -3000, +3000, 
+      140, -7000, 7000); 
 
   // Create semi-analytical light propagation model 
   slarAna::SLArLightPropagationModel lightModel;
 
   // loop over the map's bins and compute the local visibility
+  int ibin = 0; 
   for (int ixbin = 1; ixbin <= hvis->GetNbinsX(); ixbin++) {
     for (int iybin = 1; iybin <= hvis->GetNbinsY(); iybin++) {
       for (int izbin = 1; izbin <= hvis->GetNbinsZ(); izbin++) {
@@ -68,8 +69,9 @@ void build_vis_map(const char* data_file_path, const char* output_path = "")
           }
         }
 
-        //printf("[%i, %i, %i]\n", ixbin, iybin, izbin); 
+        if (ibin%50 == 0) printf("[%i, %i, %i]\n", ixbin, iybin, izbin); 
         hvis->SetBinContent(ixbin, iybin, izbin, vis); 
+        ibin++; 
       }
     }
   }
