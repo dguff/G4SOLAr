@@ -15,7 +15,8 @@
 # Set particle energy and source position 
 /gun/particle e-
 /gun/energy $energy MeV
-/gun/position $xstart $ystart $zstart cm
+/SLAr/gun/position $xstart $ystart $zstart cm
+/SLAr/gun/SetDirectionMode isotropic
 
 # Set output file name
 /SLAr/manager/SetOutputName ${output_filename}
