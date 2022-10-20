@@ -268,6 +268,17 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
         mtileCfg->SetPhi  (rot[0].GetDouble()*TMath::DegToRad()); 
         mtileCfg->SetTheta(rot[1].GetDouble()*TMath::DegToRad()); 
         mtileCfg->SetPsi  (rot[2].GetDouble()*TMath::DegToRad()); 
+        
+        double norm[3] = {1, 0, 0}; 
+        if (pos.HasMember("norm")) {
+          assert(pos["norm"].IsArray()); 
+          const auto pnorm = pos["norm"].GetArray();
+          norm[0] = pnorm[0].GetDouble(); 
+          norm[1] = pnorm[1].GetDouble(); 
+          norm[2] = pnorm[2].GetDouble(); 
+
+          mtileCfg->SetNormal(norm[0], norm[1], norm[2]); 
+        }
 
         printf("SLArDetectorConstruction::InitPix()\n"); 
         printf("Registering module %s at [%.2f, %.2f, %.2f]\n",
