@@ -130,7 +130,7 @@ void SLArDetectorConstruction::Init() {
   rapidjson::FileReadStream is(geo_cfg_file, readBuffer, sizeof(readBuffer));
 
   rapidjson::Document d;
-  d.ParseStream(is);
+  d.ParseStream<rapidjson::kParseCommentsFlag>(is);
   assert(d.IsObject());
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Parse world dimensions
