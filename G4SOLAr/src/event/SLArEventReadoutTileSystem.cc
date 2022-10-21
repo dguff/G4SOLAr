@@ -16,7 +16,7 @@ SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(const SLArEventReadoutTil
 {
   fNhits = right.fNhits;
   fIsActive = right.fIsActive; 
-  for (const auto &mgev : fMegaTilesMap) {
+  for (const auto &mgev : right.fMegaTilesMap) {
     fMegaTilesMap.insert(
         std::make_pair(mgev.first, (SLArEventMegatile*)mgev.second->Clone())
         );
