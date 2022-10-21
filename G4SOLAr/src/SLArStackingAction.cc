@@ -75,13 +75,13 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 
       int primary_parent_id = fEventAction->FindTopParentID(aTrack->GetParentID()); 
 #ifdef SLAR_DEBUG
-      printf("Primart parent ID %i\n", primary_parent_id);
+      //printf("Primary parent ID %i\n", primary_parent_id);
 #endif
       for (auto &p : primaries) {
         if (p->GetTrackID() == primary_parent_id) {
           primary = p; 
 #ifdef SLAR_DEBUG
-          printf("primary parent found\n");
+          //printf("primary parent found\n");
 #endif
 
           break; 
