@@ -1,8 +1,0 @@
-# comment this line 
-# get NIST definition of Plastic Scintillator
-
-beginDef
-  name: Plastic_Sc
-  NIST: G4_PLASTIC_SC_VINYLTOLUENE
-endDef
-

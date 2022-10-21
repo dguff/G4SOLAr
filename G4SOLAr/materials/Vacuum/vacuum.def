@@ -1,8 +1,0 @@
-# comment this line 
-# get NIST definition of Plastic Scintillator
-
-beginDef
-  name: Vacuum
-  NIST: G4_Galactic
-endDef
-
