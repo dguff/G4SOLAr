@@ -70,6 +70,7 @@ public:
     
 private:
     G4int fTileHCollID;
+    G4int fSuperCellHCollID;
     G4int fTargetHCollID;
 
     G4int fHitCount;
@@ -83,6 +84,7 @@ private:
     std::map<int, int> fParentIDMap;
 
     void RecordEventReadoutTile (const G4Event* ev);
+    void RecordEventSuperCell( const G4Event* ev); 
     void RecordEventTarget(const G4Event* ev);
 };
 

@@ -31,6 +31,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArEventAction.hh"
 #include "SLArReadoutTileHit.hh"
+#include "SLArSuperCellHit.hh"
 #include "SLArTrajectory.hh"
 #include "detector/Tank/SLArTankHit.hh"
 
@@ -52,6 +53,7 @@
 SLArEventAction::SLArEventAction()
 : G4UserEventAction(), 
   fTileHCollID  (-2), 
+  fSuperCellHCollID(-5), 
   fTargetHCollID(-4)
 {
   // set printing per each event
@@ -83,12 +85,15 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     if (fTileHCollID == -2) 
       fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
+    if (fSuperCellHCollID == -5) 
+      fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
     if (fTargetHCollID == -4)
       fTargetHCollID = sdManager->GetCollectionID("TargetColl");
 
 #ifdef SLAR_DEBUG
     G4cout << "SLArEventAction::BeginOfEventAction(): ";
     G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
+    G4cout << "SuperCell ID = " << fSuperCellHCollID << G4endl;
     G4cout << "Target ID      = " << fTargetHCollID << G4endl;
 #endif
 
@@ -128,6 +133,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     RecordEventTarget( event );
 
     RecordEventReadoutTile ( event );
+
+    RecordEventSuperCell( event ); 
 
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     
@@ -220,6 +227,83 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
 
     // Sort hits on PMTs
     SLArAnaMgr->GetEvent()->GetReadoutTileSystem()->SortHits();
+    
+
+    // Print diagnostics
+    G4int printModulo = 
+      G4RunManager::GetRunManager()->GetPrintProgress();
+    if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
+  }
+
+}
+
+void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
+{
+
+  G4HCofThisEvent* hce = ev->GetHCofThisEvent();
+
+  if (fSuperCellHCollID!= -5) 
+  {
+    // Get hits collections 
+    SLArSuperCellHitsCollection* hHC1 
+      = static_cast<SLArSuperCellHitsCollection*>(hce->GetHC(fSuperCellHCollID));
+
+    if ( (!hHC1) ) 
+    {
+      G4ExceptionDescription msg;
+      msg << "Some of hits collections of this event not found." 
+        << G4endl; 
+      G4Exception("SLArEventAction::RecordEventSuperCell",
+          "SLArCode001", JustWarning, msg);
+      return;
+    }   
+
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+
+    // Fill histograms
+    G4int n_hit = hHC1->entries();
+
+    for (G4int i=0;i<n_hit;i++) {
+      SLArSuperCellHit* hit = (*hHC1)[i];
+      if (!hit) { 
+#ifdef SLAR_DEBUG
+        G4cout << "SLArEventAction::RecordEventSuperCell(): "
+          << "No hits on SuperCell or "
+          << "issue in hit collection readout";
+#endif
+
+        break;
+      }
+
+      G4ThreeVector localPos = hit->GetLocalPos();
+      G4ThreeVector worldPos = hit->GetWorldPos();
+      G4double      time     = hit->GetTime();
+      G4double      wavelen  = hit->GetPhotonWavelength(); 
+      G4int         id       = hit->GetSuperCellIdx(); 
+
+#ifdef SLAR_DEBUG
+      G4cout << "SLArEventAction::RecordEventSuperCell()" << G4endl;
+      printf("SuperCell id [%i]\n", id);
+      G4cout << "x    = " << G4BestUnit(worldPos.x(), "Length") << "; "
+             << "y    = " << G4BestUnit(worldPos.y(), "Length") << "; "
+             << "time = " << G4BestUnit(time, "Time") << G4endl;
+#endif
+      
+      SLArEventPhotonHit* dstHit = new SLArEventPhotonHit(
+          time, 
+          hit->GetPhotonProcessId(), 
+          wavelen);
+      dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
+      dstHit->SetTileInfo(0, 0, id); 
+
+      SLArAnaMgr->GetEvent()->GetSuperCellSystem()->RegisterHit(
+                            (SLArEventPhotonHit*)dstHit->Clone());
+      
+      delete dstHit;
+    }
+
+    // Sort hits on PMTs
+    SLArAnaMgr->GetEvent()->GetSuperCellSystem()->SortHits();
     
 
     // Print diagnostics
@@ -346,18 +430,18 @@ int SLArEventAction::FindTopParentID(int trkid) {
   SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
   auto primaries = anaMngr->GetEvent()->GetPrimaries(); 
   bool caught = false; 
-#ifdef SLAR_DEBUG
-  printf("Lookging for primary parent of %i among\n", trkid);
-  for (const auto& _pid : fParentIDMap) {
-    printf("%i - PID: %i\n", _pid.first, _pid.second); 
-  }
-#endif
+//#ifdef SLAR_DEBUG
+  //printf("Lookging for primary parent of %i among\n", trkid);
+  //for (const auto& _pid : fParentIDMap) {
+    //printf("%i - PID: %i\n", _pid.first, _pid.second); 
+  //}
+//#endif
 
   while ( !caught ) {
     pid = fParentIDMap[trkid];
-#ifdef SLAR_DEBUG
-    printf("local pid: %i\n", pid);
-#endif
+//#ifdef SLAR_DEBUG
+    //printf("local pid: %i\n", pid);
+//#endif
 
     for (const auto &p : primaries) {
       if (pid == p->GetTrackID()) {
@@ -367,9 +451,9 @@ int SLArEventAction::FindTopParentID(int trkid) {
     }
 
     trkid = pid; 
-#ifdef SLAR_DEBUG
-    getchar(); 
-#endif
+//#ifdef SLAR_DEBUG
+    //getchar(); 
+//#endif
   }
 
   return primary; 

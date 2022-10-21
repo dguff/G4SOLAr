@@ -47,6 +47,8 @@
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
 #include "detector/ReadoutTile/SLArReadoutTileSD.hh"
 
+#include "detector/SuperCell/SLArSuperCellSD.hh"
+
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgSuperCell.hh"
 #include "config/SLArCfgReadoutTile.hh"
@@ -186,11 +188,16 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
   fSuperCell->GetGeoInfo()->ReadFromJSON(pds["dimensions"]); 
   fSuperCell->BuildMaterial(fMaterialDBFile); 
 
+  printf("Building SuperCell configuration object...\n");
   SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
   if (pds.HasMember("modules")) {
+    printf("is modules an array?\n");
     assert(pds["modules"].IsArray());
+    printf("yes\n"); 
     for (const auto &mdl : pds["modules"].GetArray()) {
-      SLArCfgSuperCellArray* array = 
+      printf("[%i] Module %s\n", mdl["id"].GetInt(), mdl["name"].GetString());
+
+      SLArCfgSuperCellArray* sc_array = 
         new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
 
       if (mdl.HasMember("positions")) {
@@ -214,11 +221,20 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
           scCfg->Set2DSize_X(fSuperCell->GetGeoPar("cell_z")); 
           scCfg->Set2DSize_Y(fSuperCell->GetGeoPar("cell_x")); 
 
-          array->RegisterElement(scCfg); 
+          if (isc.HasMember("norm")) {
+            assert(isc["norm"].IsArray()); 
+            scCfg->SetNormal(
+                  isc["norm"].GetArray()[0].GetDouble(),
+                  isc["norm"].GetArray()[1].GetDouble(),
+                  isc["norm"].GetArray()[2].GetDouble()
+                ); 
+          }
+
+          sc_array->RegisterElement(scCfg); 
         }
       }
 
-      pdsCfg->RegisterModule(array);
+      pdsCfg->RegisterModule(sc_array);
     }
   }
 
@@ -362,26 +378,39 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
 void SLArDetectorConstruction::ConstructSDandField()
 {
-    // sensitive detectors 
-    G4SDManager* SDman = G4SDManager::GetSDMpointer();
-    G4String SDname;
-    
-    //Set PMT SD
-    G4VSensitiveDetector* sipmSD
-      = new SLArReadoutTileSD(SDname="/tile/sipm");
-    SDman->AddNewDetector(sipmSD);
-    SetSensitiveDetector(
-          fReadoutTile->GetSiPM()->GetModLV(), 
-          sipmSD);
+  // sensitive detectors 
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  G4String SDname;
 
-    // Set Tank SD
-    G4VSensitiveDetector* targetSD
-      = new SLArTankSD(SDname="/Tank/Target");
-    SDman->AddNewDetector(targetSD);
-    SetSensitiveDetector(
-        fTank->GetTarget()->GetModLV(), 
-        targetSD);
-        
+  //Set PMT SD
+  if (fReadoutTile) {
+  G4VSensitiveDetector* sipmSD
+    = new SLArReadoutTileSD(SDname="/tile/sipm");
+  SDman->AddNewDetector(sipmSD);
+  SetSensitiveDetector(
+      fReadoutTile->GetSiPM()->GetModLV(), 
+      sipmSD);
+  }
+
+  //Set SuperCell SD
+  if (fSuperCell) {
+  G4VSensitiveDetector* superCellSD
+    = new SLArSuperCellSD(SDname="/supercell"); 
+  SDman->AddNewDetector(superCellSD); 
+  SetSensitiveDetector(
+      fSuperCell->GetCoating()->GetModLV(), 
+      superCellSD
+      );
+  }
+  
+  // Set Tank SD
+  G4VSensitiveDetector* targetSD
+    = new SLArTankSD(SDname="/Tank/Target");
+  SDman->AddNewDetector(targetSD);
+  SetSensitiveDetector(
+      fTank->GetTarget()->GetModLV(), 
+      targetSD);
+
 }
 
 SLArDetTank* SLArDetectorConstruction::GetDetTank() 
@@ -422,13 +451,7 @@ G4String SLArDetectorConstruction::GetFirstChar(G4String line)
 void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 {
   fSuperCell->BuildSuperCell();
-
-  //new G4LogicalSkinSurface("SCCoating_skin", 
-      //fSuperCell->GetCoating()->GetModLV(), 
-      //fSuperCell->GetCoatingMaterial()->
-      //GetMaterialBuilder()->GetSurface()
-      //);
-
+  fSuperCell->BuildLogicalSkinSurface(); 
 
   // Get PMTSystem Configuration
   SLArAnalysisManager* SLArAnaMgr  = SLArAnalysisManager::Instance();
@@ -444,7 +467,6 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 
     for (auto &scinfo : arrayCfg->GetMap())
     {
-
       //G4cout << "Getting PMT model info...";
       G4RotationMatrix* rotPMT = new G4RotationMatrix();
       rotPMT->rotateX(scinfo.second->GetPhi()); 
@@ -463,7 +485,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
           fSuperCell->GetModPV(
             Form("SC%i", iSC), rotPMT, 
             pmtPos,
-            fTank->GetModLV(), false, scinfo.second->GetIdx()
+            fTank->GetTarget()->GetModLV(), false, scinfo.second->GetIdx()
             )
           );
       // set physical placement in pmt cfg
@@ -475,7 +497,9 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
     }
 
   }
-   G4cout << "SLArDetectorConstruction::BuildAndPlacePMTs DONE" << G4endl;
+
+  SLArAnaMgr->LoadPDSCfg(pdsCfg); 
+  G4cout << "SLArDetectorConstruction::BuildAndPlaceSuperCell DONE" << G4endl;
   return;
 }
 

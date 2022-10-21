@@ -1,57 +1,52 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventTile
- * @created     : mercoledì ago 10, 2022 12:21:15 CEST
+ * @file        : SLArEventSuperCell
+ * @created     : giovedì ott 20, 2022 15:40:04 CEST
  */
 
-#include "event/SLArEventTile.hh"
+#include "event/SLArEventSuperCell.hh"
 
-ClassImp(SLArEventTile)
-
-SLArEventTile::SLArEventTile() 
+SLArEventSuperCell::SLArEventSuperCell()
   : TObject(), fIdx(0), fIsActive(1), fNhits(0) {}
 
+SLArEventSuperCell::SLArEventSuperCell(int idx) 
+  :TObject(), fIdx(idx), fIsActive(true), fNhits(0) {};
 
-SLArEventTile::SLArEventTile(int idx) 
-  : TObject(), fIdx(idx), fIsActive(true), fNhits(0) {}
-
-
-SLArEventTile::SLArEventTile(const SLArEventTile& ev) 
-  : TObject(ev)
+SLArEventSuperCell::SLArEventSuperCell(const SLArEventSuperCell& ev) 
+  : TObject(ev) 
 {
   fIdx = ev.fIdx; 
   fIsActive = ev.fIsActive; 
   fNhits = ev.fNhits; 
-  if (!ev.fHits.empty()) {
+  if ( !ev.fHits.empty() ) {
     fHits.reserve(ev.fHits.size()); 
     for (const auto &hit : ev.fHits) {
-      fHits.push_back((SLArEventPhotonHit*)hit->Clone());
+      fHits.push_back((SLArEventPhotonHit*)hit->Clone()); 
     }
   }
 }
 
-SLArEventTile::~SLArEventTile() {
-  for (auto &hit : fHits) delete hit;
-  fHits.clear();
+SLArEventSuperCell::~SLArEventSuperCell() {
+  for (auto &hit : fHits) delete hit; 
+  fHits.clear(); 
   fNhits = 0;
 }
 
-int SLArEventTile::RegisterHit(SLArEventPhotonHit* hit) {
-  if (!hit) return -1;
-  fHits.push_back(hit);
-  fNhits++;
+int SLArEventSuperCell::RegisterHit(SLArEventPhotonHit* hit) {
+  if (!hit) return -1; 
+  fHits.push_back(hit); 
+  fNhits++; 
   return fNhits;
 }
 
-double SLArEventTile::GetTime() {
-  double t = -1;
-  if (fNhits > 0) t = fHits.at(0)->GetTime();
-
+double SLArEventSuperCell::GetTime() {
+  double t = -1; 
+  if (fNhits) t = fHits.front()->GetTime(); 
   return t;
 }
 
-double SLArEventTile::GetTime(EPhProcess proc) {
-  double t = -1;
+double SLArEventSuperCell::GetTime(EPhProcess proc) {
+  double t = -1; 
   if (proc == kCher)
   {
     for (auto &hit : fHits)
@@ -65,9 +60,10 @@ double SLArEventTile::GetTime(EPhProcess proc) {
     t = fHits.at(0)->GetTime();
 
   return t;
+
 }
 
-bool SLArEventTile::SortHits()
+bool SLArEventSuperCell::SortHits()
 {
   std::sort(fHits.begin(), fHits.end(), 
             SLArEventPhotonHit::CompareHitPtrs);
@@ -75,7 +71,7 @@ bool SLArEventTile::SortHits()
   return true;
 }
 
-int SLArEventTile::ResetHits()
+int SLArEventSuperCell::ResetHits()
 {
   for (auto &hit : fHits) delete hit;
   fHits.clear(); 
@@ -85,9 +81,9 @@ int SLArEventTile::ResetHits()
   return fHits.size();
 }
 
-void SLArEventTile::PrintHits()
+void SLArEventSuperCell::PrintHits()
 {
-  std::cout << "Hit container id: " << fIdx << std::endl;
+  std::cout << "SuperCell id: " << fIdx << std::endl;
   std::cout << "-----------------------------------------"
             << std::endl;
   int nhits = 0;

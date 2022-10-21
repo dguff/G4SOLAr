@@ -19,24 +19,36 @@ add_library(SLArMCPrimaryInfo
   )
 target_link_libraries(SLArMCPrimaryInfo ${ROOT_LIBRARIES})
 
-ROOT_GENERATE_DICTIONARY(SLArMCEventReadoutTileDict
+#ROOT_GENERATE_DICTIONARY(SLArPhotonHitsDict
+  #LINKDEF 
+  #${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHitLinkDef.h)
+#add_library(SLArEventPhotonHit 
+  #SHARED ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc)
+#target_link_libraries(SLArEventPhotonHit PUBLIC ROOT::Core)
+
+ROOT_GENERATE_DICTIONARY(SLArMCEventReadoutDict
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh
+
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutTileSystem.hh
   LINKDEF
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutTileLinkDef.h
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutLinkDef.h
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCell.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellSystem.hh
   )
-add_library(SLArMCEventReadoutTile
+add_library(SLArMCEventReadout
   SHARED
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventTile.cc
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventMegatile.cc
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventReadoutTileSystem.cc
-  SLArMCEventReadoutTileDict.cxx
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCell.cc
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellSystem.cc
+  SLArMCEventReadoutDict.cxx
   )
 target_link_libraries(
-  SLArMCEventReadoutTile 
+  SLArMCEventReadout 
   PUBLIC 
   SLArReadoutSystemConfig ${ROOT_LIBRARIES})
 
@@ -54,7 +66,7 @@ add_library(SLArMCEvent
 target_link_libraries(SLArMCEvent 
                       ${ROOT_LIBRARIES} 
                       SLArMCPrimaryInfo
-                      SLArMCEventReadoutTile)
+                      SLArMCEventReadout)
 
 #----------------------------------------------------------------------------
 # Install instructions
@@ -62,7 +74,7 @@ target_link_libraries(SLArMCEvent
 set(G4SOLAr_event_libs
   SLArMCEvent
   SLArMCPrimaryInfo
-  SLArMCEventReadoutTile
+  SLArMCEventReadout
   )
 
 set(G4SOLAr_event_resources 
@@ -72,9 +84,9 @@ set(G4SOLAr_event_resources
   ${CMAKE_CURRENT_BINARY_DIR}/SLArMCEventDict.cxx 
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventDict.rootmap 
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventDict_rdict.pcm
-  ${CMAKE_CURRENT_BINARY_DIR}/SLArMCEventReadoutTileDict.cxx 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadoutTileDict.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadoutTileDict_rdict.pcm
+  ${CMAKE_CURRENT_BINARY_DIR}/SLArMCEventReadoutDict.cxx 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadoutDict.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadoutDict_rdict.pcm
   )
 
 foreach(lib IN LISTS G4SOLAr_event_libs)
