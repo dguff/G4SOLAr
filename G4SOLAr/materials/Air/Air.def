@@ -1,8 +1,0 @@
-# comment this line 
-# get NIST definition of Air
-
-beginDef
-  name: Air
-  NIST: G4_AIR
-endDef
-

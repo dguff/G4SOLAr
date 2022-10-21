@@ -1,8 +1,0 @@
-# comment this line 
-# get NIST definition of Steel
-
-beginDef
-  name: Steel
-  NIST: G4_STAINLESS-STEEL
-endDef
-

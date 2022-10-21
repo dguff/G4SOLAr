@@ -25,7 +25,8 @@
 SLArDetSuperCell::SLArDetSuperCell() : SLArBaseDetModule(),
   fPerfectQE(false),
   fLightGuide(nullptr), fCoating(nullptr),
-  fMatSuperCell(nullptr), fMatLightGuide(nullptr), fMatCoating(nullptr)
+  fMatSuperCell(nullptr), fMatLightGuide(nullptr), fMatCoating(nullptr), 
+  fSkinSurface(nullptr)
 {  
   fGeoInfo = new SLArGeoInfo();
 }
@@ -168,12 +169,6 @@ void SLArDetSuperCell::BuildSuperCell()
    return;
 }
 
-void SLArDetSuperCell::ResetSuperCellGeometry() 
-{
-  G4cout<< "Reset SuperCell Geometry" << G4endl;
-  
-  return; 
-}
 
 void SLArDetSuperCell::SetVisAttributes()
 {
@@ -255,8 +250,18 @@ void SLArDetSuperCell::BuildMaterial(G4String materials_db)
   fMatLightGuide->SetMaterialID("Plastic");
   fMatLightGuide->BuildMaterialFromDB(materials_db);
 
-  fMatCoating->SetMaterialID("Bialkali");
+  fMatCoating->SetMaterialID("PTP");
   fMatCoating->BuildMaterialFromDB(materials_db);
+}
+
+G4LogicalSkinSurface* SLArDetSuperCell::BuildLogicalSkinSurface() {
+  fSkinSurface = 
+    new G4LogicalSkinSurface(
+        "SiPM_LgSkin", 
+        fCoating->GetModLV(), 
+        fMatCoating->GetMaterialOpticalSurf());
+
+  return fSkinSurface;
 }
 
 

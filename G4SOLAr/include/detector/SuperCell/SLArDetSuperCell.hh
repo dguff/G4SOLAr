@@ -9,12 +9,7 @@
 #define SLARDETSUPERCELL_HH
 
 #include "detector/SLArBaseDetModule.hh"
-
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "G4LogicalSkinSurface.hh"
 
 class SLArDetSuperCell : public SLArBaseDetModule
 {
@@ -29,16 +24,17 @@ public:
 
   void          BuildMaterial(G4String materials_db);
   void          BuildDefalutGeoParMap();
+  G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
   void          BuildSuperCell();
   void          BuildLightGuide();
   void          BuildCoating();
   void          ReadParTable();
-  void          ResetSuperCellGeometry();
   void          SetVisAttributes();
 
   EPhotoDetPosition  GetSuperCellPos();
   SLArBaseDetModule* GetCoating();
   SLArMaterial* GetCoatingMaterial();
+  G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
 
   G4double GetTotalHeight();
   G4double GetSize();
@@ -59,6 +55,8 @@ private:
   SLArMaterial* fMatSuperCell;
   SLArMaterial* fMatLightGuide;
   SLArMaterial* fMatCoating; 
+
+  G4LogicalSkinSurface* fSkinSurface;
 };
 
 #endif /* end of include guard SLARDETSUPERCELL_HH */

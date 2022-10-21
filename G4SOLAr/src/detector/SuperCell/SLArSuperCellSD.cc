@@ -47,7 +47,7 @@
 SLArSuperCellSD::SLArSuperCellSD(G4String name)
 : G4VSensitiveDetector(name), fHitsCollection(0), fHCID(-1)
 {
-    collectionName.insert("PMTColl");
+    collectionName.insert("SuperCellColl");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -93,7 +93,7 @@ G4bool SLArSuperCellSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     hit->SetLocalPos(localPos);
     hit->SetPhotonEnergy(preStepPoint->GetTotalEnergy());
     hit->SetTime(preStepPoint->GetGlobalTime());
-    hit->SetPMTIdx(
+    hit->SetSuperCellIdx(
         preStepPoint->GetTouchableHandle()->GetCopyNumber(1));
 
     fHitsCollection->insert(hit);
@@ -132,8 +132,8 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   SLArSuperCellHit* hit = nullptr;
   //Find the correct hit collection (in case of multple PMTs)
 
-  if (track->GetParticleDefinition()->GetParticleName() 
-      == "opticalphoton") 
+  if (track->GetParticleDefinition() == 
+      G4OpticalPhoton::OpticalPhotonDefinition())
   {
     // Get the creation process of optical photon
     G4String procName = "";
@@ -145,10 +145,11 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
 
     hit = new SLArSuperCellHit(); //so create new hit
     hit->SetPhotonEnergy( phEne );
+    hit->SetPhotonWavelength( CLHEP::h_Planck * CLHEP::c_light / phEne *1e6); 
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
     hit->SetTime(preStepPoint->GetGlobalTime());
-    hit->SetPMTIdx(postStepPoint->
+    hit->SetSuperCellIdx(postStepPoint->
         GetTouchableHandle()->GetCopyNumber(1));
     hit->SetPhotonProcess(procName);
     

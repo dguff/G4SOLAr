@@ -1,9 +1,10 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : test_output
+ * @file        : test_output.cc
  * @created     : mercoledì lug 20, 2022 16:40:43 CEST
  */
 
+#include <getopt.h>
 #include <iostream>
 #include <fstream>
 #include "TFile.h"
@@ -14,6 +15,7 @@
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TH1D.h"
+#include "TH3D.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TRandom3.h"
@@ -22,12 +24,15 @@
 #include "config/SLArCfgBaseSystem.hh"
 #include "event/SLArMCEvent.hh"
 #include "config/SLArCfgMegaTile.hh"
-#include "SLArCfgSuperCellArray.hh"
+#include "config/SLArCfgSuperCellArray.hh"
 
 #include "solar_root_style.hpp"
 
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSCfg;
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
+
+const double avgLY = 25980.5; //!< Average Light Yield
+const double pde   = 0.40;    //!< Photon Detection Efficiency for crosscheck
 
 struct  SLArHistoSet {
   public: 
@@ -46,6 +51,7 @@ struct  SLArHistoSet {
     TH1D* hNHits;
     TH1D* hTHits; 
     TH1D* hWavelength; 
+    TH1D* hEReco; 
     std::vector<TH1D*> hPosition; 
 
 }; 
@@ -53,7 +59,7 @@ struct  SLArHistoSet {
 SLArHistoSet::SLArHistoSet() : 
   fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), 
   hNHits(nullptr), hTHits(nullptr), hWavelength(nullptr), 
-  hPosition(3, nullptr)
+  hEReco(nullptr), hPosition(3, nullptr)
 {
   hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
   hNPhotons = new TH1D("hNPhotons", 
@@ -68,6 +74,8 @@ SLArHistoSet::SLArHistoSet() :
   hWavelength = new TH1D("hWavelength", 
       "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
       500, 100, 400); 
+  hEReco = new TH1D("hEReco", 
+      "Reconstructed Energy;#it{E_{L}} [MeV];Entries", 600, 0, 30);
 
   double  _dimensions[3] = {1.8, 3, 7}; 
   TString _positions[3] = {"x", "y", "z"};
@@ -85,6 +93,7 @@ SLArHistoSet::~SLArHistoSet() {
   if (hNPhotons) delete hNPhotons; 
   if (hTHits) delete hTHits; 
   if (hWavelength) delete hWavelength; 
+  if (hEReco) delete hEReco; 
   for (auto &h : hPosition) {
     if (h) delete h; 
   }
@@ -121,6 +130,7 @@ void SLArHistoSet::Write(const char* output_path) {
   hNHits->Write(); 
   hTHits->Write(); 
   hWavelength->Write(); 
+  hEReco->Write(); 
 
   TH2D* h2hits = new TH2D("h2hits_avg", "Average nr of hits;#it{z} [mm];#it{y} [mm]", 
       140, -7000, +7000, 60, -3000, +3000); 
@@ -143,9 +153,9 @@ void SLArHistoSet::Write(const char* output_path) {
   output->Close(); 
 }
 
-void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h); 
+void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* vis); 
 
-void test_output(const char* path, const char* output_path = "") 
+void test_output(const char* path, const char* output_path = "", TH3D* hvis = nullptr) 
 {
   //--------------------------------------------------------- Source plot style 
   slide_default(); 
@@ -169,7 +179,7 @@ void test_output(const char* path, const char* output_path = "")
   //---------------------------------------------------- Readout the event tree
   TTree* tree = (TTree*)file->Get("EventTree"); 
 
-  readout_event_tree(tree, pixCfg, h); 
+  readout_event_tree(tree, pixCfg, h, hvis); 
   
   if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
     h->Write(output_path); 
@@ -177,7 +187,7 @@ void test_output(const char* path, const char* output_path = "")
   return;
 }
 
-void merge_and_plot(const char* root_file_list, const char* output_path) {
+void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* hvis) {
   slide_default(); 
   gROOT->SetStyle("slide_default"); 
 
@@ -209,7 +219,7 @@ void merge_and_plot(const char* root_file_list, const char* output_path) {
     ifile++; 
   } 
 
-  readout_event_tree(ch, pixCfg, h);
+  readout_event_tree(ch, pixCfg, h, hvis);
 
   if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
     h->Write(output_path); 
@@ -218,7 +228,7 @@ void merge_and_plot(const char* root_file_list, const char* output_path) {
   return; 
 }
 
-void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
+void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* hvis) {
   SLArMCEvent* ev = nullptr; 
   tree->SetBranchAddress("MCEvent", &ev); 
 
@@ -230,6 +240,7 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
 
     auto primaries = ev->GetPrimaries(); 
     double ev_edep = 0; 
+    double primary_pos[3] = {0};
 
     //--------------------------------------------- Readout primaries and MC true
     size_t ip = 0; 
@@ -243,17 +254,21 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
       int itrj = 0;
       for (const auto &trj : trajectories) {
         if (trj->GetTrackID() == pTrkID) {
-          h->hPosition[0]->Fill(trj->GetPoints().front().fX); 
-          h->hPosition[1]->Fill(trj->GetPoints().front().fY); 
-          h->hPosition[2]->Fill(trj->GetPoints().front().fZ); 
+          primary_pos[0] = trj->GetPoints().front().fX; 
+          primary_pos[1] = trj->GetPoints().front().fY; 
+          primary_pos[2] = trj->GetPoints().front().fZ; 
+
+          for (int kk=0; kk<3; kk++) h->hPosition[kk]->Fill(primary_pos[kk]); 
         }
-        for (const auto &tp : trj->GetPoints()) {
-          double pos_x = tp.fX;     // x coordinate [mm]
-          double pos_y = tp.fY;     // y coordinate [mm]
-          double pos_z = tp.fZ;     // z coordinate [mm]
-          double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
-          ev_edep += edep; 
-        }
+        /*
+         *for (const auto &tp : trj->GetPoints()) {
+         *  double pos_x = tp.fX;     // x coordinate [mm]
+         *  double pos_y = tp.fY;     // y coordinate [mm]
+         *  double pos_z = tp.fZ;     // z coordinate [mm]
+         *  double edep  = tp.fEdep;  // Energy deposited in the step [MeV]
+         *  ev_edep += edep; 
+         *}
+         */
         itrj++;
       } 
       ip++;
@@ -289,10 +304,24 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
     }
 
     h->hNHits->Fill(htot); 
+
+    //-------------------------------------------- Compute reconstructed energy
+    if (hvis) {
+      if (iev%50 == 0) {
+        printf("primary position: %g, %g, %g mm\n", 
+            primary_pos[0], primary_pos[1], primary_pos[2]); 
+      }
+      int ibin = hvis->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
+      double vis = hvis->GetBinContent(ibin); 
+
+      double Erec = htot / (avgLY*vis*pde);
+      h->hEReco->Fill(Erec);
+    }
   }
 
   printf("------------------------------------------ Drawing MC truth info\n");
-  TCanvas* cVisibleEnergy = new TCanvas("cVisibleEnergy", "cVisibleEnergy", 0, 0, 800, 500);
+  TCanvas* cVisibleEnergy = new TCanvas("cVisibleEnergy", "cVisibleEnergy", 
+      0, 0, 800, 500);
   cVisibleEnergy->Divide(2, 1); 
   cVisibleEnergy->cd(1); 
   h->hvis->Draw("hist");
@@ -350,4 +379,90 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h) {
   h->hWavelength->Draw("hist");
 
   return;
+}
+
+void PrintUsage() {
+  printf("test_output usage:\n./test_output\n"); 
+  printf("\t-i(--input) input_file\n"); 
+  printf("\t-l(--list) input_list\n");
+  printf("\t-o(--output) output_file\n");
+  printf("\t-v(--visibility) visibility_file_map\n");
+  printf("\t-h(--help) print usage\n\n"); 
+  return; 
+}
+
+int main(int argc, char *argv[])
+{
+  const char* short_opts = "i:l:o:v:h";
+  static struct option long_opts[6] = 
+  {
+    {"input"     , required_argument, 0, 'i'}, 
+    {"list"      , required_argument, 0, 'l'}, 
+    {"output"    , required_argument, 0, 'o'}, 
+    {"visibility", required_argument, 0, 'v'}, 
+    {"help"      , no_argument, 0, 'h'}, 
+    {nullptr, no_argument, nullptr, 0}
+  };
+
+  int c, option_index; 
+
+  const char* input_file_ = ""; 
+  const char* input_list_ = ""; 
+  const char* output_file_ = ""; 
+  const char* visibility_file_ = ""; 
+
+  while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
+    switch(c) {
+      case 'i' : {
+        input_file_ = optarg;
+        printf("input_file: %s\n", input_file_);
+        break;
+      }
+      case 'o' : 
+      {
+        output_file_ = optarg; 
+        printf("output_file: %s\n", output_file_);
+        break;
+      }
+      case 'l' :
+      {
+        input_list_ = optarg; 
+        break;
+      }
+      case 'v' : 
+      {
+        visibility_file_ = optarg; 
+        break;
+      }
+      case 'h':
+      {
+        PrintUsage();
+        return 4;
+        break;
+      }
+    }
+  }
+
+  TString input_file = input_file_; 
+  TString output_file = output_file_; 
+  TString input_list = input_list_; 
+  TString visibility_file = visibility_file_; 
+
+  TH3D* hvis = nullptr; 
+  if (!visibility_file.IsNull()) {
+    TFile* file = new TFile(visibility_file); 
+    hvis = (TH3D*)file->Get("hvis")->Clone(); 
+  }
+
+  printf("input file: %s\n", input_file.Data()); 
+  
+  if (input_list.IsNull() && !input_file.IsNull()) {
+    test_output(input_file.Data(), output_file.Data(), hvis); 
+  } else if (!input_list.IsNull()) {
+    merge_and_plot(input_list.Data(), output_file.Data(), hvis); 
+  } else {
+    printf("No valid input provided\n");
+    PrintUsage(); 
+  }
+  return 0;
 }

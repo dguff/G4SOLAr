@@ -51,11 +51,11 @@ void slide_default() {
   slide_default->SetStatFontSize(23); 
   slide_default->SetStatColor(0);
   //------------------------------ Axes settings
-  slide_default->SetLabelFont(43, "xy");
-  slide_default->SetLabelSize(23, "xy");
-  slide_default->SetTitleFont(43, "xy");
-  slide_default->SetTitleSize(23, "xy");
-  slide_default->SetTitleOffset(1.0, "xy");
+  slide_default->SetLabelFont(43, "xyz");
+  slide_default->SetLabelSize(23, "xyz");
+  slide_default->SetTitleFont(43, "xyz");
+  slide_default->SetTitleSize(23, "xyz");
+  slide_default->SetTitleOffset(1.5, "xy");
   //------------------------------ Hist settings
   slide_default->SetHistLineWidth(3);
   slide_default->SetHistLineColor(kBlue+1); 

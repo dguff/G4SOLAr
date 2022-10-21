@@ -29,7 +29,6 @@ public:
   void          BuildPCB();
   void          BuildSiPM();
   void          BuildChargePix();
-  void          ResetReadoutTileGeometry();
   void          SetVisAttributes();
 
   SLArBaseDetModule*       GetSiPM();

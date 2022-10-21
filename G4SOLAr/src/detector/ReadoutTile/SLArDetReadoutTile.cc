@@ -250,11 +250,6 @@ void SLArDetReadoutTile::BuildReadoutTile()
    return;
 }
 
-void SLArDetReadoutTile::ResetReadoutTileGeometry() 
-{
-  G4cout<< "Reset ReadoutTile Geometry" << G4endl;
-  return; 
-}
 
 void SLArDetReadoutTile::SetVisAttributes()
 {
