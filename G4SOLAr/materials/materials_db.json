@@ -58,6 +58,31 @@
       "NIST": "G4_POLYETHYLENE"
     },
     {
+      "name" : "Plastic", 
+      "NIST" : "G4_PLASTIC_SC_VINYLTOLUENE"
+    },
+    {
+      "name" : "PTP", 
+      "NIST" : "G4_POLYVINYLIDENE_FLUORIDE",
+      "SurfaceProperties" : {
+        "name" : "PTP_Surf", 
+        "model" : "glisur", 
+        "type" : "dielectric_metal",
+        "finished" : "polished", 
+        "polished" :  0.8,
+        "PropertiesTable" : [
+          {"property" : "EFFICIENCY", "value" : [
+            {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
+            {"var": "EFFICIENCY", "val" : [0.03, 0.03]}
+          ]}, 
+          {"property" : "REFLECTIVITY", "value" : [
+            {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
+            {"var": "REFLECTIVITY", "val" : [0.00, 0.00]}
+          ]}
+        ]
+      }
+    },
+    {
       "name" : "LAr", 
       "density" : {"val" : 1.390, "unit" : "g/cm3"},
       "temperature" : {"val" : 87, "unit"  : "K"},
