@@ -1,0 +1,26 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : Ar42.mac
+# @created     : venerdì lug 01, 2022 11:44:25 CEST
+#
+# @description : Prouduce Ar-42 decays using the bxdecay0 generator
+######################################################################
+
+
+# Set output path and file name
+/SLAr/manager/SetOutputName slar_xe136_2vbb.root
+/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
+
+# Select bxdecay0 generator
+/SLAr/gun/mode Radio
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/gammaCut 0.5 mm
+/SLAr/phys/electronCut 0.5 mm
+
+# Set decay to be produced by bxdecay0
+/bxdecay0/generator/verbosity 0
+/bxdecay0/generator/dbd Xe136 123456 2nubb 0 
+
+# Fire!
+/run/beamOn 500

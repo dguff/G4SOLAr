@@ -190,9 +190,10 @@ install(TARGETS solar_sim
   RUNTIME DESTINATION ${G4SOLAR_BIN_DIR}
   )
 #----------------------------------------------------------------------------
-# Copy all scripts to the install directory.
+# Copy all assets (geometry, materials, cfg) to the install directory.
 # This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
-file(COPY ${PROJECT_SOURCE_DIR}/macros DESTINATION ${G4SOLAR_BIN_DIR})
-file(COPY ${PROJECT_SOURCE_DIR}/macros/vis.mac DESTINATION ${G4SOLAR_BIN_DIR})
-file(COPY ${PROJECT_SOURCE_DIR}/marley_cfg DESTINATION ${G4SOLAR_BIN_DIR})
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${G4SOLAR_BIN_DIR})
+
+

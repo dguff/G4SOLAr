@@ -1,0 +1,46 @@
+{
+  "World" : {
+    "copyID" : 0, 
+    "dimensions" : [
+      {"name" : "size_x" , "val" :  1.5, "unit": "m"},    
+      {"name" : "size_y" , "val" :  2.0, "unit": "m"},   
+      {"name" : "size_z" , "val" :  2.5, "unit": "m"}
+    ]
+  },
+  "Tank" : {
+    "copyID" : 20, 
+    "dimensions" : [
+      {"name" : "target_x" , "val" : 1.00, "unit" :  "m"},
+      {"name" : "target_y" , "val" : 1.62, "unit" :  "m"},
+      {"name" : "target_z" , "val" : 2.62, "unit" :  "m"}, 
+      {"name" : "cryo_tk"  , "val" : 1.00, "unit" : "cm"}
+    ]
+  },
+  "ReadoutTile": {
+    "dimensions" : [
+      {"name" : "tile_x", "val" :10.0, "unit" : "cm" },
+      {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
+      {"name" : "tile_z", "val" :10.0, "unit" : "cm" },
+      {"name" : "sipm_x", "val" : 5.8, "unit" : "mm" },
+      {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
+      {"name" : "sipm_z", "val" : 5.8, "unit" : "mm" }, 
+      {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
+      {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
+      {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+    ], 
+    "modules" : [
+      {
+        "name" : "StdReadoutPlane", 
+        "copyID" : 2000, 
+        "dimensions" : [
+          {"name" : "rdoutplane_x", "val" : 32.0, "unit" : "cm"}, 
+          {"name" : "rdoutplane_z", "val" : 32.0, "unit" : "cm"}
+        ], 
+        "positions" : [
+          {"copy":2001, "xyz":[ 48,  64, -114], "unit": "cm", "rot":[0, 0, 90]}
+        ]
+      }
+    ]
+  }
+}
+
