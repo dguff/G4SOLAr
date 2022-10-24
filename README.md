@@ -183,4 +183,22 @@ a `rootlogon.C` file loading the libraries is created in
 find the script `test_output.C`, which can serve as an example for accessing
 simulated MC event. 
 
+### Running jobs on the grid
+
+You can run G4SOLAr jobs on the grid with
+
+```
+cd grid
+source setup_g4solar_grid.sh
+python jobsub.py [options]
+```
+
+You can see all the available options with `python jobsub.py -h`
+
+`jobsub.py` uses a template macro to run the jobs. The current available template is `template_g4solar_electrons.mac`.
+To run other types of events, more templates will have to be added. 
+
+TODO: add a full macro file writer
+
+
 
