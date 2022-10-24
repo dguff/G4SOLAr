@@ -55,14 +55,15 @@ int SLArEventSuperCellSystem::ConfigSystem(SLArCfgSCSys* cfg) {
 
 
 int SLArEventSuperCellSystem::RegisterHit(SLArEventPhotonHit* hit) {
-  int sc_idx = hit->GetTileIdx(); 
+  int sc_idx = hit->GetTileNr(); 
   if (fSuperCellMap.count(sc_idx)) {
     fSuperCellMap.find(sc_idx)->second->RegisterHit(hit);
     fNhits++;
     return 1; 
   } else {
     printf("SLArEventSuperCellSystem::RegisterHit WARNING\n"); 
-    printf("SuperCell with ID %i is not in store\n", sc_idx); 
+    printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
+        sc_idx, hit->GetMegaTileIdx(), hit->GetRowTileNr(), hit->GetTileNr()); 
     return 0; 
   }
 }
