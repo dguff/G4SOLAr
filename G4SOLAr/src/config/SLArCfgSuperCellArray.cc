@@ -40,7 +40,8 @@ void SLArCfgSuperCellArray::DumpMap()
 {
   std::printf("SLArCfgSuperCellArray %s has %i entries\n", 
       fName.Data(), (int)fElementsMap.size());
-  for (auto &itr : fElementsMap)
-    itr.second->DumpInfo();
+  for (auto &itr : fElementsMap) {
+    printf("[%i]: SuperCell\n", itr.first);
+  }
 }
 

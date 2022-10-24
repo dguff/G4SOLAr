@@ -205,7 +205,7 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       G4int         tile_nr    = hit->GetTileIdx(); 
 
 #ifdef SLAR_DEBUG
-      G4cout << "SLArEventAction::RecordEventPMT()" << G4endl;
+      G4cout << "SLArEventAction::RecordEventReadoutTile()" << G4endl;
       printf("Tile idx [%i, %i, %i]\n", mgtile_idx, rowtile_nr, tile_nr);
       G4cout << "x    = " << G4BestUnit(worldPos.x(), "Length") << "; "
              << "y    = " << G4BestUnit(worldPos.y(), "Length") << "; "

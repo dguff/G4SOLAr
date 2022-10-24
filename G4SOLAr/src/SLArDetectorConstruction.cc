@@ -238,6 +238,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
     }
   }
 
+
   SLArAnalysisManager::Instance()->LoadPDSCfg(pdsCfg);
 
 }
@@ -483,11 +484,14 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
  
       fSuperCellsPV.push_back(  
           fSuperCell->GetModPV(
-            Form("SC%i", iSC), rotPMT, 
+            Form("SC%i", scinfo.first), rotPMT, 
             pmtPos,
-            fTank->GetTarget()->GetModLV(), false, scinfo.second->GetIdx()
+            fTank->GetTarget()->GetModLV(), 
+            false, 
+            scinfo.second->GetIdx()
             )
           );
+  
       // set physical placement in pmt cfg
       scinfo.second->SetPhysX(pmtPos.x());
       scinfo.second->SetPhysY(pmtPos.y());
