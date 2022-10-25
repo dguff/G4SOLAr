@@ -31,8 +31,13 @@ namespace slarAna {
     std::cout << std::endl;
   }
 
+  void SLArLightPropagationModel::SetDetectorClass(
+      EDetectorFace kFace, EDetectorClass kClass) {
+    fFaceClass[kFace] = kClass; 
+  }
+
   double SLArLightPropagationModel::VisibilityOpDetTile(
-      SLArCfgReadoutTile* cfgTile, 
+      SLArCfgBaseModule* cfgTile, 
       const TVector3 &ScintPoint) 
   {
     TVector3 OpDetPoint(
@@ -50,8 +55,35 @@ namespace slarAna {
     double r_distance = -1; 
     double solid_angle= -1; 
 
-    //TODO: Add Optical detector normal to cfg object
-    TVector3 OpDetNorm(-1, 0, 0); 
+    TVector3 OpDetNorm(-1, 0, 0);
+    OpDetNorm = cfgTile->GetNormal(); 
+
+    EDetectorFace kFace = kDownstrm; 
+    if (OpDetNorm == TVector3(-1, 0, 0)) {
+      kFace = kSouth; 
+    } else if (OpDetNorm == TVector3(+1, 0, 0)) {
+      kFace = kNorth; 
+    } else if (OpDetNorm == TVector3(0, +1, 0)) {
+      kFace = kBottom; 
+    } else if (OpDetNorm == TVector3(0, -1, 0)) {
+      kFace = kTop; 
+    } else if (OpDetNorm == TVector3(0, 0, +1)) {
+      kFace = kUpstrm; 
+    } else if (OpDetNorm == TVector3(0, 0, -1)) {
+      kFace = kDownstrm;
+    } else {
+      printf("WARNING: Optical module %s has normal [%.2f, %.2f, %.2f]\n", 
+          cfgTile->GetName(), OpDetNorm.x(), OpDetNorm.y(), OpDetNorm.z());
+      printf("which is not among the expected directions.\n\n"); 
+    }
+
+    EDetectorClass kClass; 
+    if (fFaceClass.count(kFace) == 0) {
+      printf("WARNING: Unknown detector type for this face of the TPC\n");
+      return 0.; 
+    }
+
+    kClass = fFaceClass[kFace]; 
 
     costheta   = (ScintPoint_rel).Unit().Dot(OpDetNorm); 
     theta = acos(costheta)*TMath::RadToDeg();
@@ -68,8 +100,12 @@ namespace slarAna {
 
     if (costheta < 0.001)
       solid_angle = 0;
-    else
-      solid_angle = solid(cfgTile, ScintPoint_rel);
+    else {
+      if (kClass == kReadoutTile) 
+        solid_angle = solid((SLArCfgReadoutTile*)cfgTile, ScintPoint_rel, kFace);
+      else if (kClass == kSuperCell) 
+        solid_angle = solid((SLArCfgSuperCell*)cfgTile, ScintPoint_rel, kFace);
+    }
 
     // calculate solid angle
     if(solid_angle < 0){
@@ -181,93 +217,235 @@ namespace slarAna {
 
   double SLArLightPropagationModel::omega(const double &a, const double &b, const double &d) const{
 
-    double aa = a/(2.0*d);
-    double bb = b/(2.0*d);
+    double aa = 0.5*a/d;
+    double bb = 0.5*b/d;
     double aux = (1+aa*aa+bb*bb)/((1.+aa*aa)*(1.+bb*bb));
     return 4*std::acos(std::sqrt(aux));
 
   }
 
-  double SLArLightPropagationModel::solid(SLArCfgReadoutTile* cfgTile, TVector3 &v) {
-    //TODO: add normal to photon detector in cfg 
-    TVector3 OpDetNorm(-1, 0, 0);     
+  double SLArLightPropagationModel::solid(
+      SLArCfgReadoutTile* cfgTile, 
+      TVector3 &v, 
+      EDetectorFace kFace) {
+
+    TVector3 OpDetNorm = cfgTile->GetNormal();     
 
     // TODO: Fix to make it independent of detector plane
     // detector size
-    double Dx_ = cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm"); 
-    double Dy_ = cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm");
+    TVector3 detSize(0, 0, 0); 
+    TVector3 XPlane[2]; 
+
+    if (kFace == kNorth || kFace == kSouth) {
+      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));
+      XPlane[0] = TVector3(0, 0, 1); 
+      XPlane[1] = TVector3(0, 1, 0); 
+    } else if (kFace == kTop || kFace == kBottom) {
+      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetX(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm")); 
+      XPlane[0] = TVector3(0, 0, 1); 
+      XPlane[1] = TVector3(1, 0, 0); 
+    } else if (kFace == kUpstrm || kFace == kDownstrm) {
+      detSize.SetX(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));  
+      XPlane[0] = TVector3(1, 0, 0); 
+      XPlane[1] = TVector3(0, 1, 0); 
+    }
 
     // project scintillation point onto the photon detector plane
     TVector3 vv = v - OpDetNorm.Dot(v)*OpDetNorm; 
 
     // The hit is directly above the SiPM
-    if( vv.Y()==0.0 && vv.Z()==0.0){
-      return omega(Dx_,Dy_,v.Mag());
+    if( (vv - detSize).Mag2() == 0) {
+      return omega(detSize.Dot(XPlane[0]),detSize.Dot(XPlane[1]),v.Mag());
     }
 
-    if( (std::fabs(v.Y()) > Dx_*0.5) && (std::fabs(v.Z()) > Dy_*0.5)){
-      double A, B, a, b, d;
-      A = std::fabs(v.Y())-Dx_*0.5;
-      B = std::fabs(v.Z())-Dy_*0.5;
-      a = Dx_;
-      b = Dy_;
-      d = fabs(v.X());
-      double to_return = (
-           omega(2*(A+a),2*(B+b),d) 
-          -omega(2*A,2*(B+b),d)
-          -omega(2*(A+a),2*B,d)
-          +omega(2*A,2*B,d))*0.25;
-      return to_return;
+    bool isOut[2] = {false, false};
+    double  Dx[2] = {0., 0.}; 
+    double  dx[2] = {0., 0.}; 
+    double  d     = 1.0;
+
+    for (int j=0; j<2; j++) {
+      isOut[j] = std::fabs(vv.Dot(XPlane[j])) > 0.5*detSize.Dot(XPlane[j]); 
     }
 
-    if( (std::fabs(v.Y()) <= Dx_*0.5) && (std::fabs(v.Z()) <= Dy_*0.5)){
-      double A, B, a, b, d;
-      A = -std::abs(v.Y())+Dx_*0.5;
-      B = -std::abs(v.Z())+Dy_*0.5;
-      a = Dx_;
-      b = Dy_;
-      d = fabs(v.X());
-      double to_return = (
-            omega(2*(a-A),2*(b-B),d)
-           +omega(2*A,2*(b-B),d)
-           +omega(2*(a-A),2*B,d)
-           +omega(2*A,2*B,d))*0.25;
-      return to_return;
-    }
+    if (isOut[0] == false && isOut[1] == false) {
+      Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
+      Dx[1] = 0.5*detSize.Dot(XPlane[1]) - std::fabs(vv.Dot(XPlane[1])); 
 
-    if( (std::fabs(v.Y()) > Dx_*0.5) && (std::fabs(v.Z()) <= Dy_*0.5)){
-      double A, B, a, b, d;
-      A =  std::fabs(v.Y())-Dx_*0.5;
-      B = -std::fabs(v.Z())+Dy_*0.5;
-      a = Dx_;
-      b = Dy_;
-      d = fabs(v.X());
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+      d     = std::fabs(v.Dot(OpDetNorm));
       double to_return = (
-          omega(2*(A+a),2*(b-B),d)
-          -omega(2*A,2*(b-B),d)
-          +omega(2*(A+a),2*B,d)
-          -omega(2*A,2*B,d))*0.25;
+           +omega(2*(dx[0]-Dx[0]),2*(dx[1]-Dx[1]),d)
+           +omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
+           +omega(2*(dx[0]-Dx[0]),2*Dx[1],d)
+           +omega(2*Dx[0],2*Dx[1],d))*0.25;
       return to_return;
-    }
+    } else if (isOut[0] == true && isOut[1] == false) {
+      Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
+      Dx[1] = 0.5*detSize.Dot(XPlane[1]) - std::fabs(vv.Dot(XPlane[1])); 
 
-    if( (std::fabs(v.Y()) <= 0.5*Dx_) && (std::fabs(v.Z()) > 0.5*Dy_)){
-      double A, B, a, b, d;
-      A = -std::fabs(v.Y())+0.5*Dx_;
-      B =  std::fabs(v.Z())-0.5*Dy_;
-      a = Dx_;
-      b = Dy_;
-      d = fabs(v.X());
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+
+      d     = std::fabs(v.Dot(OpDetNorm)); 
+
       double to_return = (
-          omega(2*(a-A),2*(B+b),d)
-          -omega(2*(a-A),2*B,d)
-          +omega(2*A,2*(B+b),d)
-          -omega(2*A,2*B,d))*0.25;
+          +omega(2*(Dx[0]+dx[0]),2*(dx[1]-Dx[1]),d)
+          -omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
+          +omega(2*(Dx[0]+dx[0]),2*Dx[1],d)
+          -omega(2*Dx[0],2*Dx[1],d))*0.25;
       return to_return;
+    } else if (isOut[0] == false && isOut[1] == true) {
+      Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
+      Dx[1] = std::fabs(vv.Dot(XPlane[1])) - 0.5*detSize.Dot(XPlane[1]); 
+
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+
+      d     = std::fabs(v.Dot(OpDetNorm)); 
+
+      double to_return = (
+          +omega(2*(Dx[0]-dx[0]),2*(dx[1]+Dx[1]),d)
+          -omega(2*(Dx[0]-dx[0]),2*(Dx[1]),d)
+          +omega(2*(Dx[0]),2*(Dx[1]+dx[1]),d)
+          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+      return to_return;
+    } else if (isOut[0] == true && isOut[1] == true) {
+       Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
+       Dx[1] = std::fabs(vv.Dot(XPlane[1])) - 0.5*detSize.Dot(XPlane[1]); 
+
+       dx[0] = detSize.Dot(XPlane[0]); 
+       dx[1] = detSize.Dot(XPlane[1]); 
+
+       d     = std::fabs(v.Dot(OpDetNorm)); 
+       
+       double to_return = (
+          +omega(2*(Dx[0]+dx[0]), 2*(Dx[1]+dx[1]), d)
+          -omega(2*Dx[0], 2*(Dx[1]+dx[1]), d)
+          -omega(2*(Dx[0]+dx[0]), 2*Dx[1], d) 
+          +omega(2*Dx[0], 2*Dx[1], d))*0.25; 
+       return to_return; 
     }
+    
     // error message if none of these cases, i.e. something has gone wrong!
     std::cout << "Warning: invalid solid angle call." << std::endl;
     return 0.0;
   }
+
+  double SLArLightPropagationModel::solid(
+      SLArCfgSuperCell* cfgTile, 
+      TVector3 &v, 
+      EDetectorFace kFace) {
+
+    TVector3 OpDetNorm = cfgTile->GetNormal();     
+
+    // TODO: Fix to make it independent of detector plane
+    // detector size
+    TVector3 detSize(0, 0, 0); 
+    TVector3 XPlane[2]; 
+
+    if (kFace == kNorth || kFace == kSouth) {
+      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));
+      XPlane[0] = TVector3(0, 0, 1); 
+      XPlane[1] = TVector3(0, 1, 0); 
+    } else if (kFace == kTop || kFace == kBottom) {
+      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetX(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm")); 
+      XPlane[0] = TVector3(0, 0, 1); 
+      XPlane[1] = TVector3(1, 0, 0); 
+    } else if (kFace == kUpstrm || kFace == kDownstrm) {
+      detSize.SetX(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));  
+      XPlane[0] = TVector3(1, 0, 0); 
+      XPlane[1] = TVector3(0, 1, 0); 
+    }
+
+    // project scintillation point onto the photon detector plane
+    TVector3 vv = v - OpDetNorm.Dot(v)*OpDetNorm; 
+
+    // The hit is directly above the SiPM
+    if( (vv - detSize).Mag2() == 0) {
+      return omega(detSize.Dot(XPlane[0]),detSize.Dot(XPlane[1]),v.Mag());
+    }
+
+    bool isOut[2] = {false, false};
+    double  Dx[2] = {0., 0.}; 
+    double  dx[2] = {0., 0.}; 
+    double  d     = 1.0;
+
+    for (int j=0; j<2; j++) {
+      isOut[j] = std::fabs(vv.Dot(XPlane[j])) > 0.5*detSize.Dot(XPlane[j]); 
+    }
+
+    if (isOut[0] == false && isOut[1] == false) {
+      Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
+      Dx[1] = 0.5*detSize.Dot(XPlane[1]) - std::fabs(vv.Dot(XPlane[1])); 
+
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+      d     = std::fabs(v.Dot(OpDetNorm));
+      double to_return = (
+           +omega(2*(dx[0]-Dx[0]),2*(dx[1]-Dx[1]),d)
+           +omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
+           +omega(2*(dx[0]-Dx[0]),2*Dx[1],d)
+           +omega(2*Dx[0],2*Dx[1],d))*0.25;
+      return to_return;
+    } else if (isOut[0] == true && isOut[1] == false) {
+      Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
+      Dx[1] = 0.5*detSize.Dot(XPlane[1]) - std::fabs(vv.Dot(XPlane[1])); 
+
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+
+      d     = std::fabs(v.Dot(OpDetNorm)); 
+
+      double to_return = (
+          +omega(2*(Dx[0]+dx[0]),2*(dx[1]-Dx[1]),d)
+          -omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
+          +omega(2*(Dx[0]+dx[0]),2*Dx[1],d)
+          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+      return to_return;
+    } else if (isOut[0] == false && isOut[1] == true) {
+      Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
+      Dx[1] = std::fabs(vv.Dot(XPlane[1])) - 0.5*detSize.Dot(XPlane[1]); 
+
+      dx[0] = detSize.Dot(XPlane[0]); 
+      dx[1] = detSize.Dot(XPlane[1]); 
+
+      d     = std::fabs(v.Dot(OpDetNorm)); 
+
+      double to_return = (
+          +omega(2*(Dx[0]-dx[0]),2*(dx[1]+Dx[1]),d)
+          -omega(2*(Dx[0]-dx[0]),2*(Dx[1]),d)
+          +omega(2*(Dx[0]),2*(Dx[1]+dx[1]),d)
+          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+      return to_return;
+    } else if (isOut[0] == true && isOut[1] == true) {
+       Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
+       Dx[1] = std::fabs(vv.Dot(XPlane[1])) - 0.5*detSize.Dot(XPlane[1]); 
+
+       dx[0] = detSize.Dot(XPlane[0]); 
+       dx[1] = detSize.Dot(XPlane[1]); 
+
+       d     = std::fabs(v.Dot(OpDetNorm)); 
+       
+       double to_return = (
+          +omega(2*(Dx[0]+dx[0]), 2*(Dx[1]+dx[1]), d)
+          -omega(2*Dx[0], 2*(Dx[1]+dx[1]), d)
+          -omega(2*(Dx[0]+dx[0]), 2*Dx[1], d) 
+          +omega(2*Dx[0], 2*Dx[1], d))*0.25; 
+       return to_return; 
+    }
+    
+    // error message if none of these cases, i.e. something has gone wrong!
+    std::cout << "Warning: invalid solid angle call." << std::endl;
+    return 0.0;
+  }
+
 
 
   // solid angle of circular aperture

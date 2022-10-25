@@ -37,6 +37,15 @@
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 
 namespace slarAna {
+  /*! \enum EDetectorFace
+   *
+   *  Detector face: top, bottom, downstream (positive z), upstream (negative z)
+   *  north, south (respect to the beam direction)
+   */
+  enum EDetectorFace {kTop, kBottom, kDownstrm, kUpstrm, kNorth, kSouth};
+  enum EDetectorClass {kSuperCell, kReadoutTile}; 
+
+
   class SLArLightPropagationModel {
 
     private:
@@ -52,6 +61,8 @@ namespace slarAna {
 
       bool _mathmore_loaded_ = false;
 
+      std::map<EDetectorFace, EDetectorClass> fFaceClass;
+
     public:
       // constructor
       SLArLightPropagationModel();
@@ -59,15 +70,14 @@ namespace slarAna {
       // destructor
       ~SLArLightPropagationModel(){};
 
-
-      double VisibilityOpDetTile(SLArCfgReadoutTile* cfgTile, const TVector3 &ScintPoint); 
-
+      double VisibilityOpDetTile(SLArCfgBaseModule* cfgTile, const TVector3 &ScintPoint); 
       // gaisser-hillas function
       static Double_t GaisserHillas(double x, double *par);
 
       // solid angle of rectangular aperture calculation functions
       double omega(const double &a, const double &b, const double &d) const;
-      double solid(SLArCfgReadoutTile* cfgTile, TVector3 &v); 
+      double solid(SLArCfgReadoutTile* cfgTile, TVector3 &v, EDetectorFace kFace); 
+      double solid(SLArCfgSuperCell* cfgTile, TVector3 &v, EDetectorFace kFace); 
 
       // solid angle of circular aperture calculation functions
       double Disk_SolidAngle(double *x, double *p);
@@ -79,6 +89,8 @@ namespace slarAna {
       // linear interpolation function
       double interpolate( const std::vector<double> &xData, const std::vector<double> &yData, double x, bool extrapolate );
 
+      // Set detector class for given TPC face
+      void SetDetectorClass(EDetectorFace, EDetectorClass); 
   };
 }
 #endif /* end of include guard SLARLIGHTPROPAGATIONMODEL_H */
