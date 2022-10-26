@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArLightPropagationModel.h
+ * @file        : SLArLightPropagationModel.hh
  * @created     : lunedì ott 17, 2022 18:00:41 CEST
  *
  * @brief       : class containing functions for calculating number 
@@ -16,9 +16,9 @@
  * Published in: Eur.Phys.J.C 81 (2021) 4, 349 • e-Print: 2010.00324 [physics.ins-det]
  */
 
-#ifndef SLARLIGHTPROPAGATIONMODEL_H
+#ifndef SLARLIGHTPROPAGATIONMODEL_HH
 
-#define SLARLIGHTPROPAGATIONMODEL_H
+#define SLARLIGHTPROPAGATIONMODEL_HH
 
 
 
@@ -37,6 +37,17 @@
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 
 namespace slarAna {
+  /*! \enum EDetectorFace
+   *
+   *  Detector face: top, bottom, downstream (positive z), upstream (negative z)
+   *  north, south (respect to the beam direction)
+   */
+  enum EDetectorFace {kTop = 0, kBottom = 1, kDownstrm = 2, 
+                      kUpstrm = 3, kNorth = 4, kSouth = 5};
+  enum EDetectorClass {kSuperCell, kReadoutTile}; 
+
+  extern TString DetectorFaceName[6];
+
   class SLArLightPropagationModel {
 
     private:
@@ -52,6 +63,8 @@ namespace slarAna {
 
       bool _mathmore_loaded_ = false;
 
+      std::map<EDetectorFace, EDetectorClass> fFaceClass;
+
     public:
       // constructor
       SLArLightPropagationModel();
@@ -59,15 +72,18 @@ namespace slarAna {
       // destructor
       ~SLArLightPropagationModel(){};
 
-
-      double VisibilityOpDetTile(SLArCfgReadoutTile* cfgTile, const TVector3 &ScintPoint); 
+      double VisibilityOpDetTile(
+          SLArCfgBaseModule* cfgTile, 
+          const TVector3 &ScintPoint);
 
       // gaisser-hillas function
       static Double_t GaisserHillas(double x, double *par);
 
       // solid angle of rectangular aperture calculation functions
       double omega(const double &a, const double &b, const double &d) const;
-      double solid(SLArCfgReadoutTile* cfgTile, TVector3 &v); 
+      double solid(SLArCfgReadoutTile* cfgTile, TVector3 &v, EDetectorFace kFace); 
+      double solid(SLArCfgSuperCell* cfgTile, TVector3 &v, EDetectorFace kFace); 
+      double solid_old(SLArCfgReadoutTile* cfgTile, TVector3 &v); 
 
       // solid angle of circular aperture calculation functions
       double Disk_SolidAngle(double *x, double *p);
@@ -79,6 +95,8 @@ namespace slarAna {
       // linear interpolation function
       double interpolate( const std::vector<double> &xData, const std::vector<double> &yData, double x, bool extrapolate );
 
+      // Set detector class for given TPC face
+      void SetDetectorClass(EDetectorFace, EDetectorClass); 
   };
 }
-#endif /* end of include guard SLARLIGHTPROPAGATIONMODEL_H */
+#endif /* end of include guard SLARLIGHTPROPAGATIONMODEL_HH */
