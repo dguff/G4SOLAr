@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "TFile.h"
+#include "TDirectory.h"
 #include "TROOT.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -31,51 +32,67 @@
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSCfg;
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 
-const double avgLY = 25980.5; //!< Average Light Yield
-const double pde   = 0.40;    //!< Photon Detection Efficiency for crosscheck
+const double avgLY         = 25980.5; //!< Average Light Yield
+const double pdeSiPM       = 0.15;    //!< Photon Detection Efficiency for crosscheck
+const double pdeSC         = 0.03;    //!< SuperCell Photon Detection Efficiency
+const double PixFillFactor = 0.36; 
 
 struct  SLArHistoSet {
   public: 
     SLArHistoSet(); 
     ~SLArHistoSet(); 
 
-    int BuildHitMapHist(SLArPixCfg* pixCfg); 
+    int BuildHitMapHistPix(SLArPixCfg* pixCfg); 
+    int BuildHitMapHistSC (SLArPDSCfg* scCfg ); 
 
     void Write(const char* output_path); 
 
     SLArPixCfg* fPixCfg; 
-    std::map<int, TH2Poly*> hNPhMap; 
-    std::map<int, TH2Poly*> hTPhMap; 
+    SLArPDSCfg* fSCCfg; 
+    std::map<int, TH2Poly*> hPixNPhMap; 
+    std::map<int, TH2Poly*> hPixTPhMap; 
+    std::map<int, TH2Poly*> hSCNPhMap; 
     TH1D* hvis; 
     TH1D* hNPhotons; 
-    TH1D* hNHits;
-    TH1D* hTHits; 
+    TH1D* hPixNHits;
+    TH1D* hPixTHits; 
+    TH1D* hSCNHits;
     TH1D* hWavelength; 
     TH1D* hEReco; 
+    TH1D* hERecoPix; 
+    TH1D* hERecoSC; 
     std::vector<TH1D*> hPosition; 
 
 }; 
 
 SLArHistoSet::SLArHistoSet() : 
-  fPixCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), 
-  hNHits(nullptr), hTHits(nullptr), hWavelength(nullptr), 
-  hEReco(nullptr), hPosition(3, nullptr)
+  fPixCfg(nullptr), fSCCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), 
+  hPixNHits(nullptr), hPixTHits(nullptr), hSCNHits(nullptr),
+  hWavelength(nullptr), hEReco(nullptr), hERecoPix(nullptr), hERecoSC(nullptr), 
+  hPosition(3, nullptr)
 {
   hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
   hNPhotons = new TH1D("hNPhotons", 
       "Nr of photons produced;Nr of photons produced (true);Entries",
       1000, 0, 1e6);
-  hNHits = new TH1D("hNHits", 
-      "Nr of collected photons;Nr of collected photons (true);Entries",
+  hPixNHits = new TH1D("hPixNHits", 
+      "Nr of collected photons (Readout Tile);Nr of detected photons;Entries",
       500, 0, 1e5);
-  hTHits = new TH1D("hTHits", 
-      "Time of photons hits;Time of first photon hit on sensor (true);Entries", 
+  hPixTHits = new TH1D("hPixTHits", 
+      "Time of photons hits (Readout Tile);Time of first photon hit on sensor [ns];Entries", 
       2000, 0, 3000); 
+  hSCNHits = new TH1D("hSCNHits", 
+      "Nr of collected photons (SuperCell);Nr of detected photons;Entries",
+      500, 0, 1e5);
   hWavelength = new TH1D("hWavelength", 
       "Wavelength of detected ph;#it{#lambda} [nm];Entries", 
       500, 100, 400); 
   hEReco = new TH1D("hEReco", 
-      "Reconstructed Energy;#it{E_{L}} [MeV];Entries", 600, 0, 30);
+      "Reconstructed Energy (Pix + SuperCell);#it{E_{L}} [MeV];Entries", 600, 0, 30);
+  hERecoPix = new TH1D("hERecoPix", 
+      "Reconstructed Energy (Readout Tile);#it{E_{L}} [MeV];Entries", 600, 0, 30);
+  hERecoSC = new TH1D("hERecoSC", 
+      "Reconstructed Energy (SuperCell);#it{E_{L}} [MeV];Entries", 600, 0, 30);
 
   double  _dimensions[3] = {1.8, 3, 7}; 
   TString _positions[3] = {"x", "y", "z"};
@@ -89,9 +106,10 @@ SLArHistoSet::SLArHistoSet() :
 
 SLArHistoSet::~SLArHistoSet() {
   if (hvis) delete hvis; 
-  if (hNHits) delete hNHits;
   if (hNPhotons) delete hNPhotons; 
-  if (hTHits) delete hTHits; 
+  if (hPixNHits) delete hPixNHits;
+  if (hPixTHits) delete hPixTHits; 
+  if (hSCNHits ) delete hSCNHits;
   if (hWavelength) delete hWavelength; 
   if (hEReco) delete hEReco; 
   for (auto &h : hPosition) {
@@ -100,7 +118,7 @@ SLArHistoSet::~SLArHistoSet() {
   hPosition.clear(); 
 }
 
-int SLArHistoSet::BuildHitMapHist(SLArPixCfg* pixCfg) {
+int SLArHistoSet::BuildHitMapHistPix(SLArPixCfg* pixCfg) {
   fPixCfg = new SLArPixCfg( *pixCfg );
   int nmodules = 0; 
   for (auto &mod : fPixCfg->GetModuleMap()) {
@@ -113,28 +131,72 @@ int SLArHistoSet::BuildHitMapHist(SLArPixCfg* pixCfg) {
     }
     mgTile->BuildPolyBinHist(); 
     TH2Poly* h2p = (TH2Poly*)mgTile->GetTH2(); 
-    hNPhMap.insert(std::make_pair(mgTile->GetIdx(), 
+    hPixNPhMap.insert(std::make_pair(mgTile->GetIdx(), 
           (TH2Poly*)h2p->Clone(Form("nhits_map_%i", mgTile->GetIdx()))));
-    hTPhMap.insert(std::make_pair(mgTile->GetIdx(), 
+    hPixTPhMap.insert(std::make_pair(mgTile->GetIdx(), 
           (TH2Poly*)h2p->Clone(Form("thits_map_%i", mgTile->GetIdx()))));
   }
-  nmodules = hNPhMap.size(); 
+  nmodules = hPixNPhMap.size(); 
+  return nmodules; 
+}
+
+int SLArHistoSet::BuildHitMapHistSC(SLArPDSCfg* scCfg) {
+  fSCCfg = new SLArPDSCfg( *scCfg );
+  int nmodules = 0; 
+  for (auto &mod : fSCCfg->GetModuleMap()) {
+    SLArCfgSuperCellArray* sc_array = mod.second; 
+    for (auto &cell : sc_array->GetMap()) {
+      cell.second->BuildGShape(); 
+      //printf("cell pos [phys]: [%.2f, %.2f, %.2f] - %g × %g\n", 
+          //cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ(),
+          //cell.second->Get2DSize_X(), cell.second->Get2DSize_Y()); 
+    }
+    sc_array->BuildPolyBinHist(); 
+    TH2Poly* h2p = (TH2Poly*)sc_array->GetTH2(); 
+    hSCNPhMap.insert(std::make_pair(sc_array->GetIdx(), 
+          (TH2Poly*)h2p->Clone(Form("nhits_map_%i", sc_array->GetIdx()))));
+  }
+  nmodules = hSCNPhMap.size(); 
   return nmodules; 
 }
 
 void SLArHistoSet::Write(const char* output_path) {
   TFile* output = new TFile(output_path, "recreate");
+  output->cd(); 
 
   hvis->Write(); 
   hNPhotons->Write();
-  hNHits->Write(); 
-  hTHits->Write(); 
+  hPixNHits->Write(); 
+  hPixTHits->Write(); 
+  hSCNHits ->Write(); 
   hWavelength->Write(); 
   hEReco->Write(); 
+  hERecoPix->Write(); 
+  hERecoSC->Write(); 
 
+  TDirectory* dPix = output->mkdir("pixSysMap"); 
+  dPix->cd(); 
+  for (auto &h2 : hPixNPhMap) h2.second->Write(); 
+
+  output->cd(); 
+  TDirectory* dSCTop = output->mkdir("SCTopSysMap"); 
+  TDirectory* dSCBtm = output->mkdir("SCBtmSysMap"); 
+
+  for (auto &h2 : hSCNPhMap) {
+    if (h2.first < 5500) {
+      dSCTop->cd(); 
+      h2.second->Write(); 
+    } else {
+      dSCBtm->cd(); 
+      h2.second->Write(); 
+    }
+  }
+  
+  output->cd(); 
+  
   TH2D* h2hits = new TH2D("h2hits_avg", "Average nr of hits;#it{z} [mm];#it{y} [mm]", 
       140, -7000, +7000, 60, -3000, +3000); 
-  for (const auto &mtile : hNPhMap) {
+  for (const auto &mtile : hPixNPhMap) {
     for (const auto &&tbin : *(mtile.second->GetBins())) {
       TH2PolyBin* bin = (TH2PolyBin*)tbin; 
       TGraph* g = (TGraph*)bin->GetPolygon();
@@ -153,9 +215,10 @@ void SLArHistoSet::Write(const char* output_path) {
   output->Close(); 
 }
 
-void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* vis); 
+void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* visPix, TH3D* visSC); 
 
-void test_output(const char* path, const char* output_path = "", TH3D* hvis = nullptr) 
+void test_output(const char* path, const char* output_path = "", 
+    TH3D* hvisPix = nullptr, TH3D* hvisSC = nullptr) 
 {
   //--------------------------------------------------------- Source plot style 
   slide_default(); 
@@ -167,19 +230,24 @@ void test_output(const char* path, const char* output_path = "", TH3D* hvis = nu
   
   // Get the configuration of the pixel/SuperCell readout system
   SLArPixCfg* pixCfg = (SLArPixCfg*)file->Get("PixSysConfig"); 
+  SLArPDSCfg* scCfg  = (SLArPDSCfg*)file->Get("PSCSysConfig"); 
 
 
   // create histograms
   SLArHistoSet* h = new SLArHistoSet(); 
   if (pixCfg) {
-    h->BuildHitMapHist(pixCfg); 
+    h->BuildHitMapHistPix(pixCfg); 
+  }
+
+  if (scCfg) {
+    h->BuildHitMapHistSC(scCfg); 
   }
 
 
   //---------------------------------------------------- Readout the event tree
   TTree* tree = (TTree*)file->Get("EventTree"); 
 
-  readout_event_tree(tree, pixCfg, h, hvis); 
+  readout_event_tree(tree, h, hvisPix, hvisSC); 
   
   if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
     h->Write(output_path); 
@@ -187,7 +255,9 @@ void test_output(const char* path, const char* output_path = "", TH3D* hvis = nu
   return;
 }
 
-void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* hvis) {
+void merge_and_plot(const char* root_file_list, const char* output_path, 
+    TH3D* hvisPix, TH3D* hvisSC) 
+{
   slide_default(); 
   gROOT->SetStyle("slide_default"); 
 
@@ -199,6 +269,7 @@ void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* h
   }
 
   SLArPixCfg* pixCfg = new SLArPixCfg();
+  SLArPDSCfg* scCfg  = nullptr; 
   SLArHistoSet* h = new SLArHistoSet(); 
 
   TChain* ch = new TChain("EventTree", "G4SOLAr event tree"); 
@@ -208,9 +279,17 @@ void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* h
     if (ifile == 0) {
       printf("Reading readout configuration from %s\n", str.c_str());
       TFile* f = new TFile(str.c_str()); 
-      pixCfg = (SLArPixCfg*)f->Get("PixSysConfig")->Clone("local_pix_cfg");
 
-      h->BuildHitMapHist(pixCfg); 
+      pixCfg = (SLArPixCfg*)f->Get("PixSysConfig"); //->Clone("local_pix_cfg");
+      scCfg  = (SLArPDSCfg*)f->Get("PDSSysConfig"); //->Clone("local_sc_config");  
+
+      if (pixCfg) {
+        h->BuildHitMapHistPix(pixCfg); 
+      }
+
+      if (scCfg) {
+        h->BuildHitMapHistSC(scCfg); 
+      }
     }
 
     printf("Adding to %s to chain\n", str.c_str());
@@ -219,7 +298,7 @@ void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* h
     ifile++; 
   } 
 
-  readout_event_tree(ch, pixCfg, h, hvis);
+  readout_event_tree(ch, h, hvisPix, hvisSC);
 
   if ( (output_path != NULL) && (output_path[0] !=  '\0') ) {
     h->Write(output_path); 
@@ -228,7 +307,8 @@ void merge_and_plot(const char* root_file_list, const char* output_path, TH3D* h
   return; 
 }
 
-void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* hvis) {
+void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* hvisPix, TH3D* hvisSC)
+{
   SLArMCEvent* ev = nullptr; 
   tree->SetBranchAddress("MCEvent", &ev); 
 
@@ -277,7 +357,7 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* 
     h->hNPhotons->Fill(nphotons); 
 
     //---------------------------------------- Readout detected optical photons
-    double htot = 0; 
+    double htotPix = 0; 
     auto evpds = ev->GetReadoutTileSystem(); 
     for (const auto &mtile : evpds->GetMegaTilesMap()) {
       auto mgTileCfg = h->fPixCfg->GetModule(mtile.first);
@@ -289,34 +369,80 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* 
           int nhits = evTile->GetNhits(); 
           double tfirst = evTile->GetTime(); 
           if (tfirst > tmax) tmax = tfirst; 
-          double bc_ = h->hNPhMap[mgTileCfg->GetIdx()]->GetBinContent(bin_idx); 
-          h->hNPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
-          h->hTPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, tfirst); 
+          double bc_ = h->hPixNPhMap[mgTileCfg->GetIdx()]->GetBinContent(bin_idx); 
+          h->hPixNPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
+          h->hPixTPhMap[mgTileCfg->GetIdx()]->SetBinContent(bin_idx, tfirst); 
 
-          htot += nhits; 
+          htotPix += nhits; 
 
           for (const auto &hit : evTile->GetHits()) {
-            h->hTHits->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
+            h->hPixTHits->Fill( hit->GetTime(), 1./tree->GetEntries() ); 
             h->hWavelength->Fill( hit->GetWavelength()); 
           }
         }
       }
     }
+    h->hPixNHits->Fill(htotPix); 
 
-    h->hNHits->Fill(htot); 
+    double htotSC = 0.; 
+    auto evsc = ev->GetSuperCellSystem(); 
+    for (const auto &scev_ : evsc->GetSuperCellMap()) {
+      SLArEventSuperCell* evSC = scev_.second; 
+      if (!evSC->GetHits().empty()) {
+        auto SCArrayCfg = h->fSCCfg->GetModule(((int)scev_.first/100)*100); 
+        int tile_idx = evSC->GetIdx();
+        int bin_idx = SCArrayCfg->GetBaseElement(tile_idx)->GetBinIdx();
+        int nhits = evSC->GetNhits(); 
+        double bc_ = h->hPixNPhMap[SCArrayCfg->GetIdx()]->GetBinContent(bin_idx); 
+        h->hSCNPhMap[SCArrayCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
+
+        htotSC += nhits; 
+
+        for (const auto &hit : evSC->GetHits()) {
+          h->hWavelength->Fill( hit->GetWavelength()); 
+        }
+      }
+    }
+    h->hSCNHits->Fill(htotSC); 
 
     //-------------------------------------------- Compute reconstructed energy
-    if (hvis) {
-      if (iev%50 == 0) {
-        printf("primary position: %g, %g, %g mm\n", 
-            primary_pos[0], primary_pos[1], primary_pos[2]); 
-      }
-      int ibin = hvis->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
-      double vis = hvis->GetBinContent(ibin); 
+    if (hvisPix) {
+      /*
+       *if (iev%50 == 0) {
+       *  printf("primary position: %g, %g, %g mm\n", 
+       *      primary_pos[0], primary_pos[1], primary_pos[2]); 
+       *}
+       */
+      int ibin = hvisPix->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
+      double vis = hvisPix->GetBinContent(ibin); 
 
-      double Erec = htot / (avgLY*vis*pde);
-      h->hEReco->Fill(Erec);
+      double Erec = htotPix / (avgLY*vis*PixFillFactor*pdeSiPM);
+      h->hERecoPix->Fill(Erec);
     }
+
+    if (hvisSC) {
+      int ibin = hvisSC->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
+      double vis = hvisSC->GetBinContent(ibin); 
+
+      double Erec = htotSC / (avgLY*vis*pdeSC);
+      h->hERecoSC->Fill(Erec);
+    }
+
+    if (hvisSC && hvisPix) {
+      int ibin_pix = hvisPix->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
+      double vis_pix = hvisPix->GetBinContent(ibin_pix);  
+
+      int ibin_sc = hvisSC->FindBin(primary_pos[0], primary_pos[1], primary_pos[2]); 
+      double vis_sc = hvisSC->GetBinContent(ibin_sc); 
+
+      double Erec = (htotPix+htotSC) / 
+        (avgLY*(vis_pix*PixFillFactor*pdeSiPM + vis_sc*pdeSC) );
+
+      h->hEReco->Fill(Erec); 
+    }
+
+
+
   }
 
   printf("------------------------------------------ Drawing MC truth info\n");
@@ -343,13 +469,13 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* 
   cPixN->cd(); 
   int imap = 0; 
   h2frame->DrawClone("axis"); 
-  for (const auto &hmap : h->hNPhMap) {
+  for (const auto &hmap : h->hPixNPhMap) {
     hmap.second->Scale(1./tree->GetEntries()); 
     if (hmax < hmap.second->GetMaximum()) 
       hmax = hmap.second->GetMaximum(); 
   }
 
-  for (auto &hmap : h->hNPhMap) {
+  for (auto &hmap : h->hPixNPhMap) {
     hmap.second->GetZaxis()->SetRangeUser(0, 1.1*hmax); 
     if (imap == 0) hmap.second->Draw("colz0 same"); 
     else hmap.second->Draw("col0 same"); 
@@ -364,13 +490,13 @@ void readout_event_tree(TTree* tree, SLArPixCfg* pixCfg, SLArHistoSet* h, TH3D* 
 
   TCanvas* cNhits = new TCanvas("cNhits", "cNhits", 0, 0, 600, 600); 
   cNhits->cd(); 
-  h->hNHits->Draw("hist");
+  h->hPixNHits->Draw("hist");
   auto txt_nh = add_preliminary(0, 1); 
   txt_nh->Draw(); 
 
   TCanvas* cTime = new TCanvas("cTime", "cTime", 0, 0, 900, 600); 
   cTime->cd(); 
-  h->hTHits->Draw("hist");
+  h->hPixTHits->Draw("hist");
   auto txt_th = add_preliminary(1, 1); 
   txt_th->Draw(); 
 
@@ -448,18 +574,20 @@ int main(int argc, char *argv[])
   TString input_list = input_list_; 
   TString visibility_file = visibility_file_; 
 
-  TH3D* hvis = nullptr; 
+  TH3D* hvisPix = nullptr; 
+  TH3D* hvisSC  = nullptr; 
   if (!visibility_file.IsNull()) {
     TFile* file = new TFile(visibility_file); 
-    hvis = (TH3D*)file->Get("hvis")->Clone(); 
+    hvisPix = (TH3D*)file->Get("hvisPix")->Clone(); 
+    hvisSC  = (TH3D*)file->Get("hvisSC")->Clone(); 
   }
 
   printf("input file: %s\n", input_file.Data()); 
   
   if (input_list.IsNull() && !input_file.IsNull()) {
-    test_output(input_file.Data(), output_file.Data(), hvis); 
+    test_output(input_file.Data(), output_file.Data(), hvisPix, hvisSC); 
   } else if (!input_list.IsNull()) {
-    merge_and_plot(input_list.Data(), output_file.Data(), hvis); 
+    merge_and_plot(input_list.Data(), output_file.Data(), hvisPix, hvisSC); 
   } else {
     printf("No valid input provided\n");
     PrintUsage(); 
