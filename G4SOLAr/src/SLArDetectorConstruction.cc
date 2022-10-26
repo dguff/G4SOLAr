@@ -615,6 +615,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
           cell_cfg->Set2DSize_X(fReadoutTile->GetGeoPar("tile_z")); 
           cell_cfg->Set2DSize_Y(fReadoutTile->GetGeoPar("tile_x")); 
+          cell_cfg->SetNormal(mtileCfg->GetNormal());
           cell_cfg->BuildGShape(); 
           mtileCfg->RegisterElement(cell_cfg); 
         }
