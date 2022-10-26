@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArLightPropagationModel.h
+ * @file        : SLArLightPropagationModel.hh
  * @created     : lunedì ott 17, 2022 18:00:41 CEST
  *
  * @brief       : class containing functions for calculating number 
@@ -16,9 +16,9 @@
  * Published in: Eur.Phys.J.C 81 (2021) 4, 349 • e-Print: 2010.00324 [physics.ins-det]
  */
 
-#ifndef SLARLIGHTPROPAGATIONMODEL_H
+#ifndef SLARLIGHTPROPAGATIONMODEL_HH
 
-#define SLARLIGHTPROPAGATIONMODEL_H
+#define SLARLIGHTPROPAGATIONMODEL_HH
 
 
 
@@ -42,9 +42,11 @@ namespace slarAna {
    *  Detector face: top, bottom, downstream (positive z), upstream (negative z)
    *  north, south (respect to the beam direction)
    */
-  enum EDetectorFace {kTop, kBottom, kDownstrm, kUpstrm, kNorth, kSouth};
+  enum EDetectorFace {kTop = 0, kBottom = 1, kDownstrm = 2, 
+                      kUpstrm = 3, kNorth = 4, kSouth = 5};
   enum EDetectorClass {kSuperCell, kReadoutTile}; 
 
+  extern TString DetectorFaceName[6];
 
   class SLArLightPropagationModel {
 
@@ -70,7 +72,10 @@ namespace slarAna {
       // destructor
       ~SLArLightPropagationModel(){};
 
-      double VisibilityOpDetTile(SLArCfgBaseModule* cfgTile, const TVector3 &ScintPoint); 
+      double VisibilityOpDetTile(
+          SLArCfgBaseModule* cfgTile, 
+          const TVector3 &ScintPoint);
+
       // gaisser-hillas function
       static Double_t GaisserHillas(double x, double *par);
 
@@ -78,6 +83,7 @@ namespace slarAna {
       double omega(const double &a, const double &b, const double &d) const;
       double solid(SLArCfgReadoutTile* cfgTile, TVector3 &v, EDetectorFace kFace); 
       double solid(SLArCfgSuperCell* cfgTile, TVector3 &v, EDetectorFace kFace); 
+      double solid_old(SLArCfgReadoutTile* cfgTile, TVector3 &v); 
 
       // solid angle of circular aperture calculation functions
       double Disk_SolidAngle(double *x, double *p);
@@ -93,4 +99,4 @@ namespace slarAna {
       void SetDetectorClass(EDetectorFace, EDetectorClass); 
   };
 }
-#endif /* end of include guard SLARLIGHTPROPAGATIONMODEL_H */
+#endif /* end of include guard SLARLIGHTPROPAGATIONMODEL_HH */

@@ -1,5 +1,5 @@
-#include "SLArLightPropagationModel.h"
-#include "SLArLightPropagationPars.h"
+#include "SLArLightPropagationModel.hh"
+#include "SLArLightPropagationPars.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -17,6 +17,10 @@ using namespace std;
 bool debug_2 = false;
 
 namespace slarAna {
+  
+  TString DetectorFaceName[6] = {"Top", "Bottom", "Downstream", 
+                                 "Upstream", "North", "Southh"}; 
+
   // constructor
   SLArLightPropagationModel::SLArLightPropagationModel() {
 
@@ -33,13 +37,18 @@ namespace slarAna {
 
   void SLArLightPropagationModel::SetDetectorClass(
       EDetectorFace kFace, EDetectorClass kClass) {
-    fFaceClass[kFace] = kClass; 
+    if (fFaceClass.count(kFace) == 0) {
+      fFaceClass.insert(std::make_pair(kFace, kClass));
+    } else {
+      fFaceClass[kFace] = kClass; 
+    }
   }
 
   double SLArLightPropagationModel::VisibilityOpDetTile(
-      SLArCfgBaseModule* cfgTile, 
+      SLArCfgBaseModule* cfgTile,
       const TVector3 &ScintPoint) 
   {
+
     TVector3 OpDetPoint(
         cfgTile->GetPhysX()/G4UIcommand::ValueOf("cm"), 
         cfgTile->GetPhysY()/G4UIcommand::ValueOf("cm"), 
@@ -59,9 +68,9 @@ namespace slarAna {
     OpDetNorm = cfgTile->GetNormal(); 
 
     EDetectorFace kFace = kDownstrm; 
-    if (OpDetNorm == TVector3(-1, 0, 0)) {
+    if (OpDetNorm        == TVector3(+1, 0, 0)) {
       kFace = kSouth; 
-    } else if (OpDetNorm == TVector3(+1, 0, 0)) {
+    } else if (OpDetNorm == TVector3(-1, 0, 0)) {
       kFace = kNorth; 
     } else if (OpDetNorm == TVector3(0, +1, 0)) {
       kFace = kBottom; 
@@ -72,14 +81,20 @@ namespace slarAna {
     } else if (OpDetNorm == TVector3(0, 0, -1)) {
       kFace = kDownstrm;
     } else {
-      printf("WARNING: Optical module %s has normal [%.2f, %.2f, %.2f]\n", 
-          cfgTile->GetName(), OpDetNorm.x(), OpDetNorm.y(), OpDetNorm.z());
+      printf("WARNING: Optical module %s[%i] has normal [%.2f, %.2f, %.2f]\n", 
+          cfgTile->GetName(), cfgTile->GetIdx(), OpDetNorm.x(), OpDetNorm.y(), OpDetNorm.z());
       printf("which is not among the expected directions.\n\n"); 
+      getchar();
     }
 
     EDetectorClass kClass; 
     if (fFaceClass.count(kFace) == 0) {
-      printf("WARNING: Unknown detector type for this face of the TPC\n");
+      printf("%s norm [%.1f, %.1f, %.1f], pos [%g, %g, %g] cm\n", 
+          cfgTile->GetName(), OpDetNorm.x(), OpDetNorm.y(), OpDetNorm.z(), 
+          OpDetPoint.x(), OpDetPoint.y(), OpDetPoint.z());
+
+      printf("WARNING: Unknown detector type for %s face of the TPC\n", 
+          DetectorFaceName[kFace].Data());
       return 0.; 
     }
 
@@ -101,8 +116,16 @@ namespace slarAna {
     if (costheta < 0.001)
       solid_angle = 0;
     else {
-      if (kClass == kReadoutTile) 
-        solid_angle = solid((SLArCfgReadoutTile*)cfgTile, ScintPoint_rel, kFace);
+      if (kClass == kReadoutTile) { 
+        solid_angle= solid((SLArCfgReadoutTile*)cfgTile, ScintPoint_rel, kFace);
+        //solid_angle = solid_old((SLArCfgReadoutTile*)cfgTile, ScintPoint_rel); 
+        //double delta_solid = solid_angle - solid_angle_test; 
+        //if (delta_solid > 1e-8) {
+          //printf("Ω = %g - Ω old = %g [δ = %g]\n", solid_angle, solid_angle_test, 
+              //delta_solid);
+          //getchar(); 
+        //}
+      }
       else if (kClass == kSuperCell) 
         solid_angle = solid((SLArCfgSuperCell*)cfgTile, ScintPoint_rel, kFace);
     }
@@ -117,13 +140,9 @@ namespace slarAna {
       exit(1);
     }
     
-    //printf("\tsolid_angle = %g\n", solid_angle);
-
 
     double vis_geo = exp(-1.*distance/L_abs) * (solid_angle / (4*pi));
 
-    //printf("\tvis_geo = %g\n", vis_geo);
-    //getchar(); 
 
     // determine Gaisser-Hillas correction for Rayleigh scattering, 
     // distance and angular dependence, accounting for border effects
@@ -197,7 +216,7 @@ namespace slarAna {
     //printf("\tvis_vuv = %g\n", vis_vuv);
     //getchar(); 
 
-    return vis_vuv;
+    return vis_geo;
   }
 
   // gaisser-hillas function definition
@@ -264,11 +283,14 @@ namespace slarAna {
     bool isOut[2] = {false, false};
     double  Dx[2] = {0., 0.}; 
     double  dx[2] = {0., 0.}; 
-    double  d     = 1.0;
+    double  d     = std::fabs(v.Dot(OpDetNorm));
 
     for (int j=0; j<2; j++) {
       isOut[j] = std::fabs(vv.Dot(XPlane[j])) > 0.5*detSize.Dot(XPlane[j]); 
     }
+
+    //printf("vv[0] = %g, vv[1] = %g, vv[2] = %g: %i - %i; d = %g\n", 
+        //vv.x(), vv.y(), vv.z(), isOut[0], isOut[1], d); 
 
     if (isOut[0] == false && isOut[1] == false) {
       Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
@@ -276,12 +298,11 @@ namespace slarAna {
 
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
-      d     = std::fabs(v.Dot(OpDetNorm));
       double to_return = (
-           +omega(2*(dx[0]-Dx[0]),2*(dx[1]-Dx[1]),d)
-           +omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
-           +omega(2*(dx[0]-Dx[0]),2*Dx[1],d)
-           +omega(2*Dx[0],2*Dx[1],d))*0.25;
+           +omega(2*(dx[0]-Dx[0]), 2*(dx[1]-Dx[1]), d)
+           +omega(2*Dx[0]        , 2*(dx[1]-Dx[1]), d)
+           +omega(2*(dx[0]-Dx[0]), 2*Dx[1]        , d)
+           +omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == true && isOut[1] == false) {
       Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
@@ -290,13 +311,11 @@ namespace slarAna {
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
 
-      d     = std::fabs(v.Dot(OpDetNorm)); 
-
       double to_return = (
-          +omega(2*(Dx[0]+dx[0]),2*(dx[1]-Dx[1]),d)
-          -omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
-          +omega(2*(Dx[0]+dx[0]),2*Dx[1],d)
-          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+          +omega(2*(Dx[0]+dx[0]), 2*(dx[1]-Dx[1]), d)
+          -omega(2*Dx[0]        , 2*(dx[1]-Dx[1]), d)
+          +omega(2*(Dx[0]+dx[0]), 2*Dx[1]        , d)
+          -omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == false && isOut[1] == true) {
       Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
@@ -305,13 +324,11 @@ namespace slarAna {
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
 
-      d     = std::fabs(v.Dot(OpDetNorm)); 
-
       double to_return = (
-          +omega(2*(Dx[0]-dx[0]),2*(dx[1]+Dx[1]),d)
-          -omega(2*(Dx[0]-dx[0]),2*(Dx[1]),d)
-          +omega(2*(Dx[0]),2*(Dx[1]+dx[1]),d)
-          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+          +omega(2*(dx[0]-Dx[0]), 2*(dx[1]+Dx[1]), d)
+          -omega(2*(dx[0]-Dx[0]), 2*(Dx[1])      , d)
+          +omega(2*(Dx[0])      , 2*(Dx[1]+dx[1]), d)
+          -omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == true && isOut[1] == true) {
        Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
@@ -320,13 +337,12 @@ namespace slarAna {
        dx[0] = detSize.Dot(XPlane[0]); 
        dx[1] = detSize.Dot(XPlane[1]); 
 
-       d     = std::fabs(v.Dot(OpDetNorm)); 
-       
        double to_return = (
           +omega(2*(Dx[0]+dx[0]), 2*(Dx[1]+dx[1]), d)
-          -omega(2*Dx[0], 2*(Dx[1]+dx[1]), d)
-          -omega(2*(Dx[0]+dx[0]), 2*Dx[1], d) 
-          +omega(2*Dx[0], 2*Dx[1], d))*0.25; 
+          -omega(2*Dx[0]        , 2*(Dx[1]+dx[1]), d)
+          -omega(2*(Dx[0]+dx[0]), 2*Dx[1]        , d) 
+          +omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25; 
+
        return to_return; 
     }
     
@@ -375,11 +391,13 @@ namespace slarAna {
     bool isOut[2] = {false, false};
     double  Dx[2] = {0., 0.}; 
     double  dx[2] = {0., 0.}; 
-    double  d     = 1.0;
+    double  d     = std::fabs(v.Dot(OpDetNorm));
 
     for (int j=0; j<2; j++) {
-      isOut[j] = std::fabs(vv.Dot(XPlane[j])) > 0.5*detSize.Dot(XPlane[j]); 
+      isOut[j] = std::fabs(vv.Dot(XPlane[j])) > 0.5*(detSize.Dot(XPlane[j])); 
     }
+    //printf("vv[0] = %g, vv[1] = %g, vv[2] = %g: %i - %i\n", 
+        //vv.x(), vv.y(), vv.z(), isOut[0], isOut[1]); 
 
     if (isOut[0] == false && isOut[1] == false) {
       Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
@@ -387,12 +405,12 @@ namespace slarAna {
 
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
-      d     = std::fabs(v.Dot(OpDetNorm));
+
       double to_return = (
-           +omega(2*(dx[0]-Dx[0]),2*(dx[1]-Dx[1]),d)
-           +omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
-           +omega(2*(dx[0]-Dx[0]),2*Dx[1],d)
-           +omega(2*Dx[0],2*Dx[1],d))*0.25;
+           +omega(2*(dx[0]-Dx[0]),2*(dx[1]-Dx[1]), d)
+           +omega(2*Dx[0]        ,2*(dx[1]-Dx[1]), d)
+           +omega(2*(dx[0]-Dx[0]),2*Dx[1]        , d)
+           +omega(2*Dx[0]        ,2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == true && isOut[1] == false) {
       Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
@@ -401,13 +419,11 @@ namespace slarAna {
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
 
-      d     = std::fabs(v.Dot(OpDetNorm)); 
-
       double to_return = (
-          +omega(2*(Dx[0]+dx[0]),2*(dx[1]-Dx[1]),d)
-          -omega(2*Dx[0],2*(dx[1]-Dx[1]),d)
-          +omega(2*(Dx[0]+dx[0]),2*Dx[1],d)
-          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+          +omega(2*(Dx[0]+dx[0]), 2*(dx[1]-Dx[1]), d)
+          -omega(2*Dx[0]        , 2*(dx[1]-Dx[1]), d)
+          +omega(2*(Dx[0]+dx[0]), 2*Dx[1]        , d)
+          -omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == false && isOut[1] == true) {
       Dx[0] = 0.5*detSize.Dot(XPlane[0]) - std::fabs(vv.Dot(XPlane[0])); 
@@ -416,13 +432,11 @@ namespace slarAna {
       dx[0] = detSize.Dot(XPlane[0]); 
       dx[1] = detSize.Dot(XPlane[1]); 
 
-      d     = std::fabs(v.Dot(OpDetNorm)); 
-
       double to_return = (
-          +omega(2*(Dx[0]-dx[0]),2*(dx[1]+Dx[1]),d)
-          -omega(2*(Dx[0]-dx[0]),2*(Dx[1]),d)
-          +omega(2*(Dx[0]),2*(Dx[1]+dx[1]),d)
-          -omega(2*Dx[0],2*Dx[1],d))*0.25;
+          +omega(2*(dx[0]-Dx[0]), 2*(dx[1]+Dx[1]), d)
+          -omega(2*(dx[0]-Dx[0]), 2*(Dx[1])      , d)
+          +omega(2*(Dx[0])      , 2*(Dx[1]+dx[1]), d)
+          -omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25;
       return to_return;
     } else if (isOut[0] == true && isOut[1] == true) {
        Dx[0] = std::fabs(vv.Dot(XPlane[0])) - 0.5*detSize.Dot(XPlane[0]); 
@@ -435,9 +449,9 @@ namespace slarAna {
        
        double to_return = (
           +omega(2*(Dx[0]+dx[0]), 2*(Dx[1]+dx[1]), d)
-          -omega(2*Dx[0], 2*(Dx[1]+dx[1]), d)
-          -omega(2*(Dx[0]+dx[0]), 2*Dx[1], d) 
-          +omega(2*Dx[0], 2*Dx[1], d))*0.25; 
+          -omega(2*Dx[0]        , 2*(Dx[1]+dx[1]), d)
+          -omega(2*(Dx[0]+dx[0]), 2*Dx[1]        , d) 
+          +omega(2*Dx[0]        , 2*Dx[1]        , d))*0.25; 
        return to_return; 
     }
     
@@ -552,4 +566,88 @@ namespace slarAna {
     double dydx = ( yR - yL ) / ( xR - xL );            // gradient
     return yL + dydx * ( x - xL );                      // linear interpolation
   }
+
+
+  double SLArLightPropagationModel::solid_old(SLArCfgReadoutTile* cfgTile, TVector3 &v) {
+    //TODO: add normal to photon detector in cfg 
+    TVector3 OpDetNorm(-1, 0, 0);     
+
+    // TODO: Fix to make it independent of detector plane
+    // detector size
+    double Dx_ = cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm"); 
+    double Dy_ = cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm");
+
+    // project scintillation point onto the photon detector plane
+    TVector3 vv = v - OpDetNorm.Dot(v)*OpDetNorm; 
+
+    // The hit is directly above the SiPM
+    if( vv.Y()==0.0 && vv.Z()==0.0){
+      return omega(Dx_,Dy_,v.Mag());
+    }
+
+    if( (std::fabs(v.Y()) > Dx_*0.5) && (std::fabs(v.Z()) > Dy_*0.5)){
+      double A, B, a, b, d;
+      A = std::fabs(v.Y())-Dx_*0.5;
+      B = std::fabs(v.Z())-Dy_*0.5;
+      a = Dx_;
+      b = Dy_;
+      d = fabs(v.X());
+      double to_return = (
+           omega(2*(A+a),2*(B+b),d) 
+          -omega(2*A,2*(B+b),d)
+          -omega(2*(A+a),2*B,d)
+          +omega(2*A,2*B,d))*0.25;
+      return to_return;
+    }
+
+    if( (std::fabs(v.Y()) <= Dx_*0.5) && (std::fabs(v.Z()) <= Dy_*0.5)){
+      double A, B, a, b, d;
+      A = -std::abs(v.Y())+Dx_*0.5;
+      B = -std::abs(v.Z())+Dy_*0.5;
+      a = Dx_;
+      b = Dy_;
+      d = fabs(v.X());
+      double to_return = (
+            omega(2*(a-A),2*(b-B),d)
+           +omega(2*A,2*(b-B),d)
+           +omega(2*(a-A),2*B,d)
+           +omega(2*A,2*B,d))*0.25;
+      return to_return;
+    }
+
+    if( (std::fabs(v.Y()) > Dx_*0.5) && (std::fabs(v.Z()) <= Dy_*0.5)){
+      double A, B, a, b, d;
+      A =  std::fabs(v.Y())-Dx_*0.5;
+      B = -std::fabs(v.Z())+Dy_*0.5;
+      a = Dx_;
+      b = Dy_;
+      d = fabs(v.X());
+      double to_return = (
+          omega(2*(A+a),2*(b-B),d)
+          -omega(2*A,2*(b-B),d)
+          +omega(2*(A+a),2*B,d)
+          -omega(2*A,2*B,d))*0.25;
+      return to_return;
+    }
+
+    if( (std::fabs(v.Y()) <= 0.5*Dx_) && (std::fabs(v.Z()) > 0.5*Dy_)){
+      double A, B, a, b, d;
+      A = -std::fabs(v.Y())+0.5*Dx_;
+      B =  std::fabs(v.Z())-0.5*Dy_;
+      a = Dx_;
+      b = Dy_;
+      d = fabs(v.X());
+      double to_return = (
+          omega(2*(a-A),2*(B+b),d)
+          -omega(2*(a-A),2*B,d)
+          +omega(2*A,2*(B+b),d)
+          -omega(2*A,2*B,d))*0.25;
+      return to_return;
+    }
+    // error message if none of these cases, i.e. something has gone wrong!
+    std::cout << "Warning: invalid solid angle call." << std::endl;
+    return 0.0;
+  }
+
+
 }

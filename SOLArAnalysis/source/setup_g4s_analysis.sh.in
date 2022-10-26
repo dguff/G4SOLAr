@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : setup_g4s_analysis.sh
+# @created     : Tuesday Oct 25, 2022 20:23:10 CEST
+#
+# @description : setup environmental variables to run G4SOLAr Analysis
+#                executables
+######################################################################
+
+echo "Setup G4SOLAr Analysis Environmental Variables"
+
+export PATH=${PATH}:@G4S_ANALYSIS_BIN_DIR@
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:@G4SOLAR_LIB_DIR@:@G4S_ANALYSIS_LIB_DIR@
+
+echo "DONE"
+
+

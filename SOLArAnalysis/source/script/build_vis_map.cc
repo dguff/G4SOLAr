@@ -19,8 +19,9 @@
 #include "TRandom3.h"
 #include "G4UIcommand.hh"
 
-#include "config/SLArCfgBaseSystem.hh"
+
 #include "event/SLArMCEvent.hh"
+#include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
 
@@ -29,7 +30,7 @@
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSCfg;
 typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 
-#include "VisMap/SLArLightPropagationModel.h"
+#include "SLArLightPropagationModel.hh"
 
 void build_vis_map(const char* data_file_path, const char* output_path = "") 
 {
@@ -57,6 +58,10 @@ void build_vis_map(const char* data_file_path, const char* output_path = "")
 
   // Create semi-analytical light propagation model 
   slarAna::SLArLightPropagationModel lightModel;
+  lightModel.SetDetectorClass(slarAna::kNorth  , slarAna::kReadoutTile);
+  lightModel.SetDetectorClass(slarAna::kSouth  , slarAna::kReadoutTile);
+  lightModel.SetDetectorClass(slarAna::kTop    , slarAna::kSuperCell);
+  lightModel.SetDetectorClass(slarAna::kBottom , slarAna::kSuperCell);
 
   // loop over the map's bins and compute the local visibility
   int ibin = 0; 
@@ -83,22 +88,22 @@ void build_vis_map(const char* data_file_path, const char* output_path = "")
 
   // loop over the map's bins and compute the local visibility
   ibin = 0; 
-  for (int ixbin = 1; ixbin <= hvisPixSys->GetNbinsX(); ixbin++) {
-    for (int iybin = 1; iybin <= hvisPixSys->GetNbinsY(); iybin++) {
-      for (int izbin = 1; izbin <= hvisPixSys->GetNbinsZ(); izbin++) {
-        double x_ = hvisPixSys->GetXaxis()->GetBinCenter(ixbin)/G4UIcommand::ValueOf("cm"); 
-        double y_ = hvisPixSys->GetYaxis()->GetBinCenter(iybin)/G4UIcommand::ValueOf("cm"); 
-        double z_ = hvisPixSys->GetZaxis()->GetBinCenter(izbin)/G4UIcommand::ValueOf("cm"); 
+  for (int ixbin = 1; ixbin <= hvisSCSys->GetNbinsX(); ixbin++) {
+    for (int iybin = 1; iybin <= hvisSCSys->GetNbinsY(); iybin++) {
+      for (int izbin = 1; izbin <= hvisSCSys->GetNbinsZ(); izbin++) {
+        double x_ = hvisSCSys->GetXaxis()->GetBinCenter(ixbin)/G4UIcommand::ValueOf("cm"); 
+        double y_ = hvisSCSys->GetYaxis()->GetBinCenter(iybin)/G4UIcommand::ValueOf("cm"); 
+        double z_ = hvisSCSys->GetZaxis()->GetBinCenter(izbin)/G4UIcommand::ValueOf("cm"); 
 
         double vis = 0.; 
-        for (const auto &mod : pixCfg->GetModuleMap()) {
+        for (const auto &mod : scCfg->GetModuleMap()) {
           for (auto &tile : mod.second->GetMap()) {
             vis += lightModel.VisibilityOpDetTile(tile.second, TVector3(x_, y_, z_));  
           }
         }
 
         if (ibin%50 == 0) printf("[%i, %i, %i]\n", ixbin, iybin, izbin); 
-        hvisPixSys->SetBinContent(ixbin, iybin, izbin, vis); 
+        hvisSCSys->SetBinContent(ixbin, iybin, izbin, vis); 
         ibin++; 
       }
     }
@@ -149,6 +154,7 @@ int main(int argc, char *argv[])
         break;
       case 'h':
         PrintUsage(); 
+        return 4; 
         break;
     }
   }
