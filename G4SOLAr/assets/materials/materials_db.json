@@ -164,7 +164,7 @@
         "PropertiesTable" : [
           {"property" : "EFFICIENCY", "value" : [
             {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
-            {"var": "EFFICIENCY", "val" : [0.4, 0.4]}
+            {"var": "EFFICIENCY", "val" : [0.15, 0.15]}
           ]}, 
           {"property" : "REFLECTIVITY", "value" : [
             {"var": "Energy", "unit" : "eV", "val": [2.0, 13.0]}, 
