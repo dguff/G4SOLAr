@@ -64,6 +64,8 @@ SLArEventAction::SLArEventAction()
   fPhotonCount_Cher        = 0;
   fPhotonCount_WLS         = 0;
   fAbsorptionCount         = 0;
+  fReadoutTileHits         = 0; 
+  fSuperCellHits           = 0; 
   fBoundaryAbsorptionCount = 0;
   fTotEdep                 = 0;
 }
@@ -109,6 +111,8 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
     fAbsorptionCount         = 0;
     fBoundaryAbsorptionCount = 0;
     fTotEdep                 = 0;
+    fReadoutTileHits         = 0; 
+    fSuperCellHits           = 0; 
 
 }     
 
@@ -151,6 +155,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
           p->GetParticleName().Data(), p->GetEnergy(), p->GetTrackID());
       printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
           p->GetTotalScintPhotons(), p->GetTotalCerenkovPhotons()); 
+      printf("ReadoutTile Hits: %i\nSuperCell Hits: %i\n\n", 
+          fReadoutTileHits, fSuperCellHits);
     }
 
     fParentIDMap.clear(); 
