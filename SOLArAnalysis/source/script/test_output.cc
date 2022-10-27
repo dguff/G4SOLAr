@@ -35,7 +35,7 @@ typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArPixCfg;
 const double avgLY         = 25980.5; //!< Average Light Yield
 const double pdeSiPM       = 0.15;    //!< Photon Detection Efficiency for crosscheck
 const double pdeSC         = 0.03;    //!< SuperCell Photon Detection Efficiency
-const double PixFillFactor = 0.36; 
+const double PixFillFactor = 0.36*0.85; 
 
 struct  SLArHistoSet {
   public: 
@@ -141,12 +141,15 @@ int SLArHistoSet::BuildHitMapHistPix(SLArPixCfg* pixCfg) {
 }
 
 int SLArHistoSet::BuildHitMapHistSC(SLArPDSCfg* scCfg) {
+  printf("SLArHistoSet::BuildHitMapHistSC\n");
   fSCCfg = new SLArPDSCfg( *scCfg );
+  printf("SCArrays size: %lu\n", fSCCfg->GetModuleMap().size());
   int nmodules = 0; 
   for (auto &mod : fSCCfg->GetModuleMap()) {
     SLArCfgSuperCellArray* sc_array = mod.second; 
     for (auto &cell : sc_array->GetMap()) {
       cell.second->BuildGShape(); 
+      printf("IDX: %i\n", cell.first);
       //printf("cell pos [phys]: [%.2f, %.2f, %.2f] - %g × %g\n", 
           //cell.second->GetPhysX(), cell.second->GetPhysY(), cell.second->GetPhysZ(),
           //cell.second->Get2DSize_X(), cell.second->Get2DSize_Y()); 
@@ -217,7 +220,7 @@ void SLArHistoSet::Write(const char* output_path) {
 
 void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* visPix, TH3D* visSC); 
 
-void test_output(const char* path, const char* output_path = "", 
+void test_output(const char* input_path, const char* output_path = "", 
     TH3D* hvisPix = nullptr, TH3D* hvisSC = nullptr) 
 {
   //--------------------------------------------------------- Source plot style 
@@ -226,25 +229,33 @@ void test_output(const char* path, const char* output_path = "",
   gStyle->SetPalette(kSunset); 
 
   //-------------------------------------------------------------- Open MC file
-  TFile* file = new TFile(path); 
+  printf("Opening input file...\n");
+  TFile* file = new TFile(input_path); 
   
   // Get the configuration of the pixel/SuperCell readout system
+  printf("Getting readout system configuration...\n");
   SLArPixCfg* pixCfg = (SLArPixCfg*)file->Get("PixSysConfig"); 
-  SLArPDSCfg* scCfg  = (SLArPDSCfg*)file->Get("PSCSysConfig"); 
-
+  SLArPDSCfg* scCfg  = (SLArPDSCfg*)file->Get("PDSSysConfig"); 
 
   // create histograms
+  printf("Building hist collection...\n");
   SLArHistoSet* h = new SLArHistoSet(); 
   if (pixCfg) {
-    h->BuildHitMapHistPix(pixCfg); 
+    printf("\tSiPM readout...");
+    int jj = h->BuildHitMapHistPix(pixCfg); 
+    printf("%i\n", jj);
   }
 
   if (scCfg) {
-    h->BuildHitMapHistSC(scCfg); 
+    printf("\tSuperCell readout...");
+    int ii = h->BuildHitMapHistSC(scCfg); 
+    printf("%i\n", ii); 
+    printf("\texpected %lu\n", scCfg->GetModuleMap().size()); 
   }
 
 
   //---------------------------------------------------- Readout the event tree
+  printf("Getting data tree...\n");
   TTree* tree = (TTree*)file->Get("EventTree"); 
 
   readout_event_tree(tree, h, hvisPix, hvisSC); 
@@ -365,7 +376,8 @@ void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* hvisPix, TH3D* hvisS
         SLArEventTile* evTile = tile.second; 
         if (!evTile->GetHits().empty()) {
           int tile_idx = evTile->GetIdx();
-          int bin_idx = mgTileCfg->GetBaseElement(tile_idx)->GetBinIdx();
+          auto tileCfg = mgTileCfg->GetBaseElement(tile_idx); 
+          int bin_idx = tileCfg->GetBinIdx();
           int nhits = evTile->GetNhits(); 
           double tfirst = evTile->GetTime(); 
           if (tfirst > tmax) tmax = tfirst; 
@@ -389,11 +401,13 @@ void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* hvisPix, TH3D* hvisS
     for (const auto &scev_ : evsc->GetSuperCellMap()) {
       SLArEventSuperCell* evSC = scev_.second; 
       if (!evSC->GetHits().empty()) {
-        auto SCArrayCfg = h->fSCCfg->GetModule(((int)scev_.first/100)*100); 
+        int  ArraySerial = ((int)scev_.first/100)*100; 
+        auto SCArrayCfg = h->fSCCfg->GetModule(ArraySerial); 
         int tile_idx = evSC->GetIdx();
-        int bin_idx = SCArrayCfg->GetBaseElement(tile_idx)->GetBinIdx();
+        auto SC = SCArrayCfg->GetBaseElement(tile_idx); 
+        int bin_idx = SC->GetBinIdx();
         int nhits = evSC->GetNhits(); 
-        double bc_ = h->hPixNPhMap[SCArrayCfg->GetIdx()]->GetBinContent(bin_idx); 
+        double bc_ = h->hSCNPhMap[SCArrayCfg->GetIdx()]->GetBinContent(bin_idx); 
         h->hSCNPhMap[SCArrayCfg->GetIdx()]->SetBinContent(bin_idx, bc_ + nhits);
 
         htotSC += nhits; 
