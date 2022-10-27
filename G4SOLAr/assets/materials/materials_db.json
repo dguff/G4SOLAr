@@ -153,7 +153,7 @@
       ]
     }, 
     {
-      "name" : "Silicon",
+      "name" : "SiliconActive",
       "NIST": "G4_Si", 
       "SurfaceProperties" : {
         "name" : "SiPM_Surf", 
@@ -172,6 +172,10 @@
           ]}
         ]
       }
+    },
+    {
+      "name" : "SiliconPassive",
+      "NIST": "G4_Si"
     }
   ]
 }

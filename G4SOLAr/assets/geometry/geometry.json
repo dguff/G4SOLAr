@@ -24,6 +24,7 @@
       {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
       {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
       {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }, 
+      {"name" : "sipm_fill_factor",    "val"  :0.85  }, 
       {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
       {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
       {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }

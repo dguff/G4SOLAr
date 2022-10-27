@@ -163,20 +163,21 @@ void SLArDetectorConstruction::Init() {
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
-  G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
-  
   if (d.HasMember("SuperCell")) {
+    G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
     const auto sc = d["SuperCell"].GetObj();
     InitPDS(sc); 
+    G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
   }
 
-
-  G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
+
   if (d.HasMember("ReadoutTile")) {
+    G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
     InitPix(d["ReadoutTile"].GetObj()); 
+    G4cout << "SLArDetectorConstruction::Init Pix DONE" << G4endl;
   }
 
   std::fclose(geo_cfg_file);
@@ -389,7 +390,7 @@ void SLArDetectorConstruction::ConstructSDandField()
     = new SLArReadoutTileSD(SDname="/tile/sipm");
   SDman->AddNewDetector(sipmSD);
   SetSensitiveDetector(
-      fReadoutTile->GetSiPM()->GetModLV(), 
+      fReadoutTile->GetSiPMActive()->GetModLV(), 
       sipmSD);
   }
 

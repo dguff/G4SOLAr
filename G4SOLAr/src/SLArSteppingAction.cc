@@ -190,17 +190,19 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 #endif
 
             phInfo->AddTrackStatusFlag(hitPMT);
-            if (volName=="sipm") {
+            if (volName=="SiPMActivePV") {
 #ifdef SLAR_DEBUG
-              printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i]\n", 
+              printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i, %i]\n", 
                   touchable->GetCopyNumber(0), 
                   touchable->GetCopyNumber(1),
                   touchable->GetCopyNumber(2),
                   touchable->GetCopyNumber(3),
                   touchable->GetCopyNumber(4),
                   touchable->GetCopyNumber(5), 
-                  touchable->GetCopyNumber(6) 
+                  touchable->GetCopyNumber(6), 
+                  touchable->GetCopyNumber(7) 
                   );
+              getchar(); 
 #endif
               sipmSD = (SLArReadoutTileSD*)SDman->FindSensitiveDetector(sdNameSiPM);
               if(sipmSD) { 
@@ -229,7 +231,14 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
                 printf("%s is not recognized as SD\n", volName.c_str());
 #endif
               }
+            } 
+#ifdef SLAR_DEBUG
+            else {
+                printf("SLArSteppingAction::UserSteppingAction::Detection WARNING\n"); 
+                printf("%s is not recognized as SD\n", volName.c_str());
+                getchar(); 
             }
+#endif
             
             track->SetTrackStatus( fStopAndKill );
             break;
