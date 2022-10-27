@@ -200,6 +200,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
 
       SLArCfgSuperCellArray* sc_array = 
         new SLArCfgSuperCellArray(mdl["name"].GetString(), mdl["id"].GetInt());
+      sc_array->SetIdx(mdl["id"].GetInt()); 
 
       if (mdl.HasMember("positions")) {
         assert(mdl["positions"].IsArray());

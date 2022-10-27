@@ -33,13 +33,13 @@ template<class TAssemblyModule>
 SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem &cfg)
   : TNamed(cfg)
 {
-  for (auto array : cfg.fModulesMap)
+  for (auto mod : cfg.fModulesMap)
   {
     fModulesMap.insert(
-        std::make_pair(array.first, 
-          (TAssemblyModule*)array.second->Clone())
+        std::make_pair(mod.first, 
+          (TAssemblyModule*)mod.second->Clone())
         );
-    fNModules += array.second->GetMap().size();
+    fNModules += mod.second->GetMap().size();
   }
 }
 
@@ -109,12 +109,12 @@ int SLArCfgBaseSystem<TAssemblyModule>::RegisterModule(TAssemblyModule* array)
 template<class TAssemblyModule>
 TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(TString name)
 {
-  TAssemblyModule* array = nullptr;
+  TAssemblyModule* mod = nullptr;
   if (fModulesMap.count(name))
   {
-    array = fModulesMap.find(name)->second;
+    mod = fModulesMap.find(name)->second;
   }
-  return array;
+  return mod;
 }
 
 template<class TAssemblyModule>
