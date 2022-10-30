@@ -61,7 +61,8 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
    fVolumeName("Target"), 
    fGunMode(kGun), 
    fGunPosition(0, 0, 0),
-   fGunDirection(0, 0, 1) 
+   fGunDirection(0, 0, 1), 
+   fDoTraceOptPhotons(true)
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);

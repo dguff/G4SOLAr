@@ -62,6 +62,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     virtual void GeneratePrimaries(G4Event*);
 
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
+    bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
 
     void SetGunMode       (EGunMode gunMode);
@@ -69,6 +70,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetGunDirection  (G4ThreeVector dir) {fGunDirection = dir;}
     void SetBulkName      (G4String vol);
     void SetMarleyConf    (G4String marley_conf); 
+    void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
 
 
   private:
@@ -86,6 +88,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     EGunMode       fGunMode;
     G4ThreeVector  fGunPosition;
     G4ThreeVector  fGunDirection;
+    bool           fDoTraceOptPhotons;
 
     G4ThreeVector  SampleRandomDirection(); 
 };

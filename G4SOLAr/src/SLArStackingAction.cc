@@ -33,6 +33,7 @@
 #include "SLArStackingAction.hh"
 #include "SLArEventAction.hh"
 #include "SLArAnalysisManager.hh"
+#include "SLArPrimaryGeneratorAction.hh"
 
 #include "G4VProcess.hh"
 #include "G4RunManager.hh"
@@ -41,6 +42,8 @@
 #include "G4ParticleTypes.hh"
 #include "G4Track.hh"
 #include "G4ios.hh"
+
+#include "SLArPhysicsList.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,6 +61,9 @@ SLArStackingAction::~SLArStackingAction()
 G4ClassificationOfNewTrack
 SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 {
+
+  G4ClassificationOfNewTrack kClassification = fUrgent; 
+
   if(aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
     if (aTrack->GetParentID() == 0) {
       fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetTrackID()); 
@@ -83,7 +89,6 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 #ifdef SLAR_DEBUG
           //printf("primary parent found\n");
 #endif
-
           break; 
         }
       }
@@ -103,6 +108,11 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS") {
         fEventAction->IncPhotonCount_WLS();
       }
+
+
+      SLArPrimaryGeneratorAction* primaryGen = 
+        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
+      if (primaryGen->DoTraceOptPhotons() == false) kClassification = G4ClassificationOfNewTrack::fKill;
 #ifdef SLAR_DEBUG
       else 
         printf("SLArStackingAction::ClassifyNewTrack unknown photon creation process %s\n", 
@@ -110,7 +120,9 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 #endif
     }
   }
-  return fUrgent;
+
+
+  return kClassification;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
