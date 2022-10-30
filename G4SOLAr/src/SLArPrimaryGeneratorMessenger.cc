@@ -42,6 +42,7 @@
 #include "G4UIcmdWith3VectorAndUnit.hh"
 #include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithABool.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -93,6 +94,12 @@ SLArPrimaryGeneratorMessenger::
   fCmdGunDirection->SetGuidance("Set event momentum direction");
   fCmdGunDirection->SetParameterName("p_x", "p_y", "p_z", false); 
   fCmdGunDirection->SetDefaultValue( G4ThreeVector(0, 0, 1)); 
+
+  fCmdTracePhotons = 
+    new G4UIcmdWithABool("/SLAr/DoTracePhotons", this); 
+  fCmdTracePhotons->SetGuidance("Set/unset tracing of optical photons"); 
+  fCmdTracePhotons->SetParameterName("do_trace", false, true); 
+  fCmdTracePhotons->SetDefaultValue(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -105,6 +112,7 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdGunPosition;
   delete fCmdGunDirection;
   delete fCmdGunDir;
+  delete fCmdTracePhotons;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -151,6 +159,10 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdGunDirection) {
     G4ThreeVector dir = fCmdGunDirection->GetNew3VectorValue(newValue); 
     fSLArAction->SetGunDirection(dir); 
+  }
+  else if (command == fCmdTracePhotons) {
+    bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 
+    fSLArAction->SetTraceOptPhotons(do_trace); 
   }
 }
 
