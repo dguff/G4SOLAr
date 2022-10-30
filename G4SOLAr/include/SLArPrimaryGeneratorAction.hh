@@ -91,6 +91,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     bool           fDoTraceOptPhotons;
 
     G4ThreeVector  SampleRandomDirection(); 
+
+    friend class SLArPrimaryGeneratorMessenger;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -52,6 +52,10 @@ public:
 
   void SetNoDaughters(bool no_daughters_);
 
+  void SetFiducialFraction(double fvf) {fFVFraction = fvf;} 
+
+  double GetFiducialFraction() {return fFVFraction;}
+
   // From the VertexGeneratorInterface abstract class:
   void ShootVertex(G4ThreeVector & vertex_) override;
     
@@ -64,11 +68,14 @@ private:
   double fTolerance{1.0 * CLHEP::um}; ///< Geometrical tolerance (length)
   unsigned int fRandomSeed{0}; ///< Seed for the random number generator
   bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
+  double fFVFraction{1.0}; //!< Volume fraction 
   
   // Working internals:
   const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
   G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
   unsigned int fCounter = 0.0; // Internal vertex counter
+
+  double ComputeDeltaX(G4ThreeVector& lo, G4ThreeVector& hi, double fiducialf = 0.); 
      
 };
 

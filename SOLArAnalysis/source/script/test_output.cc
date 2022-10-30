@@ -36,6 +36,7 @@ const double avgLY         = 25980.5; //!< Average Light Yield
 const double pdeSiPM       = 0.15;    //!< Photon Detection Efficiency for crosscheck
 const double pdeSC         = 0.03;    //!< SuperCell Photon Detection Efficiency
 const double PixFillFactor = 0.36*0.85; 
+const double moduleSize[3] = {3600, 6000, 14000}; 
 
 struct  SLArHistoSet {
   public: 
@@ -52,6 +53,7 @@ struct  SLArHistoSet {
     std::map<int, TH2Poly*> hPixNPhMap; 
     std::map<int, TH2Poly*> hPixTPhMap; 
     std::map<int, TH2Poly*> hSCNPhMap; 
+    TH3D* hVtxOrigin; 
     TH1D* hvis; 
     TH1D* hNPhotons; 
     TH1D* hPixNHits;
@@ -66,11 +68,19 @@ struct  SLArHistoSet {
 }; 
 
 SLArHistoSet::SLArHistoSet() : 
-  fPixCfg(nullptr), fSCCfg(nullptr), hvis(nullptr), hNPhotons(nullptr), 
+  fPixCfg(nullptr), fSCCfg(nullptr), 
+  hVtxOrigin(nullptr), 
+  hvis(nullptr), hNPhotons(nullptr), 
   hPixNHits(nullptr), hPixTHits(nullptr), hSCNHits(nullptr),
   hWavelength(nullptr), hEReco(nullptr), hERecoPix(nullptr), hERecoSC(nullptr), 
   hPosition(3, nullptr)
 {
+  hVtxOrigin = new TH3D("hVtxOrigin", "Vertex Origin;#it{x} [mm];#it{y} [mm];#it{z} [mm]", 
+      moduleSize[0]/100, -0.5*moduleSize[0], +0.5*moduleSize[0], 
+      moduleSize[1]/100, -0.5*moduleSize[1], +0.5*moduleSize[1], 
+      moduleSize[2]/100, -0.5*moduleSize[2], +0.5*moduleSize[2]
+      );
+  
   hvis = new TH1D("hvis", "Visible Energy", 200, 0., 20); 
   hNPhotons = new TH1D("hNPhotons", 
       "Nr of photons produced;Nr of photons produced (true);Entries",
@@ -167,6 +177,7 @@ void SLArHistoSet::Write(const char* output_path) {
   TFile* output = new TFile(output_path, "recreate");
   output->cd(); 
 
+  hVtxOrigin->Write(); 
   hvis->Write(); 
   hNPhotons->Write();
   hPixNHits->Write(); 
@@ -176,6 +187,10 @@ void SLArHistoSet::Write(const char* output_path) {
   hEReco->Write(); 
   hERecoPix->Write(); 
   hERecoSC->Write(); 
+
+  for (int j=0; j<3; j++) {
+    hPosition[j]->Write(); 
+  }
 
   TDirectory* dPix = output->mkdir("pixSysMap"); 
   dPix->cd(); 
@@ -349,7 +364,10 @@ void readout_event_tree(TTree* tree, SLArHistoSet* h, TH3D* hvisPix, TH3D* hvisS
           primary_pos[1] = trj->GetPoints().front().fY; 
           primary_pos[2] = trj->GetPoints().front().fZ; 
 
-          for (int kk=0; kk<3; kk++) h->hPosition[kk]->Fill(primary_pos[kk]); 
+          for (int kk=0; kk<3; kk++) {
+            h->hPosition[kk]->Fill(primary_pos[kk]); 
+          }
+          h->hVtxOrigin->Fill(primary_pos[0], primary_pos[1], primary_pos[2]); 
         }
         /*
          *for (const auto &tp : trj->GetPoints()) {
