@@ -1,4 +1,0 @@
-{
-  "clangd.enabled": true, 
-  "clangd.compilationDatabasePath": "/home/guff/Dune/SOLAr/G4SoLAr/build"
-}
