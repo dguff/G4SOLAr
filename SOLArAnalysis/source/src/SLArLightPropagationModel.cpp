@@ -216,7 +216,7 @@ namespace slarAna {
     //printf("\tvis_vuv = %g\n", vis_vuv);
     //getchar(); 
 
-    return vis_geo;
+    return vis_vuv;
   }
 
   // gaisser-hillas function definition
