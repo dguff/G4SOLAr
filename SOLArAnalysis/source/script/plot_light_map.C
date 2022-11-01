@@ -94,6 +94,34 @@ void plot_light_map(const char* map_file_path)
   return;
 }
 
+void plot_visibility_dist(const char* vismap_file_path) {
+  TFile* vmapFile = new TFile(vismap_file_path); 
+  TH3D* hmap = (TH3D*)vmapFile->Get("hvisPix"); 
+
+  double dd = 650; 
+
+  TH1D* hvis = new TH1D("hvis", "voxel visibility;Voxel visibility;Entries", 
+      500, 0, 0.5); 
+
+  for (int ix = 1; ix  <= hmap->GetNbinsX(); ix++) {
+    for (int iy = 1; iy <= hmap->GetNbinsY(); iy++) {
+      for (int iz = 1; iz <= hmap->GetNbinsZ(); iz++) {
+        double xc = hmap->GetXaxis()->GetBinCenter(ix); 
+        double yc = hmap->GetYaxis()->GetBinCenter(iy); 
+        double zc = hmap->GetZaxis()->GetBinCenter(iz); 
+
+        if (std::fabs(xc) < hmap->GetXaxis()->GetXmax()-dd &&
+            std::fabs(yc) < hmap->GetYaxis()->GetXmax()-dd &&
+            std::fabs(zc) < hmap->GetZaxis()->GetXmax()-dd ) {
+          hvis->Fill( hmap->GetBinContent(ix, iy, iz) ); 
+        }
+      }
+    }
+  }
+
+  hvis->Draw("hist"); 
+
+}
 
 void CanvasPartition(TCanvas *C,const Int_t Nx,const Int_t Ny,
     Float_t lMargin, Float_t rMargin,
