@@ -32,6 +32,57 @@
       "name" : "Steel", 
       "NIST" : "G4_STAINLESS-STEEL"
     },
+    {
+      "name" : "Polyurethane", 
+      "density" : {"val" : 90, "unit" : "g/m3"}, 
+      "atomic_components" : [
+        {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 27},
+        {"name" : "Hydrogen", "symb" : "H", "Z" : 1, "A" : 1.00784, "nAtom" : 36},
+        {"name" : "Nitrogen", "symb" : "N", "Z" : 7, "A" : 14.0067, "nAtom" : 2},
+        {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 10}
+      ]
+    },
+    {
+      "name" : "Polyethilene", 
+      "NIST" : "G4_POLYETHYLENE"
+    },
+    {
+      "name" : "BoronOxide", 
+      "atomic_components" : [
+        {"name" : "Boron", "symb" : "B", "Z" : 5, "A" : 10.811, "nAtom" : 2},
+        {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 3}
+      ]
+    },
+    {
+      "name" : "BoratedPolyethilene", 
+      "mixture_components" : [
+        {"name" : "Polyethilene", "massFraction" : 0.95}, 
+        {"name" : "BoronOxide", "massFraction" : 0.05}
+      ]
+    },
+    {
+      "name" : "Cellulose", 
+      "NIST" : "G4_CELLULOSE_BUTYRATE"
+    }, 
+    {
+      "name" : "Lignine", 
+      "atomic_components" : [
+        {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 18},
+        {"name" : "Hydrogen", "symb" : "H", "Z" : 1, "A" : 1.00784, "nAtom" : 13},
+        {"name" : "Nitrogen", "symb" : "N", "Z" : 7, "A" : 14.0067, "nAtom" : 3},
+        {"name" : "Sodium", "symb" : "Na", "Z" : 11, "A" : 22.99, "nAtom" : 2},
+        {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 8}, 
+        {"name" : "Sulphur", "symb" : "S", "Z" : 16, "A" : 32.065, "nAtom" : 2}        
+      ]
+    }, 
+    {
+      "name" : "Plywood", 
+      "density" : {"val" : 0.5, "unit": "g/cm3"}, 
+      "mixture_components" : [
+        {"name" : "Cellulose", "massFraction" : 0.70}, 
+        {"name" : "Lignine", "massFraction" : 0.30}
+      ]
+    },
     {  
       "name" : "Water",
       "NIST" : "G4_WATER", 
@@ -61,6 +112,7 @@
       "name" : "Plastic", 
       "NIST" : "G4_PLASTIC_SC_VINYLTOLUENE"
     },
+
     {
       "name" : "PTP", 
       "NIST" : "G4_POLYVINYLIDENE_FLUORIDE",
@@ -86,7 +138,7 @@
       "name" : "LAr", 
       "density" : {"val" : 1.390, "unit" : "g/cm3"},
       "temperature" : {"val" : 87, "unit"  : "K"},
-      "components" : [
+      "atomic_components" : [
         {"name" : "Argon", "symb" : "Ar", "Z" : 18, "A" : 39.95, "nAtom" : 1, "fraction" : 1.0}
       ], 
 
