@@ -133,14 +133,18 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
                     "SLArCode001", JustWarning, msg);
         return;
     }   
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
     RecordEventTarget( event );
 
-    RecordEventReadoutTile ( event );
+    if (SLArAnaMgr->GetPixCfg()) {
+      RecordEventReadoutTile ( event );
+    }
 
-    RecordEventSuperCell( event ); 
+    if (SLArAnaMgr->GetPDSCfg()) {
+      RecordEventSuperCell( event );
+    }
 
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     
     SLArAnaMgr->GetEvent()->SetEvNumber(event->GetEventID());
     
