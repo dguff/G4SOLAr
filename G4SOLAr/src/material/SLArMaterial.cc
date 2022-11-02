@@ -222,8 +222,11 @@ G4Material* SLArMaterial::ParseMaterial(const rapidjson::Value& jmaterial) {
     material = BuildFromNist(jmaterial); 
   } else if (jmaterial.HasMember("atomic_components")) {
     material = BuildFromAtoms(jmaterial); 
-  } else if (jmaterial.HasMember("mixture")) {
+  } else if (jmaterial.HasMember("mixture_components")) {
     material = BuildFromMixture(jmaterial); 
+  } else {
+    printf("SLArMaterial::ParseMaterial WARNING: No known way to build %s\n", 
+        jmaterial["name"].GetString());
   }
 
   if (jmaterial.HasMember("PropertiesTable")) {

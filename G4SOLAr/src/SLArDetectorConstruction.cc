@@ -92,7 +92,7 @@ SLArDetectorConstruction::SLArDetectorConstruction(
  : G4VUserDetectorConstruction(),
    fGeometryCfgFile(""), 
    fMaterialDBFile(""),
-   fTank(nullptr),
+   fTPC(nullptr),
    fSuperCell(nullptr),
    fWorldLog(nullptr)
 { 
@@ -150,15 +150,15 @@ void SLArDetectorConstruction::Init() {
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Tank objects
   G4cerr << "SLArDetectorConstruction::Init Tank" << G4endl;
-  fTank     = new SLArDetTank();
-  if (d.HasMember("Tank")) {
-    const rapidjson::Value& tk = d["Tank"]; 
-    assert(tk.HasMember("dimensions")); 
-    fTank->GetGeoInfo()->ReadFromJSON(tk["dimensions"]);
+  fTPC     = new SLArDetTank();
+  if (d.HasMember("Cryostat")) {
+    const rapidjson::Value& cryo = d["Cryostat"]; 
+    assert(cryo.HasMember("dimensions")); 
+    fTPC->GetGeoInfo()->ReadFromJSON(cryo["dimensions"]);
   } else {
-    fTank->BuildDefalutGeoParMap();
+    fTPC->BuildDefalutGeoParMap();
   }
-  fTank->BuildMaterial(fMaterialDBFile);
+  fTPC->BuildMaterial(fMaterialDBFile);
   G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -338,8 +338,8 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
   // 2. Build and place the Cryostat/LAr target
   G4cerr << "\nSLArDetectorConstruction: Building the Tank" << G4endl;
-  fTank->BuildTank();
-  fTank->GetModPV("Tank", 0,
+  fTPC->BuildTPC();
+  fTPC->GetModPV("TPC", 0,
       G4ThreeVector(0, 0, 0), 
       fWorldLog, false, 20);
 
@@ -351,7 +351,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
-  fTank->SetVisAttributes();
+  fTPC->SetVisAttributes();
   if (fSuperCell) fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
@@ -411,14 +411,14 @@ void SLArDetectorConstruction::ConstructSDandField()
     = new SLArTankSD(SDname="/Tank/Target");
   SDman->AddNewDetector(targetSD);
   SetSensitiveDetector(
-      fTank->GetTarget()->GetModLV(), 
+      fTPC->GetTarget()->GetModLV(), 
       targetSD);
 
 }
 
 SLArDetTank* SLArDetectorConstruction::GetDetTank() 
 {
-  return fTank;
+  return fTPC;
 }
 
 //SLArDetPMT* SLArDetectorConstruction::GetDetPMT(const char* mod) 
@@ -488,7 +488,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
           fSuperCell->GetModPV(
             Form("SC%i", scinfo.first), rotPMT, 
             pmtPos,
-            fTank->GetTarget()->GetModLV(), 
+            fTPC->GetTarget()->GetModLV(), 
             false, 
             scinfo.second->GetIdx()
             )
@@ -547,7 +547,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           mtileCfg->GetPsi());
 
       auto pv = megatile->GetModPV(mtileCfg->GetName(), 
-          tile_rot, tile_pos, fTank->GetTarget()->GetModLV(), 
+          tile_rot, tile_pos, fTPC->GetTarget()->GetModLV(), 
           false, mtileCfg->GetIdx());
       auto lv = megatile->GetModLV();
       auto row = megatile->GetTileRow();

@@ -95,7 +95,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4String                        fMaterialDBFile; 
     std::vector<G4VisAttributes*>   fVisAttributes;
 
-    SLArDetTank*                    fTank;
+    SLArDetTank*                    fTPC;
 
     SLArGeoInfo                       fWorldGeoPars;
     SLArDetSuperCell*                 fSuperCell;

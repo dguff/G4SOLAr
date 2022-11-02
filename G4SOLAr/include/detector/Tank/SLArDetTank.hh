@@ -25,56 +25,64 @@ public:
   SLArDetTank          ();
   virtual ~SLArDetTank ();
 
-  void          BuildVessel();
+  void          BuildCryostat();
   void          BuildTarget();
 
-  void          BuildTank();
+  void          BuildTPC();
 
   void          BuildMaterial(G4String);
   void          BuildDefalutGeoParMap();
 
-  void          ResetTankGeometry();
-
   void          SetVisAttributes();
 
   SLArBaseDetModule* GetTarget() {return fTarget;}
-  SLArBaseDetModule* GetVessel() {return fVessel;}
+  SLArBaseDetModule* GetCryostat() {return fCryostat;}
 
 protected:
+  SLArBaseDetModule* BuildCryostatLayer(G4String name, G4double x_, G4double y_, G4double z_, G4double tk, SLArMaterial* mat); 
 
 private:
   /* data */
   SLArBaseDetModule* fTarget;
-  SLArBaseDetModule* fVessel;
+  SLArBaseDetModule* fCryostat;
   SLArBaseDetModule* fWindow;
-  G4VSolid*        fBoxOut;
-  G4VSolid*        fBoxInn;
-  G4VSolid*        fBoxTrg;
+  G4VSolid*          fBoxOut;
+  G4VSolid*          fBoxInn;
+  G4VSolid*          fBoxTrg;
 
   // Some useful global variables
   SLArMaterial* fMatWorld;
-  SLArMaterial* fMatVessel;
+  SLArMaterial* fMatSteel;
+  SLArMaterial* fMatPlywood; 
+  SLArMaterial* fMatPolyurethane; 
+  SLArMaterial* fMatBPolyethilene; 
   SLArMaterial* fMatTarget;
 };
 
-struct SLArExtrusion{
+struct SLArCryostatLayer{
   public:
-    SLArExtrusion(
-        G4String  model_name, 
-        G4VSolid* shape, 
-        G4double  shift)
+    SLArCryostatLayer(
+        G4String   model_name, 
+        G4double*  halfSize,  
+        G4double   thickness,
+        SLArMaterial* material)
     {
       fName  = model_name;
-      fShape = shape;
-      fShift = shift;
+      fHalfSizeX =  halfSize[0];
+      fHalfSizeY =  halfSize[1]; 
+      fHalfSizeZ =  halfSize[2]; 
+      fThickness =  thickness; 
+
+      fMaterial = material;
     }
-    G4String  GetName()  {return fName;}
-    G4VSolid* GetShape() {return fShape;}
-    G4double  GetShift() {return fShift;}
-  private:
+
     G4String  fName;
-    G4VSolid* fShape;
-    G4double  fShift;
+    G4double  fHalfSizeX;
+    G4double  fHalfSizeY; 
+    G4double  fHalfSizeZ; 
+    G4double  fThickness;
+
+    SLArMaterial* fMaterial; 
 };
 #endif /* end of include guard SLArDETTANK_HH */
 

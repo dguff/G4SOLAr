@@ -34,7 +34,7 @@
     },
     {
       "name" : "Polyurethane", 
-      "density" : {"val" : 90, "unit" : "g/m3"}, 
+      "density" : {"val" : 90, "unit" : "kg/m3"}, 
       "atomic_components" : [
         {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 27},
         {"name" : "Hydrogen", "symb" : "H", "Z" : 1, "A" : 1.00784, "nAtom" : 36},
