@@ -83,8 +83,8 @@ int main(int argc,char** argv)
 
   G4String macro;
   G4String session;
-  G4String geometry_file = Form("%s/geometry.json", SLAR_BASE_DIR); 
-  G4String material_file = Form("%s/materials_db.json", SLAR_MATERIAL_DIR); 
+  G4String geometry_file = "./assets/geometry/geometry.json"; 
+  G4String material_file = "./assets/materials/materials_db.json"; 
 
 #ifdef G4MULTITHREADED
   G4int nThreads = 0;

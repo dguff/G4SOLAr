@@ -56,10 +56,14 @@ public:
     void IncAbsorption()        {fAbsorptionCount++;}
     void IncBoundaryAbsorption(){fBoundaryAbsorptionCount++;}
     void IncHitCount(G4int i=1) {fHitCount+=i;}
+    void IncReadoutTileHitCount() {fReadoutTileHits++;}
+    void IncSuperCellHitCount() {fSuperCellHits++;}
 
     G4int GetPhotonCount_Scnt()const    {return fPhotonCount_Scnt;}
     G4int GetPhotonCount_Cher()const    {return fPhotonCount_Cher;}
     G4int GetPhotonCount_WLS ()const    {return fPhotonCount_WLS ;}
+    G4int GetReadoutTileHits ()const    {return fReadoutTileHits ;}
+    G4int GetSuperCellHits   ()const    {return fSuperCellHits   ;}
     G4int GetHitCount()const            {return fHitCount;}
     G4double GetEDep()const             {return fTotEdep;}
     G4int GetAbsorptionCount()const     {return fAbsorptionCount;}
@@ -70,12 +74,15 @@ public:
     
 private:
     G4int fTileHCollID;
+    G4int fSuperCellHCollID;
     G4int fTargetHCollID;
 
     G4int fHitCount;
     G4int fPhotonCount_Scnt;
     G4int fPhotonCount_Cher;
     G4int fPhotonCount_WLS ;
+    G4int fReadoutTileHits ; 
+    G4int fSuperCellHits   ; 
     G4int fAbsorptionCount ;
     G4int fBoundaryAbsorptionCount;
     G4double fTotEdep;
@@ -83,6 +90,7 @@ private:
     std::map<int, int> fParentIDMap;
 
     void RecordEventReadoutTile (const G4Event* ev);
+    void RecordEventSuperCell( const G4Event* ev); 
     void RecordEventTarget(const G4Event* ev);
 };
 

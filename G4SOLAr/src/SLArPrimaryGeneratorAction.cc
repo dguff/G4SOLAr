@@ -58,10 +58,11 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
    fParticleGun(0), fDecay0Gen(0), fMarleyGen(0), fGunMessenger(0), 
    fBulkGenerator(0), 
-   fVolumeName("Target"), 
+   fVolumeName(""), 
    fGunMode(kGun), 
    fGunPosition(0, 0, 0),
-   fGunDirection(0, 0, 1) 
+   fGunDirection(0, 0, 1), 
+   fDoTraceOptPhotons(true)
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
@@ -118,10 +119,17 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   if (fDirectionMode == kRandom) {
     fGunDirection = SampleRandomDirection();
   }
+
+  if (fVolumeName != "") {
+    fBulkGenerator->ShootVertex( fGunPosition ); 
+    printf("Gun position: %.2f, %.2f, %.2f\n", 
+        fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
+  }
   //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
  
   if (fGunMode == kRadio) {
     if (!fBulkGenerator->GetBulkLogicalVolume()) {
+      if (fVolumeName == "") fVolumeName = "Target"; 
       G4cerr << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
       SetBulkName(fVolumeName);
     }

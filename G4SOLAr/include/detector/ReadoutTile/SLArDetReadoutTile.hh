@@ -29,12 +29,11 @@ public:
   void          BuildPCB();
   void          BuildSiPM();
   void          BuildChargePix();
-  void          ResetReadoutTileGeometry();
   void          SetVisAttributes();
 
-  SLArBaseDetModule*       GetSiPM();
-  SLArMaterial*    GetSiPMMaterial();
-  G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+  SLArBaseDetModule*       GetSiPMActive();
+  SLArMaterial*    GetSiPMActiveMaterial();
+  G4LogicalSkinSurface*    GetSiPMLgSkin() {return fSkinSurface;}
 
 
 protected:
@@ -47,12 +46,14 @@ private:
 
   SLArBaseDetModule* fBasePCB;
   SLArBaseDetModule* fChargePix;
-  SLArBaseDetModule* fSiPM; 
+  SLArBaseDetModule* fSiPM;
+  SLArBaseDetModule* fSiPMActive; 
 
   SLArMaterial*  fMatReadoutTile; 
   SLArMaterial*  fMatPCB;
   SLArMaterial*  fMatChargePix;
   SLArMaterial*  fMatSiPM; 
+  SLArMaterial*  fMatSiPMCapsule;
 
   G4LogicalSkinSurface* fSkinSurface;
 

@@ -9,15 +9,18 @@
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
-  fEvNumber(0), fDirection{0, 0, 0}, fEvSystemTile(nullptr)
+  fEvNumber(0), fDirection{0, 0, 0},
+  fEvSystemTile(nullptr), fEvSystemSuperCell(nullptr)
 {
   fEvSystemTile = new SLArEventReadoutTileSystem();
+  fEvSystemSuperCell = new SLArEventSuperCellSystem(); 
 }
 
 SLArMCEvent::~SLArMCEvent()
 {
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
   if (fEvSystemTile)  delete fEvSystemTile; 
+  if (fEvSystemSuperCell) delete fEvSystemSuperCell; 
   for (auto &p : fSLArPrimary) {
     delete p; p = nullptr; 
   }
@@ -37,6 +40,19 @@ int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgPixSys* pixSysCfg)
   return fEvSystemTile->GetMegaTilesMap().size();
 }
 
+int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSCSys* supercellSysCfg)
+{
+  if (!fEvSystemSuperCell) {
+    std::cout << "SLArMCEvent::ConfigSuperCellSystem: fEvSystemSuperCell is null!"
+              << std::endl;
+    return 0;
+  }
+
+  fEvSystemSuperCell->ConfigSystem(supercellSysCfg);
+  return fEvSystemSuperCell->GetSuperCellMap().size();
+}
+
+
 int SLArMCEvent::SetEvNumber(int nEv)
 {
   fEvNumber = nEv;
@@ -46,6 +62,8 @@ int SLArMCEvent::SetEvNumber(int nEv)
 void SLArMCEvent::Reset()
 {
   if (fEvSystemTile ) fEvSystemTile->ResetHits();
+  if (fEvSystemSuperCell) fEvSystemSuperCell->ResetHits(); 
+
   for (auto &p : fSLArPrimary) {
     delete p; p = nullptr; 
   }

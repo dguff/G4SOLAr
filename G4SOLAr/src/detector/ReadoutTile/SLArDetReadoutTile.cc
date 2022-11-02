@@ -26,8 +26,9 @@
 
 SLArDetReadoutTile::SLArDetReadoutTile() : SLArBaseDetModule(),
   fPerfectQE(false),
-  fBasePCB(nullptr), fChargePix(nullptr), fSiPM(nullptr),
-  fMatReadoutTile(nullptr), fMatPCB(nullptr), fMatSiPM(nullptr), 
+  fBasePCB(nullptr), fChargePix(nullptr), fSiPM(nullptr), fSiPMActive(nullptr),
+  fMatReadoutTile(nullptr), fMatPCB(nullptr), 
+  fMatSiPM(nullptr), fMatSiPMCapsule(nullptr), 
   fSkinSurface(nullptr)
 {  
   fGeoInfo = new SLArGeoInfo();
@@ -38,11 +39,11 @@ SLArDetReadoutTile::SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile)
 {
   fPerfectQE   = detReadoutTile.fPerfectQE;
   fGeoInfo     = detReadoutTile.fGeoInfo;
-  fMatReadoutTile= detReadoutTile.fMatReadoutTile;
 
   fMatReadoutTile = new SLArMaterial(*detReadoutTile.fMatReadoutTile); 
   fMatPCB = new SLArMaterial(*detReadoutTile.fMatPCB);
   fMatSiPM   = new SLArMaterial(*detReadoutTile.fMatSiPM);
+  fMatSiPMCapsule = new SLArMaterial(*detReadoutTile.fMatSiPMCapsule); 
 
 }
 
@@ -52,9 +53,11 @@ SLArDetReadoutTile::~SLArDetReadoutTile() {
   if (fBasePCB)   {delete fBasePCB; fBasePCB = 0;}
   if (fChargePix) {delete fChargePix; fChargePix = 0;}
   if (fSiPM)      {delete fSiPM; fSiPM = 0;}
+  if (fSiPMActive){delete fSiPMActive; fSiPMActive = 0;} 
   if (fMatReadoutTile) {delete fMatReadoutTile; fMatReadoutTile = 0;}
   if (fMatPCB){delete fMatPCB; fMatPCB = 0;}
   if (fMatSiPM)   {delete fMatSiPM; fMatSiPM = 0;}
+  if (fMatSiPMCapsule)   {delete fMatSiPMCapsule; fMatSiPMCapsule = 0;}
   G4cerr << "SLArDetReadoutTile DONE" <<  G4endl;
 }
 
@@ -88,24 +91,58 @@ void SLArDetReadoutTile::BuildPCB()
 void SLArDetReadoutTile::BuildSiPM()
 {
   G4cout << "Building ReadoutTile SiPMs..." << G4endl;
+  double fill_factor = fGeoInfo->GetGeoPar("sipm_fill_factor"); 
+  double x_ = fGeoInfo->GetGeoPar("sipm_x"); 
+  double y_ = fGeoInfo->GetGeoPar("sipm_y"); 
+  double z_ = fGeoInfo->GetGeoPar("sipm_z"); 
+  double d_ = 0.25*((x_ + z_) - sqrt(pow(x_ + z_, 2) - 4*x_*z_*(1-fill_factor))); 
+  double x  = x_ - 2*d_; 
+  double z  = z_ - 2*d_; 
+
   fSiPM = new SLArBaseDetModule();
+  fSiPMActive = new SLArBaseDetModule(); 
+
   fSiPM->SetGeoPar(fGeoInfo->GetGeoPair("sipm_y"));
   fSiPM->SetGeoPar(fGeoInfo->GetGeoPair("sipm_x"));
   fSiPM->SetGeoPar(fGeoInfo->GetGeoPair("sipm_z"));
 
-  fSiPM->SetMaterial(fMatSiPM->GetMaterial());
+  fSiPMActive = new SLArBaseDetModule(); 
+  fSiPMActive->SetGeoPar("active_sipm_y", y_); 
+  fSiPMActive->SetGeoPar("active_sipm_x", x ); 
+  fSiPMActive->SetGeoPar("active_sipm_z", z ); 
+  
+  fSiPM->SetMaterial(fMatReadoutTile->GetMaterial());
+  fSiPMActive->SetMaterial(fMatSiPM->GetMaterial()); 
 
   fSiPM->SetSolidVolume(
         new G4Box("SiPMBox", 
-          0.5*fSiPM->GetGeoPar("sipm_x"),
-          0.5*fSiPM->GetGeoPar("sipm_y"),
-          0.5*fSiPM->GetGeoPar("sipm_z"))
-        );
+          0.5*x_, 0.5*y_, 0.5*z_));
  
   fSiPM->SetLogicVolume(
       new G4LogicalVolume(fSiPM->GetModSV(), 
-        fSiPM->GetMaterial(), "SiPM_lv", 0, 0, 0)
+        fMatReadoutTile->GetMaterial(), "SiPM_lv", 0, 0, 0)
       );
+
+  fSiPMActive->SetSolidVolume(
+      new G4Box("SiPMActiveBox", 0.5*x, 0.5*y_, 0.5*z) );
+
+  fSiPMActive->SetLogicVolume(
+    new G4LogicalVolume(fSiPMActive->GetModSV(), 
+        fMatSiPM->GetMaterial(), "SiPMActive_lv", 0, 0, 0)
+      );
+
+  G4SubtractionSolid* sipm_passive_box = new G4SubtractionSolid("SiPMCapsuleBox", 
+      fSiPM->GetModSV(), fSiPMActive->GetModSV(), 0, G4ThreeVector(0, 0, 0)); 
+
+  G4LogicalVolume* capsule_lv = 
+    new G4LogicalVolume(sipm_passive_box, 
+        fMatSiPMCapsule->GetMaterial(), "SiPMCapsule_lv", 0, 0, 0); 
+
+  new G4PVPlacement(0, G4ThreeVector(0, 0, 0), capsule_lv, "SiPMCapsulePV",
+      fSiPM->GetModLV(), 0, 251, true);
+
+  fSiPMActive->GetModPV("SiPMActivePV", 0, G4ThreeVector(0, 0, 0), 
+      fSiPM->GetModLV(), 0, 250); 
 }
 
 void SLArDetReadoutTile::BuildChargePix()
@@ -226,7 +263,6 @@ void SLArDetReadoutTile::BuildReadoutTile()
  
   //--------------------------------------------------------- Standard Geometry
   fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
-
   // 3. A row of elementary cells
   G4cout<<"Creating a row of sensor cells..." << G4endl; 
   G4Box* cell_row_box = new G4Box("tileCellRow", 1.5*dx, 0.5*h, 15*dx); 
@@ -252,11 +288,6 @@ void SLArDetReadoutTile::BuildReadoutTile()
    return;
 }
 
-void SLArDetReadoutTile::ResetReadoutTileGeometry() 
-{
-  G4cout<< "Reset ReadoutTile Geometry" << G4endl;
-  return; 
-}
 
 void SLArDetReadoutTile::SetVisAttributes()
 {
@@ -277,13 +308,13 @@ void SLArDetReadoutTile::SetVisAttributes()
   return;
 }
 
-SLArBaseDetModule* SLArDetReadoutTile::GetSiPM()
+SLArBaseDetModule* SLArDetReadoutTile::GetSiPMActive()
 {
-  return fSiPM;
+  return fSiPMActive;
 }
 
 
-SLArMaterial* SLArDetReadoutTile::GetSiPMMaterial()
+SLArMaterial* SLArDetReadoutTile::GetSiPMActiveMaterial()
 {
   return fMatSiPM;
 }
@@ -321,6 +352,7 @@ void SLArDetReadoutTile::BuildDefalutGeoParMap()
   fGeoInfo->RegisterGeoPar("pix_z"    ,  6.0*CLHEP::cm);
   fGeoInfo->RegisterGeoPar("pix_x"    ,  6.0*CLHEP::mm);
   fGeoInfo->RegisterGeoPar("pix_y"    ,  1.0*CLHEP::mm);
+  fGeoInfo->RegisterGeoPar("sipm_fill_factor",     0.9); 
 }
 
 
@@ -330,6 +362,7 @@ void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
   fMatSiPM        = new SLArMaterial();
   fMatChargePix   = new SLArMaterial(); 
   fMatReadoutTile = new SLArMaterial();
+  fMatSiPMCapsule = new SLArMaterial(); 
 
   fMatReadoutTile->SetMaterialID("LAr");
   fMatReadoutTile->BuildMaterialFromDB(materials_db);
@@ -340,15 +373,18 @@ void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
   fMatChargePix->SetMaterialID("Steel");
   fMatChargePix->BuildMaterialFromDB(materials_db);
 
-  fMatSiPM->SetMaterialID("Silicon");
+  fMatSiPM->SetMaterialID("SiliconActive");
   fMatSiPM->BuildMaterialFromDB(materials_db);
+
+  fMatSiPMCapsule->SetMaterialID("SiliconPassive");
+  fMatSiPMCapsule->BuildMaterialFromDB(materials_db);
 }
 
 G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
   fSkinSurface = 
     new G4LogicalSkinSurface(
         "SiPM_LgSkin", 
-        fSiPM->GetModLV(), 
+        fSiPMActive->GetModLV(), 
         fMatSiPM->GetMaterialOpticalSurf());
 
   return fSkinSurface;

@@ -13,7 +13,7 @@ void rootlogon()
   gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadoutTile.so"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
 }

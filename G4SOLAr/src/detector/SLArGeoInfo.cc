@@ -117,8 +117,12 @@ bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value& dim) {
   for (const auto &xx : dim.GetArray()) {
     const auto entry = xx.GetObj(); 
     const char* name = entry["name"].GetString();
-    const char* unit = entry["unit"].GetString();
-    G4double val = entry["val"].GetFloat() * G4UIcommand::ValueOf(unit);
+    double vunit = 1.; 
+    if (xx.HasMember("unit")) {
+      const char* unit = entry["unit"].GetString();
+      vunit = G4UIcommand::ValueOf(unit);
+    }
+    G4double val = entry["val"].GetFloat() *vunit ;
     RegisterGeoPar(name, val); 
   }
   return true;

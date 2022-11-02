@@ -97,14 +97,50 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   G4ThreeVector hi;
   fSolid->BoundingLimits(lo, hi);
 
+  printf("lo: [%.1f, %.1f, %.1f]\nhi: [%.1f, %.1f, %.1f]\n", 
+      lo.x(), lo.y(), lo.z(), hi.x(), hi.y(), hi.z());
+
+  double delta = 0.; 
+  if (fFVFraction < 1.0) {
+    delta = ComputeDeltaX(lo, hi); 
+    printf("delta = %g\n", delta);
+  }
+
   G4ThreeVector localVertex;
   G4int maxtries=10000, itry=1;
   do {
-    localVertex.set(lo.x() + G4UniformRand()*(hi.x()-lo.x()),
-        lo.y() + G4UniformRand()*(hi.y()-lo.y()),
-        lo.z() + G4UniformRand()*(hi.z()-lo.z()));
+    localVertex.set(
+        lo.x() + 0.5*delta + G4UniformRand()*(hi.x()-lo.x()-delta),
+        lo.y() + 0.5*delta + G4UniformRand()*(hi.y()-lo.y()-delta),
+        lo.z() + 0.5*delta + G4UniformRand()*(hi.z()-lo.z()-delta));
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries);
 
   vertex_ = fBulkInverseRotation(localVertex) + fBulkTranslation;
   fCounter++;
+}
+
+double SLArBulkVertexGenerator::ComputeDeltaX(
+    G4ThreeVector& lo, G4ThreeVector& hi, double fiducialf) {
+  if (fiducialf == 0) fiducialf = fFVFraction; 
+
+  double deltax = 0.; 
+  double A = hi.x() - lo.x(); 
+  double B = hi.y() - lo.y(); 
+  double C = hi.z() - lo.z(); 
+
+  printf("A: %g, B: %g, C: %g, f: %g\n", A, B, C, fiducialf);
+
+  double a = 1.0; 
+  double b = -1.0*(A+B+C); 
+  double c = (A*B + A*C + B*C); 
+  double d = -1.0*(A*B*C)*(1-fiducialf); 
+
+  double D0 = b*b - 3*a*c; 
+  double D1 = 2*b*b*b -9*a*b*c +27*a*a*d; 
+  double DD = std::cbrt(0.5*(D1 + std::sqrt(D1*D1 -4*D0*D0*D0)));
+
+  deltax = - (b + DD + D0/DD) / (3*a); 
+  printf("deltax: %g\n", deltax); 
+
+  return deltax; 
 }

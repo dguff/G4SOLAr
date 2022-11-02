@@ -36,12 +36,15 @@
 #include "SLArPrimaryGeneratorMessenger.hh"
 
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArBulkVertexGenerator.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
 #include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithABool.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -68,6 +71,13 @@ SLArPrimaryGeneratorMessenger::
   fCmdBulkVol->SetParameterName("PhysVol", true, false); 
   fCmdBulkVol->SetDefaultValue("Target"); 
 
+  fCmdBulkVolFraction= 
+    new G4UIcmdWithADouble("/SLAr/gun/volumeFraction", this); 
+  fCmdBulkVol->SetGuidance("Set fraction of the bulk volume for event generation"); 
+  fCmdBulkVol->SetGuidance("<Volume Fraction>"); 
+  fCmdBulkVol->SetParameterName("volFrac", true, false); 
+  fCmdBulkVol->SetDefaultValue("1.0"); 
+
   fCmdMarley= 
     new G4UIcmdWithAString("/SLAr/gun/marleyconf", this); 
   fCmdMarley->SetGuidance("Set MARLEY configuration file"); 
@@ -93,6 +103,12 @@ SLArPrimaryGeneratorMessenger::
   fCmdGunDirection->SetGuidance("Set event momentum direction");
   fCmdGunDirection->SetParameterName("p_x", "p_y", "p_z", false); 
   fCmdGunDirection->SetDefaultValue( G4ThreeVector(0, 0, 1)); 
+
+  fCmdTracePhotons = 
+    new G4UIcmdWithABool("/SLAr/phys/DoTracePhotons", this); 
+  fCmdTracePhotons->SetGuidance("Set/unset tracing of optical photons"); 
+  fCmdTracePhotons->SetParameterName("do_trace", false, true); 
+  fCmdTracePhotons->SetDefaultValue(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -101,10 +117,12 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
 {
   delete fCmdGunMode;
   delete fCmdBulkVol;
+  delete fCmdBulkVolFraction;
   delete fCmdMarley;
   delete fCmdGunPosition;
   delete fCmdGunDirection;
   delete fCmdGunDir;
+  delete fCmdTracePhotons;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -126,6 +144,10 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdBulkVol) { 
     G4String vol = newValue; 
     fSLArAction->SetBulkName(vol); 
+  }
+  else if (command == fCmdBulkVolFraction) {
+    G4double frac = fCmdBulkVolFraction->GetNewDoubleValue(newValue); 
+    fSLArAction->fBulkGenerator->SetFiducialFraction(frac);
   }
   else if (command == fCmdMarley) {
     fSLArAction->SetMarleyConf(newValue); 
@@ -151,6 +173,10 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdGunDirection) {
     G4ThreeVector dir = fCmdGunDirection->GetNew3VectorValue(newValue); 
     fSLArAction->SetGunDirection(dir); 
+  }
+  else if (command == fCmdTracePhotons) {
+    bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 
+    fSLArAction->SetTraceOptPhotons(do_trace); 
   }
 }
 

@@ -84,8 +84,8 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   }
 
   fEventTree = new TTree("EventTree", "Event Tree");
-  fMCEvent->GetReadoutTileSystem()->ConfigSystem(fPixSysCfg);
-  SLArEventReadoutTileSystem* evPix = fMCEvent->GetReadoutTileSystem(); 
+  if (fPixSysCfg) fMCEvent->GetReadoutTileSystem()->ConfigSystem(fPixSysCfg);
+  if (fPDSysCfg) fMCEvent->GetSuperCellSystem()->ConfigSystem(fPDSysCfg);
 
   fEventTree->Branch("MCEvent", &fMCEvent);
 

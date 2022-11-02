@@ -22,8 +22,8 @@ SLArEventTile::SLArEventTile(const SLArEventTile& ev)
   fIdx = ev.fIdx; 
   fIsActive = ev.fIsActive; 
   fNhits = ev.fNhits; 
-  if (fHits.empty()) {
-    fHits.reserve(fHits.size()); 
+  if (!ev.fHits.empty()) {
+    fHits.reserve(ev.fHits.size()); 
     for (const auto &hit : ev.fHits) {
       fHits.push_back((SLArEventPhotonHit*)hit->Clone());
     }

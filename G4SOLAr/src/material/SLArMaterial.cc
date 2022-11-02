@@ -71,7 +71,7 @@ void SLArMaterial::BuildMaterialFromDB(G4String db_file, G4String mat_id) {
   rapidjson::FileReadStream is(mat_cfg_file, readBuffer, sizeof(readBuffer));
 
   rapidjson::Document d;
-  d.ParseStream(is);
+  d.ParseStream<rapidjson::kParseCommentsFlag>(is);
   assert(d.IsObject());
   assert(d.HasMember("materials")); 
   assert(d["materials"].IsArray()); 
@@ -167,6 +167,7 @@ void SLArMaterial::ParseMaterial(const rapidjson::Value& jmaterial) {
     ParseSurfaceProperties(jmaterial["SurfaceProperties"]);
   }
 
+  printf("DONE\n");
 
 }
 
