@@ -48,6 +48,7 @@
     },
     {
       "name" : "BoronOxide", 
+      "density" : {"val" : 2.50, "unit" : "g/cm3"}, 
       "atomic_components" : [
         {"name" : "Boron", "symb" : "B", "Z" : 5, "A" : 10.811, "nAtom" : 2},
         {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 3}
@@ -55,9 +56,10 @@
     },
     {
       "name" : "BoratedPolyethilene", 
+      "density" : {"val" : 1.0, "unit" : "g/cm3"},
       "mixture_components" : [
-        {"name" : "Polyethilene", "massFraction" : 0.95}, 
-        {"name" : "BoronOxide", "massFraction" : 0.05}
+        {"name" : "Polyethilene", "massFraction" : 0.85}, 
+        {"name" : "BoronOxide", "massFraction" : 0.15}
       ]
     },
     {
