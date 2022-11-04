@@ -1,11 +1,12 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArDetTank
- * @created     : mercoledì lug 31, 2019 16:02:13 CEST
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArDetTPC.cc
+ * @created     : giovedì nov 03, 2022 12:23:21 CET
  */
 
+
 #include "SLArDetectorConstruction.hh"
-#include "detector/Tank/SLArDetTank.hh"
+#include "detector/TPC/SLArDetTPC.hh"
 
 #include "SLArAnalysisManager.hh"
 
@@ -25,7 +26,32 @@
 #include "G4UnitsTable.hh"
 #include "G4VisAttributes.hh"
 
-SLArDetTank::SLArDetTank() : SLArBaseDetModule(),
+SLArCryostatLayer::SLArCryostatLayer() : 
+  fName("CryostatLayer"), 
+  fHalfSizeX(1.), fHalfSizeY(1.), fHalfSizeZ(1.), fThickness(1.), 
+  fMaterialName("MATERIAL_NAME"), fMaterial(nullptr), fModule(nullptr)
+{}
+
+SLArCryostatLayer::SLArCryostatLayer(
+    G4String   model_name, 
+    G4double*  halfSize,  
+    G4double   thickness,
+    G4String   material_name)
+  : fMaterial(nullptr), fModule(nullptr)
+{
+
+  fName      = model_name;
+  fHalfSizeX =  halfSize[0];
+  fHalfSizeY =  halfSize[1]; 
+  fHalfSizeZ =  halfSize[2]; 
+  fThickness =  thickness; 
+
+  fMaterialName = material_name;
+}
+
+SLArCryostatLayer::~SLArCryostatLayer() {}
+
+SLArDetTPC::SLArDetTPC() : SLArBaseDetModule(),
   fTarget   (nullptr), fCryostat (nullptr)  ,  
   fBoxOut   (nullptr), fBoxInn (nullptr)  ,
   fMatWorld (nullptr), fMatSteel(nullptr) , 
@@ -37,17 +63,17 @@ SLArDetTank::SLArDetTank() : SLArBaseDetModule(),
 }
 
 
-SLArDetTank::~SLArDetTank() {
-  std::cerr << "Deleting SLArDetTank..." << std::endl;
+SLArDetTPC::~SLArDetTPC() {
+  std::cerr << "Deleting SLArDetTPC..." << std::endl;
   if (fTarget   ) {delete fTarget   ; fTarget    = NULL;}
-  if (fCryostat   ) {delete fCryostat   ; fCryostat    = NULL;}
+  if (fCryostat ) {delete fCryostat ; fCryostat  = NULL;}
   if (fWindow   ) {delete fWindow   ; fWindow    = NULL;}
   if (fBoxOut   ) {delete fBoxOut   ; fBoxOut    = NULL;}
   if (fBoxInn   ) {delete fBoxInn   ; fBoxInn    = NULL;}
-  std::cerr << "SLArDetTank DONE" << std::endl;
+  std::cerr << "SLArDetTPC DONE" << std::endl;
 }
 
-void SLArDetTank::BuildMaterial(G4String db_file) 
+void SLArDetTPC::BuildMaterial(G4String db_file) 
 {
   // TODO: IMPLEMENT PROPER MATERIALS IN /materials
   fMatWorld  = new SLArMaterial();
@@ -76,9 +102,9 @@ void SLArDetTank::BuildMaterial(G4String db_file)
   fMatWorld ->BuildMaterialFromDB(db_file);
 }
 
-void SLArDetTank::BuildDefalutGeoParMap() 
+void SLArDetTPC::BuildDefalutGeoParMap() 
 {
-  G4cerr << "SLArDetTank::BuildGeoParMap()" << G4endl;
+  G4cerr << "SLArDetTPC::BuildGeoParMap()" << G4endl;
   fGeoInfo->RegisterGeoPar("target_y"       , 150.0*CLHEP::cm);
   fGeoInfo->RegisterGeoPar("target_z"       , 200.0*CLHEP::cm);
   fGeoInfo->RegisterGeoPar("target_x"       ,  60.0*CLHEP::cm); 
@@ -86,9 +112,56 @@ void SLArDetTank::BuildDefalutGeoParMap()
   G4cerr << "Exit method\n" << G4endl;
 }
 
-void SLArDetTank::BuildCryostat()
+void SLArDetTPC::BuildCryostatStructure(const rapidjson::Value& jcryo) {
+  assert(jcryo.IsArray()); 
+  printf("SLArDetTPC::BuildCryostatStructure\n");
+
+  G4double tgtZ = fGeoInfo->GetGeoPar("target_z");
+  G4double tgtY = fGeoInfo->GetGeoPar("target_y");
+  G4double tgtX = fGeoInfo->GetGeoPar("target_x");
+
+  G4double cryostat_tk = 0.; 
+
+  // compute total thickness
+  for (const auto &layer : jcryo.GetArray()) {
+    if (layer.HasMember("thickness")) 
+      cryostat_tk += fGeoInfo->ParseJsonVal(layer["thickness"]); 
+  }
+
+  G4double halfSize[3] = {tgtX*0.5 + cryostat_tk, 
+                          tgtY*0.5 + cryostat_tk, 
+                          tgtZ*0.5 + cryostat_tk}; 
+  for (const auto &layer : jcryo.GetArray()) {
+    if (layer.HasMember("thickness")) {
+      G4double tk_ = SLArGeoInfo::ParseJsonVal(layer["thickness"]);
+      if (tk_ == 0.) continue;
+
+      assert(layer.HasMember("id")); 
+      assert(layer.HasMember("name")); 
+      assert(layer.HasMember("material")); 
+      for (size_t k=0; k<3; k++) halfSize[k] -= tk_; 
+      
+      SLArCryostatLayer* ll = new SLArCryostatLayer(
+          layer["name"].GetString(), halfSize, 
+          SLArGeoInfo::ParseJsonVal(layer["thickness"]), 
+          layer["material"].GetString());
+
+      fCryostatStructure.insert(std::make_pair(layer["id"].GetInt(), ll)); 
+    }
+  }
+
+  printf("SLArDetTPC::BuildCryostatStructure: Cryostat layered structure built\n");
+  for (const auto& l : fCryostatStructure) {
+    printf("%i: %s %g mm %s\n", 
+        l.first, l.second->fName.c_str(), l.second->fThickness, 
+        l.second->fMaterialName.c_str());
+  }
+  return; 
+}
+
+void SLArDetTPC::BuildCryostat()
 {
-  G4cerr << "SLArDetTank::BuildVessel()" << G4endl;
+  G4cerr << "SLArDetTPC::BuildCryostat()" << G4endl;
   G4double tgtZ         = fGeoInfo->GetGeoPar("target_z");
   G4double tgtY         = fGeoInfo->GetGeoPar("target_y");
   G4double tgtX         = fGeoInfo->GetGeoPar("target_x");
@@ -139,81 +212,25 @@ void SLArDetTank::BuildCryostat()
 
   // -------------------------------------------------------------------------
   // create cryostat layers
-  G4double halfSize[3] = {x_-out_tk, y_-out_tk, z_-out_tk}; 
-  int iwood = 0; int ifoam = 0; int ibplt = 0;
-  std::vector<SLArCryostatLayer> layers; 
-  layers.push_back(SLArCryostatLayer("outer", halfSize, out_tk, fMatSteel) ); 
-  for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-  layers.push_back(
-      SLArCryostatLayer("wood_"+std::to_string(iwood), 
-        halfSize, wood_tk, fMatPlywood));
-  iwood++;
-  if (bplt_tk > 0) {
-    for (int k=0; k<3; k++) halfSize[k] -= bplt_tk; 
-    layers.push_back(
-        SLArCryostatLayer("BoratedPolyethilene_"+std::to_string(ibplt), 
-          halfSize, bplt_tk, fMatBPolyethilene)); 
-    ibplt++; 
-    for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-    layers.push_back(
-        SLArCryostatLayer("wood_"+std::to_string(iwood), 
-          halfSize, wood_tk, fMatPlywood));
-    iwood++;
-  }
-  for (int k=0; k<3; k++) halfSize[k] -= foam_tk; 
-  layers.push_back(
-      SLArCryostatLayer("Polyurethane_"+std::to_string(ifoam), 
-        halfSize, foam_tk, fMatPolyurethane)); 
-  ifoam++; 
-  for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-  layers.push_back(
-      SLArCryostatLayer("wood_"+std::to_string(iwood), 
-        halfSize, wood_tk, fMatPlywood));
-  iwood++;
-  for (int k=0; k<3; k++) halfSize[k] -= trpl_tk; 
-  layers.push_back(
-      SLArCryostatLayer("triplex", halfSize, trpl_tk, fMatSteel));
-  for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-  layers.push_back(
-      SLArCryostatLayer("wood_"+std::to_string(iwood), 
-        halfSize, wood_tk, fMatPlywood));
-  iwood++;
-  for (int k=0; k<3; k++) halfSize[k] -= foam_tk; 
-  layers.push_back(
-      SLArCryostatLayer("Polyurethane_"+std::to_string(ifoam), 
-        halfSize, foam_tk, fMatPolyurethane)); 
-  ifoam++; 
-  for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-  layers.push_back(
-      SLArCryostatLayer("wood_"+std::to_string(iwood), 
-        halfSize, wood_tk, fMatPlywood));
-  iwood++;
-  if (bplt_tk > 0) {
-    for (int k=0; k<3; k++) halfSize[k] -= bplt_tk; 
-    layers.push_back(
-        SLArCryostatLayer("BoratedPolyethilene_"+std::to_string(ibplt), 
-          halfSize, bplt_tk, fMatBPolyethilene)); 
-    ibplt++; 
-    for (int k=0; k<3; k++) halfSize[k] -= wood_tk; 
-    layers.push_back(
-        SLArCryostatLayer("wood_"+std::to_string(iwood), 
-          halfSize, wood_tk, fMatPlywood));
-    iwood++;
+
+  for (const auto& ll : fCryostatStructure) {
+    auto layer = ll.second;
+    layer->fMaterial = SLArMaterial::FindInMaterialTable(layer->fMaterialName); 
+    layer->fModule = BuildCryostatLayer(layer->fName, 
+        layer->fHalfSizeX, layer->fHalfSizeY, layer->fHalfSizeZ, 
+        layer->fThickness, layer->fMaterial); 
+    layer->fModule->GetModPV(
+        layer->fName, 0, G4ThreeVector(0, 0, 0), fCryostat->GetModLV(), 
+        false, ll.first);
   }
 
-  int imod = 1; 
-  for (const auto& layer : layers) {
-    auto mod = BuildCryostatLayer(layer.fName, 
-        layer.fHalfSizeX, layer.fHalfSizeY, layer.fHalfSizeZ, 
-        layer.fThickness, layer.fMaterial); 
-    mod->GetModPV(layer.fName, 0, G4ThreeVector(0, 0, 0), fCryostat->GetModLV(), 
-        false, imod);
-    imod++; 
-  }
-
+  return; 
 }
 
-SLArBaseDetModule* SLArDetTank::BuildCryostatLayer(G4String name, G4double x_, G4double y_, G4double z_, G4double tk_, SLArMaterial* mat) {
+SLArBaseDetModule* SLArDetTPC::BuildCryostatLayer(
+    G4String name, 
+    G4double x_, G4double y_, G4double z_, G4double tk_, 
+    G4Material* mat) {
 
   G4Box* b_out = new G4Box("b_out_"+name, x_+tk_, y_+tk_, z_+tk_); 
   G4Box* b_in  = new G4Box("b_in_" +name, x_    , y_    , z_    ); 
@@ -222,7 +239,7 @@ SLArBaseDetModule* SLArDetTank::BuildCryostatLayer(G4String name, G4double x_, G
       b_out, b_in, 0, G4ThreeVector(0, 0, 0)); 
 
   SLArBaseDetModule* mod = new SLArBaseDetModule(); 
-  mod->SetMaterial(mat->GetMaterial()); 
+  mod->SetMaterial(mat); 
   mod->SetSolidVolume(solid); 
   mod->SetLogicVolume(new G4LogicalVolume(
         mod->GetModSV(), mod->GetMaterial(), name+"LV", 0, 0, 0)); 
@@ -230,9 +247,9 @@ SLArBaseDetModule* SLArDetTank::BuildCryostatLayer(G4String name, G4double x_, G
   return mod; 
 }
 
-void SLArDetTank::BuildTarget()
+void SLArDetTPC::BuildTarget()
 {
-  G4cerr << "SLArDetTank::BuildTarget()" << G4endl;
+  G4cerr << "SLArDetTPC::BuildTarget()" << G4endl;
   G4double tgtX= fGeoInfo->GetGeoPar("target_x");
   G4double tgtY= fGeoInfo->GetGeoPar("target_y");
   G4double tgtZ= fGeoInfo->GetGeoPar("target_z");
@@ -257,13 +274,13 @@ void SLArDetTank::BuildTarget()
     );
 }
 
-void SLArDetTank::BuildTPC() 
+void SLArDetTPC::BuildTPC() 
 {
 
-  G4cerr << "SLArDetTank::BuildTank()" << G4endl;
+  G4cerr << "SLArDetTPC::BuildTank()" << G4endl;
   //* * * * * * * * * * * * * * * * * * * * * * * * * * *//
   // Building the Target                                 //
-  G4cerr << "\tBuilding Vessel, Window and Target" << G4endl;
+  G4cerr << "\tBuilding Cryostat and LAr volume" << G4endl;
   BuildCryostat();
   BuildTarget();
   
@@ -276,8 +293,8 @@ void SLArDetTank::BuildTPC()
         "TankLV",0,0,0);
  
   //* * * * * * * * * * * * * * * * * * * * * * * * * *//
-  // Place Steel Tank
-  G4cerr << "\tPlacing Vessel" << G4endl;
+  // Place Cryostat
+  G4cerr << "\tPlacing Cryostat" << G4endl;
 
   fCryostat->GetModPV("Vessel", 0, G4ThreeVector(0, 0, 0), 
       fModLV, false, 24);
@@ -285,7 +302,7 @@ void SLArDetTank::BuildTPC()
 
   //* * * * * * * * * * * * * * * * * * * * * * * * * *//
   // Place LAr
-  G4cerr << "\tPlacing Target" << G4endl;
+  G4cerr << "\tPlacing LAr Target" << G4endl;
 
   fTarget->GetModPV("Target", 0, 
       G4ThreeVector(0, 0, 0), 
@@ -295,19 +312,22 @@ void SLArDetTank::BuildTPC()
 }
 
 
-void SLArDetTank::SetVisAttributes()
+void SLArDetTPC::SetVisAttributes()
 {
-  G4cout << "SLArDetTank::SetVisAttributes()" << G4endl;
+  G4cout << "SLArDetTPC::SetVisAttributes()" << G4endl;
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
 
   visAttributes = new G4VisAttributes();
   visAttributes->SetColour(0.611, 0.847, 0.988, 0.6);
-  visAttributes->SetVisibility(false); 
+  visAttributes->SetVisibility(true); 
   if (fCryostat) {
     fCryostat->GetModLV()->SetVisAttributes( visAttributes );
     for (size_t j=0; j<fCryostat->GetModLV()->GetNoDaughters(); j++) {
-      printf("%s\n", fCryostat->GetModLV()->GetDaughter(j)->GetName().c_str());
+      auto pv = fCryostat->GetModLV()->GetDaughter(j); 
+      printf("%s\n", pv->GetName().c_str());
+      pv->GetLogicalVolume()->SetVisAttributes(visAttributes); 
+       
     }
   }
   visAttributes = new G4VisAttributes();

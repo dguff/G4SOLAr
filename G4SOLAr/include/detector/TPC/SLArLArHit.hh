@@ -1,12 +1,13 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArTankHit
- * @created     : lunedì ago 31, 2020 22:25:04 CEST
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArLArHit.hh
+ * @created     : giovedì nov 03, 2022 12:27:32 CET
  */
 
-#ifndef SLArTANKHIT_HH
+#ifndef SLARLARHIT_HH
 
-#define SLArTANKHIT_HH
+#define SLARLARHIT_HH
+
 
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
@@ -19,7 +20,7 @@
 class G4AttDef;
 class G4AttValue;
 
-/// Particle interaction inside the tank
+/// Particle interaction inside the LAr volume
 ///
 /// It records:
 ///
@@ -28,15 +29,15 @@ class G4AttValue;
 /// - the particle global position (at entrance)
 
 
-class SLArTankHit : public G4VHit
+class SLArLArHit : public G4VHit
 {
   public:
-    SLArTankHit();
-    SLArTankHit(const SLArTankHit &right);
-    virtual ~SLArTankHit();
+    SLArLArHit();
+    SLArLArHit(const SLArLArHit &right);
+    virtual ~SLArLArHit();
 
-    const SLArTankHit& operator=(const SLArTankHit &right);
-    int operator==(const SLArTankHit &right) const;
+    const SLArLArHit& operator=(const SLArLArHit &right);
+    int operator==(const SLArLArHit &right) const;
 
     inline void *operator new(size_t);
     inline void operator delete(void *aHit);
@@ -63,24 +64,23 @@ class SLArTankHit : public G4VHit
     G4String      fParticleType;
 };
 
-typedef G4THitsCollection<SLArTankHit> SLArTankHitsCollection;
+typedef G4THitsCollection<SLArLArHit> SLArLArHitsCollection;
 
-extern G4ThreadLocal G4Allocator<SLArTankHit>* SLArTankHitAllocator;
+extern G4ThreadLocal G4Allocator<SLArLArHit>* SLArLArHitAllocator;
 
-inline void* SLArTankHit::operator new(size_t)
+inline void* SLArLArHit::operator new(size_t)
 {
-  if (!SLArTankHitAllocator)
-    SLArTankHitAllocator = new G4Allocator<SLArTankHit>;
-  return (void*)SLArTankHitAllocator->MallocSingle();
+  if (!SLArLArHitAllocator)
+    SLArLArHitAllocator = new G4Allocator<SLArLArHit>;
+  return (void*)SLArLArHitAllocator->MallocSingle();
 }
 
-inline void SLArTankHit::operator delete(void* aHit)
+inline void SLArLArHit::operator delete(void* aHit)
 {
-  SLArTankHitAllocator->FreeSingle((SLArTankHit*) aHit);
+  SLArLArHitAllocator->FreeSingle((SLArLArHit*) aHit);
 }
 
+#endif /* end of include guard SLARLARHIT_HH */
 
 
-
-#endif /* end of include guard SLArTANKHIT_HH */
 

@@ -1,10 +1,11 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArTankHit
- * @created     : lunedì ago 31, 2020 22:25:26 CEST
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArLArHit.cc
+ * @created     : giovedì nov 03, 2022 12:29:04 CET
  */
 
-#include "detector/Tank/SLArTankHit.hh"
+
+#include "detector/TPC/SLArLArHit.hh"
 
 #include "G4VVisManager.hh"
 #include "G4VisAttributes.hh"
@@ -18,21 +19,21 @@
 #include "G4ios.hh"
 
 
-G4ThreadLocal G4Allocator<SLArTankHit>* SLArTankHitAllocator;
+G4ThreadLocal G4Allocator<SLArLArHit>* SLArLArHitAllocator;
 
 
-SLArTankHit::SLArTankHit()
+SLArLArHit::SLArLArHit()
 : G4VHit(), fEneDep(0.), fNsecondaries(0), fParticleType("geantino")
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArTankHit::~SLArTankHit()
+SLArLArHit::~SLArLArHit()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArTankHit::SLArTankHit(const SLArTankHit &right)
+SLArLArHit::SLArLArHit(const SLArLArHit &right)
 : G4VHit() {
     fEneDep       = right.fEneDep;
     fNsecondaries = right.fNsecondaries;
@@ -41,7 +42,7 @@ SLArTankHit::SLArTankHit(const SLArTankHit &right)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const SLArTankHit& SLArTankHit::operator=(const SLArTankHit &right)
+const SLArLArHit& SLArLArHit::operator=(const SLArLArHit &right)
 {
     fEneDep       = right.fEneDep;
     fNsecondaries = right.fNsecondaries;
@@ -51,18 +52,18 @@ const SLArTankHit& SLArTankHit::operator=(const SLArTankHit &right)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-int SLArTankHit::operator==(const SLArTankHit &/*right*/) const
+int SLArLArHit::operator==(const SLArLArHit &/*right*/) const
 {
     return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const std::map<G4String,G4AttDef>* SLArTankHit::GetAttDefs() const
+const std::map<G4String,G4AttDef>* SLArLArHit::GetAttDefs() const
 {
     G4bool isNew;
     std::map<G4String,G4AttDef>* store
-      = G4AttDefStore::GetInstance("SLArTankHit",isNew);
+      = G4AttDefStore::GetInstance("SLArLArHit",isNew);
 
     if (isNew) {
         (*store)["Particle"] 
@@ -76,7 +77,7 @@ const std::map<G4String,G4AttDef>* SLArTankHit::GetAttDefs() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-std::vector<G4AttValue>* SLArTankHit::CreateAttValues() const
+std::vector<G4AttValue>* SLArLArHit::CreateAttValues() const
 {
     std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
     
@@ -90,25 +91,25 @@ std::vector<G4AttValue>* SLArTankHit::CreateAttValues() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArTankHit::Print()
+void SLArLArHit::Print()
 {
-  printf("Tank hit\n");
+  printf("LAr hit\n");
   G4cout << G4BestUnit(fEneDep, "Energy") << " energy deposit" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArTankHit::SetParticleType(G4String prname)
+void SLArLArHit::SetParticleType(G4String prname)
 {
   fParticleType = prname;
 }
 
-void SLArTankHit::Add(double ed)
+void SLArLArHit::Add(double ed)
 {
   fEneDep += ed;
 }
 
-G4String SLArTankHit::GetParticleType()
+G4String SLArLArHit::GetParticleType()
 {
   return fParticleType;
 }
