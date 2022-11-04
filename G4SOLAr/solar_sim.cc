@@ -69,6 +69,7 @@ namespace {
     G4cerr << " Usage: " << G4endl;
     fprintf(stderr, " solar_sim\t[-m/--macro macro_file]]\n");
     fprintf(stderr, " \t\t[-o/--output output_file_name]\n");
+    fprintf(stderr, " \t\t[-d/--output_dir output_dir]\n");
     fprintf(stderr, " \t\t[-u/--session session]\n");
     fprintf(stderr, " \t\t[-r/--seed user_seed]\n");
     fprintf(stderr, " \t\t[-g/--geometry geometry_cfg_file]\n");
@@ -85,6 +86,7 @@ int main(int argc,char** argv)
   G4String macro;
   G4String session;
   G4String output = ""; 
+  G4String output_dir = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
   G4String material_file = "./assets/materials/materials_db.json"; 
 
@@ -94,10 +96,11 @@ int main(int argc,char** argv)
 
   G4long myseed = 345354;
   const char* short_opts = "m:o:u:t:r:g:p:h";
-  static struct option long_opts[9] = 
+  static struct option long_opts[10] = 
   {
     {"macro", required_argument, 0, 'm'}, 
     {"output", required_argument, 0, 'u'}, 
+    {"output_dir", required_argument, 0, 'd'}, 
     {"session", required_argument, 0, 'u'}, 
     {"threads", required_argument, 0, 't'}, 
     {"seed", required_argument, 0, 'r'}, 
@@ -121,7 +124,12 @@ int main(int argc,char** argv)
         output = optarg;
         printf("solar_sim output file: %s\n", output.c_str());
         break;
-     };
+      };
+      case 'd': {
+        output_dir = optarg;
+        printf("solar_sim output directory: %s\n", output_dir.c_str());  
+        break;
+      }
       case 'u' : 
       {
         session = optarg; 
@@ -231,6 +239,10 @@ int main(int argc,char** argv)
     if (!output.empty()) {
       G4String command = "/SLAr/manager/SetOutputName "; 
       UImanager->ApplyCommand(command+output); 
+    }
+    if (!output_dir.empty()) {
+      G4String command = "/SLAr/manager/SetOutputFolder "; 
+      UImanager->ApplyCommand(command+output_dir); 
     }
     G4String command = "/control/execute ";
     UImanager->ApplyCommand(command+macro);
