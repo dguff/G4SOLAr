@@ -111,7 +111,7 @@ void SLArRun::RecordEvent(const G4Event* aEvent)
     G4THitsMap<G4double>* evtMap=0;
     if ( fCollID[i] >= 0 ){           // Collection is attached to pHCE
       evtMap = (G4THitsMap<G4double>*)(pHCE->GetHC(fCollID[i]));
-      printf("[%i] evtMap size: %lu\n", fCollID[i], evtMap->size() );
+      //printf("[%i] evtMap size: %lu\n", fCollID[i], evtMap->size() );
     }else{
       G4cout <<" Error evtMap Not Found "<< i << G4endl;
     }
