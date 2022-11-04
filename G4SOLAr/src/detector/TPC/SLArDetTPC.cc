@@ -244,6 +244,15 @@ SLArBaseDetModule* SLArDetTPC::BuildCryostatLayer(
   mod->SetLogicVolume(new G4LogicalVolume(
         mod->GetModSV(), mod->GetMaterial(), name+"LV", 0, 0, 0)); 
 
+  // create a daughter volume on the -z face to be used as a sensitive detector 
+  // for neutron shielding studies
+
+  G4Box* b_test_sv = new G4Box("b_test_sv_"+name, x_, y_, 0.5*tk_); 
+  G4LogicalVolume* b_test_lv = new G4LogicalVolume(b_test_sv, mat, "b_test_lv_"+name, 
+      0, 0, 0, 0); 
+  new G4PVPlacement(0, G4ThreeVector(0, 0, -z_-0.5*tk_), b_test_lv, "b_test_pv_"+name, 
+      mod->GetModLV(), false, 8, true); 
+
   return mod; 
 }
 
