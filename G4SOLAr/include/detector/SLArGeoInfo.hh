@@ -33,6 +33,7 @@ class SLArGeoInfo {
     std::pair<G4String, G4double>
              GetGeoPair      (G4String str);
     bool     ReadFromJSON    (const rapidjson::Value&); 
+    static G4double ParseJsonVal    (const rapidjson::Value&); 
 
 
   private:

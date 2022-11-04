@@ -112,17 +112,30 @@ void SLArGeoInfo::DumpParMap()
    
 }
 
+G4double SLArGeoInfo::ParseJsonVal(const rapidjson::Value& jval) {
+  assert(jval.HasMember("val")); 
+  double vunit = 1.;
+  
+  if (jval.HasMember("unit")) {
+    const char* unit = jval["unit"].GetString();
+    vunit = G4UIcommand::ValueOf(unit); 
+  }
+
+  return jval["val"].GetDouble() * vunit; 
+}
+
 bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value& dim) {
   assert(dim.IsArray()); 
   for (const auto &xx : dim.GetArray()) {
     const auto entry = xx.GetObj(); 
     const char* name = entry["name"].GetString();
-    double vunit = 1.; 
-    if (xx.HasMember("unit")) {
-      const char* unit = entry["unit"].GetString();
-      vunit = G4UIcommand::ValueOf(unit);
-    }
-    G4double val = entry["val"].GetFloat() *vunit ;
+    //double vunit = 1.; 
+    //if (xx.HasMember("unit")) {
+      //const char* unit = entry["unit"].GetString();
+      //vunit = G4UIcommand::ValueOf(unit);
+    //}
+    //G4double val = entry["val"].GetFloat() *vunit ;
+    G4double val = ParseJsonVal(entry); 
     RegisterGeoPar(name, val); 
   }
   return true;

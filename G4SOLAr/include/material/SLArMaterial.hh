@@ -27,6 +27,8 @@ class SLArMaterial {
     void                SetMaterialID(G4String matID) {fMaterialID = matID;}
     G4OpticalSurface*   GetMaterialOpticalSurf() {return fOpticalSurf;}
 
+    static G4Material*  FindInMaterialTable(const char* mname); 
+
   protected:
     G4Material*         ParseMaterial(const rapidjson::Value& jmaterial);
     G4Material*         ParseMaterialDB(G4String mat_id); 
@@ -36,7 +38,6 @@ class SLArMaterial {
     G4Material*         BuildFromNist(const rapidjson::Value& jptable); 
     G4Material*         BuildFromAtoms(const rapidjson::Value& jptable); 
     G4Material*         BuildFromMixture(const rapidjson::Value& jptable); 
-    G4Material*         FindInMaterialTable(const char* mname); 
 
   private:
     G4String            fDBFile     ; 

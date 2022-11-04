@@ -51,7 +51,7 @@ G4String SLArMaterial::GetMaterialID()
 }
 
 G4Material* SLArMaterial::FindInMaterialTable(const char* mname) {
-  G4Material* mm = nullptr;  
+  G4Material* mm = nullptr;
 
   auto mtable = G4Material::GetMaterialTable(); 
   
@@ -210,6 +210,14 @@ G4Material* SLArMaterial::BuildFromMixture(const rapidjson::Value& jmaterial) {
     G4double mass_fraction = comp["massFraction"].GetDouble(); 
 
     material->AddMaterial(mat, mass_fraction); 
+  }
+
+  printf("SLArMaterial::BuildFromMixture(%s)\n", jmaterial["name"].GetString());
+  printf("Material elements mass fraction breakdown\n");
+  for (size_t i = 0; i < material->GetNumberOfElements(); i++) {
+    auto elm = material->GetElement(i); 
+    double frac = material->GetFractionVector()[i]; 
+    printf("[%lu]: %s : %.2f%%\n", i, elm->GetSymbol().c_str(), frac*100);
   }
 
   return material; 
