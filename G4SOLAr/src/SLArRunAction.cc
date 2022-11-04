@@ -1,35 +1,12 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id: SLArRunAction.cc 74204 2013-10-01 07:04:43Z ihrivnac $
-//
-/// \file SLArRunAction.cc
-/// \brief Implementation of the SLArRunAction class
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArRunAction
+ * @created     : venerdì nov 04, 2022 09:28:13 CET
+ */
 
 #include "SLArAnalysisManager.hh"
 #include "SLArRunAction.hh"
+#include "SLArRun.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -49,26 +26,94 @@ SLArRunAction::SLArRunAction()
 SLArRunAction::~SLArRunAction()
 {
   delete SLArAnalysisManager::Instance();
+  fSDName.clear(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArRunAction::BeginOfRunAction(const G4Run* /*run*/)
+G4Run* SLArRunAction::GenerateRun() {
+  fSDName.push_back("BPolyethilene_1"); 
+  fSDName.push_back("BPolyethilene_2"); 
+  fSDName.push_back("CryostatWall0");
+  fSDName.push_back("CryostatWall1");
+
+  return (new SLArRun(fSDName)); 
+}
+
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
 { 
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
   SLArAnaMgr->CreateFileStructure();
+
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArRunAction::EndOfRunAction(const G4Run* /*run*/)
+void SLArRunAction::EndOfRunAction(const G4Run* aRun)
 {
+
+  //- SLArRun object.
+  SLArRun* solarRun = (SLArRun*)aRun;
+  //--- Dump all socred quantities involved in SLArRun.
+  solarRun->DumpAllScorer();
+  //---
+
+  auto hmap_capture1 = solarRun->GetHitsMap("BPolyethilene_1", "captureCnts1"); 
+  auto hmap_capture2 = solarRun->GetHitsMap("BPolyethilene_2", "captureCnts2"); 
+  G4double ncapt_1 = 0.; 
+  G4double ncapt_2 = 0.; 
+  for (const auto& v : *hmap_capture1) {
+    G4double val = *v.second; 
+    G4int    idx =  v.first;
+    printf("hmap_capture1[%i]: %g\n", idx, val);
+    ncapt_1 += val;
+  }
+
+  for (const auto& v : *hmap_capture2) {
+    G4double val = *v.second; 
+    G4int    idx =  v.first;
+    printf("hmap_capture2[%i]: %g\n", idx, val);
+    ncapt_2 += val;
+  }
+
+  printf("%g neutrons capured in layer 1\n", ncapt_1);
+  printf("%g neutrons capured in layer 2\n", ncapt_2);
+
+
+  auto hmap_current_w0 = solarRun->GetHitsMap("CryostatWall0", "nCurrent0"); 
+  auto hmap_current_w1 = solarRun->GetHitsMap("CryostatWall1", "nCurrent1"); 
+  G4double ncurr_0 = 0; 
+  G4double ncurr_1 = 0; 
+  for (const auto& v : *hmap_current_w0) {
+    G4double val = *v.second; 
+    G4int    idx =  v.first;
+    printf("hmap_current_w0[%i]: %g\n", idx, val);
+    ncurr_0 += val; 
+  }
+
+  for (const auto& v : *hmap_current_w1) {
+    G4double val = *v.second; 
+    G4int    idx =  v.first;
+    printf("hmap_current_w1[%i]: %g\n", idx, val);
+    ncurr_1 += val; 
+  }
+
+
   // save histograms & ntuple
   //
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  //SLArAnaMgr->WriteSysCfg();
+  SLArAnaMgr->WriteVariable("nEvents", static_cast<G4double>(aRun->GetNumberOfEvent())); 
+  SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_1", ncapt_1); 
+  SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_2", ncapt_2); 
+  SLArAnaMgr->WriteVariable("nCurrent_outerWall", ncurr_0);
+  SLArAnaMgr->WriteVariable("nCurrent_innerWall", ncurr_1);
   SLArAnaMgr->Save();
 }
 

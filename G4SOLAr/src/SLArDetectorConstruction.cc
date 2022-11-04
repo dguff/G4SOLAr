@@ -41,8 +41,8 @@
 #include "SLArDetectorConstruction.hh"
 
 #include "detector/SLArBaseDetModule.hh"
-#include "detector/Tank/SLArDetTank.hh"
-#include "detector/Tank/SLArTankSD.hh"
+#include "detector/TPC/SLArDetTPC.hh"
+#include "detector/TPC/SLArLArSD.hh"
 
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
 #include "detector/ReadoutTile/SLArReadoutTileSD.hh"
@@ -76,9 +76,13 @@
 
 #include "G4SDManager.hh"
 #include "G4VSensitiveDetector.hh"
+#include "G4MultiFunctionalDetector.hh"
 #include "G4RunManager.hh"
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
+#include "G4PSTermination.hh"
+#include "G4PSFlatSurfaceCurrent.hh"
+#include "G4SDParticleFilter.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4UnitsTable.hh"
@@ -148,13 +152,15 @@ void SLArDetectorConstruction::Init() {
 
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  // Initialize Tank objects
-  G4cerr << "SLArDetectorConstruction::Init Tank" << G4endl;
-  fTPC     = new SLArDetTank();
-  if (d.HasMember("Cryostat")) {
-    const rapidjson::Value& cryo = d["Cryostat"]; 
-    assert(cryo.HasMember("dimensions")); 
-    fTPC->GetGeoInfo()->ReadFromJSON(cryo["dimensions"]);
+  // Initialize TPC objects
+  G4cerr << "SLArDetectorConstruction::Init TPC" << G4endl;
+  fTPC     = new SLArDetTPC();
+  if (d.HasMember("TPC")) {
+    const rapidjson::Value& tpc = d["TPC"]; 
+    assert(tpc.HasMember("dimensions"));
+    assert(tpc.HasMember("Cryostat_structure")); 
+    fTPC->GetGeoInfo()->ReadFromJSON(tpc["dimensions"]);
+    fTPC->BuildCryostatStructure(tpc["Cryostat_structure"]); 
   } else {
     fTPC->BuildDefalutGeoParMap();
   }
@@ -385,7 +391,7 @@ void SLArDetectorConstruction::ConstructSDandField()
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDname;
 
-  //Set PMT SD
+  //Set ReadoutTile SD
   if (fReadoutTile) {
   G4VSensitiveDetector* sipmSD
     = new SLArReadoutTileSD(SDname="/tile/sipm");
@@ -406,17 +412,65 @@ void SLArDetectorConstruction::ConstructSDandField()
       );
   }
   
-  // Set Tank SD
+  // Set LAr-volume SD
   G4VSensitiveDetector* targetSD
-    = new SLArTankSD(SDname="/Tank/Target");
+    = new SLArLArSD(SDname="/TPC/LAr");
   SDman->AddNewDetector(targetSD);
   SetSensitiveDetector(
       fTPC->GetTarget()->GetModLV(), 
       targetSD);
 
+  ConstructCryostatScorer(); 
 }
 
-SLArDetTank* SLArDetectorConstruction::GetDetTank() 
+void SLArDetectorConstruction::ConstructCryostatScorer() {
+  G4SDParticleFilter* neutronFilter = new G4SDParticleFilter("neutronFilter"); 
+  neutronFilter->add("neutron"); 
+
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  G4MultiFunctionalDetector* BPolyethileneSD[2]; 
+  G4int iBPltCryostatLayerID[2] = {23, 31};
+
+  for (int i=0; i<2; i++) {
+    int ilayer = i+1; 
+    BPolyethileneSD[i] = 
+      new G4MultiFunctionalDetector("BPolyethilene_"+std::to_string(ilayer)); 
+    G4PSTermination* captureCnts = 
+      new G4PSTermination("captureCnts"+std::to_string(ilayer)); 
+    captureCnts->SetFilter(neutronFilter); 
+    BPolyethileneSD[i]->RegisterPrimitive(captureCnts); 
+
+    SDman->AddNewDetector( BPolyethileneSD[i] );  
+
+    G4LogicalVolume* lv_mother = 
+      fTPC->GetCryostatStructure()[iBPltCryostatLayerID[i]]->fModule->GetModLV(); 
+    auto lv = lv_mother->GetDaughter(0)->GetLogicalVolume();
+
+    SetSensitiveDetector(lv, BPolyethileneSD[i]); 
+  }
+
+  G4int iCryostatWallLayerID[2] = {21, 33}; 
+  G4MultiFunctionalDetector* CryostatWall[2] = {nullptr}; 
+  for (int i=0; i <2; i++) {
+    CryostatWall[i] = new G4MultiFunctionalDetector("CryostatWall"+std::to_string(i)); 
+    G4PSFlatSurfaceCurrent* scorer = 
+      new G4PSFlatSurfaceCurrent("nCurrent"+std::to_string(i), 1);
+    scorer->DivideByArea(false); 
+    scorer->SetFilter(neutronFilter); 
+
+    CryostatWall[i]->RegisterPrimitive(scorer); 
+    SDman->AddNewDetector( CryostatWall[i] ); 
+    
+    G4LogicalVolume* lv_mother = 
+      fTPC->GetCryostatStructure()[iCryostatWallLayerID[i]]->fModule->GetModLV(); 
+    auto lv = lv_mother->GetDaughter(0)->GetLogicalVolume();
+
+    SetSensitiveDetector(lv, CryostatWall[i]); 
+  }
+
+}
+
+SLArDetTPC* SLArDetectorConstruction::GetDetTPC() 
 {
   return fTPC;
 }
