@@ -7,6 +7,9 @@
 #include "SLArAnalysisManager.hh"
 #include <sys/stat.h>
 
+#include "TVectorD.h"
+#include "TParameter.h"
+
 SLArAnalysisManager* SLArAnalysisManager::fgMasterInstance = nullptr;
 G4ThreadLocal SLArAnalysisManager* SLArAnalysisManager::fgInstance = nullptr;
 
@@ -182,6 +185,35 @@ G4bool SLArAnalysisManager::FillEvTree()
 #endif
   return true;
 }
+
+int SLArAnalysisManager::WriteVariable(G4String name, G4double val) {
+  if (!fRootFile) {
+    printf("SLArAnalysisManager::WriteVariable WARNING ");
+    printf("rootfile not present yet. Cannot write %s variable.\n", 
+        name.c_str());
+    return 666;
+  } 
+
+  TParameter<double> var(name, val); 
+  fRootFile->cd(); 
+  int status = var.Write(); 
+  return status; 
+}
+
+int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
+  if (!fRootFile) {
+    printf("SLArAnalysisManager::WriteVariable WARNING ");
+    printf("rootfile not present yet. Cannot write %s variable.\n", 
+        name.c_str());
+    return 666;
+  } 
+
+  TVectorD var(size, val); 
+  fRootFile->cd(); 
+  int status = var.Write(name); 
+  return status; 
+}
+
 
 G4bool SLArAnalysisManager::FakeAccess()
 {

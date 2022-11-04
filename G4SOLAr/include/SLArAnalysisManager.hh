@@ -45,6 +45,8 @@ class SLArAnalysisManager
     void   SetOutputName      (G4String filename);
     void   WriteSysCfg        ();
     bool   IsPathValid        (G4String path);
+    int    WriteVariable      (G4String name, G4double val); 
+    int    WriteArray         (G4String name, G4int size, G4double* val); 
 
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
