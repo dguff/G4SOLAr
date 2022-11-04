@@ -68,6 +68,7 @@
     }, 
     {
       "name" : "Lignine", 
+      "density" : {"val" : 1.40, "unit" : "g/cm3"}, 
       "atomic_components" : [
         {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 18},
         {"name" : "Hydrogen", "symb" : "H", "Z" : 1, "A" : 1.00784, "nAtom" : 13},
