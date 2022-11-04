@@ -34,7 +34,7 @@
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
-#include "detector/Tank/SLArDetTank.hh"
+#include "detector/TPC/SLArDetTPC.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
 #include "detector/ReadoutTile/SLArDetReadoutPlane.hh"
@@ -72,7 +72,6 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 {
 
 
-  friend class SLArDetTankMsgr;
   friend class SLArAnalysisManagerMsgr;
 
   public:
@@ -82,12 +81,13 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
   public:
     virtual G4VPhysicalVolume*      Construct();
     virtual void                    ConstructSDandField();
-    SLArDetTank*                    GetDetTank();
+    SLArDetTPC*                     GetDetTPC();
     void                            BuildAndPlaceSuperCells();
     void                            BuildAndPlaceReadoutTiles();
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
     void                            DumpSuperCellMap(G4String path = "");
+    void                            ConstructCryostatScorer(); 
 
   private:
     void                            Init();
@@ -95,11 +95,11 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4String                        fMaterialDBFile; 
     std::vector<G4VisAttributes*>   fVisAttributes;
 
-    SLArDetTank*                    fTPC;
+    SLArDetTPC*                     fTPC;
 
-    SLArGeoInfo                       fWorldGeoPars;
-    SLArDetSuperCell*                 fSuperCell;
-    SLArDetReadoutTile*               fReadoutTile; 
+    SLArGeoInfo                     fWorldGeoPars;
+    SLArDetSuperCell*               fSuperCell;
+    SLArDetReadoutTile*             fReadoutTile; 
     std::map<G4String, SLArDetReadoutPlane*> fReadoutMegaTile; 
 
     G4LogicalVolume*                fWorldLog;

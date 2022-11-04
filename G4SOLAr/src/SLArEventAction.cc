@@ -1,39 +1,15 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id: SLArEventAction.cc 94486 2015-11-19 08:33:37Z gcosmo $
-//
-/// \file SLArEventAction.cc
-/// \brief Implementation of the SLArEventAction class
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArEventAction.cc
+ * @created     : giovedì nov 03, 2022 12:36:27 CET
+ */
 
 #include "SLArAnalysisManager.hh"
 #include "SLArEventAction.hh"
 #include "SLArReadoutTileHit.hh"
 #include "SLArSuperCellHit.hh"
 #include "SLArTrajectory.hh"
-#include "detector/Tank/SLArTankHit.hh"
+#include "detector/TPC/SLArLArHit.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -54,7 +30,7 @@ SLArEventAction::SLArEventAction()
 : G4UserEventAction(), 
   fTileHCollID  (-2), 
   fSuperCellHCollID(-5), 
-  fTargetHCollID(-4)
+  fLArHCollID(-4)
 {
   // set printing per each event
   G4RunManager::GetRunManager()->SetPrintProgress(1);
@@ -89,14 +65,14 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
       fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
     if (fSuperCellHCollID == -5) 
       fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
-    if (fTargetHCollID == -4)
-      fTargetHCollID = sdManager->GetCollectionID("TargetColl");
+    if (fLArHCollID == -4)
+      fLArHCollID = sdManager->GetCollectionID("LArColl");
 
 #ifdef SLAR_DEBUG
     G4cout << "SLArEventAction::BeginOfEventAction(): ";
     G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
-    G4cout << "SuperCell ID = " << fSuperCellHCollID << G4endl;
-    G4cout << "Target ID      = " << fTargetHCollID << G4endl;
+    G4cout << "SuperCell ID   = " << fSuperCellHCollID << G4endl;
+    G4cout << "LAr volume ID  = " << fLArHCollID << G4endl;
 #endif
 
     // Reset hits in DST event 
@@ -135,7 +111,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-    RecordEventTarget( event );
+    RecordEventLAr( event );
 
     if (SLArAnaMgr->GetPixCfg()) {
       RecordEventReadoutTile ( event );
@@ -325,22 +301,22 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
 }
 
 
-void SLArEventAction::RecordEventTarget(const G4Event* ev)
+void SLArEventAction::RecordEventLAr(const G4Event* ev)
 {
 #ifdef SLAR_DEBUG
-  printf("  -> RecordEventTarget()\n");
+  printf("  -> RecordEventLAr()\n");
 #endif
 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-  if (fTargetHCollID == -4) return;
+  if (fLArHCollID == -4) return;
   else 
   {
     // recover analysis manager
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-    SLArTankHitsCollection* hHC1 
-      = static_cast<SLArTankHitsCollection*>(hce->GetHC(fTargetHCollID));
+    SLArLArHitsCollection* hHC1 
+      = static_cast<SLArLArHitsCollection*>(hce->GetHC(fLArHCollID));
 
-    SLArTankHit* hit = (*hHC1)[0];
+    SLArLArHit* hit = (*hHC1)[0];
     fTotEdep = hit->GetDepositedEnergy();
 
     G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();

@@ -75,7 +75,7 @@ public:
 private:
     G4int fTileHCollID;
     G4int fSuperCellHCollID;
-    G4int fTargetHCollID;
+    G4int fLArHCollID;
 
     G4int fHitCount;
     G4int fPhotonCount_Scnt;
@@ -91,7 +91,7 @@ private:
 
     void RecordEventReadoutTile (const G4Event* ev);
     void RecordEventSuperCell( const G4Event* ev); 
-    void RecordEventTarget(const G4Event* ev);
+    void RecordEventLAr(const G4Event* ev);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
