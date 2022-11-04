@@ -116,6 +116,8 @@ void SLArDetTPC::BuildCryostatStructure(const rapidjson::Value& jcryo) {
   assert(jcryo.IsArray()); 
   printf("SLArDetTPC::BuildCryostatStructure\n");
 
+  if (!fCryostat) fCryostat = new SLArBaseDetModule();
+
   G4double tgtZ = fGeoInfo->GetGeoPar("target_z");
   G4double tgtY = fGeoInfo->GetGeoPar("target_y");
   G4double tgtX = fGeoInfo->GetGeoPar("target_x");
@@ -127,6 +129,8 @@ void SLArDetTPC::BuildCryostatStructure(const rapidjson::Value& jcryo) {
     if (layer.HasMember("thickness")) 
       cryostat_tk += fGeoInfo->ParseJsonVal(layer["thickness"]); 
   }
+
+  fCryostat->GetGeoInfo()->RegisterGeoPar("cryostat_tk", cryostat_tk); 
 
   G4double halfSize[3] = {tgtX*0.5 + cryostat_tk, 
                           tgtY*0.5 + cryostat_tk, 
@@ -162,34 +166,24 @@ void SLArDetTPC::BuildCryostatStructure(const rapidjson::Value& jcryo) {
 void SLArDetTPC::BuildCryostat()
 {
   G4cerr << "SLArDetTPC::BuildCryostat()" << G4endl;
+  if (!fCryostat) fCryostat = new SLArBaseDetModule(); 
   G4double tgtZ         = fGeoInfo->GetGeoPar("target_z");
   G4double tgtY         = fGeoInfo->GetGeoPar("target_y");
   G4double tgtX         = fGeoInfo->GetGeoPar("target_x");
-  G4double out_tk       = fGeoInfo->GetGeoPar("outer_tk"); 
-  G4double in_tk        = fGeoInfo->GetGeoPar("inner_tk"); 
-  G4double foam_tk      = fGeoInfo->GetGeoPar("foam_tk"); 
-  G4double wood_tk      = fGeoInfo->GetGeoPar("plywood_tk"); 
-  G4double trpl_tk      = fGeoInfo->GetGeoPar("triplex_tk"); 
-  G4double bplt_tk      = 0.0; 
-  G4double tnkThck      = out_tk + 4*wood_tk + 2*foam_tk + trpl_tk + in_tk; 
-  if (fGeoInfo->Contains("bplt_tk")) {
-    bplt_tk = fGeoInfo->GetGeoPar("bplt_tk"); 
-    tnkThck+= (2*wood_tk + 2*bplt_tk); 
-  }
-
-  
+  G4double cryo_tk      = fCryostat->GetGeoPar("cryostat_tk"); 
+   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Create Tank 
-  G4double x_ = tgtX*0.5 + tnkThck;
-  G4double y_ = tgtY*0.5 + tnkThck;
-  G4double z_ = tgtZ*0.5 + tnkThck;
+  G4double x_ = tgtX*0.5 + cryo_tk;
+  G4double y_ = tgtY*0.5 + cryo_tk;
+  G4double z_ = tgtZ*0.5 + cryo_tk;
   // Create outer box 
   fBoxOut = new G4Box("fBoxOut_solid", 
       x_, y_, z_); 
 
   // Create inner box 
   fBoxInn = new G4Box("fBoxInn_solid", 
-      x_-tnkThck, y_-tnkThck, z_-tnkThck);
+      x_-cryo_tk, y_-cryo_tk, z_-cryo_tk);
 
   G4SubtractionSolid* cryostat_solid = 
     new G4SubtractionSolid("cryostat_solid", 
@@ -197,7 +191,6 @@ void SLArDetTPC::BuildCryostat()
 
   // Create Cryostat container volume
   G4cerr << "Create Cryostat" << G4endl;
-  fCryostat = new SLArBaseDetModule();
   fCryostat->SetGeoPar("cryostat_x", 2*x_);
   fCryostat->SetGeoPar("cryostat_y", 2*y_);
   fCryostat->SetGeoPar("cryostat_z", 2*z_);
