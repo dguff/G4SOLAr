@@ -95,7 +95,7 @@ int main(int argc,char** argv)
 #endif
 
   G4long myseed = 345354;
-  const char* short_opts = "m:o:u:t:r:g:p:h";
+  const char* short_opts = "m:o:d:u:t:r:g:p:h";
   static struct option long_opts[10] = 
   {
     {"macro", required_argument, 0, 'm'}, 
