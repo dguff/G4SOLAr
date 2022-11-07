@@ -96,6 +96,7 @@ SLArScintillation::SLArScintillation(const G4String& processName,
   , fIntegralTable3(nullptr)
   , fEmSaturation(nullptr)
   , fNumPhotons(0)
+  , fNumIonElectrons(0)
 {
   secID = G4PhysicsModelCatalog::GetModelID("model_Scintillation");
   SetProcessSubType(fScintillation);
@@ -400,7 +401,8 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
   }
 
   G4double ResolutionScale = MPT->GetConstProperty(kRESOLUTIONSCALE);
-  G4double MeanNumberOfPhotons;
+  G4double MeanNumberOfPhotons = 0.;
+  G4double MeanNumberOfIonElectrons = 0.; 
 
   G4double yield1     = 0.;
   G4double yield2     = 0.;
@@ -418,6 +420,8 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
       MeanNumberOfPhotons = GetScintillationYieldByParticleType(aTrack, aStep, yield1, yield2, yield3);
       // Set MeanNumberOfPhotons
       MeanNumberOfPhotons = LightYield->LArQL(TotalEnergyDeposit/CLHEP::MeV,StepWidth/CLHEP::cm,electricField_)*(TotalEnergyDeposit/CLHEP::MeV);
+      MeanNumberOfIonElectrons = LightYield->LArQQ(TotalEnergyDeposit/CLHEP::MeV,StepWidth/CLHEP::cm,electricField_)*(TotalEnergyDeposit/CLHEP::MeV); 
+
       //MeanNumberOfPhotons = LightYield->Flat()*TotalEnergyDeposit/CLHEP::MeV; // Example for other implemented light yields
 
 /*
@@ -475,10 +479,12 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
   {
     G4double sigma = ResolutionScale * std::sqrt(MeanNumberOfPhotons);
     fNumPhotons = G4int(G4RandGauss::shoot(MeanNumberOfPhotons, sigma) + 0.5);
+    fNumIonElectrons = G4int(G4Poisson(MeanNumberOfIonElectrons)); 
   }
   else
   {
     fNumPhotons = G4int(G4Poisson(MeanNumberOfPhotons));
+    fNumIonElectrons = G4int(G4Poisson(MeanNumberOfIonElectrons)); 
   }
 
   if(fNumPhotons <= 0 || !fStackingFlag)

@@ -17,14 +17,18 @@ struct trj_point {
   float fX; 
   float fY; 
   float fZ;
-  float fEdep; 
+  float fEdep;
+  int   fNph; 
+  int   fNel; 
 
-  trj_point() : fX(0.), fY(0.), fZ(0.), fEdep(0.) {}
-  trj_point(double x, double y, double z, double edep) {
+  trj_point() : fX(0.), fY(0.), fZ(0.), fEdep(0.), fNph(0), fNel(0) {}
+  trj_point(double x, double y, double z, double edep, int n_ph, int n_el) {
     fX = x; 
     fY = y; 
     fZ = z; 
     fEdep = edep;
+    fNph = n_ph; 
+    fNel = n_el; 
   }
 };
 
@@ -46,7 +50,9 @@ class SLArEventTrajectory : public TObject
     float   GetTrakLength()     {return fTrackLength    ;}
     TVector3& GetInitMomentum() {return fInitMomentum   ;}
     float   GetTime()           {return fTime           ;}
-    float   GetTotalEdep(); 
+    float   GetTotalEdep()      {return fTotalEdep      ;} 
+    float   GetTotalNph ()      {return fTotalNph       ;} 
+    float   GetTotalNel ()      {return fTotalNel       ;} 
 
     void    SetParticleName(TString name)   {fParticleName = name;}
     void    SetCreatorProcess(TString proc) {fCreatorProcess = proc;}
@@ -59,23 +65,26 @@ class SLArEventTrajectory : public TObject
     void    SetTime(float t)                {fTime = t           ;}
 
     std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
-    void    RegisterPoint(double x, double y, double z, double edep);
+    void    RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el);
 
 
   private:
-    TString               fParticleName      ;
-    TString               fCreatorProcess    ; 
-    int                   fPDGID             ; 
-    int                   fTrackID           ; 
-    int                   fParentID          ; 
-    float                 fInitKineticEnergy ;
-    float                 fTrackLength       ; 
-    float                 fTime              ; 
-    TVector3              fInitMomentum      ;
+    TString                fParticleName     ;
+    TString                fCreatorProcess   ; 
+    int                    fPDGID            ; 
+    int                    fTrackID          ; 
+    int                    fParentID         ; 
+    float                  fInitKineticEnergy;
+    float                  fTrackLength      ; 
+    float                  fTime             ; 
+    TVector3               fInitMomentum     ;
     std::vector<trj_point> fTrjPoints        ;
+    float                  fTotalEdep        ; 
+    float                  fTotalNph         ; 
+    float                  fTotalNel         ; 
 
   public:
-    ClassDef(SLArEventTrajectory, 1);
+    ClassDef(SLArEventTrajectory, 2);
 };
 
 

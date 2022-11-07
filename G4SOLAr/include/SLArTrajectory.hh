@@ -36,6 +36,8 @@ class SLArTrajectory : public G4Trajectory
     inline void  operator delete(void*);
 
     void AddEdep(G4double edep) {fEdepContainer.push_back(edep);}; 
+    void AddIonizationElectrons(G4int nel) {fNionElectronsContainer.push_back(nel); }
+    void AddOpticalPhotons(G4int nph) {fNphtContainer.push_back(nph);}
 
     G4String GetCreatorProcess() {return fCreatorProcess;}
     void SetDrawTrajectory(G4bool b){fDrawit=b;}
@@ -43,6 +45,8 @@ class SLArTrajectory : public G4Trajectory
     void SetForceDrawTrajectory(G4bool b){fForceDraw=b;}
     void SetForceNoDrawTrajectory(G4bool b){fForceNoDraw=b;}
     std::vector<float>& GetEdep() {return fEdepContainer;}
+    std::vector<int>& GetNphotons() {return fNphtContainer;}
+    std::vector<int>& GetIonElectrons() {return fNionElectronsContainer;}
 
     G4float GetTime() {return fTime;}
 
@@ -57,6 +61,8 @@ class SLArTrajectory : public G4Trajectory
     G4float fTime;
     G4ParticleDefinition* fParticleDefinition;
     std::vector<float>  fEdepContainer;
+    std::vector<int>    fNphtContainer; 
+    std::vector<int>    fNionElectronsContainer; 
     using G4Trajectory::MergeTrajectory; 
 };
 

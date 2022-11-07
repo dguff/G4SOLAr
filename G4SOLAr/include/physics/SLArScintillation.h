@@ -183,6 +183,9 @@ class SLArScintillation : public G4VRestDiscreteProcess
   G4int GetNumPhotons() const;
   // Returns the current number of scint. photons (after PostStepDoIt)
 
+  G4int GetNumIonElectrons() const;
+  // Returns the current number of ionization electrons (after PostStepDoIt)
+  
   void DumpPhysicsTable() const;
   // Prints the fast and slow scintillation integral tables.
 
@@ -200,6 +203,7 @@ class SLArScintillation : public G4VRestDiscreteProcess
     G4OpticalPhoton::OpticalPhotonDefinition();
 
   G4int fNumPhotons;
+  G4int fNumIonElectrons; 
 
   G4bool fScintillationByParticleType;
   G4bool fScintillationTrackInfo;
@@ -275,6 +279,8 @@ inline G4bool SLArScintillation::GetScintillationTrackInfo() const
 inline G4bool SLArScintillation::GetStackPhotons() const { return fStackingFlag; }
 
 inline G4int SLArScintillation::GetNumPhotons() const { return fNumPhotons; }
+
+inline G4int SLArScintillation::GetNumIonElectrons() const {return fNumIonElectrons;}
 
 inline G4double SLArScintillation::single_exp(G4double t, G4double tau2)
 {

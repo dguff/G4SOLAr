@@ -27,6 +27,7 @@
 /// \file SLArSteppingAction.cc
 /// \brief Implementation of the SLArSteppingAction class
 
+#include "SLArScintillation.h"
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArTrajectory.hh"
@@ -79,7 +80,36 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
     SLArTrajectory* trajectory =
       (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
     double edep = step->GetTotalEnergyDeposit();
+    auto stepMngr = fTrackinAction->GetTrackingManager()->GetSteppingManager(); 
     trajectory->AddEdep(edep);
+    int n_ph = 0; 
+    int n_el = 0; 
+
+    if (stepMngr->GetfStepStatus() != fAtRestDoItProc) {
+      G4ProcessVector* process_vector = stepMngr->GetfPostStepDoItVector(); 
+      for (size_t iproc = 0; iproc < stepMngr->GetMAXofPostStepLoops(); iproc++) {
+        G4VProcess* proc = (*process_vector)[iproc]; 
+
+        if (proc->GetProcessName() == "Scintillation") {
+          SLArScintillation* scint_process = (SLArScintillation*)proc; 
+
+          n_ph = scint_process->GetNumPhotons(); 
+          n_el = scint_process->GetNumIonElectrons(); 
+
+          break;
+        } 
+      }
+    }
+
+    //printf("SLArSteppingAction::UserSteppingAction: adding %i ph and %i e ion. to %s [%i]\n", 
+        //n_ph, n_el, 
+        //particleDef->GetParticleName().c_str(), track->GetTrackID());
+    //getchar(); 
+    trajectory->AddOpticalPhotons(n_ph); 
+    trajectory->AddIonizationElectrons(n_el); 
+
+
+    
     //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
         //track->GetTrackID(), 
         //trajectory->GetTrackID(), 

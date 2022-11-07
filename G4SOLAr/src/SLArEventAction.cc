@@ -368,13 +368,22 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
           G4double trj_edep = 0; 
           for (const auto &edep : SLArTrj->GetEdep()) trj_edep += edep; 
           float edep = 0; 
+          int   n_ph = 0; 
+          int   n_el = 0; 
           for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
-            (n == 0) ? edep = 0 : edep = SLArTrj->GetEdep().at(n-1);
+            if (n == 0) {
+              edep = 0; n_ph = 0; n_el = 0; 
+            } else {
+              edep = SLArTrj->GetEdep().at(n-1);
+              n_ph = SLArTrj->GetNphotons().at(n-1); 
+              n_el = SLArTrj->GetIonElectrons().at(n-1); 
+            } 
+
             evTrajectory->RegisterPoint(
                 SLArTrj->GetPoint(n)->GetPosition().getX(),
                 SLArTrj->GetPoint(n)->GetPosition().getY(),
                 SLArTrj->GetPoint(n)->GetPosition().getZ(),
-                edep
+                edep, n_ph, n_el
                 );
           }
 
