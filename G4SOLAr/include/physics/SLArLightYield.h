@@ -20,7 +20,7 @@ class SLArLightYield{
     const double Wion = 23.6 ; // W-value for ionisation in eV/e-
     const double Nex_Ni = 0.29; // Ratio of number of electrons to number of ions
     const double Ni = 1.0e6/Wion; // Ionization density in LAr
-    const double pLAr = 1.30;  // Density Liquid Argon
+    const double pLAr = 1.39;  // Density Liquid Argon
     const double alpha = 0.032; // Fit result for the Corr function
     const double beta = 0.008258; // Fit result for the Corr function
     const std::vector<double> chi_param = {2.151572666e-5, -3.988504, 1.38343421, 1.9919521e-6};
