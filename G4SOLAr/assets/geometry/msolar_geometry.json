@@ -2,9 +2,9 @@
   "World" : {
     "copyID" : 0, 
     "dimensions" : [
-      {"name" : "size_x" , "val" :  1.5, "unit": "m"},    
-      {"name" : "size_y" , "val" :  2.0, "unit": "m"},   
-      {"name" : "size_z" , "val" :  2.5, "unit": "m"}
+      {"name" : "size_x" , "val" :  3.5, "unit": "m"},    
+      {"name" : "size_y" , "val" :  4.0, "unit": "m"},   
+      {"name" : "size_z" , "val" :  6.5, "unit": "m"}
     ]
   },
   "TPC" : {
@@ -34,22 +34,45 @@
     "dimensions" : [
       {"name" : "tile_x", "val" :10.0, "unit" : "cm" },
       {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
-      {"name" : "tile_z", "val" :10.0, "unit" : "cm" },
-      {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
-      {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
-      {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }, 
-      {"name" : "sipm_fill_factor",    "val"  :0.85  }, 
-      {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
-      {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
-      {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+      {"name" : "tile_z", "val" :10.0, "unit" : "cm" }
     ], 
+    "components" : [
+      {
+        "name" : "pixel", 
+        "dimensions" : [
+          {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
+          {"name" : "pix_y" , "val" : 1.8, "unit" : "mm" },
+          {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+        ]
+      }, 
+      {
+        "name" : "sipm", 
+        "dimensions" : [
+          {"name" : "sipm_fill_factor",    "val"  :0.85  }, 
+          {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
+          {"name" : "sipm_y", "val" : 1.2, "unit" : "mm" },
+          {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }
+        ]
+      }
+    ],
+    "unit_cell" : {
+      "dimensions" : [{"name" : "cell_x", "val" : 1.0, "unit" : "cm"}, {"name" : "cell_z", "val" : 1.0, "unit" : "cm"}], 
+      "lineup" : [
+        {"component" : "pixel", "name" : "qpix1", "copy" : 1, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" : 3.333, "unit" : "mm"}},
+        {"component" : "pixel", "name" : "qpix2", "copy" : 2, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" : 0.000, "unit" : "mm"}},
+        {"component" : "pixel", "name" : "qpix3", "copy" : 3, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
+        {"component" : "pixel", "name" : "qpix4", "copy" : 4, "pos_z" : {"val" :  0.000, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
+        {"component" : "pixel", "name" : "qpix5", "copy" : 5, "pos_z" : {"val" :  3.333, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
+        {"component" : "sipm" , "name" : "sipm" , "copy" : 0, "pos_z" : {"val" :  1.667, "unit" : "mm"}, "pos_x" : {"val" : 1.667, "unit" : "mm"}}
+      ]
+    },
     "modules" : [
       {
         "name" : "StdReadoutPlane", 
         "copyID" : 2000, 
         "dimensions" : [
-          {"name" : "rdoutplane_x", "val" : 32.0, "unit" : "cm"}, 
-          {"name" : "rdoutplane_z", "val" : 32.0, "unit" : "cm"}
+          {"name" : "rdoutplane_x", "val" : 11.0, "unit" : "cm"}, 
+          {"name" : "rdoutplane_z", "val" : 11.0, "unit" : "cm"}
         ], 
         "positions" : [
           {"copy":2001, "xyz":[ 48,  64, -114], "unit": "cm", "rot":[0, 0, 90]}

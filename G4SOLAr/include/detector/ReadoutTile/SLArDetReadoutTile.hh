@@ -16,25 +16,38 @@
 class SLArDetReadoutTile : public SLArBaseDetModule
 {
 
+struct SUnitCellStruct {
+  G4String fName; 
+  SLArBaseDetModule* fMod; 
+  G4ThreeVector fPos;
+  G4int fCopyNo;
+
+  SUnitCellStruct(G4String, G4int, SLArBaseDetModule*, G4ThreeVector); 
+}; 
+
 public:
-  SLArDetReadoutTile            ();
-  SLArDetReadoutTile            (const SLArDetReadoutTile &detReadoutTile);
-  ~SLArDetReadoutTile ();
+  SLArDetReadoutTile();
+  SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile);
+  ~SLArDetReadoutTile();
   
-  void          SetPerfectQE(G4bool kQE);
+  void SetPerfectQE(G4bool kQE);
 
-  void          BuildMaterial(G4String materials_db);
-  void          BuildDefalutGeoParMap();
+  void BuildMaterial(G4String materials_db);
+  void BuildComponentsDefinition(const rapidjson::Value&); 
+  void BuildUnitCellStructure(const rapidjson::Value&); 
   G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
-  void          BuildReadoutTile();
-  void          BuildPCB();
-  void          BuildSiPM();
-  void          BuildChargePix();
-  void          SetVisAttributes();
+  void BuildReadoutTile();
+  void BuildPCB();
+  void BuildSiPM();
+  void BuildChargePix();
+  void BuildUnitCell(); 
+  void SetVisAttributes();
 
-  SLArBaseDetModule*       GetSiPMActive();
-  SLArMaterial*    GetSiPMActiveMaterial();
-  G4LogicalSkinSurface*    GetSiPMLgSkin() {return fSkinSurface;}
+  SLArBaseDetModule* GetSiPMActive();
+  SLArBaseDetModule* GetUnitCell() {return fUnitCell;}
+  SLArMaterial* GetSiPMActiveMaterial();
+  G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+
 
 
 protected:
@@ -49,14 +62,16 @@ private:
   SLArBaseDetModule* fChargePix;
   SLArBaseDetModule* fSiPM;
   SLArBaseDetModule* fSiPMActive; 
+  SLArBaseDetModule* fUnitCell; 
 
   SLArMaterial*  fMatReadoutTile; 
   SLArMaterial*  fMatPCB;
   SLArMaterial*  fMatChargePix;
   SLArMaterial*  fMatSiPM; 
   SLArMaterial*  fMatSiPMCapsule;
-
   G4LogicalSkinSurface* fSkinSurface;
+
+  std::vector<SUnitCellStruct> fCellStructure; 
 
   friend class SLArDetReadoutPlane;
 
@@ -67,6 +82,11 @@ public:
 
       void ComputeTransformation(G4int copyNo, G4VPhysicalVolume* physVol) const; 
 
+      EAxis GetReplicationAxis() {return fReplicaAxis;}
+      G4double GetSpacing() {return fSpacing;}
+      G4ThreeVector GetStartPos() {return fStartPos;}
+
+
     private: 
       EAxis fReplicaAxis; 
       G4ThreeVector fAxisVector; 
@@ -76,6 +96,13 @@ public:
   };
 };
 
+inline SLArDetReadoutTile::SUnitCellStruct::SUnitCellStruct(
+    G4String name, G4int copyNo, SLArBaseDetModule* mod, G4ThreeVector pos) {
+ fName = name; 
+ fCopyNo = copyNo; 
+ fMod = mod; 
+ fPos = pos; 
+}
 
 #endif /* end of include guard SLARDETREADOUTTILE_HH */
 

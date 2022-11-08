@@ -182,7 +182,7 @@ void SLArDetectorConstruction::Init() {
   // Initialize ReadoutTile
 
   if (d.HasMember("ReadoutTile")) {
-    G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
+    G4cout << "SLArDetectorConstruction::Init Pix..." << G4endl;
     InitPix(d["ReadoutTile"].GetObj()); 
     G4cout << "SLArDetectorConstruction::Init Pix DONE" << G4endl;
   }
@@ -256,7 +256,14 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   SLArCfgPixSys* pixCfg = new SLArCfgPixSys("PixCfg");
 
   fReadoutTile = new SLArDetReadoutTile();
+  
+  assert(pixsys.HasMember("dimensions")); 
+  assert(pixsys.HasMember("components")); 
+  assert(pixsys.HasMember("unit_cell")); 
+
   fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"]); 
+  fReadoutTile->BuildComponentsDefinition(pixsys["components"]); 
+  fReadoutTile->BuildUnitCellStructure(pixsys["unit_cell"]); 
   fReadoutTile->BuildMaterial(fMaterialDBFile);
 
   if (pixsys.HasMember("modules")) {
@@ -662,8 +669,8 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           tile_cfg->SetY(tile_pos.y());
           tile_cfg->SetX(tile_pos.x());
           
-          G4ThreeVector phys_pos = tile_pos 
-            + tile_pos.rotate(tile_rot->getPhi(), tile_rot->getTheta(), tile_rot->getPsi()); 
+          G4ThreeVector phys_pos = mtile_pos 
+            + tile_pos.rotate(mtile_rot->getPhi(), mtile_rot->getTheta(), mtile_rot->getPsi()); 
           
           tile_cfg->SetPhysX( (phys_pos).x() ); 
           tile_cfg->SetPhysY( (phys_pos).y() ); 

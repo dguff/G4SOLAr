@@ -54,7 +54,7 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
   fTileRow = new SLArBaseDetModule();
   fTileRow->SetMaterial(fMatReadoutPlane->GetMaterial());
   G4double tile_x  = tile->GetGeoPar("tile_x"); 
-  G4double tile_y  = tile->GetGeoPar("tile_y") + tile->GetGeoPar("sipm_y");
+  G4double tile_y  = tile->GetGeoPar("tile_y")+tile->GetUnitCell()->GetGeoPar("cell_y");
   G4double tile_z  = tile->GetGeoPar("tile_z"); 
   G4double plane_z = fGeoInfo->GetGeoPar("rdoutplane_z"); 
 
@@ -88,7 +88,7 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
 void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile) 
 {
   G4double tile_x  = tile->GetGeoPar("tile_x"); 
-  G4double tile_y  = tile->GetGeoPar("tile_y") + tile->GetGeoPar("sipm_y");
+  G4double tile_y  = tile->GetGeoPar("tile_y") + tile->GetUnitCell()->GetGeoPar("cell_y");
   G4double tile_z  = tile->GetGeoPar("tile_z"); 
   G4double plane_x = fGeoInfo->GetGeoPar("rdoutplane_x"); 
   G4double plane_z = fGeoInfo->GetGeoPar("rdoutplane_z"); 
@@ -120,6 +120,8 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
   );
 }
 
+
+
 SLArDetReadoutPlane::SLArMTileParametrization::SLArMTileParametrization(
     EAxis replica_axis, G4ThreeVector start_pos, G4double spacing) 
   : fReplicaAxis(replica_axis), fStartPos(start_pos), fSpacing(spacing)
@@ -140,5 +142,6 @@ void SLArDetReadoutPlane::SLArMTileParametrization::ComputeTransformation(
   physVol->SetRotation(0); 
   return; 
 }
+
 
 
