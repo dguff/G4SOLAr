@@ -17,6 +17,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
+#include "G4PVParameterised.hh"
 #include "G4VPhysicalVolume.hh"
 
 #include "G4UnitsTable.hh"
@@ -262,22 +263,29 @@ void SLArDetReadoutTile::BuildReadoutTile()
    */
  
   //--------------------------------------------------------- Standard Geometry
+  // place SiPM in unit cell
   fSiPM->GetModPV("sipm", 0, G4ThreeVector(-0.5*dx, 0, +0.5*dx), cell_lv, 2); 
-  // 3. A row of elementary cells
+  // 3. Create a volume parametrization instance 
+  SLArRTileParametrization* rowParametrization = 
+    new SLArRTileParametrization(kZAxis, G4ThreeVector(0, 0, -15*dx), 3*dx); 
   G4cout<<"Creating a row of sensor cells..." << G4endl; 
   G4Box* cell_row_box = new G4Box("tileCellRow", 1.5*dx, 0.5*h, 15*dx); 
   G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
   cell_row_lv->SetVisAttributes( G4VisAttributes(false) ); 
-  new G4PVReplica("cell_row", cell_lv, cell_row_lv, kZAxis, 10, 3*dx);  
+  new G4PVParameterised("cell_row", cell_lv, cell_row_lv, kZAxis, 10,
+      rowParametrization, true); 
   
   // 4. Full sensor plane
   G4cout<<"Creating replacas of rows..." << G4endl; 
+  SLArRTileParametrization* tplaneParametrization = 
+    new SLArRTileParametrization(kXAxis, G4ThreeVector(-15*dx, 0, 0), 3*dx); 
   G4Box* cell_plane_box = new G4Box("tileCellPlane", 
       15*dx, 0.5*h, 15*dx); 
   G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
       fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
   cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
-  new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
+  //new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
+  new G4PVParameterised("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, tplaneParametrization, true); 
 
   // 5. Final assembly (PCB + sensor plane)
   G4cout<<"Final placement..." << G4endl; 
@@ -298,8 +306,10 @@ void SLArDetReadoutTile::SetVisAttributes()
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
   fSiPM->GetModLV()->SetVisAttributes( visAttributes );
 
-  //visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
-  //fChargePix->GetModLV()->SetVisAttributes( visAttributes );
+  if (fChargePix) {
+    visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
+    fChargePix->GetModLV()->SetVisAttributes( visAttributes );
+  }
 
   visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.305, 0.294, 0.345, 0.0);
@@ -389,3 +399,26 @@ G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
 
   return fSkinSurface;
 }
+
+SLArDetReadoutTile::SLArRTileParametrization::SLArRTileParametrization(
+    EAxis replica_axis, G4ThreeVector start_pos, G4double spacing) 
+  : fReplicaAxis(replica_axis), fStartPos(start_pos), fSpacing(spacing) 
+{
+
+  if      (fReplicaAxis == kXAxis) {fAxisVector = G4ThreeVector(1, 0, 0);} 
+  else if (fReplicaAxis == kYAxis) {fAxisVector = G4ThreeVector(0, 1, 0);} 
+  else                             {fAxisVector = G4ThreeVector(0, 0, 1);} 
+
+  return; 
+}
+
+void SLArDetReadoutTile::SLArRTileParametrization::ComputeTransformation(
+    G4int copyNo, G4VPhysicalVolume* physVol) const {
+  G4ThreeVector origin = fStartPos; 
+  origin += fAxisVector*(copyNo+0.5)*fSpacing; 
+
+  physVol->SetTranslation(origin); 
+  physVol->SetRotation(0); 
+  return; 
+}
+

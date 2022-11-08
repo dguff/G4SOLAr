@@ -12,6 +12,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
+#include "G4PVParameterised.hh"
 #include "G4VPhysicalVolume.hh"
 
 #include "G4UnitsTable.hh"
@@ -69,9 +70,15 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
       fMatReadoutPlane->GetMaterial(), "tile_row_z_lv") 
       );
   fTileRow->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
+
+  SLArMTileParametrization* rowTileParametrization = 
+    new SLArMTileParametrization(
+      kZAxis, G4ThreeVector(0, 0, -0.5*true_plane_z), tile_z);
   
   fTileRow->SetModPV(
-      new G4PVReplica("tile_row_z", tile->fModLV, fTileRow->GetModLV(), kZAxis, n_z, tile_z)
+      //new G4PVReplica("tile_row_z", tile->fModLV, fTileRow->GetModLV(), kZAxis, n_z, tile_z)
+      new G4PVParameterised("tile_row_z", tile->GetModLV(), fTileRow->GetModLV(),
+        kZAxis, n_z, rowTileParametrization, true) 
   );
   fTileRow->SetGeoPar("tilerow_x", tile_x);
   fTileRow->SetGeoPar("tilerow_y", tile_y);
@@ -100,9 +107,38 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
   fModLV = new G4LogicalVolume(ReadoutPlane_box, 
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
   fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  
+  SLArMTileParametrization* planeParametrization = 
+    new SLArMTileParametrization(
+        kXAxis, G4ThreeVector(-true_plane_x*0.5, 0., 0.), tile_x); 
+
+
   SetModPV(
-      new G4PVReplica("ReadoutPlane", fTileRow->GetModLV(), fModLV, kXAxis, n_x, tile_x)
+      //new G4PVReplica("ReadoutPlane", fTileRow->GetModLV(), fModLV, kXAxis, n_x, tile_x)
+      new G4PVParameterised("ReadoutPlane", fTileRow->GetModLV(), fModLV,
+        kXAxis, n_x, planeParametrization, true) 
   );
+}
+
+SLArDetReadoutPlane::SLArMTileParametrization::SLArMTileParametrization(
+    EAxis replica_axis, G4ThreeVector start_pos, G4double spacing) 
+  : fReplicaAxis(replica_axis), fStartPos(start_pos), fSpacing(spacing)
+{
+  if      (fReplicaAxis == kXAxis) {fAxisVector = G4ThreeVector(1, 0, 0);} 
+  else if (fReplicaAxis == kYAxis) {fAxisVector = G4ThreeVector(0, 1, 0);} 
+  else                             {fAxisVector = G4ThreeVector(0, 0, 1);} 
+
+  return; 
+}
+
+void SLArDetReadoutPlane::SLArMTileParametrization::ComputeTransformation(
+    G4int copyNo, G4VPhysicalVolume* physVol) const {
+  G4ThreeVector origin = fStartPos; 
+  origin += fAxisVector*(copyNo+0.5)*fSpacing; 
+
+  physVol->SetTranslation(origin); 
+  physVol->SetRotation(0); 
+  return; 
 }
 
 

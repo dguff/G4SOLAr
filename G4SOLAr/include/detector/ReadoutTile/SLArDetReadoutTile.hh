@@ -9,6 +9,7 @@
 #define SLARDETREADOUTTILE_HH
 
 #include "detector/SLArBaseDetModule.hh"
+#include "G4VPVParameterisation.hh"
 #include "G4LogicalSkinSurface.hh"
 
 
@@ -58,7 +59,23 @@ private:
   G4LogicalSkinSurface* fSkinSurface;
 
   friend class SLArDetReadoutPlane;
+
+public: 
+  class SLArRTileParametrization : public G4VPVParameterisation {
+    public: 
+      SLArRTileParametrization(EAxis, G4ThreeVector, G4double);
+
+      void ComputeTransformation(G4int copyNo, G4VPhysicalVolume* physVol) const; 
+
+    private: 
+      EAxis fReplicaAxis; 
+      G4ThreeVector fAxisVector; 
+      G4ThreeVector fStartPos; 
+      G4double  fSpacing; 
+
+  };
 };
+
 
 #endif /* end of include guard SLARDETREADOUTTILE_HH */
 
