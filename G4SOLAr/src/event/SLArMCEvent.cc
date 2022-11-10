@@ -28,7 +28,7 @@ SLArMCEvent::~SLArMCEvent()
   std::cerr << "SLArMCEvent DONE" << std::endl;
 }
 
-int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgPixSys* pixSysCfg)
+int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgSystemPix* pixSysCfg)
 {
   if (!fEvSystemTile) {
     std::cout << "SLArMCEvent::ConfigReadoutTileSystem: fEvSystemTile is null!"
@@ -40,7 +40,7 @@ int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgPixSys* pixSysCfg)
   return fEvSystemTile->GetMegaTilesMap().size();
 }
 
-int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSCSys* supercellSysCfg)
+int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
 {
   if (!fEvSystemSuperCell) {
     std::cout << "SLArMCEvent::ConfigSuperCellSystem: fEvSystemSuperCell is null!"

@@ -18,7 +18,6 @@ SLArCfgSuperCellArray::SLArCfgSuperCellArray(TString name, int serie)
   : SLArCfgAssembly<SLArCfgSuperCell>(name, serie) 
 {
   SetName(name);
-  fSerie = serie;
   printf("SLArCfgSuperCellArray created with name %s\n", fName.Data());
 }
 

@@ -14,11 +14,9 @@
 #pragma link C++ class SLArEventTile++;
 #pragma link C++ class std::map<int, SLArEventTile*>++;
 #pragma link C++ class SLArEventMegatile++;
-#pragma link C++ typedef SLArCfgPixSys++;
 #pragma link C++ class SLArEventReadoutTileSystem++;
 #pragma link C++ class SLArEventSuperCell++;
 #pragma link C++ class std::map<int, SLArEventSuperCell*>++;
-#pragma link C++ typedef SLArCfgSCSys++;
 #pragma link C++ class SLArEventSuperCellSystem++;
 
 #endif

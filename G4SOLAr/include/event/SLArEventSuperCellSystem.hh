@@ -12,16 +12,14 @@
 #include "config/SLArCfgSuperCellArray.hh"
 #include "config/SLArCfgBaseSystem.hh"
 
-typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArCfgSCSys; 
-
 class SLArEventSuperCellSystem : public TNamed {
   public: 
     SLArEventSuperCellSystem(); 
-    SLArEventSuperCellSystem(SLArCfgSCSys* cfg); 
+    SLArEventSuperCellSystem(SLArCfgSystemSuperCell* cfg); 
     SLArEventSuperCellSystem(const SLArEventSuperCellSystem&); 
     ~SLArEventSuperCellSystem();
 
-    int ConfigSystem(SLArCfgSCSys* cfg); 
+    int ConfigSystem(SLArCfgSystemSuperCell* cfg); 
     std::map<int, SLArEventSuperCell*>& GetSuperCellMap() {return fSuperCellMap;}
     int GetNhits() {return fNhits;}
     bool IsActive() {return fIsActive;}

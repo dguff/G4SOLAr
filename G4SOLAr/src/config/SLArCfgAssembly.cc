@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgAssembly
- * @created     : martedì lug 19, 2022 11:53:34 CEST
+ * @file        : SLArCfgAssembly.cc
+ * @created     : Tuesday Jul 19, 2022 11:53:34 CEST
  */
 
 #include "TRegexp.h"
@@ -15,17 +15,16 @@ templateClassImp(SLArCfgAssembly)
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::SLArCfgAssembly() 
-  : fH2Bins(nullptr), fSerie(0), fNElements(0)
+  : SLArCfgBaseModule(), fH2Bins(nullptr), fNElements(0)
 {
   SetName("aAssemblyHasNoName");
 }
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie) 
-  : fH2Bins(nullptr), fNElements(0)
+  : SLArCfgBaseModule(serie), fH2Bins(nullptr), fNElements(0)
 {
   SetName(name);
-  fSerie = serie;
   printf("SLArCfgAssembly created with name %s\n", fName.Data());
 }
 
@@ -35,7 +34,6 @@ SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
 {
   SLArCfgAssembly<TBAseModule>();
   SetName(cfg.fName);
-  fSerie = cfg.fSerie;
 
   for (auto &pmt : cfg.fElementsMap)
   {
@@ -128,6 +126,42 @@ void SLArCfgAssembly<TBaseModule>::SetTH2BinIdx()
     elements.second->SetBinIdx(idx);
   }
 }
+
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::BuildGShape() {
+  if (!fH2Bins) BuildPolyBinHist(); 
+
+  double x_min = fH2Bins->GetXaxis()->GetXmin(); 
+  double x_max = fH2Bins->GetXaxis()->GetXmax(); 
+  double y_min = fH2Bins->GetYaxis()->GetXmin(); 
+  double y_max = fH2Bins->GetYaxis()->GetXmax(); 
+
+  fGShape = new TGraph(5); 
+  fGShape->SetPoint(0, x_min, y_min); 
+  fGShape->SetPoint(1, x_min, y_max); 
+  fGShape->SetPoint(2, x_max, y_max); 
+  fGShape->SetPoint(3, x_max, y_min); 
+  fGShape->SetPoint(4, x_min, y_min); 
+
+  fGShape->SetName(Form("g%s", fName.Data())); 
+  return;
+}
+
+template<class TBaseModule>
+TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin) 
+{
+  TBaseModule* module_cfg = nullptr;
+  for (const auto& mod : fElementsMap) {
+    if (mod.second->GetBinIdx() == ibin) {
+      module_cfg = mod.second; 
+      break;
+    }
+  }
+
+  return module_cfg;
+}
+
+
 
 template class SLArCfgAssembly<SLArCfgSuperCell>; 
 template class SLArCfgAssembly<SLArCfgReadoutTile>;

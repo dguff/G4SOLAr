@@ -16,6 +16,7 @@
 #include "event/SLArMCPrimaryInfo.hh"
 #include "event/SLArEventReadoutTileSystem.hh"
 #include "event/SLArEventSuperCellSystem.hh"
+#include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -33,8 +34,8 @@ class SLArMCEvent : public TObject
     void SetDirection(double* dir = nullptr); 
     void SetDirection(double px, double py, double pz); 
     std::array<double, 3> GetDirection() {return fDirection;}
-    int ConfigReadoutTileSystem (SLArCfgPixSys* pixSysCfg);
-    int ConfigSuperCellSystem (SLArCfgSCSys* supercellSysCfg); 
+    int ConfigReadoutTileSystem (SLArCfgSystemPix* pixSysCfg);
+    int ConfigSuperCellSystem (SLArCfgSystemSuperCell* supercellSysCfg); 
 
     SLArEventReadoutTileSystem* GetReadoutTileSystem() {return fEvSystemTile;}
     SLArEventSuperCellSystem* GetSuperCellSystem() {return fEvSystemSuperCell;}

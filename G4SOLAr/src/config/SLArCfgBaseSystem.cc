@@ -10,6 +10,7 @@
 #include "TPRegexp.h"
 #include "TRegexp.h"
 #include "TH2Poly.h"
+#include "TList.h"
 
 #include "config/SLArCfgSuperCellArray.hh"
 #include "config/SLArCfgMegaTile.hh"
@@ -17,112 +18,130 @@
 
 templateClassImp(SLArCfgBaseSystem)
 
+
 template<class TAssemblyModule>
-SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem() : fNModules(0)
+SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem() 
+  : SLArCfgBaseModule(), fH2Bins(nullptr)
 {
   fName = "aMapHasNoName"; 
 }
 
 template<class TAssemblyModule>
-SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(TString name) : fNModules(0)
+SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(TString name) 
+  : SLArCfgBaseModule(), fH2Bins(nullptr)
 {
-  fName = name;
+  fName = name; 
 }
 
 template<class TAssemblyModule>
-SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem &cfg)
-  : TNamed(cfg)
+SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem<TAssemblyModule>& cfg) 
+  : SLArCfgBaseModule(cfg) 
 {
-  for (auto mod : cfg.fModulesMap)
-  {
-    fModulesMap.insert(
-        std::make_pair(mod.first, 
-          (TAssemblyModule*)mod.second->Clone())
-        );
-    fNModules += mod.second->GetMap().size();
+  fNElements = cfg.fNElements; 
+  for (const auto &mod : cfg.fElementsMap) {
+    fElementsMap.insert(
+        std::make_pair(mod.first, new TAssemblyModule(*mod.second))); 
   }
-}
 
-template<class TAssemblyModule>
-SLArCfgBaseSystem<TAssemblyModule>::~SLArCfgBaseSystem()
-{
-  std::cerr << "Deleting SLArCfgBaseSystem..." << std::endl;
+  fH2Bins = nullptr; 
+  if (cfg.fH2Bins) {
+    fH2Bins = new TH2Poly(); 
 
-  for (auto &itr : fModulesMap)
-    if (itr.second) {delete itr.second; itr.second = 0;}
-  fModulesMap.clear();
-  std::cerr << "SLArCfgBaseSystem DONE" << std::endl;
-}
-
-template<class TAssemblyModule>
-void SLArCfgBaseSystem<TAssemblyModule>::DumpModulesConfig() 
-{
-  std::printf("SLArCfgBaseSystem %s has %i PMTs\n", 
-      fName.Data(), fNModules);
-  for (auto &itr : fModulesMap){
-    itr.second->DumpMap();
-    printf("\n");
-  }
-}
-
-template<class TAssemblyModule>
-int SLArCfgBaseSystem<TAssemblyModule>::RegisterModule(TString name)
-{
-  TAssemblyModule* array = new TAssemblyModule(name);
-
-  if (fModulesMap.count(name))
-  {
-    printf("SLArCfgBaseSystem::RegisterArray(%s): ", name.Data());
-    printf("Array already present. Clear previous version.\n");
-    TAssemblyModule* old = fModulesMap.find(name)->second;
-    fNModules -= old->GetMap().size();
-    delete old; old = 0;
-    fModulesMap.erase(fModulesMap.find(name));
+    TList* lbin = cfg.fH2Bins->GetBins(); 
+    for (const auto& bbin : *lbin) {
+      TH2PolyBin* bin = (TH2PolyBin*)bbin; 
+      fH2Bins->AddBin(bin->GetPolygon()->Clone()); 
+    }
   }
   
-  fModulesMap.insert(std::make_pair(name, array));
-  
-  fNModules += array->GetMap().size();  
-  return fNModules;
+  return; 
 }
 
 template<class TAssemblyModule>
-int SLArCfgBaseSystem<TAssemblyModule>::RegisterModule(TAssemblyModule* array)
-{
-  if (fModulesMap.count(array->GetName()))
-  {
-    printf("SLArCfgBaseSystem::RegisterArray(%s): ", array->GetName());
-    printf("Array already present. Clear previous version.\n");
-    TAssemblyModule* old = fModulesMap.find(array->GetName())->second;
-    fNModules -= old->GetMap().size();
-    delete old; old = 0;
-    fModulesMap.erase(fModulesMap.find(array->GetName()));
+SLArCfgBaseSystem<TAssemblyModule>::~SLArCfgBaseSystem() {
+  for (auto &mod : fElementsMap) {
+    if (mod.second) {delete mod.second; mod.second = 0;}
   }
-
-  fModulesMap.insert(std::make_pair(array->GetName(), array));
-
-  fNModules += array->GetMap().size();  
-  return fNModules;
-}
-
-
-template<class TAssemblyModule>
-TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(TString name)
-{
-  TAssemblyModule* mod = nullptr;
-  if (fModulesMap.count(name))
-  {
-    mod = fModulesMap.find(name)->second;
-  }
-  return mod;
+  fElementsMap.clear(); 
+  if (fH2Bins) {delete fH2Bins;}
 }
 
 template<class TAssemblyModule>
-TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(int idx)
+TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(const char* name)
 {
   TAssemblyModule* module_cfg = nullptr;
-  for (const auto& mod : fModulesMap) {
-    if (mod.second->GetIdx() == idx) {
+  for (const auto& mod : fElementsMap) {
+    if (std::strcmp(mod.second->GetName(),name) == 0) {
+      module_cfg = mod.second; 
+      break;
+    }
+  }
+
+  return module_cfg;
+}
+
+template<class TAssemblyModule>
+TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(int idx)
+{
+  return fElementsMap.find(idx)->second;
+}
+
+
+template<class TAssemblyModule>
+void SLArCfgBaseSystem<TAssemblyModule>::RegisterElement(TAssemblyModule* mod) 
+{
+  int idx = mod->GetIdx();
+  if (fElementsMap.count(idx)) 
+  {
+    std::cout<<"Base element "<<idx<<" already registered. Skip"<<std::endl;
+    return;
+  }
+
+  printf("SLArCfgBaseSystem::RegisterElement(%s)...\n", mod->GetName());
+  fElementsMap.insert( std::make_pair(idx, mod) );
+  printf("DONE\n");
+  fNElements++; 
+}
+
+template<class TAssemblyModule>
+void SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
+{
+  fH2Bins = new TH2Poly();
+  fH2Bins->SetName(fName+"_bins");
+
+  fH2Bins->SetFloat();
+
+  int iBin = 1;
+  for (auto &mod : fElementsMap) 
+  {
+    if (!mod.second->GetGraphShape()) {
+      mod.second->BuildGShape(); 
+    }
+    TString gBinName = Form("gBin%i", iBin);
+    printf("SLArCfgBaseSystem::BuildPolyBinHist: Adding bin %i\n", iBin);
+    int bin_idx = fH2Bins->AddBin(
+        mod.second->GetGraphShape()->Clone(gBinName));
+    mod.second->SetBinIdx(bin_idx);
+    iBin ++;
+  }
+}
+
+template<class TAssemblyModule>
+void SLArCfgBaseSystem<TAssemblyModule>::DumpMap() 
+{
+  std::printf("SLArCfgSystem %s has %lu entries\n", 
+      fName.Data(), fElementsMap.size());
+  for (auto &itr : fElementsMap)
+    itr.second->DumpInfo();
+}
+
+
+template<class TAssemblyModule>
+TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ibin) 
+{
+  TAssemblyModule* module_cfg = nullptr;
+  for (const auto& mod : fElementsMap) {
+    if (mod.second->GetBinIdx() == ibin) {
       module_cfg = mod.second; 
       break;
     }
@@ -133,3 +152,4 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetModule(int idx)
 
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
 template class SLArCfgBaseSystem<SLArCfgMegaTile>;
+

@@ -112,14 +112,14 @@ G4bool SLArAnalysisManager::Save()
 }
 
 
-G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
+G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell* pdsCfg)
 {
   fPDSysCfg = pdsCfg;
   if (!fPDSysCfg) return false;
   else             return true ; 
 }
 
-G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgPixSys* pixCfg)
+G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgSystemPix* pixCfg)
 {
   fPixSysCfg = pixCfg;
   if (!fPixSysCfg) return false;

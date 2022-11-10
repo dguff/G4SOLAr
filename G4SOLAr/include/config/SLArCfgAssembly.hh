@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgAssembly
- * @created     : martedì lug 19, 2022 11:12:12 CEST
+ * @file        : SLArCfgAssembly.hh
+ * @created     : Tuesday Jul 19, 2022 11:12:12 CEST
  */
 
 #ifndef SLARCFGASSEMBLY_HH
@@ -28,20 +28,19 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     virtual ~SLArCfgAssembly(); 
 
     void DumpMap(); 
-    int GetAssemblySeries() {return fSerie;}
+    TBaseModule* FindBaseElementInMap(int ibin); 
     TBaseModule* GetBaseElement(int idx); 
     std::map<int, TBaseModule*>& GetMap() {return fElementsMap;}
     TH2Poly* GetTH2(); 
     void RegisterElement(TBaseModule* element);
     void SetTH2BinIdx();
-    void BuildPolyBinHist() ;
+    void BuildPolyBinHist();
+    void BuildGShape() override; 
 
   protected: 
     TH2Poly* fH2Bins; 
-    int fSerie;
     int fNElements; 
     std::map<int, TBaseModule*> fElementsMap;
-
 
   public:
     ClassDefOverride(SLArCfgAssembly,1);

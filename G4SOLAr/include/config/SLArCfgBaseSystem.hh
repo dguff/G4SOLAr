@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgBaseSystem
+ * @file        : SLArCfgBaseSystem.hh
  * @created     : martedì lug 19, 2022 12:56:56 CEST
  */
 
@@ -12,10 +12,14 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include "TNamed.h"
+#include "SLArCfgMegaTile.hh"
+#include "SLArCfgBaseModule.hh"
+#include "SLArCfgSuperCellArray.hh"
+#include "TH2Poly.h"
+
 
 template<class TAssemblyModule>
-class SLArCfgBaseSystem : public TNamed
+class SLArCfgBaseSystem : public SLArCfgBaseModule
 {
   public:
     SLArCfgBaseSystem();
@@ -23,21 +27,26 @@ class SLArCfgBaseSystem : public TNamed
     SLArCfgBaseSystem(TString name);
     ~SLArCfgBaseSystem();
 
-    void DumpModulesConfig();
-    int  RegisterModule(TString name);
-    int  RegisterModule(TAssemblyModule* array);
+    void BuildPolyBinHist(); 
+    void DumpMap();
+    TAssemblyModule* GetBaseElement(int idx); 
+    TAssemblyModule* GetBaseElement(const char* name);
+    TAssemblyModule* FindBaseElementInMap(int ibin); 
+    std::map<int, TAssemblyModule*>& GetMap() {return fElementsMap;}
+    TH2Poly* GetTH2() {return fH2Bins;}
+    void SetTH2BinIdx();
+    void RegisterElement(TAssemblyModule* mod); 
 
-    TAssemblyModule* GetModule(int idx);
-    TAssemblyModule* GetModule(TString name);
-    std::map<TString, TAssemblyModule*>& GetModuleMap() {return fModulesMap;}
-
-  private:
-    int fNModules;
-    std::map<TString, TAssemblyModule*> fModulesMap;
+  protected:
+    TH2Poly* fH2Bins; 
+    int fNElements; 
+    std::map<int, TAssemblyModule*> fElementsMap;
 
   public:
-    ClassDefOverride(SLArCfgBaseSystem, 1);
+    ClassDefOverride(SLArCfgBaseSystem, 2);
 };
+
+typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArCfgSystemSuperCell; 
 
 #endif /* end of include guard BCPMTMAP_HH */
 

@@ -9,19 +9,18 @@
 #define SLAREVENTREADOUTTILESYSTEM_HH
 
 #include "event/SLArEventMegatile.hh"
+#include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
-
-typedef SLArCfgBaseSystem<SLArCfgMegaTile> SLArCfgPixSys; 
 
 class SLArEventReadoutTileSystem : public TNamed {
   public:
     SLArEventReadoutTileSystem(); 
-    SLArEventReadoutTileSystem(SLArCfgPixSys* cfg);
+    SLArEventReadoutTileSystem(SLArCfgSystemPix* cfg);
     SLArEventReadoutTileSystem(const SLArEventReadoutTileSystem&);
     ~SLArEventReadoutTileSystem(); 
 
-    int ConfigSystem(SLArCfgPixSys* cfg);
+    int ConfigSystem(SLArCfgSystemPix* cfg);
     std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
     int GetNhits() {return fNhits;}
     bool IsActive() {return fIsActive;}

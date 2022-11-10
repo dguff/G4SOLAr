@@ -15,6 +15,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -25,7 +26,6 @@
 #include "G4ToolsAnalysisManager.hh"
 #include "globals.hh"
 
-typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSystemConfig; 
 
 class SLArAnalysisManager 
 {
@@ -38,8 +38,8 @@ class SLArAnalysisManager
     static G4bool IsInstance();
 
     G4bool CreateFileStructure();
-    G4bool LoadPDSCfg         (SLArPDSystemConfig*  pdsCfg );
-    G4bool LoadPixCfg         (SLArCfgPixSys*  pixCfg );
+    G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
+    G4bool LoadPixCfg         (SLArCfgSystemPix*  pixCfg );
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
@@ -51,8 +51,8 @@ class SLArAnalysisManager
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
-    SLArPDSystemConfig* GetPDSCfg() {return  fPDSysCfg;}
-    SLArCfgPixSys* GetPixCfg() {return fPixSysCfg;}
+    SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
+    SLArCfgSystemPix* GetPixCfg() {return fPixSysCfg;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
@@ -78,8 +78,8 @@ class SLArAnalysisManager
     TTree*              fEventTree;
     SLArMCEvent*          fMCEvent;
 
-    SLArPDSystemConfig* fPDSysCfg;
-    SLArCfgPixSys* fPixSysCfg;
+    SLArCfgSystemSuperCell* fPDSysCfg;
+    SLArCfgSystemPix* fPixSysCfg;
 };
 
 #endif /* end of include guard SLArANALYSISMANAGER_HH */
