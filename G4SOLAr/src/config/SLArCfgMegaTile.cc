@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgMegaTile.hh
- * @created     : martedì lug 19, 2022 10:15:59 CEST
+ * @file        : SLArCfgMegaTile.cc
+ * @created     : Tuesday Jul 19, 2022 10:15:59 CEST
  */
 
 #include "config/SLArCfgMegaTile.hh"
@@ -18,7 +18,6 @@ SLArCfgMegaTile::SLArCfgMegaTile(TString name, int serie)
   : SLArCfgAssembly<SLArCfgReadoutTile>(name, serie) 
 {
   SetName(name);
-  fSerie = serie;
   printf("SLArCfgMegaTile created with name %s\n", fName.Data());
 }
 
@@ -43,3 +42,11 @@ void SLArCfgMegaTile::DumpMap()
     itr.second->DumpInfo();
 }
 
+SLArCfgReadoutTile* SLArCfgMegaTile::FindPixel(double x, double y) {
+  if (!fH2Bins) BuildPolyBinHist(); 
+
+  int ibin = fH2Bins->Fill(x, y);
+  SLArCfgReadoutTile* tile = FindBaseElementInMap(ibin); 
+
+  return tile; 
+}

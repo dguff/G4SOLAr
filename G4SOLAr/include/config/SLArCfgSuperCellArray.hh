@@ -1,12 +1,12 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : BCCfgArrayPMT
- * @created     : giovedì giu 04, 2020 11:47:35 CEST
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArCfgSuperCellArray.hh
+ * @created     : Thur Nov 10, 2022 12:53:23 CET
  */
 
-#ifndef BCCFGARRAYPMT_HH
+#ifndef SLARCFGSUPERCELLARRAY_HH
 
-#define BCCFGARRAYPMT_HH
+#define SLARCFGSUPERCELLARRAY_HH
 
 #include <iostream>
 #include <fstream>
@@ -27,5 +27,5 @@ class SLArCfgSuperCellArray : public SLArCfgAssembly<SLArCfgSuperCell> {
     ClassDefOverride(SLArCfgSuperCellArray, 1);
 };
 
-#endif /* end of include guard BCCFGARRAYPMT_HH */
+#endif /* end of include guard SLARCFGSUPERCELLARRAY_HH */
 
