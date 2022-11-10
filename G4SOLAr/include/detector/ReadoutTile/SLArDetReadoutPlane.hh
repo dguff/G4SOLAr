@@ -40,6 +40,7 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
 
         void ComputeTransformation(G4int, G4VPhysicalVolume*) const; 
 
+        G4ThreeVector GetReplicationAxisVector() {return fAxisVector;}
         EAxis GetReplicationAxis() {return fReplicaAxis;}
         G4double GetSpacing() {return fSpacing;}
         G4ThreeVector GetStartPos() {return fStartPos;}

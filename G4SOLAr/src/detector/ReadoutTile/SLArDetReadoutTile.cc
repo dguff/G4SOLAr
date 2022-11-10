@@ -68,8 +68,6 @@ SLArDetReadoutTile::~SLArDetReadoutTile() {
   G4cerr << "SLArDetReadoutTile DONE" <<  G4endl;
 }
 
-
-
 void SLArDetReadoutTile::BuildPCB()
 {
   G4cerr << "Building ReadoutTile PCB base" << G4endl;
@@ -93,6 +91,9 @@ void SLArDetReadoutTile::BuildPCB()
       fBasePCB->GetMaterial(),
       "PCBBaseLV", 0, 0, 0)
     );
+
+  printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
+      fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
 }
 
 void SLArDetReadoutTile::BuildSiPM()
@@ -239,31 +240,36 @@ void SLArDetReadoutTile::BuildReadoutTile()
   G4int n_x = floor(tile_x / cell_x); 
 
   SLArRTileParametrization* rowParametrization = 
-    new SLArRTileParametrization(kZAxis, G4ThreeVector(0, 0, -0.5*cell_z*n_z), cell_z); 
+    new SLArRTileParametrization(kZAxis, 
+        G4ThreeVector(0, 0, -0.5*cell_z*(n_z-1)), 
+        cell_z); 
   printf("Creating a row of %i sensor cells...\n", n_z);
 
   G4Box* cell_row_box = new G4Box("tileCellRow",0.5*cell_x,0.5*cell_y,0.5*cell_z*n_z); 
   G4LogicalVolume* cell_row_lv = new G4LogicalVolume(cell_row_box, fMatReadoutTile->GetMaterial(), "rdtile_cell_row_lv"); 
   cell_row_lv->SetVisAttributes( G4VisAttributes(false) ); 
-  new G4PVParameterised("cell_row", fUnitCell->GetModLV(), cell_row_lv, kZAxis, 10,
+  new G4PVParameterised("cell_row", fUnitCell->GetModLV(), cell_row_lv, kZAxis, n_z,
       rowParametrization, true); 
   
   // 4. Full sensor plane
   printf("Creating %i repilacas of rows...\n", n_x);
   SLArRTileParametrization* tplaneParametrization = 
-    new SLArRTileParametrization(kXAxis, G4ThreeVector(-0.5*cell_x*n_x, 0, 0), cell_x); 
+    new SLArRTileParametrization(kXAxis, 
+        G4ThreeVector(-0.5*cell_x*(n_x-1), 0, 0), 
+        cell_x); 
+
   G4Box* cell_plane_box = new G4Box("tileCellPlane", 
       0.5*cell_x*n_x, 0.5*cell_y, 0.5*cell_z*n_z); 
   G4LogicalVolume* cell_plane_lv = new G4LogicalVolume(cell_plane_box, 
       fMatReadoutTile->GetMaterial(), "rdtile_cell_plane_lv"); 
   cell_plane_lv->SetVisAttributes( G4VisAttributes(false) ); 
   //new G4PVReplica("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, 3*dx); 
-  new G4PVParameterised("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, 10, tplaneParametrization, true); 
+  new G4PVParameterised("cell_plane", cell_row_lv, cell_plane_lv, kXAxis, n_x, tplaneParametrization, true); 
 
   // 5. Final assembly (PCB + sensor plane)
   G4cout<<"Final placement..." << G4endl; 
   new G4PVPlacement(
-      0, G4ThreeVector(0., 0.5*(fhTot-h), 0.), 
+      0, G4ThreeVector(0., 0.5*(fhTot-cell_y), 0.), 
       cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
 
    return;
@@ -426,7 +432,7 @@ SLArDetReadoutTile::SLArRTileParametrization::SLArRTileParametrization(
 void SLArDetReadoutTile::SLArRTileParametrization::ComputeTransformation(
     G4int copyNo, G4VPhysicalVolume* physVol) const {
   G4ThreeVector origin = fStartPos; 
-  origin += fAxisVector*(copyNo+0.5)*fSpacing; 
+  origin += fAxisVector*(copyNo)*fSpacing; 
 
   physVol->SetTranslation(origin); 
   physVol->SetRotation(0); 

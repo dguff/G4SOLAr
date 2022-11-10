@@ -46,7 +46,9 @@ public:
   SLArBaseDetModule* GetSiPMActive();
   SLArBaseDetModule* GetUnitCell() {return fUnitCell;}
   SLArMaterial* GetSiPMActiveMaterial();
+  SLArBaseDetModule* GetChargePixel() {return fChargePix;}
   G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+  std::vector<SUnitCellStruct>& GetUnitCellStructure() {return fCellStructure;}
 
 
 
@@ -83,6 +85,7 @@ public:
       void ComputeTransformation(G4int copyNo, G4VPhysicalVolume* physVol) const; 
 
       EAxis GetReplicationAxis() {return fReplicaAxis;}
+      G4ThreeVector GetReplicationAxisVector() {return fAxisVector;}
       G4double GetSpacing() {return fSpacing;}
       G4ThreeVector GetStartPos() {return fStartPos;}
 

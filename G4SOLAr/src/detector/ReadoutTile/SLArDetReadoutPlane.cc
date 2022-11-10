@@ -73,7 +73,7 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
 
   SLArMTileParametrization* rowTileParametrization = 
     new SLArMTileParametrization(
-      kZAxis, G4ThreeVector(0, 0, -0.5*true_plane_z), tile_z);
+      kZAxis, G4ThreeVector(0, 0, -0.5*(true_plane_z-tile_z)), tile_z);
   
   fTileRow->SetModPV(
       //new G4PVReplica("tile_row_z", tile->fModLV, fTileRow->GetModLV(), kZAxis, n_z, tile_z)
@@ -110,7 +110,7 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
   
   SLArMTileParametrization* planeParametrization = 
     new SLArMTileParametrization(
-        kXAxis, G4ThreeVector(-true_plane_x*0.5, 0., 0.), tile_x); 
+        kXAxis, G4ThreeVector(-0.5*(true_plane_x-tile_x), 0., 0.), tile_x); 
 
 
   SetModPV(
@@ -136,7 +136,7 @@ SLArDetReadoutPlane::SLArMTileParametrization::SLArMTileParametrization(
 void SLArDetReadoutPlane::SLArMTileParametrization::ComputeTransformation(
     G4int copyNo, G4VPhysicalVolume* physVol) const {
   G4ThreeVector origin = fStartPos; 
-  origin += fAxisVector*(copyNo+0.5)*fSpacing; 
+  origin += fAxisVector*(copyNo)*fSpacing; 
 
   physVol->SetTranslation(origin); 
   physVol->SetRotation(0); 
