@@ -49,6 +49,7 @@
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 
+#include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgSuperCell.hh"
 #include "config/SLArCfgReadoutTile.hh"
@@ -139,7 +140,7 @@ void SLArDetectorConstruction::Init() {
   rapidjson::Document d;
   d.ParseStream<rapidjson::kParseCommentsFlag>(is);
   assert(d.IsObject());
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Parse world dimensions
   if (d.HasMember("World")) {
     const rapidjson::Value& wrld = d["World"]; 
@@ -152,7 +153,7 @@ void SLArDetectorConstruction::Init() {
   }
 
 
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
   G4cerr << "SLArDetectorConstruction::Init TPC" << G4endl;
   fTPC     = new SLArDetTPC();
@@ -168,7 +169,7 @@ void SLArDetectorConstruction::Init() {
   fTPC->BuildMaterial(fMaterialDBFile);
   G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
 
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
   if (d.HasMember("SuperCell")) {
     G4cout << "SLArDetectorConstruction::Init SuperCells" << G4endl;
@@ -197,7 +198,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
   fSuperCell->BuildMaterial(fMaterialDBFile); 
 
   printf("Building SuperCell configuration object...\n");
-  SLArPDSystemConfig* pdsCfg = new SLArPDSystemConfig("PDSCfg"); 
+  SLArCfgSystemSuperCell* pdsCfg = new SLArCfgSystemSuperCell("PDSCfg"); 
   if (pds.HasMember("modules")) {
     printf("is modules an array?\n");
     assert(pds["modules"].IsArray());
@@ -243,7 +244,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
         }
       }
 
-      pdsCfg->RegisterModule(sc_array);
+      pdsCfg->RegisterElement(sc_array);
     }
   }
 
@@ -253,7 +254,7 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
 }
 
 void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
-  SLArCfgPixSys* pixCfg = new SLArCfgPixSys("PixCfg");
+  SLArCfgSystemPix* pixCfg = new SLArCfgSystemPix("PixCfg");
 
   fReadoutTile = new SLArDetReadoutTile();
   
@@ -319,7 +320,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
         printf("size: [%.2f, %.2f, %.2f] × %g mm\n", 
             xyz[0].GetDouble(), xyz[1].GetDouble(), xyz[2].GetDouble(), 
             G4UIcommand::ValueOf(unit)); 
-        pixCfg->RegisterModule(mtileCfg);
+        pixCfg->RegisterElement(mtileCfg);
       } // end of positions loop
     } // end of Megatile models loop
     SLArAnalysisManager::Instance()->LoadPixCfg(pixCfg); 
@@ -519,10 +520,10 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
   fSuperCell->BuildLogicalSkinSurface(); 
 
   // Get PMTSystem Configuration
-  SLArAnalysisManager* SLArAnaMgr  = SLArAnalysisManager::Instance();
-  SLArPDSystemConfig*  pdsCfg = SLArAnaMgr->GetPDSCfg();
+  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+  SLArCfgSystemSuperCell*  pdsCfg = SLArAnaMgr->GetPDSCfg();
 
-  for (auto &pdsArray : pdsCfg->GetModuleMap())
+  for (auto &pdsArray : pdsCfg->GetMap())
   {
     SLArCfgSuperCellArray* arrayCfg = pdsArray.second;
     G4cout << arrayCfg->GetName() <<" map: " 
@@ -578,16 +579,16 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
   fReadoutTile->BuildLogicalSkinSurface(); 
 
-  SLArCfgPixSys* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
+  SLArCfgSystemPix* pixCfg = SLArAnalysisManager::Instance()->GetPixCfg(); 
   
   printf("SLArDetectorConstruction::BuildAndPlaceReadoutTiles\n"); 
   printf("Registered readout tiles models:\n"); 
   for (const auto &models : fReadoutMegaTile) {
     printf("- %s\n", models.first.c_str());
   }
-  printf("Nr of readout tiles modules: %lu\n", pixCfg->GetModuleMap().size()); 
+  printf("Nr of readout tiles modules: %lu\n", pixCfg->GetMap().size()); 
 
-  for (auto &mtileCfg_ : pixCfg->GetModuleMap()) {
+  for (auto &mtileCfg_ : pixCfg->GetMap()) {
     SLArCfgMegaTile* mtileCfg = mtileCfg_.second;
     G4String mtile_module_name = mtileCfg->GetName();
     mtile_module_name.resize(mtile_module_name.find("_"));
@@ -608,6 +609,8 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
           mtileCfg->GetPhi(), 
           mtileCfg->GetTheta(), 
           mtileCfg->GetPsi());
+      G4RotationMatrix* mtile_rot_inv = new G4RotationMatrix(*mtile_rot); 
+      mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 
       auto pv = megatile->GetModPV(mtileCfg->GetName(), 
           mtile_rot, mtile_pos, fTPC->GetTarget()->GetModLV(), 
@@ -615,22 +618,26 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
       auto lv  = megatile->GetModLV();
       auto row = megatile->GetTileRow();
 
-      EAxis kRowAxis = kZAxis, kTileAxis = kXAxis;
-      G4int nRowReplicas = 0, nTileReplicas = 0;
-      G4double wdtRow = 0., wdtTile = 0.;
-      G4double oftRow = 0., oftTile = 0.;
-      G4bool   cnsRow = kFALSE, cnsTile = kFALSE;
+      EAxis     kTRowAxis = kZAxis, kTileAxis     = kXAxis;
+      G4int nTRowReplicas = 0     , nTileReplicas = 0;
+      G4double    wdtTRow = 0.    , wdtTile       = 0.;
+      G4double    oftTRow = 0.    , oftTile       = 0.;
+      G4bool      cnsTRow = kFALSE, cnsTile       = kFALSE;
+      G4ThreeVector pos0TRow      ; G4ThreeVector pos0Tile; 
+      G4ThreeVector vaxisTRow     ; G4ThreeVector vaxisTile; 
 
       auto mtile_parameterised = (G4PVParameterised*)lv->GetDaughter(0); 
       if (mtile_parameterised->IsParameterised()) {
           auto parametrization = 
             (SLArDetReadoutPlane::SLArMTileParametrization*)mtile_parameterised->GetParameterisation();
-        mtile_parameterised->GetReplicationData(kRowAxis, nRowReplicas, wdtRow, oftRow, cnsRow);
-        kRowAxis = parametrization->GetReplicationAxis(); 
-        wdtRow  = parametrization->GetSpacing(); 
+        mtile_parameterised->GetReplicationData(kTRowAxis, nTRowReplicas, wdtTRow, oftTRow, cnsTRow);
+        kTRowAxis = parametrization->GetReplicationAxis(); 
+        vaxisTRow = parametrization->GetReplicationAxisVector(); 
+        wdtTRow   = parametrization->GetSpacing(); 
+        pos0TRow  = parametrization->GetStartPos(); 
 #ifdef SLAR_DEBUG
         printf("%s is replicated %i times along axis %i (wdt=%g mm, offset= %g mm)\n", 
-            pv->GetName().c_str(), nRowReplicas, kRowAxis, wdtRow, oftRow); 
+            pv->GetName().c_str(), nTRowReplicas, kTRowAxis, wdtTRow, oftTRow); 
         //getchar(); 
 
 #endif
@@ -640,43 +647,45 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
       }
 
 
-      auto row_pv = (G4PVParameterised*)row->GetModPV();
-      if (row_pv->IsParameterised()) {
-        auto parametrization = (SLArDetReadoutPlane::SLArMTileParametrization*)row_pv->GetParameterisation();
-        row_pv->GetReplicationData(kTileAxis, nTileReplicas, wdtTile, oftTile, cnsTile);
-        wdtTile = parametrization->GetSpacing(); 
+      auto mrow_pv = (G4PVParameterised*)row->GetModPV();
+      if (mrow_pv->IsParameterised()) {
+        auto parametrization = (SLArDetReadoutPlane::SLArMTileParametrization*)mrow_pv->GetParameterisation();
+        mrow_pv->GetReplicationData(kTileAxis, nTileReplicas, wdtTile, oftTile, cnsTile);
+        wdtTile   = parametrization->GetSpacing(); 
         kTileAxis = parametrization->GetReplicationAxis(); 
+        vaxisTile = parametrization->GetReplicationAxisVector(); 
+        pos0Tile  = parametrization->GetStartPos(); 
 #ifdef SLAR_DEBUG
         printf("%s is replicated %i times along axis %i (wdt=%g mm, offset=%g mm)\n", 
-            row_pv->GetName().c_str(), nTileReplicas, kTileAxis, 
+            mrow_pv->GetName().c_str(), nTileReplicas, kTileAxis, 
             wdtTile, oftTile); 
         //getchar(); 
 #endif
       } else {
-        printf("%s is not replicated! Why??\n", row_pv->GetName().c_str()); 
+        printf("%s is not replicated! Why??\n", mrow_pv->GetName().c_str()); 
         getchar(); 
       }
 
-      oftRow  += megatile->GetGeoPar("rdoutplane_x")*0.5; 
-      oftTile -= megatile->GetGeoPar("rdoutplane_z")*0.5; 
+      for (int ii =0; ii<nTRowReplicas; ii++) {
+        G4ThreeVector pos_row  = pos0TRow + wdtTRow*ii*vaxisTRow; 
 
-      for (int ii =0; ii<nRowReplicas; ii++) {
-        
         for (int jj=0; jj<nTileReplicas; jj++) {
+          G4ThreeVector pos_tile = pos_row + pos0Tile + wdtTile*jj*vaxisTile; 
+
           SLArCfgReadoutTile* tile_cfg = new SLArCfgReadoutTile((ii+1)*100 + jj);
-          G4ThreeVector tile_pos(-ii*wdtRow + oftRow, 0., jj*wdtTile + oftTile);
-          tile_cfg->SetZ(tile_pos.z()); 
-          tile_cfg->SetY(tile_pos.y());
-          tile_cfg->SetX(tile_pos.x());
+          G4ThreeVector pos_tile_ = pos_tile; 
+          tile_cfg->SetZ(pos_tile.z()); 
+          tile_cfg->SetY(pos_tile.y());
+          tile_cfg->SetX(pos_tile.x());
           
           G4ThreeVector phys_pos = mtile_pos 
-            + tile_pos.rotate(mtile_rot->getPhi(), mtile_rot->getTheta(), mtile_rot->getPsi()); 
+            + pos_tile_.transform(*mtile_rot_inv); 
           
           tile_cfg->SetPhysX( (phys_pos).x() ); 
           tile_cfg->SetPhysY( (phys_pos).y() ); 
           tile_cfg->SetPhysZ( (phys_pos).z() );  
 
-#ifdef SLAR_DEBUG
+//#ifdef SLAR_DEBUG
           // TODO: check positioning is ok
           // seems ok, but better check it twice
           // printf("%s megatile pos: [%.2f, %.2f, %.2f]: cell %i pos [%.2f, %.2f, %.2f]: phys pos [%.2f, %.2f, %.2f]\n", 
@@ -684,10 +693,93 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
               //cell_cfg->GetIdx(), cell_pos.x(), cell_pos.y(), cell_pos.z(),
               //phys_pos.x(), phys_pos.y(), phys_pos.z()
               //);
-#endif
+//#endif
 
           tile_cfg->Set2DSize_X(fReadoutTile->GetGeoPar("tile_z")); 
           tile_cfg->Set2DSize_Y(fReadoutTile->GetGeoPar("tile_x")); 
+
+          // construct pixels in the readout tile configuration
+          auto tilesens_lv = fReadoutTile->GetModLV()->GetDaughter(1)->GetLogicalVolume(); 
+          auto tilesens_pv = tilesens_lv->GetDaughter(0);  // cell_plane_pv
+          G4int n_row = 0; G4int n_cell = 0; 
+          G4double crow_x = 0; G4double cell_z = 0.; 
+          G4ThreeVector crow_pos0;  G4ThreeVector crow_vaxis;
+          G4ThreeVector cell_pos0;  G4ThreeVector cell_vaxis; 
+
+
+          if (tilesens_pv->IsParameterised()) {
+            auto trow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
+              tilesens_pv->GetParameterisation(); 
+            EAxis axis_ = kUndefined; G4double offset_ = 0.; G4bool cons_;
+            tilesens_pv->GetReplicationData(axis_, n_row, crow_x, offset_, cons_); 
+            crow_x = trow_parametrization->GetSpacing(); 
+            crow_vaxis = trow_parametrization->GetReplicationAxisVector(); 
+            crow_pos0 = trow_parametrization->GetStartPos(); 
+
+            // getting cell_row_pv
+            auto crow_pv = tilesens_pv->GetLogicalVolume()->GetDaughter(0); 
+            if (crow_pv->IsParameterised()) {
+              auto crow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
+                crow_pv->GetParameterisation(); 
+              EAxis caxis_ = kUndefined; G4double coffset_ = 0.; G4bool ccons_;
+              crow_pv->GetReplicationData(caxis_, n_cell, cell_z, coffset_, ccons_); 
+              cell_z = crow_parametrization->GetSpacing(); 
+              cell_vaxis = crow_parametrization->GetReplicationAxisVector(); 
+              cell_pos0 = crow_parametrization->GetStartPos();
+
+            } else {
+              printf("%s is not a parameterised volume\n", crow_pv->GetName().c_str());
+            }
+            
+            //now build the pixel map
+            G4double pix_x = fReadoutTile->GetChargePixel()->GetGeoPar("pix_x"); 
+            G4double pix_z = fReadoutTile->GetChargePixel()->GetGeoPar("pix_z"); 
+
+            for (G4int ix=0; ix<n_row; ix++) {
+              G4ThreeVector row_pos = crow_pos0 + ix*crow_x*crow_vaxis;
+              for (G4int iz=0; iz<n_cell; iz++) {
+                G4ThreeVector cell_pos = row_pos + cell_pos0 + iz*cell_z*cell_vaxis; 
+
+
+                //printf("tile_pos: [%.2f, %.2f, %.2f]\n", pos_tile.x(), pos_tile.y(), pos_tile.z());
+                //printf("cell_pos: [%.2f, %.2f, %.2f]\n", cell_pos.x(), cell_pos.y(), cell_pos.z());
+                auto cell_structure = fReadoutTile->GetUnitCellStructure(); 
+                //printf("----------------------------------------------------------------\n");
+                for (const auto &cc : cell_structure) {
+                  if (cc.fMod == fReadoutTile->GetChargePixel()) {
+                    std::vector<SLArCfgReadoutTile::xypoint> xypoints; 
+                    G4ThreeVector pix_pos = cc.fPos + cell_pos + pos_tile; 
+                    G4ThreeVector pix_pos_= pix_pos; pix_pos_.transform(*mtile_rot_inv); 
+                    //printf("pix_pos  : (%.2f, %.2f, %.2f)\n", pix_pos .x(), pix_pos .y(), pix_pos .z());
+                    //printf("pix_pos_r: (%.2f, %.2f, %.2f)\n", pix_pos_.x(), pix_pos_.y(), pix_pos_.z());
+                    //printf("phi_x: %g, theta_x: %g, phi_y = %g, theta_y = %g, phi_z= %g, theta_z = %g\n", 
+                        //TMath::RadToDeg()*mtile_rot_inv->phiX(), TMath::RadToDeg()*mtile_rot_inv->thetaX(), 
+                        //TMath::RadToDeg()*mtile_rot_inv->phiY(), TMath::RadToDeg()*mtile_rot_inv->thetaY(), 
+                        //TMath::RadToDeg()*mtile_rot_inv->phiZ(), TMath::RadToDeg()*mtile_rot_inv->thetaZ());
+                    G4ThreeVector vpoint[5]; 
+                    vpoint[0] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+                    vpoint[1] = pix_pos + G4ThreeVector(-0.5*pix_x, 0,  0.5*pix_z);
+                    vpoint[2] = pix_pos + G4ThreeVector( 0.5*pix_x, 0,  0.5*pix_z);
+                    vpoint[3] = pix_pos + G4ThreeVector( 0.5*pix_x, 0, -0.5*pix_z);
+                    vpoint[4] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+
+                    for (int ipix = 0; ipix<5; ipix++) {
+                      G4ThreeVector pix_phys = mtile_pos + vpoint[ipix].transform(*mtile_rot_inv);
+                      //printf("pix[%i]: %.2f, %.2f, %.2f mm\n", ipix, pix_phys.x(), pix_phys.y(), pix_phys.z());
+                      SLArCfgReadoutTile::xypoint p = { pix_phys.z(), pix_phys.y() }; 
+                      xypoints.push_back( p ); 
+                    }
+                    tile_cfg->AddPixelToHistMap(xypoints); 
+                  } 
+                  //printf("----------------------------------------------------------------\n");
+                }
+              }
+            }
+
+          } else {
+            printf("%s is not a parameterised volume\n", tilesens_pv->GetName().c_str());
+          }
+
           tile_cfg->SetNormal(mtileCfg->GetNormal());
           tile_cfg->BuildGShape(); 
           mtileCfg->RegisterElement(tile_cfg); 
@@ -701,5 +793,6 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
     }
   }
 
+  pixCfg->BuildPolyBinHist(); 
 }
 
