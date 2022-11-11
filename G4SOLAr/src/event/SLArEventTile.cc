@@ -9,23 +9,23 @@
 ClassImp(SLArEventTile)
 
 SLArEventTile::SLArEventTile() 
-  : TObject(), fIdx(0), fIsActive(1), fNhits(0) {}
+  : SLArEventHitsCollection<SLArEventPhotonHit>() {}
 
 
 SLArEventTile::SLArEventTile(int idx) 
-  : TObject(), fIdx(idx), fIsActive(true), fNhits(0) {}
+  : SLArEventHitsCollection<SLArEventPhotonHit>(idx) 
+{
+  fName = Form("EvTile%i", fIdx); 
+}
 
 
 SLArEventTile::SLArEventTile(const SLArEventTile& ev) 
-  : TObject(ev)
+  : SLArEventHitsCollection<SLArEventPhotonHit>(ev)
 {
-  fIdx = ev.fIdx; 
-  fIsActive = ev.fIsActive; 
-  fNhits = ev.fNhits; 
-  if (!ev.fHits.empty()) {
-    fHits.reserve(ev.fHits.size()); 
-    for (const auto &hit : ev.fHits) {
-      fHits.push_back((SLArEventPhotonHit*)hit->Clone());
+  if (!ev.fPixelHits.empty()) {
+    for (const auto &qhit : ev.fPixelHits) {
+      fPixelHits.insert(
+          std::make_pair(qhit.first, (SLArEventChargePixel*)qhit.second->Clone()));
     }
   }
 }
@@ -34,13 +34,13 @@ SLArEventTile::~SLArEventTile() {
   for (auto &hit : fHits) delete hit;
   fHits.clear();
   fNhits = 0;
-}
-
-int SLArEventTile::RegisterHit(SLArEventPhotonHit* hit) {
-  if (!hit) return -1;
-  fHits.push_back(hit);
-  fNhits++;
-  return fNhits;
+  for (auto &pixHit : fPixelHits) {
+    if (pixHit.second) {
+      pixHit.second->ResetHits(); 
+      delete pixHit.second;
+    }
+  }
+  fPixelHits.clear(); 
 }
 
 double SLArEventTile::GetTime() {
@@ -67,11 +67,17 @@ double SLArEventTile::GetTime(EPhProcess proc) {
   return t;
 }
 
-bool SLArEventTile::SortHits()
+bool SLArEventTile::SortPixelHits()
 {
-  std::sort(fHits.begin(), fHits.end(), 
-            SLArEventPhotonHit::CompareHitPtrs);
-            
+  for (auto &pixHit : fPixelHits) {
+    pixHit.second->SortHits(); 
+  }
+  return true;
+}
+
+bool SLArEventTile::SortHits() {
+  std::sort(fHits.begin(), fHits.end(), SLArEventPhotonHit::CompareHitPtrs);
+  SortPixelHits(); 
   return true;
 }
 
@@ -79,25 +85,50 @@ int SLArEventTile::ResetHits()
 {
   for (auto &hit : fHits) delete hit;
   fHits.clear(); 
-
   fNhits = 0;
+
+  for (auto &pix : fPixelHits) {
+    if (pix.second) {
+      pix.second->ResetHits(); 
+      delete pix.second;
+    }
+  }
+  fPixelHits.clear(); 
 
   return fHits.size();
 }
 
 void SLArEventTile::PrintHits()
 {
-  std::cout << "Hit container id: " << fIdx << std::endl;
-  std::cout << "-----------------------------------------"
-            << std::endl;
-  int nhits = 0;
-  for (auto &hit : fHits)
-  {
-    std::cout << "hit " << nhits << " at " << hit->GetTime() 
-              << " ns " << std::endl;
-    nhits++;
+  printf("*********************************************\n");
+  printf("Hit container ID: %i [%s]\n", fIdx, fName.Data());
+  printf("*********************************************\n");
+  for (auto &hit : fHits) {
+    hit->DumpInfo(); 
+  }
+  if (!fPixelHits.empty()) {
+    printf("Pixel readout hits:\n");
+    for (const auto &pix : fPixelHits) pix.second->PrintHits(); 
   }
 
-  std::cout << "\n" << std::endl;
-  
+  printf("\n"); 
+  return;
+}
+
+int SLArEventTile::RegisterChargeHit(int pixID, SLArEventChargeHit* qhit) {
+  int nhit = 0; 
+  if (fPixelHits.count(pixID)) {
+    //printf("SLArEventTile::RegisterChargeHit(%i): pixel %i already hit.\n", pixID, pixID);
+    fPixelHits[pixID]->RegisterHit(qhit); 
+    nhit = fPixelHits[pixID]->GetNhits(); 
+  }
+  else {
+    //printf("SLArEventTile::RegisterChargeHit(%i): pixel %i already hit.\n", pixID, pixID);
+    SLArEventChargePixel* pixEv = new SLArEventChargePixel(pixID, qhit); 
+    fPixelHits.insert(std::make_pair(pixID, pixEv));
+    nhit = 1; 
+  }
+
+  //printf("SLArEventTile::RegisterChargeHit(%i): DONE.\n", pixID);
+  return nhit; 
 }

@@ -10,10 +10,12 @@
 
 #include <iostream>
 #include <vector>
-#include "TObject.h"
+#include <map>
+#include "event/SLArEventHitsCollection.hh"
+#include "event/SLArEventChargePixel.hh"
 #include "event/SLArEventPhotonHit.hh"
 
-class SLArEventTile :  public TObject 
+class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit> 
 {
   public: 
     SLArEventTile(); 
@@ -21,31 +23,22 @@ class SLArEventTile :  public TObject
     SLArEventTile(const SLArEventTile& ev); 
     ~SLArEventTile(); 
 
-    int GetIdx() {return fIdx;}
-    int GetNhits() {return fNhits;}
     double GetTime();
     double GetTime(EPhProcess proc);
-    std::vector<SLArEventPhotonHit*>& GetHits() {return fHits;}
+    std::map<int, SLArEventChargePixel*>& GetPixelEvents() {return fPixelHits;}
 
-    bool IsActive() {return fIsActive;}
+    void PrintHits(); 
+    int RegisterChargeHit(int, SLArEventChargeHit* ); 
+    int ResetHits(); 
 
-    void PrintHits();
-
-    int  RegisterHit(SLArEventPhotonHit* hit) ;
-    int  ResetHits();
-
-    bool SortHits();
-    void SetActive(bool is_active) {fIsActive = is_active;}
-    void SetIdx(int idx) {fIdx = idx;}
-
+    bool SortHits(); 
+    bool SortPixelHits();
 
   protected:
-    int fIdx; 
-    bool fIsActive; 
-    int fNhits; 
-    std::vector<SLArEventPhotonHit*> fHits; 
+    std::map<int, SLArEventChargePixel*> fPixelHits; 
 
-    ClassDef(SLArEventTile, 1)
+  public:
+     ClassDef(SLArEventTile, 2)
 };
 
 #endif /* end of include guard SLAREVENTTILE_HH */
