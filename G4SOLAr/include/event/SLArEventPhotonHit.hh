@@ -8,25 +8,21 @@
 
 #define SLAREVENTPHOTONHIT_HH
 
-#include "TObject.h"
-#include "TString.h"
-#include <iostream>
-#include <algorithm>
+#include "event/SLArEventGenericHit.hh"
 
 enum  EPhProcess {kAll = 0, kCher = 1, kScnt = 2, kWLS = 3};
 extern TString EPhProcName[4];
 extern TString EPhProcTitle[4];
 
-class SLArEventPhotonHit : public TObject 
+class SLArEventPhotonHit : public SLArEventGenericHit  
 {
   public:
     SLArEventPhotonHit();
     SLArEventPhotonHit(float time, EPhProcess proc, float wvl = 0);
     SLArEventPhotonHit(float time, int proc, float wvl = 0);
     SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit);
-    ~SLArEventPhotonHit();
+    ~SLArEventPhotonHit() {}
 
-    void  SetTime    (float      t) {fTime    = t;}
     void  SetProcess (EPhProcess p) {fProcess = p;}
     void  SetLocalPos(float x, float y, float z);
     void  SetWavelength(float w) {fWavelength = w;}
@@ -39,30 +35,21 @@ class SLArEventPhotonHit : public TObject
     int   GetRowTileNr() {return fRowTileNr;}
     int   GetTileNr() {return fTileNr;}
     int   GetTileIdx() {return (fRowTileNr+1)*100 + fTileNr;}
-    float GetTime() {return fTime;}
     float GetWavelength() {return fWavelength;}
     int   GetProcess() {return fProcess;}
     float* GetLocalPos() {return fLocPos ;}
 
     void  DumpInfo  ();
 
-    bool  operator< (const SLArEventPhotonHit &other) const 
-                    {return fTime < other.fTime;}
-
-    static bool  CompareHitPtrs (const SLArEventPhotonHit* left, 
-                          const SLArEventPhotonHit* right) 
-                    {return left->fTime < right->fTime;}
   private:
     int          fMegaTileIdx; 
     int          fRowTileNr; 
     int          fTileNr; 
-    float        fTime;
     float        fWavelength;
     float        fLocPos[3];
     EPhProcess   fProcess;
 
-
-    ClassDef(SLArEventPhotonHit, 1);
+    ClassDef(SLArEventPhotonHit, 2);
 };
 
 #endif /* end of include guard SLAREVENTPHOTONHIT_HH */

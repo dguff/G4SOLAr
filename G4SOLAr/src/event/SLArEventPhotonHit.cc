@@ -13,12 +13,13 @@ TString EPhProcName[4] = {"All", "Cher"     , "Scint"        , "WLS"};
 TString EPhProcTitle[4]= {"All", "Cherenkov", "Scintillation", "WLS"};
 
 SLArEventPhotonHit::SLArEventPhotonHit() : 
+  SLArEventGenericHit(),
   fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), 
-  fTime(0.), fWavelength(0.), fLocPos{0, 0, 0}, fProcess(kAll)
+  fWavelength(0.), fLocPos{0, 0, 0}, fProcess(kAll)
 {}
 
 SLArEventPhotonHit::SLArEventPhotonHit(float time, EPhProcess proc, float wvl)
-  : fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
+  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
 {
   fTime    = time;
   fWavelength  = wvl;
@@ -26,7 +27,7 @@ SLArEventPhotonHit::SLArEventPhotonHit(float time, EPhProcess proc, float wvl)
 }
 
 SLArEventPhotonHit::SLArEventPhotonHit(float time, int proc, float wvl)
-  : fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
+  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
 {
   fTime    = time;
   fWavelength  = wvl;
@@ -36,10 +37,9 @@ SLArEventPhotonHit::SLArEventPhotonHit(float time, int proc, float wvl)
   else                fProcess = kAll ;
 }
 
-SLArEventPhotonHit::SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit) :
-  TObject(pmtHit)
+SLArEventPhotonHit::SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit) 
+  : SLArEventGenericHit(pmtHit)
 {
-  fTime    = pmtHit.fTime;
   fProcess = pmtHit.fProcess;
   fWavelength  = pmtHit.fWavelength;
   fMegaTileIdx = pmtHit.fMegaTileIdx; 
@@ -47,12 +47,11 @@ SLArEventPhotonHit::SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit) :
   fTileNr = pmtHit.fTileNr;
 }
 
-SLArEventPhotonHit::~SLArEventPhotonHit() {}
 
 void SLArEventPhotonHit::DumpInfo()
 {
-  printf("SLArEventPhotonHit info:\n");
-  printf("time = %g ns\nloc pos = [%.1f, %.1f, %.1f] mm\nproc = %s\n\n",
+  printf("SLArEventPhotonHit: ");
+  printf("time = %g ns - loc pos = [%.1f, %.1f, %.1f] mm - proc = %s\n",
       fTime, fLocPos[0], fLocPos[1], fLocPos[2], 
       EPhProcTitle[fProcess].Data());
 }
