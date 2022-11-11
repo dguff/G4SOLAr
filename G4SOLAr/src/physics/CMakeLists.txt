@@ -8,7 +8,11 @@
 add_library(SLArScintillation
   SHARED
   ${PROJECT_SOURCE_DIR}/src/physics/SLArScintillation.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArScintillation.h
   ${PROJECT_SOURCE_DIR}/src/physics/SLArLightYield.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArLightYield.h
+  ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
   )
 target_link_libraries(SLArScintillation ${GEANT4_LIBRARIES})
 

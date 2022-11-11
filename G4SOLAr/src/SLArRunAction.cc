@@ -15,7 +15,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArRunAction::SLArRunAction()
- : G4UserRunAction()
+ : G4UserRunAction(), fEventAction(nullptr), fElectronDrift(nullptr)
 { 
   // Create custom SLAr Analysis Manager
   SLArAnalysisManager* anamgr = SLArAnalysisManager::Instance();
@@ -51,6 +51,9 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
   SLArAnaMgr->CreateFileStructure();
 
+  fElectronDrift = new SLArElectronDrift(); 
+  fElectronDrift->ComputeProperties(); 
+  fElectronDrift->PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
@@ -115,6 +118,8 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   SLArAnaMgr->WriteVariable("nCurrent_outerWall", ncurr_0);
   SLArAnaMgr->WriteVariable("nCurrent_innerWall", ncurr_1);
   SLArAnaMgr->Save();
+
+  delete fElectronDrift;  fElectronDrift = nullptr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -6,10 +6,12 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArEventAction.hh"
+#include "SLArRunAction.hh"
 #include "SLArReadoutTileHit.hh"
 #include "SLArSuperCellHit.hh"
 #include "SLArTrajectory.hh"
 #include "detector/TPC/SLArLArHit.hh"
+#include "physics/SLArElectronDrift.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -319,6 +321,8 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
     SLArLArHit* hit = (*hHC1)[0];
     fTotEdep = hit->GetDepositedEnergy();
 
+
+
     G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
     if (trj_cont)
     {
@@ -385,7 +389,18 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
                 SLArTrj->GetPoint(n)->GetPosition().getZ(),
                 edep, n_ph, n_el
                 );
-          }
+
+            // propagate ionization electrons to the anode
+            
+            SLArRunAction* runAction = 
+              (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
+            runAction->GetElectronDrift()->Drift(n_el, 
+                SLArTrj->GetTrackID(),
+                SLArTrj->GetPoint(n)->GetPosition(), 
+                SLArAnaMgr->GetPixCfg(), 
+                SLArAnaMgr->GetEvent()->GetReadoutTileSystem()); 
+            
+          } // end of trj points loop
 
           // find the right primary to associate the trajectory
           for (auto &primary : primaries) {
@@ -400,7 +415,6 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
                 }
               }
             }
-
           }    
         }  
 

@@ -7,6 +7,8 @@
 #ifndef SLArRunAction_h
 #define SLArRunAction_h 1
 
+#include "physics/SLArElectronDrift.hh"
+
 #include "G4UserRunAction.hh"
 #include "globals.hh"
 
@@ -25,9 +27,11 @@ class SLArRunAction : public G4UserRunAction
     virtual G4Run* GenerateRun();
     virtual void   BeginOfRunAction(const G4Run*);
     virtual void   EndOfRunAction(const G4Run*);
+    SLArElectronDrift* GetElectronDrift() {return fElectronDrift;}
 
   private:
     SLArEventAction* fEventAction;
+    SLArElectronDrift* fElectronDrift; 
 
     std::vector<G4String> fSDName;  
 };
