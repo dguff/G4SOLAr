@@ -71,11 +71,12 @@
         "name" : "StdReadoutPlane", 
         "copyID" : 2000, 
         "dimensions" : [
-          {"name" : "rdoutplane_x", "val" : 11.0, "unit" : "cm"}, 
-          {"name" : "rdoutplane_z", "val" : 11.0, "unit" : "cm"}
+          {"name" : "rdoutplane_x", "val" : 32.0, "unit" : "cm"}, 
+          {"name" : "rdoutplane_z", "val" : 32.0, "unit" : "cm"}
         ], 
         "positions" : [
-          {"copy":2001, "xyz":[ 48,  64, -114], "unit": "cm", "rot":[0, 0, 90]}
+          {"copy":2001, "xyz":[ 48,  64, -114], "unit": "cm", "rot":[0, 0, 90]},
+          {"copy":2002, "xyz":[ 48,   0,    0], "unit": "cm", "rot":[0, 0, 90]}
         ]
       }
     ]
