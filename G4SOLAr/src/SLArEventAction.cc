@@ -206,6 +206,8 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
           wavelen);
       dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
       dstHit->SetTileInfo(mgtile_idx, rowtile_nr, tile_nr); 
+      dstHit->SetRowCellNr(hit->GetRowCellNr()); 
+      dstHit->SetCellNr(hit->GetCellNr()); 
 
       SLArAnaMgr->GetEvent()->GetReadoutTileSystem()->RegisterHit(
                             (SLArEventPhotonHit*)dstHit->Clone());

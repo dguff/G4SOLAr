@@ -20,7 +20,8 @@ SLArEventPhotonHit::SLArEventPhotonHit() :
 {}
 
 SLArEventPhotonHit::SLArEventPhotonHit(float time, EPhProcess proc, float wvl)
-  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
+  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0),
+    fRowCellNr(0), fCellNr(0), fLocPos{0, 0, 0} 
 {
   fTime    = time;
   fWavelength  = wvl;
