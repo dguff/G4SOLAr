@@ -25,6 +25,7 @@ G4ThreadLocal G4Allocator<SLArReadoutTileHit>* SLArReadoutTileHitAllocator;
 
 SLArReadoutTileHit::SLArReadoutTileHit()
 : G4VHit(), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
+  fRowCellNr(0), fCellNr(0),
   fWavelength(-1), fTime(0.), fPhType(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
@@ -33,6 +34,7 @@ SLArReadoutTileHit::SLArReadoutTileHit()
 
 SLArReadoutTileHit::SLArReadoutTileHit(G4double z)
 : G4VHit(), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
+  fRowCellNr(0), fCellNr(0),
   fWavelength(z), fTime(0.), fPhType(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
@@ -53,6 +55,8 @@ SLArReadoutTileHit::SLArReadoutTileHit(const SLArReadoutTileHit &right)
     fMegaTileIdx= right.fMegaTileIdx;
     fRowTileIdx = right.fRowTileIdx; 
     fTileIdx    = right.fTileIdx; 
+    fRowCellNr  = right.fRowCellNr; 
+    fCellNr     = right.fCellNr;
     fPhType     = right.fPhType;
 }
 
@@ -67,6 +71,8 @@ const SLArReadoutTileHit& SLArReadoutTileHit::operator=(const SLArReadoutTileHit
     fMegaTileIdx  = right.fMegaTileIdx;
     fRowTileIdx   = right.fRowTileIdx; 
     fTileIdx      = right.fTileIdx; 
+    fRowCellNr    = right.fRowCellNr; 
+    fCellNr       = right.fCellNr; 
     fPhType       = right.fPhType;
     return *this;
 }
@@ -125,6 +131,12 @@ const std::map<G4String,G4AttDef>* SLArReadoutTileHit::GetAttDefs() const
         (*store)["TileNr"] 
           = G4AttDef("TileIdx","Position","Physics","","G4int");
 
+        (*store)["RowCellNr"] 
+          = G4AttDef("RowCellIdx","Position","Physics","","G4int");
+
+        (*store)["CellNr"] 
+          = G4AttDef("CellIdx","Position","Physics","","G4int");
+
         (*store)["PhType"] 
           = G4AttDef("PhType","Ph process","Physics","","G4int");
     }
@@ -151,6 +163,11 @@ std::vector<G4AttValue>* SLArReadoutTileHit::CreateAttValues() const
       ->push_back(G4AttValue("RowTileNr", G4UIcommand::ConvertToString(fRowTileIdx), ""));
     values
       ->push_back(G4AttValue("TileNr", G4UIcommand::ConvertToString(fTileIdx), ""));
+    values
+      ->push_back(G4AttValue("RowCellNr", G4UIcommand::ConvertToString(fRowCellNr), ""));
+    values
+      ->push_back(G4AttValue("CellNr", G4UIcommand::ConvertToString(fCellNr), ""));
+
     values
       ->push_back(G4AttValue("PhType", G4UIcommand::ConvertToString(fPhType), ""));
     
