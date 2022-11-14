@@ -15,7 +15,6 @@ TString EPhProcTitle[4]= {"All", "Cherenkov", "Scintillation", "WLS"};
 SLArEventPhotonHit::SLArEventPhotonHit() : 
   SLArEventGenericHit(),
   fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), 
-  fRowCellNr(0), fCellNr(0), 
   fWavelength(0.), fLocPos{0, 0, 0}, fProcess(kAll)
 {}
 
@@ -28,8 +27,7 @@ SLArEventPhotonHit::SLArEventPhotonHit(float time, EPhProcess proc, float wvl)
 }
 
 SLArEventPhotonHit::SLArEventPhotonHit(float time, int proc, float wvl)
-  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0),
-    fRowCellNr(0), fCellNr(0), fLocPos{0, 0, 0} 
+  : SLArEventGenericHit(), fMegaTileIdx(0), fRowTileNr(0), fTileNr(0), fLocPos{0, 0, 0} 
 {
   fTime    = time;
   fWavelength  = wvl;
@@ -42,13 +40,11 @@ SLArEventPhotonHit::SLArEventPhotonHit(float time, int proc, float wvl)
 SLArEventPhotonHit::SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit) 
   : SLArEventGenericHit(pmtHit)
 {
-  fProcess     = pmtHit.fProcess;
+  fProcess = pmtHit.fProcess;
   fWavelength  = pmtHit.fWavelength;
-  fMegaTileIdx = pmtHit.fMegaTileIdx;
-  fRowTileNr   = pmtHit.fRowTileNr;
-  fTileNr      = pmtHit.fTileNr;
-  fRowCellNr   = pmtHit.fRowCellNr;
-  fCellNr      = pmtHit.fCellNr;
+  fMegaTileIdx = pmtHit.fMegaTileIdx; 
+  fRowTileNr = pmtHit.fRowTileNr; 
+  fTileNr = pmtHit.fTileNr;
 }
 
 

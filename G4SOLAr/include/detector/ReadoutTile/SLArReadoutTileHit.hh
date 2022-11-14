@@ -68,10 +68,6 @@ public:
     G4int GetRowTileIdx() const { return fRowTileIdx; }
     void SetTileIdx(G4int idx) { fTileIdx= idx; }
     G4int GetTileIdx() const { return fTileIdx; }
-    void SetCellNr(G4int n) {fCellNr = n;}
-    G4int GetCellNr() {return fCellNr;}
-    void SetRowCellNr(G4int n) {fRowCellNr = n;}
-    G4int GetRowCellNr() {return fRowCellNr;}
 
 
     G4String GetProcessName(int kType);
@@ -79,8 +75,6 @@ private:
     G4int         fMegaTileIdx;
     G4int         fRowTileIdx; 
     G4int         fTileIdx;
-    G4int         fRowCellNr; 
-    G4int         fCellNr; 
     G4double      fWavelength;
     G4double      fTime;
     G4int         fPhType;

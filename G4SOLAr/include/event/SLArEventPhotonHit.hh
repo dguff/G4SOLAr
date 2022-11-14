@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArEventPhotonHit.hh
- * @created     : Wed Aug 10, 2022 12:08:32 CEST
+ * @created     : mercoledì ago 10, 2022 12:08:32 CEST
  */
 
 #ifndef SLAREVENTPHOTONHIT_HH
@@ -29,16 +29,12 @@ class SLArEventPhotonHit : public SLArEventGenericHit
     void  SetMegaTileIdx(int id) {fMegaTileIdx = id;}
     void  SetRowTileNr(int id) {fRowTileNr = id;}
     void  SetTileNr(int id) {fTileNr = id;}
-    void  SetCellNr(int n) {fCellNr = n;}
-    void  SetRowCellNr(int n) {fRowCellNr = n; }
     void  SetTileInfo(int mg, int row, int tile); 
 
     int   GetMegaTileIdx() {return fMegaTileIdx;}
     int   GetRowTileNr() {return fRowTileNr;}
     int   GetTileNr() {return fTileNr;}
     int   GetTileIdx() {return (fRowTileNr+1)*100 + fTileNr;}
-    int   GetCellNr() {return fCellNr;}
-    int   GetRowCellNr() {return fRowCellNr;}
     float GetWavelength() {return fWavelength;}
     int   GetProcess() {return fProcess;}
     float* GetLocalPos() {return fLocPos ;}
@@ -49,13 +45,11 @@ class SLArEventPhotonHit : public SLArEventGenericHit
     int          fMegaTileIdx; 
     int          fRowTileNr; 
     int          fTileNr; 
-    int          fRowCellNr; 
-    int          fCellNr;
     float        fWavelength;
     float        fLocPos[3];
     EPhProcess   fProcess;
 
-    ClassDef(SLArEventPhotonHit, 3);
+    ClassDef(SLArEventPhotonHit, 2);
 };
 
 #endif /* end of include guard SLAREVENTPHOTONHIT_HH */
