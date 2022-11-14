@@ -420,7 +420,11 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
 
       } 
     }
+
+
+    SLArAnaMgr->GetPixCfg()->ResetH2Hits(); 
   }
+
 
 #ifdef SLAR_DEBUG
   printf("     DONE\n"); 

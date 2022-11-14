@@ -181,7 +181,6 @@ void SLArDetectorConstruction::Init() {
   
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
-
   if (d.HasMember("ReadoutTile")) {
     G4cout << "SLArDetectorConstruction::Init Pix..." << G4endl;
     InitPix(d["ReadoutTile"].GetObj()); 

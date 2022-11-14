@@ -150,6 +150,13 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
   return module_cfg;
 }
 
+template<class TAssemblyModule>
+void SLArCfgBaseSystem<TAssemblyModule>::ResetH2Hits() {
+  for (auto &mod : fElementsMap) {
+    if (mod.second) mod.second->ResetH2Hits(); 
+  }
+}
+
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
 template class SLArCfgBaseSystem<SLArCfgMegaTile>;
 

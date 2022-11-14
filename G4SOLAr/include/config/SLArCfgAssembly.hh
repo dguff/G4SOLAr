@@ -36,6 +36,7 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     void SetTH2BinIdx();
     void BuildPolyBinHist();
     void BuildGShape() override; 
+    void ResetH2Hits(); 
 
   protected: 
     TH2Poly* fH2Bins; 

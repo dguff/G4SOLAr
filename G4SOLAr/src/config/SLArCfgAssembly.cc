@@ -161,7 +161,11 @@ TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin)
   return module_cfg;
 }
 
-
+template<class TBaseModule> 
+void SLArCfgAssembly<TBaseModule>::ResetH2Hits()
+{
+  if (fH2Bins) fH2Bins->Reset("ices");  
+}
 
 template class SLArCfgAssembly<SLArCfgSuperCell>; 
 template class SLArCfgAssembly<SLArCfgReadoutTile>;

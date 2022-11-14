@@ -36,6 +36,7 @@ class SLArCfgBaseSystem : public SLArCfgBaseModule
     TH2Poly* GetTH2() {return fH2Bins;}
     void SetTH2BinIdx();
     void RegisterElement(TAssemblyModule* mod); 
+    void ResetH2Hits(); 
 
   protected:
     TH2Poly* fH2Bins; 
