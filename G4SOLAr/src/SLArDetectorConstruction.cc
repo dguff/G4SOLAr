@@ -1,34 +1,8 @@
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file SLAr/src/SLArDetectorConstruction.cc
-/// \brief Implementation of the SLArDetectorConstruction class
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/**
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArDetectorConstruction.cc
+ * @created     mercoledì nov 16, 2022 09:44:58 CET
+ */
 
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
@@ -55,7 +29,6 @@
 #include "config/SLArCfgReadoutTile.hh"
 #include "config/SLArCfgMegaTile.hh"
 
-//#include "G4GDMLParser.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Element.hh"
@@ -93,6 +66,13 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+/**
+ * @details Standard constructor of the SLArDetectorConstruction class, 
+ * setting the geometry configuration file and the material description table
+ *
+ * @param geometry_cfg_file Geometry configuration file 
+ * @param material_db_file Material description table
+ */
 SLArDetectorConstruction::SLArDetectorConstruction(
     G4String geometry_cfg_file, G4String material_db_file)
  : G4VUserDetectorConstruction(),
@@ -124,6 +104,14 @@ SLArDetectorConstruction::~SLArDetectorConstruction(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+/**
+ * @details Detector initilization. 
+ * Parse the geometry configuration of the world and of all the other 
+ * detector components. Configuration of the cryostat and LAr target is 
+ * passed to fTPC together with the materials table. 
+ * The configuration of the readout system is treated by the InitPix 
+ * and InitPDS functions. 
+ */
 void SLArDetectorConstruction::Init() {
 #ifdef SLAR_DEBUG
   printf("SLArDetectorConstruction::Init\ngeometry: %s\nmaterials: %s\n", 
@@ -190,6 +178,16 @@ void SLArDetectorConstruction::Init() {
   std::fclose(geo_cfg_file);
 }
 
+/**
+ * @details Construct the fSuperCell object and parse the supercell 
+ * geometry from the pds object described in the geometry configuration
+ * file. 
+ * After this first step, the method creates a SuperCell system configuration 
+ * object and registers all the SuperCell arrays defined in the pds["modules"]
+ * section and finally the configuration is registered by the analysis manager
+ *
+ * @param pds supercell system description
+ */
 void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
   fSuperCell = new SLArDetSuperCell(); 
   assert(pds.HasMember("dimensions")); 
@@ -252,6 +250,14 @@ void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
 
 }
 
+/**
+ * @details Parse the description of the pixelated anode readout system. 
+ * Build the fReadoutTile object, setup the anode readout configuration
+ * according to the description provided in pixsys["modules"] and finally 
+ * source the configuration to the analysis manager. 
+ *
+ * @param pixsys Pixelated anode readout description
+ */
 void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   SLArCfgSystemPix* pixCfg = new SLArCfgSystemPix("PixCfg");
 
@@ -326,6 +332,15 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   } // endif pixsys.HasMember("modules")
 }
 
+/**
+ * @details Construct the world volume, build and place the 
+ * SLArDetectorConstruction::fTPC object. 
+ * After this first step, the method calls BuildAndPlaceSuperCells() and
+ * BuildAndPlaceReadoutTiles() to place the SuperCell and the Readout Tile
+ * detector system. 
+ *
+ * @return 
+ */
 G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 {
 #ifdef SLAR_DEBUG
@@ -393,6 +408,14 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   return expHall_phys;
 }
 
+/**
+ * @details Create Sensitive Detector objects for the readout systems 
+ * (SLArDetectorConstruction::fReadoutTile, SLArDetectorConstruction::fSuperCell), 
+ * for the LAr TPC active volume. The method then calls 
+ * SLArDetectorConstruction::ConstructCryostatScorer() to set a fraction of the
+ * cryostat wall as Sensitive Detectors to implement some simple scorer used for 
+ * background shielding studies.
+ */
 void SLArDetectorConstruction::ConstructSDandField()
 {
   // sensitive detectors 
@@ -431,6 +454,17 @@ void SLArDetectorConstruction::ConstructSDandField()
   ConstructCryostatScorer(); 
 }
 
+/**
+ * @details Construct some scorers to evaluate the cryostat shielding performance. 
+ * The method assigns a G4PSTermination scorer
+ * to the borated polyethilene layers to count the nr of neutrons stopped in 
+ * those volumes. Similarly, a G4PSFlatSurfaceCurrent is assigned to the cryostat
+ * outer and inner walls to check the number of neutrons entering the cryostat and
+ * the TPC active volume. 
+ *
+ * TODO: replace the hardcoded CopyIDs of the interested cryostat layers with 
+ * a more flaxible solution. 
+ */
 void SLArDetectorConstruction::ConstructCryostatScorer() {
   G4SDParticleFilter* neutronFilter = new G4SDParticleFilter("neutronFilter"); 
   neutronFilter->add("neutron"); 
@@ -513,6 +547,12 @@ G4String SLArDetectorConstruction::GetFirstChar(G4String line)
 }
 
 
+/**
+ * @details Build the SLArDetectorConstruction::fSuperCell object and 
+ * the photon detector's logical skin surface. 
+ * Then place the individual SuperCell according to the configuration 
+ * stored in the analysis manager. 
+ */
 void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 {
   fSuperCell->BuildSuperCell();
@@ -571,6 +611,11 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
   return;
 }
 
+/**
+ * @details Build the SLArDetectorConstruction::fReadoutTile object and 
+ * construct the logical skin surface of the active photon detector volume.
+ *
+ */
 void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
   fReadoutTile->BuildReadoutTile(); 
