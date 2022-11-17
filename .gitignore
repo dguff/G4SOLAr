@@ -45,3 +45,9 @@ _deprecated/
 #cache
 /.cache
 
+#tags
+/G4SOLAr/tags
+
+#documentation
+/docs/html/
+/docs/latex/
