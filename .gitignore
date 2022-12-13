@@ -42,12 +42,19 @@ build/
 install/
 _deprecated/
 
+# automatically generated rootlogon
+SOLArAnalysis/rootlogon.C
+
 #cache
-/.cache
+.cache/
+
+#vim
+.vim/
 
 #tags
-/G4SOLAr/tags
+G4SOLAr/tags
 
 #documentation
-/docs/html/
-/docs/latex/
+docs/ext/
+docs/html/
+docs/latex/
