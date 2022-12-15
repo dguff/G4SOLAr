@@ -14,7 +14,7 @@
 # Select MARLEY generator
 /SLAr/gun/mode Marley
 # Set the MARLEY configuration file
-/SLAr/gun/marleyconf marley_cfg/b8_osc_spect_CC_nue.js
+/SLAr/gun/marleyconf assets/marley_cfg/b8_osc_spect_CC_nue.js
 # Generate vertices uniformly distributed in the volume named "Target"
 /SLAr/gun/volume Target
 
