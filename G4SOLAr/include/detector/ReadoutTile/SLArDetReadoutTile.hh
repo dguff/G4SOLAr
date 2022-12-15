@@ -16,13 +16,20 @@
 class SLArDetReadoutTile : public SLArBaseDetModule
 {
 
-struct SUnitCellStruct {
+struct SUnitCellComponent {
   G4String fName; 
   SLArBaseDetModule* fMod; 
   G4ThreeVector fPos;
   G4int fCopyNo;
 
-  SUnitCellStruct(G4String, G4int, SLArBaseDetModule*, G4ThreeVector); 
+  SUnitCellComponent(G4String, G4int, SLArBaseDetModule*, G4ThreeVector); 
+}; 
+
+struct SUnitCellPixelArea {
+  G4String fName; 
+  std::vector<G4ThreeVector> fEdges; 
+
+  SUnitCellPixelArea(G4String); 
 }; 
 
 public:
@@ -34,6 +41,7 @@ public:
 
   void BuildMaterial(G4String materials_db);
   void BuildComponentsDefinition(const rapidjson::Value&); 
+  void BuildUnitCellPixMap(const rapidjson::Value&); 
   void BuildUnitCellStructure(const rapidjson::Value&); 
   G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
   void BuildReadoutTile();
@@ -48,7 +56,8 @@ public:
   SLArMaterial* GetSiPMActiveMaterial();
   SLArBaseDetModule* GetChargePixel() {return fChargePix;}
   G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
-  std::vector<SUnitCellStruct>& GetUnitCellStructure() {return fCellStructure;}
+  const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
+  const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
 
 
 
@@ -73,7 +82,8 @@ private:
   SLArMaterial*  fMatSiPMCapsule;
   G4LogicalSkinSurface* fSkinSurface;
 
-  std::vector<SUnitCellStruct> fCellStructure; 
+  std::vector<SUnitCellComponent> fCellStructure; 
+  std::vector<SUnitCellPixelArea> fCellPixelMap; 
 
   friend class SLArDetReadoutPlane;
 
@@ -99,13 +109,16 @@ public:
   };
 };
 
-inline SLArDetReadoutTile::SUnitCellStruct::SUnitCellStruct(
+inline SLArDetReadoutTile::SUnitCellComponent::SUnitCellComponent(
     G4String name, G4int copyNo, SLArBaseDetModule* mod, G4ThreeVector pos) {
  fName = name; 
  fCopyNo = copyNo; 
  fMod = mod; 
  fPos = pos; 
 }
+
+inline SLArDetReadoutTile::SUnitCellPixelArea::SUnitCellPixelArea(G4String name) 
+  : fName(name) {}
 
 #endif /* end of include guard SLARDETREADOUTTILE_HH */
 

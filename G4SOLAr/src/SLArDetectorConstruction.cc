@@ -776,9 +776,6 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
             }
             
             //now build the pixel map
-            G4double pix_x = fReadoutTile->GetChargePixel()->GetGeoPar("pix_x"); 
-            G4double pix_z = fReadoutTile->GetChargePixel()->GetGeoPar("pix_z"); 
-
             for (G4int ix=0; ix<n_row; ix++) {
               G4ThreeVector row_pos = crow_pos0 + ix*crow_x*crow_vaxis;
               for (G4int iz=0; iz<n_cell; iz++) {
@@ -787,34 +784,40 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
 
                 //printf("tile_pos: [%.2f, %.2f, %.2f]\n", pos_tile.x(), pos_tile.y(), pos_tile.z());
                 //printf("cell_pos: [%.2f, %.2f, %.2f]\n", cell_pos.x(), cell_pos.y(), cell_pos.z());
-                auto cell_structure = fReadoutTile->GetUnitCellStructure(); 
+                auto cell_structure = fReadoutTile->GetUnitCellPixelMap(); 
                 //printf("----------------------------------------------------------------\n");
                 for (const auto &cc : cell_structure) {
-                  if (cc.fMod == fReadoutTile->GetChargePixel()) {
                     std::vector<SLArCfgReadoutTile::xypoint> xypoints; 
-                    G4ThreeVector pix_pos = cc.fPos + cell_pos + pos_tile; 
-                    G4ThreeVector pix_pos_= pix_pos; pix_pos_.transform(*mtile_rot_inv); 
+                    //G4ThreeVector pix_pos = cc.fPos + cell_pos + pos_tile; 
+                    //G4ThreeVector pix_pos_= pix_pos; pix_pos_.transform(*mtile_rot_inv); 
                     //printf("pix_pos  : (%.2f, %.2f, %.2f)\n", pix_pos .x(), pix_pos .y(), pix_pos .z());
                     //printf("pix_pos_r: (%.2f, %.2f, %.2f)\n", pix_pos_.x(), pix_pos_.y(), pix_pos_.z());
                     //printf("phi_x: %g, theta_x: %g, phi_y = %g, theta_y = %g, phi_z= %g, theta_z = %g\n", 
                         //TMath::RadToDeg()*mtile_rot_inv->phiX(), TMath::RadToDeg()*mtile_rot_inv->thetaX(), 
                         //TMath::RadToDeg()*mtile_rot_inv->phiY(), TMath::RadToDeg()*mtile_rot_inv->thetaY(), 
                         //TMath::RadToDeg()*mtile_rot_inv->phiZ(), TMath::RadToDeg()*mtile_rot_inv->thetaZ());
-                    G4ThreeVector vpoint[5]; 
-                    vpoint[0] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
-                    vpoint[1] = pix_pos + G4ThreeVector(-0.5*pix_x, 0,  0.5*pix_z);
-                    vpoint[2] = pix_pos + G4ThreeVector( 0.5*pix_x, 0,  0.5*pix_z);
-                    vpoint[3] = pix_pos + G4ThreeVector( 0.5*pix_x, 0, -0.5*pix_z);
-                    vpoint[4] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+                    //G4ThreeVector vpoint[5]; 
+                    //vpoint[0] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+                    //vpoint[1] = pix_pos + G4ThreeVector(-0.5*pix_x, 0,  0.5*pix_z);
+                    //vpoint[2] = pix_pos + G4ThreeVector( 0.5*pix_x, 0,  0.5*pix_z);
+                    //vpoint[3] = pix_pos + G4ThreeVector( 0.5*pix_x, 0, -0.5*pix_z);
+                    //vpoint[4] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+                    
+                    //for (int ipix = 0; ipix<5; ipix++) {
+                      //G4ThreeVector pix_phys = mtile_pos + vpoint[ipix].transform(*mtile_rot_inv);
+                      ////printf("pix[%i]: %.2f, %.2f, %.2f mm\n", ipix, pix_phys.x(), pix_phys.y(), pix_phys.z());
+                      //SLArCfgReadoutTile::xypoint p = { pix_phys.z(), pix_phys.y() }; 
+                      //xypoints.push_back( p ); 
+                    //}
 
-                    for (int ipix = 0; ipix<5; ipix++) {
-                      G4ThreeVector pix_phys = mtile_pos + vpoint[ipix].transform(*mtile_rot_inv);
-                      //printf("pix[%i]: %.2f, %.2f, %.2f mm\n", ipix, pix_phys.x(), pix_phys.y(), pix_phys.z());
-                      SLArCfgReadoutTile::xypoint p = { pix_phys.z(), pix_phys.y() }; 
+                    for (const auto &edge : cc.fEdges) {
+                      G4ThreeVector edge_pos = edge + cell_pos + pos_tile; 
+                      G4ThreeVector edge_phys = mtile_pos + edge_pos.transform(*mtile_rot_inv); 
+                      SLArCfgReadoutTile::xypoint p = {edge_phys.z(), edge_phys.y()}; 
                       xypoints.push_back( p ); 
                     }
+
                     tile_cfg->AddPixelToHistMap(xypoints); 
-                  } 
                   //printf("----------------------------------------------------------------\n");
                 }
               }

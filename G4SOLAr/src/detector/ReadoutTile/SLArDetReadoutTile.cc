@@ -402,9 +402,35 @@ void SLArDetReadoutTile::BuildUnitCellStructure(const rapidjson::Value& celldef)
     if (comp.HasMember("pos_y")) pos_.setY(SLArGeoInfo::ParseJsonVal(comp["pos_y"]));
     if (comp.HasMember("pos_z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(comp["pos_z"]));
 
-    fCellStructure.push_back( SUnitCellStruct(name_, copy_, mod, pos_) );
+    fCellStructure.push_back( SUnitCellComponent(name_, copy_, mod, pos_) );
+  }
+
+  assert(celldef.HasMember("pixelmap")); 
+  BuildUnitCellPixMap(celldef["pixelmap"]); 
+}
+
+
+void SLArDetReadoutTile::BuildUnitCellPixMap(const rapidjson::Value& pixblueprint) {
+  assert(pixblueprint.IsArray()); 
+  for (const auto& pix : pixblueprint.GetArray()) {
+    assert(pix.HasMember("name")); 
+    assert(pix.HasMember("edges")); 
+    assert(pix["edges"].IsArray());
+    SUnitCellPixelArea pixArea(pix["name"].GetString()); 
+
+    for (const auto &edge : pix["edges"].GetArray()) {
+      G4ThreeVector pos_ = G4ThreeVector(0, 0, 0); 
+      if (edge.HasMember("x")) pos_.setX(SLArGeoInfo::ParseJsonVal(edge["x"]));
+      if (edge.HasMember("y")) pos_.setY(SLArGeoInfo::ParseJsonVal(edge["y"]));
+      if (edge.HasMember("z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(edge["z"]));
+
+      pixArea.fEdges.push_back(pos_); 
+    }
+
+    fCellPixelMap.push_back(pixArea); 
   }
 }
+
 
 
 G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {

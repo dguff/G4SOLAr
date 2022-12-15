@@ -32,9 +32,9 @@
   },
   "ReadoutTile": {
     "dimensions" : [
-      {"name" : "tile_x", "val" :10.0, "unit" : "cm" },
+      {"name" : "tile_x", "val" :12.0, "unit" : "cm" },
       {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
-      {"name" : "tile_z", "val" :10.0, "unit" : "cm" }
+      {"name" : "tile_z", "val" :12.0, "unit" : "cm" }
     ], 
     "components" : [
       {
@@ -48,22 +48,84 @@
       {
         "name" : "sipm", 
         "dimensions" : [
-          {"name" : "sipm_fill_factor",    "val"  :0.85  }, 
-          {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
+          {"name" : "sipm_fill_factor",    "val"  :0.999 }, 
+          {"name" : "sipm_x", "val" :12.0, "unit" : "mm" },
           {"name" : "sipm_y", "val" : 1.2, "unit" : "mm" },
-          {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }
+          {"name" : "sipm_z", "val" :12.0, "unit" : "mm" }
         ]
       }
     ],
     "unit_cell" : {
-      "dimensions" : [{"name" : "cell_x", "val" : 1.0, "unit" : "cm"}, {"name" : "cell_z", "val" : 1.0, "unit" : "cm"}], 
+      "dimensions" : [{"name" : "cell_x", "val" : 1.2, "unit" : "cm"}, {"name" : "cell_z", "val" : 1.2, "unit" : "cm"}], 
       "lineup" : [
-        {"component" : "pixel", "name" : "qpix1", "copy" : 1, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" : 3.333, "unit" : "mm"}},
-        {"component" : "pixel", "name" : "qpix2", "copy" : 2, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" : 0.000, "unit" : "mm"}},
-        {"component" : "pixel", "name" : "qpix3", "copy" : 3, "pos_z" : {"val" : -3.333, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
-        {"component" : "pixel", "name" : "qpix4", "copy" : 4, "pos_z" : {"val" :  0.000, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
-        {"component" : "pixel", "name" : "qpix5", "copy" : 5, "pos_z" : {"val" :  3.333, "unit" : "mm"}, "pos_x" : {"val" :-3.333, "unit" : "mm"}},
-        {"component" : "sipm" , "name" : "sipm" , "copy" : 0, "pos_z" : {"val" :  1.667, "unit" : "mm"}, "pos_x" : {"val" : 1.667, "unit" : "mm"}}
+        {"component" : "sipm" , "name" : "sipm" , "copy" : 0, "pos_z" : {"val" :  0.0, "unit" : "mm"}, "pos_x" : {"val" : 0.0, "unit" : "mm"}}
+      ], 
+      "pixelmap" : [
+        {"name" : "qpix1", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix2", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]},
+        {"name" : "qpix3", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]},
+
+        {"name" : "qpix1", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix2", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]},
+        {"name" : "qpix3", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]},
+
+        {"name" : "qpix1", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix2", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]},
+        {"name" : "qpix3", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]}
       ]
     },
     "modules" : [
@@ -71,12 +133,14 @@
         "name" : "StdReadoutPlane", 
         "copyID" : 2000, 
         "dimensions" : [
-          {"name" : "rdoutplane_x", "val" : 32.0, "unit" : "cm"}, 
-          {"name" : "rdoutplane_z", "val" : 32.0, "unit" : "cm"}
+          {"name" : "rdoutplane_x", "val" : 36.0, "unit" : "cm"}, 
+          {"name" : "rdoutplane_z", "val" : 36.0, "unit" : "cm"}
         ], 
         "positions" : [
           {"copy":2001, "xyz":[ 48,  64, -114], "unit": "cm", "rot":[0, 0, 90]},
-          {"copy":2002, "xyz":[ 48,   0,    0], "unit": "cm", "rot":[0, 0, 90]}
+          {"copy":2002, "xyz":[ 48,   0,    0], "unit": "cm", "rot":[0, 0, 90]},
+          {"copy":2003, "xyz":[ 48, -50, -100], "unit": "cm", "rot":[0, 0, 90]},
+          {"copy":2003, "xyz":[ 48, -50,  100], "unit": "cm", "rot":[0, 0, 90]}
         ]
       }
     ]
