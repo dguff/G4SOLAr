@@ -124,7 +124,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
 
     for (G4int i=0; i<n_elec_anode; i++) {
       pixID = pixCfg->FindPixel(x_[i], y_[i]); 
-      if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] >0 ) {
+      if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
 
         SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->FindBaseElementInMap(pixID[1]); 
         if (!tile) {
@@ -148,9 +148,11 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
           continue;
         }
         evT->RegisterChargeHit(pixID[2], new SLArEventChargeHit(t_[i], trkId, 0)); 
-        //if (i%50==0) {
-        //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
-        //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
+        //if ( true ) {
+          //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
+          //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
+          //getchar();
+        //}
       }
     }
   }

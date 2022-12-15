@@ -45,7 +45,7 @@ void SLArCfgMegaTile::DumpMap()
 SLArCfgReadoutTile* SLArCfgMegaTile::FindPixel(double x, double y) {
   if (!fH2Bins) BuildPolyBinHist(); 
 
-  int ibin = fH2Bins->Fill(x, y);
+  int ibin = fH2Bins->FindBin(x, y);
   SLArCfgReadoutTile* tile = FindBaseElementInMap(ibin); 
 
   return tile; 

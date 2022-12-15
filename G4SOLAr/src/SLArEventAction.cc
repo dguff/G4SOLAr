@@ -396,6 +396,11 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
             
             SLArRunAction* runAction = 
               (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
+#ifdef SLAR_DEBUG
+            printf("SLArEventAction::EndOfEventAction() ");
+            printf("propagate %i electrons to anode [%i photons, %g keV]\n", 
+                n_el, n_ph, edep*1000);
+#endif
             runAction->GetElectronDrift()->Drift(n_el, 
                 SLArTrj->GetTrackID(),
                 SLArTrj->GetPoint(n)->GetPosition(), 

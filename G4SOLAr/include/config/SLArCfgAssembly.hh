@@ -34,7 +34,7 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     TH2Poly* GetTH2(); 
     void RegisterElement(TBaseModule* element);
     void SetTH2BinIdx();
-    void BuildPolyBinHist();
+    void BuildPolyBinHist(int n = 25, int m = 25);
     void BuildGShape() override; 
     void ResetH2Hits(); 
 

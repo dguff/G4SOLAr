@@ -74,6 +74,7 @@ void SLArCfgReadoutTile::AddPixelToHistMap(std::vector<xypoint> pp)
     fH2Pixels = new TH2Poly(Form("Tile%i_pixmap", fIdx), 
         Form("Tile %i pixel map", fIdx), -7000, +7000, -3000, 3000);
     fH2Pixels->SetFloat(); 
+    fH2Pixels->ChangePartition(50, 50); 
   }
 
 
@@ -84,7 +85,7 @@ void SLArCfgReadoutTile::AddPixelToHistMap(std::vector<xypoint> pp)
 }
 
 int SLArCfgReadoutTile::FindPixel(double x, double y) {
-  int ibin = fH2Pixels->Fill(x, y); 
+  int ibin = fH2Pixels->FindBin(x, y); 
   return ibin; 
 }
 

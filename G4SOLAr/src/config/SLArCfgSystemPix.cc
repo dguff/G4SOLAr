@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgSystemPix
- * @created     : giovedì nov 10, 2022 16:24:26 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArCfgSystemPix
+ * @created     Thursday Nov 10, 2022 16:24:26 CET
  */
 
 #include "config/SLArCfgSystemPix.hh"
@@ -22,7 +22,7 @@ SLArCfgSystemPix::SLArPixIdxCoord SLArCfgSystemPix::FindPixel(double x, double y
   SLArCfgSystemPix::SLArPixIdxCoord pidx = {-9}; 
   if (!fH2Bins) BuildPolyBinHist(); 
 
-  int ibin = fH2Bins->Fill(x, y); 
+  int ibin = fH2Bins->FindBin(x, y); 
 
   SLArCfgMegaTile* megatile = FindBaseElementInMap(ibin);
 
