@@ -13,7 +13,7 @@
 
 DOXYFILE_ENCODING      = UTF-8
 
-PROJECT_NAME           = "G4SOLAr"
+PROJECT_NAME           = "SOLAr-sim"
 
 PROJECT_NUMBER         = "v0.1"
 
