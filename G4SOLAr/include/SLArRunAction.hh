@@ -28,8 +28,11 @@ class SLArRunAction : public G4UserRunAction
     virtual void   BeginOfRunAction(const G4Run*);
     virtual void   EndOfRunAction(const G4Run*);
     SLArElectronDrift* GetElectronDrift() {return fElectronDrift;}
+    G4String GetG4MacroFile() {return fG4MacroFile;}
+    void SetG4MacroFile(const G4String file_path) {fG4MacroFile = file_path;}
 
   private:
+    G4String fG4MacroFile; 
     SLArEventAction* fEventAction;
     SLArElectronDrift* fElectronDrift; 
 

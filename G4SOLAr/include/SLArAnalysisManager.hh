@@ -1,8 +1,8 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArAnalysisManager
- * @created     : mercoledì feb 12, 2020 15:03:53 CET
- * @brief Custom G4SOLAr Analysis Manager
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArAnalysisManager.hh
+ * @created     Wed Feb 12, 2020 15:03:53 CET
+ * @brief       Custom SoLAr-sim Analysis Manager
  *
  * Custom analysis manager reimplemented from 
  * G4RootAnalysisManager
@@ -47,6 +47,8 @@ class SLArAnalysisManager
     bool   IsPathValid        (G4String path);
     int    WriteVariable      (G4String name, G4double val); 
     int    WriteArray         (G4String name, G4int size, G4double* val); 
+    int    WriteCfgFile       (G4String name, const char* path); 
+    int    WriteCfg           (G4String name, const char* cfg); 
 
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}

@@ -75,6 +75,14 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
      */
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
+    /**
+     * @brief  Return the geometry configuration file
+     */
+    G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
+    /**
+     * @brief  Return the material configuration file
+     */
+    G4String                        GetMaterialCfgFile() {return fMaterialDBFile;}
     void                            DumpSuperCellMap(G4String path = "");
     /**
      * @brief Construct scorers in the cryostat layers for neutron shielding studies

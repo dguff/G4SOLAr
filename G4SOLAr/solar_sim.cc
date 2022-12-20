@@ -59,6 +59,7 @@
 #include "SLArPhysicsList.hh"
 #include "SLArDetectorConstruction.hh"
 #include "SLArActionInitialization.hh"
+#include "SLArRunAction.hh"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -244,6 +245,10 @@ int main(int argc,char** argv)
       G4String command = "/SLAr/manager/SetOutputFolder "; 
       UImanager->ApplyCommand(command+output_dir); 
     }
+ 
+    SLArRunAction* runAction = (SLArRunAction*)runManager->GetUserRunAction(); 
+    runAction->SetG4MacroFile(macro); 
+
     G4String command = "/control/execute ";
     UImanager->ApplyCommand(command+macro);
   }

@@ -29,7 +29,6 @@
 
 #ifndef SLArActionInitialization_h
 #define SLArActionInitialization_h 1
-
 #include "G4VUserActionInitialization.hh"
 
 class B4DetectorConstruction;
