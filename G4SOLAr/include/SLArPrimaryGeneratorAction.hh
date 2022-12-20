@@ -61,6 +61,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     virtual void GeneratePrimaries(G4Event*);
 
+    G4String GetMarleyConf() {return fMarleyCfg;}
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
     bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}

@@ -6,6 +6,7 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArDetectorConstruction.hh"
+#include "SLArPrimaryGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"
 
@@ -128,6 +129,11 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
     (SLArDetectorConstruction*)RunMngr->GetUserDetectorConstruction(); 
   SLArAnaMgr->WriteCfgFile("geometry", SLArDetConstr->GetGeometryCfgFile().c_str());
   SLArAnaMgr->WriteCfgFile("materials", SLArDetConstr->GetMaterialCfgFile().c_str());
+
+  auto SLArGen = (SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
+  if (!SLArGen->GetMarleyConf().empty()) {
+    SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+  }
 
   SLArAnaMgr->Save();
 
