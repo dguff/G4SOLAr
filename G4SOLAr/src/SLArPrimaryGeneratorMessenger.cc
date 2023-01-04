@@ -1,37 +1,9 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file SLAr/src/SLArPrimaryGeneratorMessenger.cc
-/// \brief Implementation of the SLArPrimaryGeneratorMessenger class
-//
-//
-//
-// 
+/**
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArPrimaryGeneratorMessenger.cc
+ * @created     Friday Dec 30, 2022 18:48:41 CET
+ */
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "SLArPrimaryGeneratorMessenger.hh"
 
@@ -53,53 +25,64 @@ SLArPrimaryGeneratorMessenger::
   : G4UImessenger(),
     fSLArAction(SLArGun)
 {
-  fCmdGunDir = new G4UIdirectory("/SLAr/gun/");
+  fCmdGunDir = new G4UIdirectory("/SLAr/gen/");
   fCmdGunDir->SetGuidance("PrimaryGenerator control");
 
-  fCmdGunMode= 
-   new G4UIcmdWithAString("/SLAr/gun/mode", this);
-  fCmdGunMode->SetGuidance("Set SOLAr gun mode");
-  fCmdGunMode->SetGuidance("(Fixed, Radio, ...)");
-  fCmdGunMode->SetParameterName("Mode", false);
-  fCmdGunMode->SetDefaultValue("Fixed");
-  fCmdGunMode->SetCandidates("Fixed Radio Marley");
+  fCmdGenerator= 
+    new G4UIcmdWithAString("/SLAr/gen/type", this);
+  fCmdGenerator->SetGuidance("Set SOLAr generator");
+  fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
+  fCmdGenerator->SetParameterName("Mode", false);
+  fCmdGenerator->SetDefaultValue("ParticleGun");
+  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley");
+
+  fCmdParticle= 
+    new G4UIcmdWithAString("/SLAr/gen/particle", this);
+  fCmdParticle->SetGuidance("Set particle gun particle");
+  fCmdParticle->SetParameterName("particle_name", false);
+  fCmdParticle->SetDefaultValue("electron");
 
   fCmdBulkVol= 
-    new G4UIcmdWithAString("/SLAr/gun/volume", this); 
+    new G4UIcmdWithAString("/SLAr/gen/volume", this); 
   fCmdBulkVol->SetGuidance("Set bulk volume for bulk event generation"); 
   fCmdBulkVol->SetGuidance("(Physical Volume name)"); 
   fCmdBulkVol->SetParameterName("PhysVol", true, false); 
   fCmdBulkVol->SetDefaultValue("Target"); 
 
   fCmdBulkVolFraction= 
-    new G4UIcmdWithADouble("/SLAr/gun/volumeFraction", this); 
+    new G4UIcmdWithADouble("/SLAr/gen/volumeFraction", this); 
   fCmdBulkVol->SetGuidance("Set fraction of the bulk volume for event generation"); 
   fCmdBulkVol->SetGuidance("<Volume Fraction>"); 
   fCmdBulkVol->SetParameterName("volFrac", true, false); 
   fCmdBulkVol->SetDefaultValue("1.0"); 
 
   fCmdMarley= 
-    new G4UIcmdWithAString("/SLAr/gun/marleyconf", this); 
+    new G4UIcmdWithAString("/SLAr/gen/marleyconf", this); 
   fCmdMarley->SetGuidance("Set MARLEY configuration file"); 
   fCmdMarley->SetGuidance("(configuration file path)"); 
   fCmdMarley->SetParameterName("marley_config", true, false); 
   fCmdMarley->SetDefaultValue("marley_default.json"); 
 
   fCmdDirectionMode = 
-    new G4UIcmdWithAString("/SLAr/gun/SetDirectionMode", this);
+    new G4UIcmdWithAString("/SLAr/gen/SetDirectionMode", this);
   fCmdDirectionMode->SetGuidance("Set direction mode (fixed, isotropic)");
   fCmdDirectionMode->SetParameterName("DirectionMode", true);
   fCmdDirectionMode->SetDefaultValue("fixed");
 
+  fCmdEnergy = 
+    new G4UIcmdWithADoubleAndUnit("/SLAr/gen/energy", this);
+  fCmdEnergy->SetGuidance("Set particle kinetic energy");
+  fCmdEnergy->SetParameterName("Energy", false);
+  fCmdEnergy->SetDefaultValue(1*CLHEP::MeV);
 
   fCmdGunPosition = 
-    new G4UIcmdWith3VectorAndUnit("/SLAr/gun/position", this);
+    new G4UIcmdWith3VectorAndUnit("/SLAr/gen/gunPosition", this);
   fCmdGunPosition->SetGuidance("Set position of the generated events");
   fCmdGunPosition->SetParameterName("posX", "posY", "posZ", false);
   fCmdGunPosition->SetDefaultValue(G4ThreeVector(0*CLHEP::cm, 0*CLHEP::cm, 0*CLHEP::cm));
 
   fCmdGunDirection = 
-    new G4UIcmdWith3Vector("/SLAr/gun/direction", this);
+    new G4UIcmdWith3Vector("/SLAr/gen/direction", this);
   fCmdGunDirection->SetGuidance("Set event momentum direction");
   fCmdGunDirection->SetParameterName("p_x", "p_y", "p_z", false); 
   fCmdGunDirection->SetDefaultValue( G4ThreeVector(0, 0, 1)); 
@@ -115,8 +98,10 @@ SLArPrimaryGeneratorMessenger::
 
 SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
 {
-  delete fCmdGunMode;
+  delete fCmdGenerator;
+  delete fCmdParticle;
   delete fCmdBulkVol;
+  delete fCmdEnergy;
   delete fCmdBulkVolFraction;
   delete fCmdMarley;
   delete fCmdGunPosition;
@@ -131,19 +116,23 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
               G4UIcommand* command, G4String newValue)
 {
 
-  if (command == fCmdGunMode) 
+  if (command == fCmdGenerator) 
   {
-    EGunMode gunMode = kGun;
+    EGenerator gen = kParticleGun;
     G4String strMode = newValue;
-    if      (G4StrUtil::contains(strMode, "Gun"   )) gunMode = kGun;
-    else if (G4StrUtil::contains(strMode, "Radio" )) gunMode = kRadio;
-    else if (G4StrUtil::contains(strMode, "Marley")) gunMode = kMarley;
+    if      (G4StrUtil::contains(strMode, "Gun"   )) gen = kParticleGun;
+    else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
+    else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
 
-    fSLArAction->SetGunMode(gunMode);
+    fSLArAction->SetGenerator(gen);
   } 
   else if (command == fCmdBulkVol) { 
     G4String vol = newValue; 
     fSLArAction->SetBulkName(vol); 
+  }
+  else if (command == fCmdParticle) {
+    G4String particle = newValue; 
+    fSLArAction->SetPGunParticle(particle);
   }
   else if (command == fCmdBulkVolFraction) {
     G4double frac = fCmdBulkVolFraction->GetNewDoubleValue(newValue); 
@@ -168,11 +157,15 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   }
   else if (command == fCmdGunPosition) {
     G4ThreeVector pos = fCmdGunPosition->GetNew3VectorValue(newValue); 
-    fSLArAction->SetGunPosition( pos ); 
+    fSLArAction->SetSourcePosition( pos ); 
+  }
+  else if (command == fCmdEnergy) {
+    G4double ekin = fCmdEnergy->GetNewDoubleValue(newValue); 
+    fSLArAction->SetPGunEnergy(ekin);  
   }
   else if (command == fCmdGunDirection) {
     G4ThreeVector dir = fCmdGunDirection->GetNew3VectorValue(newValue); 
-    fSLArAction->SetGunDirection(dir); 
+    fSLArAction->SetEventDirection(dir); 
   }
   else if (command == fCmdTracePhotons) {
     bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 

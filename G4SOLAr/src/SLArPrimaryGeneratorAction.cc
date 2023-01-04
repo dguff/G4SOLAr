@@ -1,4 +1,3 @@
-//
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -36,7 +35,8 @@
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
 #include "SLArBulkVertexGenerator.hh"
-#include "SLArMarleyGen.hh"
+#include "SLArPGunGeneratorAction.hh"
+#include "SLArMarleyGeneratorAction.hh"
 #include "bxdecay0_g4/primary_generator_action.hh"
 
 #include "Randomize.hh"
@@ -56,36 +56,36 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fParticleGun(0), fDecay0Gen(0), fMarleyGen(0), fGunMessenger(0), 
+   fGeneratorActions(3, nullptr),
+   //fPGunGen(0), fDecay0Gen(0), fMarleyGen(0), 
+   //fGunMessenger(0), 
    fBulkGenerator(0), 
    fVolumeName(""), 
-   fGunMode(kGun), 
+   fGeneratorEnum(kParticleGun), 
    fGunPosition(0, 0, 0),
    fGunDirection(0, 0, 1), 
    fDoTraceOptPhotons(true)
 {
   G4int n_particle = 1;
-  fParticleGun = new G4ParticleGun(n_particle);
-  if (!fDecay0Gen) {
-    fDecay0Gen = new bxdecay0_g4::PrimaryGeneratorAction(); 
-    fBulkGenerator = new SLArBulkVertexGenerator(); 
-    fDecay0Gen->SetVertexGenerator(fBulkGenerator); 
-  }
+  fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
+  fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
+  fGeneratorActions[kDecay0]= new bxdecay0_g4::PrimaryGeneratorAction(); 
+
+  fBulkGenerator = new SLArBulkVertexGenerator(); 
+  //fGeneratorActions[kDecay0]->SetVertexGenerator(fBulkGenerator); 
 
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
 
   //default kinematic
-  //
-  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
+  //G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+  //G4ParticleDefinition* particle = particleTable->FindParticle("e-");
 
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleTime(0.0*CLHEP::ns);
-  fParticleGun->SetParticleEnergy(3.*CLHEP::GeV);
-
-  fParticleGun->SetParticleMomentumDirection( fGunDirection );
-  fParticleGun->SetParticlePosition         ( fGunPosition  );
+  //fPGunGen->SetParticle(particle);
+  //fPGunGen->SetParticleTime(0.0*CLHEP::ns);
+  //fPGunGen->SetParticleKineticEnergy(1.*CLHEP::MeV);
+  //fPGunGen->SetParticleMomentumDirection( fGunDirection );
+  //fPGunGen->SetParticlePosition( fGunPosition  );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -93,9 +93,10 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
   delete fGunMessenger;
-  delete fParticleGun;
-  delete fDecay0Gen;
-  delete fMarleyGen;
+  //delete fPGunGen;
+  //delete fDecay0Gen;
+  //delete fMarleyGen;
+  for (auto &gen : fGeneratorActions) delete gen; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -110,6 +111,20 @@ void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
   return;
 }
 
+void SLArPrimaryGeneratorAction::SetPGunParticle(G4String particle_name) 
+{
+  SLArPGunGeneratorAction* particle_gun = 
+    (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  particle_gun->SetParticle(particle_name); 
+}
+
+void SLArPrimaryGeneratorAction::SetPGunEnergy(G4double ekin) 
+{
+  SLArPGunGeneratorAction* particle_gun = 
+    (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  particle_gun->SetParticleKineticEnergy(ekin); 
+}
+
 void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
@@ -120,46 +135,89 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fGunDirection = SampleRandomDirection();
   }
 
-  if (fVolumeName != "") {
-    fBulkGenerator->ShootVertex( fGunPosition ); 
-    printf("Gun position: %.2f, %.2f, %.2f\n", 
-        fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
-  }
-  //*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *//
- 
-  if (fGunMode == kRadio) {
-    if (!fBulkGenerator->GetBulkLogicalVolume()) {
-      if (fVolumeName == "") fVolumeName = "Target"; 
-      G4cerr << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
+  if (!fBulkGenerator->GetBulkLogicalVolume()) {
+    if (fVolumeName != "") {
       SetBulkName(fVolumeName);
+      fBulkGenerator->ShootVertex( fGunPosition ); 
+      printf("Gun position: %.2f, %.2f, %.2f\n", 
+          fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
+    } else {
+      SetBulkName("Target"); 
     }
-    fDecay0Gen->GeneratePrimaries(anEvent); 
-  } else if (fGunMode == kMarley) {
-    if (!fMarleyGen) {
-      fMarleyGen = new SLArMarleyGen(fMarleyCfg.c_str()); 
-      if (!fBulkGenerator) {
-        fBulkGenerator = new SLArBulkVertexGenerator();
-      }
-      fMarleyGen->SetVertexGenerator(fBulkGenerator); 
-    }
-    if (!fBulkGenerator->GetBulkLogicalVolume()) {
-      G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
-      SetBulkName(fVolumeName); 
-    }
-    fMarleyGen->SetNuDirection(fGunDirection);
-    SLArAnaMgr->GetEvent()->SetDirection(fGunDirection.x(), fGunDirection.y(), fGunDirection.z()); 
-    fMarleyGen->GeneratePrimaries(anEvent); 
-  }
-  else {
-    // Set gun position
-    fParticleGun->SetParticlePosition( fGunPosition );
-    // Set gun direction
-    fParticleGun->SetParticleMomentumDirection( fGunDirection );
-    // Generate primary vertex
-    fParticleGun->GeneratePrimaryVertex(anEvent);
-    // Store Primary information id dst
-  }
+  }  
+ 
+  G4VUserPrimaryGeneratorAction* gen = nullptr; 
 
+  switch (fGeneratorEnum) {
+    
+    case kDecay0:
+      gen = fGeneratorActions[kDecay0]; 
+      break;
+
+    case kMarley: 
+      {
+        marley::SLArMarleyGeneratorAction* marley_gen = 
+          (marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
+        marley_gen->SetVertexGenerator(fBulkGenerator); 
+        marley_gen->SetNuDirection(fGunDirection); 
+        gen = marley_gen; 
+      }
+      break;
+    
+    case kParticleGun: 
+      {
+        SLArPGunGeneratorAction* pgun_gen = 
+          (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+        pgun_gen->SetParticlePosition(fGunPosition); 
+        pgun_gen->SetParticleMomentumDirection(fGunDirection); 
+        gen = pgun_gen; 
+      }
+      break;
+
+    default:
+      {
+        printf("SLArPGunGeneratorAction::GeneratePrimaries() ERROR ");
+        printf("Unknown generator option.\n");
+        return;
+      }
+      break;
+      
+  };
+  //------------------------------------------- Pure Radiogenic sample
+  //if (fGeneratorEnum == kRadio) {
+    //if (!fBulkGenerator->GetBulkLogicalVolume()) {
+      //if (fVolumeName == "") fVolumeName = "Target"; 
+      //G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
+      //SetBulkName(fVolumeName);
+    //}
+    //fDecay0Gen->GeneratePrimaries(anEvent); 
+  //} 
+  ////------------------------------------------------ Pure MARLEY event
+  //else if (fGeneratorEnum == kMarley) {
+    //if (!fMarleyGen) {
+      //fMarleyGen->SetupMarleyGen(fMarleyCfg.c_str()); 
+      //if (!fBulkGenerator) {
+        //fBulkGenerator = new SLArBulkVertexGenerator();
+      //}
+      //fMarleyGen->SetVertexGenerator(fBulkGenerator); 
+    //}
+    //if (!fBulkGenerator->GetBulkLogicalVolume()) {
+      //G4cout << "Setting bulk volume to " << fVolumeName.c_str() << G4endl;
+      //SetBulkName(fVolumeName); 
+    //}
+    //fMarleyGen->SetNuDirection(fGunDirection);
+    //SLArAnaMgr->GetEvent()->SetDirection(
+        //fGunDirection.x(), fGunDirection.y(), fGunDirection.z()); 
+    //fMarleyGen->GeneratePrimaries(anEvent); 
+  //}
+  ////----------------------------------------------- Pure Particle Gun
+  //else {
+    //fPGunGen->SetParticlePosition( fGunPosition );
+    //fPGunGen->SetParticleMomentumDirection( fGunDirection );
+    //fPGunGen->GeneratePrimaries(anEvent);
+  //}
+
+  gen->GeneratePrimaries(anEvent); 
   G4int n = anEvent->GetNumberOfPrimaryVertex(); 
 
   //printf("Primary Generator Action produced %i vertex(ices)\n", n); 
@@ -199,30 +257,27 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArPrimaryGeneratorAction::SetGunMode(EGunMode gunMode)
-{
-  fGunMode = gunMode;
-}
-
 void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
   fMarleyCfg = marley_conf; 
-  if (!fMarleyGen) {
-    fMarleyGen = new SLArMarleyGen(marley_conf); 
-    if (!fBulkGenerator) {
-      fBulkGenerator = new SLArBulkVertexGenerator();
-      SetBulkName(fVolumeName); 
-    }
+  //if (!fMarleyGen) {
+    //fMarleyGen = new marley::SLArMarleyGeneratorAction(marley_conf); 
+    //if (!fBulkGenerator) {
+      //fBulkGenerator = new SLArBulkVertexGenerator();
+      //SetBulkName(fVolumeName); 
+    //}
 
-  } else {
-    delete fMarleyGen; 
-    fMarleyGen = new SLArMarleyGen(fMarleyCfg); 
-    if (!fBulkGenerator) {
-      fBulkGenerator = new SLArBulkVertexGenerator(); 
-      SetBulkName(fVolumeName); 
-    }
-  }
+  //} else {
+    delete fGeneratorActions[kMarley]; 
+    fGeneratorActions[kMarley] = new marley::SLArMarleyGeneratorAction(fMarleyCfg); 
+    //if (!fBulkGenerator) {
+      //fBulkGenerator = new SLArBulkVertexGenerator(); 
+      //SetBulkName(fVolumeName); 
+    //}
+  //}
 
-  fMarleyGen->SetVertexGenerator(fBulkGenerator); 
+    marley::SLArMarleyGeneratorAction* marley_gen = 
+      (marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
+    marley_gen->SetVertexGenerator(fBulkGenerator); 
   return; 
 }
 
