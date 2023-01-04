@@ -13,9 +13,11 @@
 /SLAr/phys/stepMax 2.5 mm
 
 # Set particle energy and source position 
-/gun/particle e-
-/gun/energy 7 MeV
-/gun/position 0 0 0 cm
+/SLAr/gen/type ParticleGun
+/SLAr/gen/particle e-
+/SLAr/gen/energy 7 MeV
+/SLAr/gen/gunPosition 0 0 0 cm
+/SLAr/gen/SetDirectionMode isotropic
 
 # Set output file name
 /SLAr/manager/SetOutputName electrons.root
