@@ -104,6 +104,10 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
   fVolumeName = vol; 
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
+  if (volume == nullptr) {
+    printf("SLArPrimaryGeneratorAction::SetBulkName(%s) WARNING\n", vol.c_str());
+    printf("Unable to find %s in physical volume store.\n", vol.c_str());
+  }
 
   fBulkGenerator->SetBulkLogicalVolume(volume->GetLogicalVolume()); 
   fBulkGenerator->SetSolidTranslation(volume->GetTranslation()); 
@@ -135,15 +139,10 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fGunDirection = SampleRandomDirection();
   }
 
-  if (!fBulkGenerator->GetBulkLogicalVolume()) {
-    if (fVolumeName != "") {
-      SetBulkName(fVolumeName);
+  if (fBulkGenerator->GetBulkLogicalVolume()) {
       fBulkGenerator->ShootVertex( fGunPosition ); 
       printf("Gun position: %.2f, %.2f, %.2f\n", 
           fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
-    } else {
-      SetBulkName("Target"); 
-    }
   }  
  
   G4VUserPrimaryGeneratorAction* gen = nullptr; 
