@@ -21,14 +21,14 @@ templateClassImp(SLArCfgBaseSystem)
 
 template<class TAssemblyModule>
 SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem() 
-  : SLArCfgBaseModule(), fH2Bins(nullptr)
+  : SLArCfgBaseModule()//, fH2Bins(nullptr)
 {
   fName = "aMapHasNoName"; 
 }
 
 template<class TAssemblyModule>
 SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(TString name) 
-  : SLArCfgBaseModule(), fH2Bins(nullptr)
+  : SLArCfgBaseModule()//, fH2Bins(nullptr)
 {
   fName = name; 
 }
@@ -43,16 +43,16 @@ SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem<TA
         std::make_pair(mod.first, new TAssemblyModule(*mod.second))); 
   }
 
-  fH2Bins = nullptr; 
-  if (cfg.fH2Bins) {
-    fH2Bins = new TH2Poly(); 
+  //fH2Bins = nullptr; 
+  //if (cfg.fH2Bins) {
+    //fH2Bins = new TH2Poly(); 
 
-    TList* lbin = cfg.fH2Bins->GetBins(); 
-    for (const auto& bbin : *lbin) {
-      TH2PolyBin* bin = (TH2PolyBin*)bbin; 
-      fH2Bins->AddBin(bin->GetPolygon()->Clone()); 
-    }
-  }
+    //TList* lbin = cfg.fH2Bins->GetBins(); 
+    //for (const auto& bbin : *lbin) {
+      //TH2PolyBin* bin = (TH2PolyBin*)bbin; 
+      //fH2Bins->AddBin(bin->GetPolygon()->Clone()); 
+    //}
+  //}
   
   return; 
 }
@@ -63,7 +63,7 @@ SLArCfgBaseSystem<TAssemblyModule>::~SLArCfgBaseSystem() {
     if (mod.second) {delete mod.second; mod.second = 0;}
   }
   fElementsMap.clear(); 
-  if (fH2Bins) {delete fH2Bins;}
+  //if (fH2Bins) {delete fH2Bins;}
 }
 
 template<class TAssemblyModule>
@@ -104,26 +104,30 @@ void SLArCfgBaseSystem<TAssemblyModule>::RegisterElement(TAssemblyModule* mod)
 }
 
 template<class TAssemblyModule>
-void SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
+TH2Poly* SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
 {
-  fH2Bins = new TH2Poly();
-  fH2Bins->SetName(fName+"_bins");
+  TH2Poly* h2Bins = new TH2Poly();
+  h2Bins->SetName(fName+"_bins");
 
-  fH2Bins->SetFloat();
+  h2Bins->SetFloat();
 
   int iBin = 1;
   for (auto &mod : fElementsMap) 
   {
-    if (!mod.second->GetGraphShape()) {
-      mod.second->BuildGShape(); 
-    }
+    //if (!mod.second->GetGraphShape()) {
+      //mod.second->BuildGShape(); 
+    //}
+    auto g = mod.second->BuildGShape(); 
     TString gBinName = Form("gBin%i", iBin);
     printf("SLArCfgBaseSystem::BuildPolyBinHist: Adding bin %i\n", iBin);
-    int bin_idx = fH2Bins->AddBin(
-        mod.second->GetGraphShape()->Clone(gBinName));
+    int bin_idx = h2Bins->AddBin(
+        g->Clone(gBinName));
     mod.second->SetBinIdx(bin_idx);
+    delete g; 
     iBin ++;
   }
+
+  return h2Bins;
 }
 
 template<class TAssemblyModule>
@@ -150,12 +154,12 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
   return module_cfg;
 }
 
-template<class TAssemblyModule>
-void SLArCfgBaseSystem<TAssemblyModule>::ResetH2Hits() {
-  for (auto &mod : fElementsMap) {
-    if (mod.second) mod.second->ResetH2Hits(); 
-  }
-}
+//template<class TAssemblyModule>
+//void SLArCfgBaseSystem<TAssemblyModule>::ResetH2Hits() {
+  //for (auto &mod : fElementsMap) {
+    //if (mod.second) mod.second->ResetH2Hits(); 
+  //}
+//}
 
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
 template class SLArCfgBaseSystem<SLArCfgMegaTile>;

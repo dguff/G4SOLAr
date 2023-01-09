@@ -57,6 +57,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
      */
     virtual void ConstructSDandField();
     /**
+     * @brief Construct virtual pixelization of the anode readout system
+     */
+    void ConstructAnodeMap(); 
+    /**
      * @brief Return SLArDetectorConstruction::fTPC object
      */
     SLArDetTPC* GetDetTPC();
@@ -91,10 +95,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
   private:
 
-    /**
-     * @brief Detector description initilization
-     */
-    void                            Init();
+    //! Detector description initilization
+    void Init();
     G4String fGeometryCfgFile; //!< Geometry configuration file
     G4String fMaterialDBFile;  //!< Material table file
     //! vector of visualization attributes
@@ -111,13 +113,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4LogicalVolume* fWorldLog; //!< World logical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
-    /**
-     * @brief Parse the description of the supercell detector system
-     */
+    
+    //! Parse the description of the supercell detector system
     void InitPDS(const rapidjson::Value&); 
-    /**
-     * @brief Parse the description of the ReadoutTile detector system
-     */
+    //! Parse the description of the ReadoutTile detector system
     void InitPix(const rapidjson::Value&); 
 };
 

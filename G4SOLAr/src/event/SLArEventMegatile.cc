@@ -9,7 +9,7 @@
 ClassImp(SLArEventMegatile)
 
 SLArEventMegatile::SLArEventMegatile() 
-  : fIdx(0), fIsActive(true), fNhits(0) {}; 
+  : fIdx(0), fIsActive(true), fNhits(0) {}
 
 SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right) 
   : TNamed(right) 

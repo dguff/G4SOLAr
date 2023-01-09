@@ -27,19 +27,19 @@ class SLArCfgBaseSystem : public SLArCfgBaseModule
     SLArCfgBaseSystem(TString name);
     ~SLArCfgBaseSystem();
 
-    void BuildPolyBinHist(); 
+    TH2Poly* BuildPolyBinHist(); 
     void DumpMap();
     TAssemblyModule* GetBaseElement(int idx); 
     TAssemblyModule* GetBaseElement(const char* name);
     TAssemblyModule* FindBaseElementInMap(int ibin); 
     std::map<int, TAssemblyModule*>& GetMap() {return fElementsMap;}
-    TH2Poly* GetTH2() {return fH2Bins;}
-    void SetTH2BinIdx();
+    //TH2Poly* GetTH2() {return fH2Bins;}
+    //void SetTH2BinIdx();
     void RegisterElement(TAssemblyModule* mod); 
-    void ResetH2Hits(); 
+    //void ResetH2Hits(); 
 
   protected:
-    TH2Poly* fH2Bins; 
+    //TH2Poly* fH2Bins; 
     int fNElements; 
     std::map<int, TAssemblyModule*> fElementsMap;
 

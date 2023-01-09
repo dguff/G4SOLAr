@@ -25,7 +25,8 @@ class SLArCfgMegaTile : public SLArCfgAssembly<SLArCfgReadoutTile> {
     SLArCfgMegaTile(const SLArCfgMegaTile& cfg); 
     ~SLArCfgMegaTile(); 
 
-    SLArCfgReadoutTile* FindPixel(double, double); 
+    //TODO: Reimplement in CfgAnode
+    //SLArCfgReadoutTile* FindPixel(double, double); 
 
     void DumpMap(); 
 

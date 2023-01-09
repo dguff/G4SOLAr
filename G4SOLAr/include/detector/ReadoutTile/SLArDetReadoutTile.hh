@@ -12,6 +12,7 @@
 #include "G4VPVParameterisation.hh"
 #include "G4LogicalSkinSurface.hh"
 
+class TH2Poly; 
 
 class SLArDetReadoutTile : public SLArBaseDetModule
 {
@@ -47,8 +48,10 @@ public:
   void BuildReadoutTile();
   void BuildPCB();
   void BuildSiPM();
+  TH2Poly* BuildTileChgPixelMap(G4ThreeVector* _shift = nullptr, G4RotationMatrix* _rot = nullptr); 
   void BuildChargePix();
   void BuildUnitCell(); 
+
   void SetVisAttributes();
 
   SLArBaseDetModule* GetSiPMActive();
@@ -58,9 +61,6 @@ public:
   G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
   const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
   const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
-
-
-
 protected:
 
 private:

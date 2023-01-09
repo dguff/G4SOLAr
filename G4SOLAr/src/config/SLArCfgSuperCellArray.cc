@@ -28,7 +28,7 @@ SLArCfgSuperCellArray::SLArCfgSuperCellArray(const SLArCfgSuperCellArray &cfg)
 
 SLArCfgSuperCellArray::~SLArCfgSuperCellArray()
 {
-  if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
+  //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
   for (auto &sc : fElementsMap)
     if (sc.second) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();

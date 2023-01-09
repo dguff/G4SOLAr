@@ -22,6 +22,7 @@
 template<class TBaseModule>
 class SLArCfgAssembly : public SLArCfgBaseModule {
   public: 
+    enum ESubModuleReferenceFrame {kRelative = 0, kWorld = 1}; 
     SLArCfgAssembly(); 
     SLArCfgAssembly(TString name, int serie = 0); 
     SLArCfgAssembly(const SLArCfgAssembly& cfg); 
@@ -31,15 +32,15 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     TBaseModule* FindBaseElementInMap(int ibin); 
     TBaseModule* GetBaseElement(int idx); 
     std::map<int, TBaseModule*>& GetMap() {return fElementsMap;}
-    TH2Poly* GetTH2(); 
+    //TH2Poly* GetTH2(); 
     void RegisterElement(TBaseModule* element);
-    void SetTH2BinIdx();
-    void BuildPolyBinHist(int n = 25, int m = 25);
-    void BuildGShape() override; 
-    void ResetH2Hits(); 
+    //void SetTH2BinIdx();
+    TH2Poly* BuildPolyBinHist(ESubModuleReferenceFrame kFrame = kWorld, int n = 25, int m = 25);
+    TGraph* BuildGShape() override; 
+    //void ResetH2Hits(); 
 
   protected: 
-    TH2Poly* fH2Bins; 
+    //TH2Poly* fH2Bins; 
     int fNElements; 
     std::map<int, TBaseModule*> fElementsMap;
 

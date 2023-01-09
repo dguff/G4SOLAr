@@ -6,6 +6,7 @@
 
 
 #include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+#include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
 #include "G4Box.hh"
@@ -24,6 +25,8 @@
 #include "G4PhysicalConstants.hh"
 #include "G4VisAttributes.hh"
 #include "G4MaterialPropertyVector.hh"
+
+#include "TH2Poly.h"
 
 SLArDetReadoutTile::SLArDetReadoutTile() : SLArBaseDetModule(),
   fPerfectQE(false),
@@ -191,7 +194,9 @@ void SLArDetReadoutTile::BuildUnitCell() {
   
   for (const auto& comp : fCellStructure) {
     G4ThreeVector yshift(0, 0, 0); 
-    if (comp.fMod == fChargePix && hq < hl) yshift.setY(0.5*(hq-hl));
+    //if (comp.fMod == fChargePix && hq < hl) yshift.setY(0.5*(hq-hl));
+    if (comp.fMod == fChargePix && hq < hl) continue; // spare some RAM 
+                                                      // for DUNE-size module
     else if (comp.fMod == fSiPM && hl < hq) yshift.setY(0.5*(hl-hq));
     comp.fMod->GetModPV(comp.fName, 0, comp.fPos+yshift, 
         fUnitCell->GetModLV(),true, comp.fCopyNo); 
@@ -268,7 +273,7 @@ void SLArDetReadoutTile::BuildReadoutTile()
 
   // 5. Final assembly (PCB + sensor plane)
   G4cout<<"Final placement..." << G4endl; 
-  new G4PVPlacement(
+  fModPV = new G4PVPlacement(
       0, G4ThreeVector(0., 0.5*(fhTot-cell_y), 0.), 
       cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
 
@@ -465,3 +470,107 @@ void SLArDetReadoutTile::SLArRTileParametrization::ComputeTransformation(
   return; 
 }
 
+TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4RotationMatrix* _rot) {
+  TH2Poly* h2 = new TH2Poly("h2TileChgPixMap", 
+      "Tile charge pixel map", 
+      -0.5*fGeoInfo->GetGeoPar("tile_z"), + 0.5*fGeoInfo->GetGeoPar("tile_z"), 
+      -0.5*fGeoInfo->GetGeoPar("tile_x"), +0.5*fGeoInfo->GetGeoPar("tile_x")); 
+  h2->SetFloat(); 
+
+  auto tilesens_pv = fModLV->GetDaughter(1)->GetLogicalVolume()->GetDaughter(0);
+  G4int n_row = 0; G4int n_cell = 0; 
+  G4double crow_x = 0; G4double cell_z = 0.; 
+  G4ThreeVector crow_pos0;  G4ThreeVector crow_vaxis;
+  G4ThreeVector cell_pos0;  G4ThreeVector cell_vaxis; 
+
+
+  if (tilesens_pv->IsParameterised()) {
+    auto trow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
+      tilesens_pv->GetParameterisation(); 
+    EAxis axis_ = kUndefined; G4double offset_ = 0.; G4bool cons_;
+    tilesens_pv->GetReplicationData(axis_, n_row, crow_x, offset_, cons_); 
+    crow_x = trow_parametrization->GetSpacing(); 
+    crow_vaxis = trow_parametrization->GetReplicationAxisVector(); 
+    crow_pos0 = trow_parametrization->GetStartPos(); 
+
+    // getting cell_row_pv
+    auto crow_pv = tilesens_pv->GetLogicalVolume()->GetDaughter(0); 
+    if (crow_pv->IsParameterised()) {
+      auto crow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
+        crow_pv->GetParameterisation(); 
+      EAxis caxis_ = kUndefined; G4double coffset_ = 0.; G4bool ccons_;
+      crow_pv->GetReplicationData(caxis_, n_cell, cell_z, coffset_, ccons_); 
+      cell_z = crow_parametrization->GetSpacing(); 
+      cell_vaxis = crow_parametrization->GetReplicationAxisVector(); 
+      cell_pos0 = crow_parametrization->GetStartPos();
+
+    } else {
+      printf("%s is not a parameterised volume\n", crow_pv->GetName().c_str());
+    }
+
+    //now build the pixel map
+    for (G4int ix=0; ix<n_row; ix++) {
+      G4ThreeVector row_pos = crow_pos0 + ix*crow_x*crow_vaxis;
+      for (G4int iz=0; iz<n_cell; iz++) {
+        G4ThreeVector cell_pos = row_pos + cell_pos0 + iz*cell_z*cell_vaxis; 
+
+        printf("cell_pos:[%.2f, %.2f, %.2f]\n",cell_pos.x(),cell_pos.y(),cell_pos.z());
+        //printf("----------------------------------------------------------------\n");
+        for (const auto &cc : fCellPixelMap) {
+          std::vector<SLArCfgReadoutTile::xypoint> xypoints; 
+          //G4ThreeVector pix_pos = cc.fPos + cell_pos + pos_tile; 
+          //G4ThreeVector pix_pos_= pix_pos; pix_pos_.transform(*mtile_rot_inv); 
+          //printf("pix_pos  : (%.2f, %.2f, %.2f)\n", pix_pos .x(), pix_pos .y(), pix_pos .z());
+          //printf("pix_pos_r: (%.2f, %.2f, %.2f)\n", pix_pos_.x(), pix_pos_.y(), pix_pos_.z());
+          //printf("phi_x: %g, theta_x: %g, phi_y = %g, theta_y = %g, phi_z= %g, theta_z = %g\n", 
+          //TMath::RadToDeg()*mtile_rot_inv->phiX(), TMath::RadToDeg()*mtile_rot_inv->thetaX(), 
+          //TMath::RadToDeg()*mtile_rot_inv->phiY(), TMath::RadToDeg()*mtile_rot_inv->thetaY(), 
+          //TMath::RadToDeg()*mtile_rot_inv->phiZ(), TMath::RadToDeg()*mtile_rot_inv->thetaZ());
+          //G4ThreeVector vpoint[5]; 
+          //vpoint[0] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+          //vpoint[1] = pix_pos + G4ThreeVector(-0.5*pix_x, 0,  0.5*pix_z);
+          //vpoint[2] = pix_pos + G4ThreeVector( 0.5*pix_x, 0,  0.5*pix_z);
+          //vpoint[3] = pix_pos + G4ThreeVector( 0.5*pix_x, 0, -0.5*pix_z);
+          //vpoint[4] = pix_pos + G4ThreeVector(-0.5*pix_x, 0, -0.5*pix_z);
+
+          //for (int ipix = 0; ipix<5; ipix++) {
+          //G4ThreeVector pix_phys = mtile_pos + vpoint[ipix].transform(*mtile_rot_inv);
+          ////printf("pix[%i]: %.2f, %.2f, %.2f mm\n", ipix, pix_phys.x(), pix_phys.y(), pix_phys.z());
+          //SLArCfgReadoutTile::xypoint p = { pix_phys.z(), pix_phys.y() }; 
+          //xypoints.push_back( p ); 
+          //}
+
+          TGraph* g = new TGraph(); 
+#ifdef SLAR_DEBUG
+          printf("Registering pixel collection area:\n");
+#endif
+          for (const auto &edge : cc.fEdges) {
+            G4ThreeVector edge_pos = edge + cell_pos; 
+            G4ThreeVector edge_phys(0, 0, 0); 
+            if (_shift) edge_pos += *(_shift); 
+            if (_rot) {
+              edge_phys = edge_pos.transform(*(_rot));
+            } else {
+              edge_phys = edge_pos;
+            }
+#ifdef SLAR_DEBUG
+            printf("Adding point: %g, %g mm\n", edge_phys.z(), edge_phys.y());
+#endif
+            g->AddPoint(edge_phys.z(), edge_phys.y()); 
+          }
+
+          h2->AddBin(g); 
+#ifdef SLAR_DEBUG
+          printf("----------------------------------------------------------------\n");
+#endif
+        }
+      }
+    }
+  } else {
+    printf("SLArDetReadoutTile::BuildTileChgPixelMap WARNING\n");
+    printf("Selected physical volume (%s) is not parameterised!\n", tilesens_pv->GetName().c_str());
+    getchar();
+  }
+
+  return h2;
+}

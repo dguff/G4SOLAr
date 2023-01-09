@@ -24,22 +24,24 @@ class SLArCfgReadoutTile : public SLArCfgBaseModule
     SLArCfgReadoutTile(const SLArCfgReadoutTile& ref); 
     ~SLArCfgReadoutTile(); 
 
-    TH2Poly* GetPixHistMap() {return fH2Pixels;}
-    std::map<int, TGraph*>& GetPixBins() {return fPixelBins;}
+    //TH2Poly* GetPixHistMap() {return fH2Pixels;}
+    //std::map<int, TGraph*>& GetPixBins() {return fPixelBins;}
     double Get2DSize_X() {return f2DSize_X;}
     double Get2DSize_Y() {return f2DSize_Y;}
     void   Set2DSize_X(float _x) {f2DSize_X = _x;}
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
     void   DumpInfo() override;
-    void   BuildGShape() override;
-    void   AddPixelToHistMap(std::vector<xypoint>);
-    int    FindPixel(double, double); 
+    TGraph* BuildGShape() override;
+    // TODO: Move this method in a more appropriate place
+    //void   AddPixelToHistMap(TH2Poly* hmap, std::vector<xypoint>);
+    // TODO: Move this method in SLArCfgSystemPix
+    //int    FindPixel(double, double); 
 
   protected:
     float    f2DSize_X; 
     float    f2DSize_Y;
-    TH2Poly* fH2Pixels; 
-    std::map<int, TGraph*> fPixelBins; 
+    //TH2Poly* fH2Pixels; 
+    //std::map<int, TGraph*> fPixelBins; 
 
   public:
     ClassDefOverride(SLArCfgReadoutTile, 1);
