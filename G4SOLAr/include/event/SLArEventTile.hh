@@ -26,6 +26,7 @@ class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit>
     double GetTime();
     double GetTime(EPhProcess proc);
     std::map<int, SLArEventChargePixel*>& GetPixelEvents() {return fPixelHits;}
+    double GetPixelHits() {return fPixelHits.size();}
 
     void PrintHits(); 
     int RegisterChargeHit(int, SLArEventChargeHit* ); 

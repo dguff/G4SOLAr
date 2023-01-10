@@ -22,7 +22,8 @@ class SLArEventMegatile : public TNamed {
     int ConfigModule(SLArCfgMegaTile* cfg);
 
     std::map<int, SLArEventTile*>& GetTileMap() {return fTilesMap;}
-    int GetNhits();
+    int GetNPhotonHits();
+    int GetNChargeHits(); 
     int GetIdx() {return fIdx;}
 
     int RegisterHit(SLArEventPhotonHit* hit); 
