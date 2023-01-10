@@ -5,6 +5,7 @@
  */
 
 #include "config/SLArCfgSystemPix.hh"
+#include "TList.h"
 
 
 ClassImp(SLArCfgSystemPix)
@@ -67,4 +68,38 @@ void SLArCfgSystemPix::RegisterMap(size_t ilevel, TH2Poly* hmap) {
 
   fAnodeLevelsMap.insert(std::make_pair(ilevel, hmap)); 
   return;
+}
+
+TH2Poly* SLArCfgSystemPix::ConstructPixHistMap(const int idxMT, const int idxT)
+{
+  SLArCfgMegaTile* cfgMegaTile  = GetBaseElement(idxMT); 
+  if (!cfgMegaTile) return nullptr; 
+  SLArCfgReadoutTile* cfgTile = cfgMegaTile->GetBaseElement(idxT);
+  double tile_xpos = cfgTile->GetPhysZ(); 
+  double tile_ypos = cfgTile->GetPhysY(); 
+
+  TString name_ = Form("hqpix_mt%i_t%i", idxMT, idxT); 
+  TH2Poly* h2 = new TH2Poly(name_.Data(),
+      Form("%s;#it{z} [mm];#it{y} [mm]", name_.Data()),
+      tile_xpos-0.5*cfgTile->Get2DSize_X(), 
+      tile_xpos+0.5*cfgTile->Get2DSize_X(),
+      tile_ypos-0.5*cfgTile->Get2DSize_Y(), 
+      tile_ypos+0.5*cfgTile->Get2DSize_Y()
+      ); 
+  h2->SetFloat(); 
+
+  TH2Poly* h2_template = fAnodeLevelsMap.find(2)->second;
+  for (const auto& bbin : *(h2_template->GetBins())) {
+    TH2PolyBin* bin = (TH2PolyBin*)bbin;
+    TGraph* g_tpl = (TGraph*)bin->GetPolygon();
+    TGraph* g = (TGraph*)g_tpl->Clone(); 
+    for (int i=0; i<g->GetN(); i++) {
+      g->GetX()[i] += tile_xpos; 
+      g->GetY()[i] += tile_ypos; 
+    }
+    h2->AddBin(g); 
+  }
+
+
+  return h2;
 }
