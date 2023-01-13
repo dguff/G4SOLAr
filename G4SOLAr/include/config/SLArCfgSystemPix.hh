@@ -22,7 +22,7 @@ class SLArCfgSystemPix : public SLArCfgBaseSystem<SLArCfgMegaTile> {
     SLArPixIdxCoord FindPixel(double x, double y); 
     void RegisterMap(size_t ilevel, TH2Poly* hmap); 
     TH2Poly* GetAnodeMap(size_t ilevel) {return fAnodeLevelsMap.find(ilevel)->second;}
-    TH2Poly* ConstructPixHistMap(const int idxMT, const int idxT); 
+    TH2Poly* ConstructPixHistMap(const int depth, const std::vector<int>); 
 
 
   protected:

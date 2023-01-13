@@ -70,36 +70,59 @@ void SLArCfgSystemPix::RegisterMap(size_t ilevel, TH2Poly* hmap) {
   return;
 }
 
-TH2Poly* SLArCfgSystemPix::ConstructPixHistMap(const int idxMT, const int idxT)
+TH2Poly* SLArCfgSystemPix::ConstructPixHistMap(const int depth, 
+    const std::vector<int> idx)
 {
-  SLArCfgMegaTile* cfgMegaTile  = GetBaseElement(idxMT); 
-  if (!cfgMegaTile) return nullptr; 
-  SLArCfgReadoutTile* cfgTile = cfgMegaTile->GetBaseElement(idxT);
-  double tile_xpos = cfgTile->GetPhysZ(); 
-  double tile_ypos = cfgTile->GetPhysY(); 
+  switch (depth) {
+    // Returns the map of the MegaTiles
+    case 0:
+      {
+        return fAnodeLevelsMap.find(0)->second; 
+      }
+      break;
+    // Returns the map at tile-level for a specfied MTile
+    case 1:
+      {
+        SLArCfgMegaTile* cfgMegaTile  = GetBaseElement(idx[0]); 
+        if (!cfgMegaTile) return nullptr; 
+        return cfgMegaTile->BuildPolyBinHist(); 
+      }
+      break;
 
-  TString name_ = Form("hqpix_mt%i_t%i", idxMT, idxT); 
-  TH2Poly* h2 = new TH2Poly(name_.Data(),
-      Form("%s;#it{z} [mm];#it{y} [mm]", name_.Data()),
-      tile_xpos-0.5*cfgTile->Get2DSize_X(), 
-      tile_xpos+0.5*cfgTile->Get2DSize_X(),
-      tile_ypos-0.5*cfgTile->Get2DSize_Y(), 
-      tile_ypos+0.5*cfgTile->Get2DSize_Y()
-      ); 
-  h2->SetFloat(); 
+    // return the map at pixel level for a specified tile
+    case 2:
+      {
+        SLArCfgMegaTile* cfgMegaTile  = GetBaseElement(idx[0]); 
+        if (!cfgMegaTile) return nullptr; 
+        SLArCfgReadoutTile* cfgTile = cfgMegaTile->GetBaseElement(idx[1]);
+        double tile_xpos = cfgTile->GetPhysZ(); 
+        double tile_ypos = cfgTile->GetPhysY(); 
 
-  TH2Poly* h2_template = fAnodeLevelsMap.find(2)->second;
-  for (const auto& bbin : *(h2_template->GetBins())) {
-    TH2PolyBin* bin = (TH2PolyBin*)bbin;
-    TGraph* g_tpl = (TGraph*)bin->GetPolygon();
-    TGraph* g = (TGraph*)g_tpl->Clone(); 
-    for (int i=0; i<g->GetN(); i++) {
-      g->GetX()[i] += tile_xpos; 
-      g->GetY()[i] += tile_ypos; 
-    }
-    h2->AddBin(g); 
+        TString name_ = Form("hqpix_mt%i_t%i", idx[0], idx[1]); 
+        TH2Poly* h2 = new TH2Poly(name_.Data(),
+            Form("%s;#it{z} [mm];#it{y} [mm]", name_.Data()),
+            tile_xpos-0.5*cfgTile->Get2DSize_X(), 
+            tile_xpos+0.5*cfgTile->Get2DSize_X(),
+            tile_ypos-0.5*cfgTile->Get2DSize_Y(), 
+            tile_ypos+0.5*cfgTile->Get2DSize_Y()
+            ); 
+        h2->SetFloat(); 
+
+        TH2Poly* h2_template = fAnodeLevelsMap.find(2)->second;
+        for (const auto& bbin : *(h2_template->GetBins())) {
+          TH2PolyBin* bin = (TH2PolyBin*)bbin;
+          TGraph* g_tpl = (TGraph*)bin->GetPolygon();
+          TGraph* g = (TGraph*)g_tpl->Clone(); 
+          for (int i=0; i<g->GetN(); i++) {
+            g->GetX()[i] += tile_xpos; 
+            g->GetY()[i] += tile_ypos; 
+          }
+          h2->AddBin(g); 
+        }
+        return h2;
+      }
+      break;
   }
 
-
-  return h2;
+  return nullptr;
 }
