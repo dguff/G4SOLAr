@@ -132,3 +132,12 @@ int SLArEventTile::RegisterChargeHit(int pixID, SLArEventChargeHit* qhit) {
   //printf("SLArEventTile::RegisterChargeHit(%i): DONE.\n", pixID);
   return nhit; 
 }
+
+double SLArEventTile::GetPixelHits() {
+  double nhits = 0.;
+  for (const auto &pixel : fPixelHits) {
+    nhits += pixel.second->GetNhits(); 
+  }
+
+  return nhits; 
+}
