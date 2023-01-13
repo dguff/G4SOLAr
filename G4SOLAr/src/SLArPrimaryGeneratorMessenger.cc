@@ -63,6 +63,12 @@ SLArPrimaryGeneratorMessenger::
   fCmdMarley->SetParameterName("marley_config", true, false); 
   fCmdMarley->SetDefaultValue("marley_default.json"); 
 
+  fCmdBackgoundConf= 
+    new G4UIcmdWithAString("/SLAr/gen/backgroundconf", this); 
+  fCmdBackgoundConf->SetGuidance("Set backgound configuration file"); 
+  fCmdBackgoundConf->SetGuidance("(configuration file path)"); 
+  fCmdBackgoundConf->SetParameterName("background_config", true, false); 
+
   fCmdDirectionMode = 
     new G4UIcmdWithAString("/SLAr/gen/SetDirectionMode", this);
   fCmdDirectionMode->SetGuidance("Set direction mode (fixed, isotropic)");
@@ -104,6 +110,7 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdEnergy;
   delete fCmdBulkVolFraction;
   delete fCmdMarley;
+  delete fCmdBackgoundConf;
   delete fCmdGunPosition;
   delete fCmdGunDirection;
   delete fCmdGunDir;
@@ -141,6 +148,9 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdMarley) {
     fSLArAction->SetMarleyConf(newValue); 
   } 
+  else if (command == fCmdBackgoundConf) {
+    fSLArAction->SetBackgroundConf(newValue); 
+  }
   else if (command == fCmdDirectionMode) {
     if (G4StrUtil::contains(newValue, "fixed")) {
       fSLArAction->SetDirectionMode(kFixed); 

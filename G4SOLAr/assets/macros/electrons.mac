@@ -11,13 +11,15 @@
 /SLAr/phys/positronCut 0.5 mm
 /SLAr/phys/gammaCut 2.5 mm
 /SLAr/phys/stepMax 2.5 mm
+/SLAr/phys/DoTracePhotons false
 
 # Set particle energy and source position 
 /SLAr/gen/type ParticleGun
 /SLAr/gen/particle e-
 /SLAr/gen/energy 7 MeV
-/SLAr/gen/gunPosition 0 0 0 cm
+/SLAr/gen/volume Target
 /SLAr/gen/SetDirectionMode isotropic
+/SLAr/gen/backgroundconf assets/background/test_bkg.json
 
 # Set output file name
 /SLAr/manager/SetOutputName electrons.root

@@ -41,6 +41,7 @@ class G4Event;
 class SLArBulkVertexGenerator;
 class SLArPrimaryGeneratorMessenger;
 class SLArPGunGeneratorAction; 
+class SLArBackgroundGeneratorAction;
 
 namespace bxdecay0_g4 {
   class PrimaryGeneratorAction;
@@ -51,7 +52,7 @@ namespace marley {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGenerator {kParticleGun = 0, kDecay0 = 1, kMarley = 2};
+enum  EGenerator {kParticleGun = 0, kDecay0 = 1, kMarley = 2, kBackground = 3};
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
@@ -72,6 +73,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetSourcePosition(G4ThreeVector pos) {fGunPosition = pos;}
     void SetEventDirection(G4ThreeVector dir) {fGunDirection = dir;}
     void SetBulkName(G4String vol);
+    void SetBackgroundConf(G4String background_conf); 
     void SetMarleyConf(G4String marley_conf); 
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
@@ -98,6 +100,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ThreeVector  fGunDirection;
     G4double       fGunEnergy; 
     bool           fDoTraceOptPhotons;
+    bool           fIncludeBackground; 
+    G4String       fBackgoundModelCfg;
 
     G4ThreeVector  SampleRandomDirection(); 
 

@@ -30,13 +30,13 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 #include "SLArAnalysisManager.hh"
-#include "TF1.h"
 
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
 #include "SLArBulkVertexGenerator.hh"
 #include "SLArPGunGeneratorAction.hh"
 #include "SLArMarleyGeneratorAction.hh"
+#include "SLArBackgroundGeneratorAction.hh"
 #include "bxdecay0_g4/primary_generator_action.hh"
 
 #include "Randomize.hh"
@@ -56,7 +56,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(3, nullptr),
+   fGeneratorActions(4, nullptr),
    //fPGunGen(0), fDecay0Gen(0), fMarleyGen(0), 
    //fGunMessenger(0), 
    fBulkGenerator(0), 
@@ -70,6 +70,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
   fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
   fGeneratorActions[kDecay0]= new bxdecay0_g4::PrimaryGeneratorAction(); 
+  fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   //fGeneratorActions[kDecay0]->SetVertexGenerator(fBulkGenerator); 
@@ -92,11 +93,22 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
-  delete fGunMessenger;
   //delete fPGunGen;
   //delete fDecay0Gen;
   //delete fMarleyGen;
-  for (auto &gen : fGeneratorActions) delete gen; 
+  printf("Deleting SLArPrimaryGeneratorAction...\n");
+  int igen = 0; 
+  for (auto &gen : fGeneratorActions) {
+    if (gen) {
+      printf("Deleting gen %i\n", igen);
+      delete gen; 
+      gen = nullptr;
+    }
+    igen++;
+  }
+  delete fBulkGenerator;
+  delete fGunMessenger;
+  printf("DONE\n");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -182,6 +194,20 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       break;
       
   };
+
+  if (fIncludeBackground) {
+    printf("SLArPrimaryGeneratorAction::GeneratePrimaries: ");
+    printf("Using SLArBackgroundGeneratorAction!!\n");
+    SLArBackgroundGeneratorAction* bkgGen = 
+      (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground]; 
+    bxdecay0_g4::PrimaryGeneratorAction* decay0Gen = 
+      (bxdecay0_g4::PrimaryGeneratorAction*)fGeneratorActions[kDecay0];
+    bkgGen->LoadPrimaryGenerator(gen); 
+    bkgGen->LoadBackgroundGenerator(decay0Gen); 
+    bkgGen->LoadVertexGenerator(fBulkGenerator); 
+    bkgGen->PrintBackgroundModel(); 
+    gen = bkgGen;
+  }
   //------------------------------------------- Pure Radiogenic sample
   //if (fGeneratorEnum == kRadio) {
     //if (!fBulkGenerator->GetBulkLogicalVolume()) {
@@ -219,7 +245,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   gen->GeneratePrimaries(anEvent); 
   G4int n = anEvent->GetNumberOfPrimaryVertex(); 
 
-  //printf("Primary Generator Action produced %i vertex(ices)\n", n); 
+  printf("Primary Generator Action produced %i vertex(ices)\n", n); 
   for (int i=0; i<n; i++) {
     SLArMCPrimaryInfo tc_primary;
 
@@ -235,8 +261,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       } else {
         tc_primary.SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
         tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
-
       }
+
       tc_primary.SetTrackID(particle->GetTrackID());
       tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
           anEvent->GetPrimaryVertex(i)->GetY0(), 
@@ -278,6 +304,16 @@ void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
       (marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
     marley_gen->SetVertexGenerator(fBulkGenerator); 
   return; 
+}
+
+void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
+{
+  fIncludeBackground = true; 
+  fBackgoundModelCfg = background_conf; 
+  SLArBackgroundGeneratorAction* bkgGen = 
+    (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground];
+   bkgGen->BuildBackgroundTable(fBackgoundModelCfg);
+   return;
 }
 
 G4ThreeVector SLArPrimaryGeneratorAction::SampleRandomDirection() {
