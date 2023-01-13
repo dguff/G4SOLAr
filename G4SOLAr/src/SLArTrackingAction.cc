@@ -29,14 +29,19 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
 
   //Let this be up to the user via vis.mac
-  fpTrackingManager->SetStoreTrajectory(true);
-
+  if (aTrack->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
+  {
+    fpTrackingManager->SetStoreTrajectory(true);
+  }
+  else {
+    fpTrackingManager->SetStoreTrajectory(false);
+    //This user track information is only relevant to the photons
+    fpTrackingManager->SetUserTrackInformation(
+        new SLArUserPhotonTrackInformation);
+  }
   //Use custom trajectory class
   fpTrackingManager->SetTrajectory(new SLArTrajectory(aTrack));
 
-  //This user track information is only relevant to the photons
-  fpTrackingManager->SetUserTrackInformation(
-      new SLArUserPhotonTrackInformation);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
