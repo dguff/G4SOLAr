@@ -91,6 +91,7 @@ void SLArElectronDrift::PrintProperties() {
 
 void SLArElectronDrift::Drift(const int& n, const int& trkId,
     const G4ThreeVector& pos, 
+    const double& time, 
     SLArCfgSystemPix* pixCfg, 
     SLArEventReadoutTileSystem* pixEv) 
 {
@@ -105,6 +106,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4double tile_x_pos = mtile->GetX(); 
     G4double driftLength = std::fabs(pos.x() - tile_x_pos); 
     G4double driftTime   = driftLength / fvDrift;
+    G4double hitTime     = time + driftTime; 
     // compute diffusion length and fraction of surviving electrons
     G4double diffLengthT = sqrt(2*fDiffCoefficientT*driftTime); 
     G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
@@ -120,7 +122,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     std::vector<double> t_(n_elec_anode);
     G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.z(), diffLengthT); 
     G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.y(), diffLengthT); 
-    G4RandGauss::shootArray(n_elec_anode, &t_[0], driftTime, diffLengthL/fvDrift); 
+    G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
 
     for (G4int i=0; i<n_elec_anode; i++) {
       pixID = pixCfg->FindPixel(x_[i], y_[i]); 

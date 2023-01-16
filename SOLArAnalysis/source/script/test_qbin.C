@@ -12,10 +12,12 @@
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TH1D.h"
+#include "TH2F.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TRandom3.h"
 #include "TDatabasePDG.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 #include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
@@ -41,12 +43,21 @@ void test_qbin(const char* input_path, int iev = 0)
   double hmax = 0.;
   double htmax = 0.; 
 
-  // read events
+  // book histograms
   std::vector<TH2Poly*> tileMaps; 
   std::vector<TH2Poly*> pixMaps;
+  TH2Poly* h = anodeCfg->GetAnodeMap(0); 
+  double z_tot = h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin(); 
+  TH2F* h2ZTime = new TH2F("h2ZTime", ";#it{z} [mm];Time [ms]", 
+      z_tot / 4.0, h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax(), 
+      2000, -0.2, 1.8); 
+  TH1D* hPrimaryTime = new TH1D("hPrimaryTime", 
+      "Primary particles time;Time [ms];Entries", 100, -0.2, 1.8); 
+
   tileMaps.reserve(200);
   pixMaps.reserve(200); 
 
+  // read events
   auto anodeEv = ev->GetReadoutTileSystem(); 
 
   for (const auto& mtEv : anodeEv->GetMegaTilesMap()) {
@@ -63,7 +74,6 @@ void test_qbin(const char* input_path, int iev = 0)
 
       if (t_hits > htmax) htmax = t_hits; 
       h2Tile->SetBinContent(mtCfg->GetBaseElement(tEv.first)->GetBinIdx(), t_hits); 
-      
 
       TH2Poly* h2Map = anodeCfg->ConstructPixHistMap(2, std::vector<int>{mtEv.first, tEv.first});
 
@@ -71,11 +81,17 @@ void test_qbin(const char* input_path, int iev = 0)
         double nhits = pix.second->GetNhits(); 
         if (nhits > hmax) hmax = nhits;
         h2Map->SetBinContent(pix.first, nhits); 
-        if (nhits > 10000) 
+        auto bin = (TH2PolyBin*)h2Map->GetBins()->At(pix.first); 
+        Double_t z_bin = 0.5*(bin->GetXMax() + bin->GetXMin()); 
+        for (const auto& qhit : pix.second->GetHits()) {
+          h2ZTime->Fill(z_bin, qhit->GetTime() / CLHEP::ms); 
+        }
+        if (nhits > 10000) {
           printf("Pixel %i (tile bin %i, MT %i) Collected %g e-\n", 
               pix.first, 
               mtCfg->GetBaseElement(tEv.first)->GetBinIdx(),
               mtEv.first, nhits);
+        }
       }
 
       pixMaps.push_back(h2Map); 
@@ -85,7 +101,6 @@ void test_qbin(const char* input_path, int iev = 0)
   }
   printf("hmax is %g\n", hmax);
 
-  TH2Poly* h = anodeCfg->GetAnodeMap(0); 
   // Draw the tile-map
   TCanvas* cT = new TCanvas("cT"); 
   cT->cd(); h->DrawClone("axis"); 
@@ -114,6 +129,7 @@ void test_qbin(const char* input_path, int iev = 0)
   double q = 0;
   auto primaries = ev->GetPrimaries(); 
   for (const auto& pp : primaries) {
+    hPrimaryTime->Fill(pp->GetTime() / CLHEP::millisecond); 
     auto trajectories = pp->GetTrajectories(); 
     for (const auto &tt : trajectories) {
       auto particle = pdgDB->GetParticle(tt->GetPDGID()); 
@@ -136,6 +152,9 @@ void test_qbin(const char* input_path, int iev = 0)
     }
   }
 
+  TCanvas* cTime = new TCanvas(); 
+  cTime->cd(); 
+  h2ZTime->Draw("colz0"); 
   
 
   return;

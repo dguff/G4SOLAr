@@ -408,6 +408,7 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
             runAction->GetElectronDrift()->Drift(n_el, 
                 SLArTrj->GetTrackID(),
                 SLArTrj->GetPoint(n)->GetPosition(), 
+                SLArTrj->GetTime(),
                 SLArAnaMgr->GetPixCfg(), 
                 SLArAnaMgr->GetEvent()->GetReadoutTileSystem()); 
             
