@@ -36,8 +36,9 @@
 #include "SLArBulkVertexGenerator.hh"
 #include "SLArPGunGeneratorAction.hh"
 #include "SLArMarleyGeneratorAction.hh"
+#include "SLArDecay0GeneratorAction.hh"
+
 #include "SLArBackgroundGeneratorAction.hh"
-#include "bxdecay0_g4/primary_generator_action.hh"
 
 #include "Randomize.hh"
 
@@ -69,7 +70,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   G4int n_particle = 1;
   fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
   fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
-  fGeneratorActions[kDecay0]= new bxdecay0_g4::PrimaryGeneratorAction(); 
+  fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
@@ -200,8 +201,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     printf("Using SLArBackgroundGeneratorAction!!\n");
     SLArBackgroundGeneratorAction* bkgGen = 
       (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground]; 
-    bxdecay0_g4::PrimaryGeneratorAction* decay0Gen = 
-      (bxdecay0_g4::PrimaryGeneratorAction*)fGeneratorActions[kDecay0];
+    bxdecay0_g4::SLArDecay0GeneratorAction* decay0Gen = 
+      (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0];
+
     bkgGen->LoadPrimaryGenerator(gen); 
     bkgGen->LoadBackgroundGenerator(decay0Gen); 
     bkgGen->LoadVertexGenerator(fBulkGenerator); 
@@ -250,7 +252,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     SLArMCPrimaryInfo tc_primary;
 
     G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
-    //printf("vertex %i has %i particles \n", n, np); 
+    //printf("vertex %i has %i particles at t = %g\n", n, np, 
+        //anEvent->GetPrimaryVertex(i)->GetT0()); 
     for (int ip = 0; ip<np; ip++) {
       //printf("getting particle %i...\n", ip); 
       auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
@@ -270,6 +273,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       tc_primary.SetMomentum(
           particle->GetPx(), particle->GetPy(), particle->GetPz(), 
           particle->GetKineticEnergy());
+      tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
+      
 
       //printf("Adding particle to primary output list\n"); 
       //tc_primary.PrintParticle(); 

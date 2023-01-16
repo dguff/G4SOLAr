@@ -44,7 +44,7 @@ class SLArPGunGeneratorAction;
 class SLArBackgroundGeneratorAction;
 
 namespace bxdecay0_g4 {
-  class PrimaryGeneratorAction;
+  class SLArDecay0GeneratorAction;
 }
 namespace marley {
   class SLArMarleyGeneratorAction;

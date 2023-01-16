@@ -14,7 +14,7 @@
 #include "globals.hh"
 
 namespace bxdecay0_g4 {
-  class PrimaryGeneratorAction; 
+  class SLArDecay0GeneratorAction;
 }
 class SLArBulkVertexGenerator;
 
@@ -47,7 +47,7 @@ class SLArBackgroundGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     inline void LoadPrimaryGenerator(G4VUserPrimaryGeneratorAction* primary_gen)
       {fPrimaryGenAction = primary_gen;}
-    inline void LoadBackgroundGenerator(bxdecay0_g4::PrimaryGeneratorAction* bkg_gen)
+    inline void LoadBackgroundGenerator(bxdecay0_g4::SLArDecay0GeneratorAction* bkg_gen)
       {fDecay0GenAction = bkg_gen;} 
     inline void LoadVertexGenerator(SLArBulkVertexGenerator* vtx_gen) 
       {fBulkVtxGen = vtx_gen;}
@@ -57,7 +57,7 @@ class SLArBackgroundGeneratorAction : public G4VUserPrimaryGeneratorAction
   private: 
     std::map<size_t, background::SLArBackgroundInfo> fBkgModel;
     G4VUserPrimaryGeneratorAction* fPrimaryGenAction; 
-    bxdecay0_g4::PrimaryGeneratorAction* fDecay0GenAction; 
+    bxdecay0_g4::SLArDecay0GeneratorAction* fDecay0GenAction; 
     SLArBulkVertexGenerator* fBulkVtxGen; 
     double fTime0; 
     double fTime1;

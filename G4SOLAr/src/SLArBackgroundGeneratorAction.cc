@@ -17,7 +17,7 @@
 #include "G4Poisson.hh"
 #include "G4Event.hh"
 
-#include "bxdecay0_g4/primary_generator_action.hh"
+#include "SLArDecay0GeneratorAction.hh"
 
 #include "SLArBackgroundGeneratorAction.hh"
 #include "SLArBulkVertexGenerator.hh"
@@ -70,7 +70,7 @@ void SLArBackgroundGeneratorAction::GeneratePrimaries(G4Event* ev)
   fPrimaryGenAction->GeneratePrimaries(ev); 
 
   for (const auto &bkg : fBkgModel) {
-    bxdecay0_g4::PrimaryGeneratorAction::ConfigurationInterface& decay0_cfg =
+    bxdecay0_g4::SLArDecay0GeneratorAction::ConfigurationInterface& decay0_cfg =
       fDecay0GenAction->GrabConfiguration(); 
     decay0_cfg.reset_base(); 
     decay0_cfg.decay_category = "background";
@@ -97,7 +97,10 @@ void SLArBackgroundGeneratorAction::GeneratePrimaries(G4Event* ev)
 #endif
 
     for (int i=0; i<n_decay; i++) {
+      G4double time_ = CLHEP::RandFlat::shoot(fTime0, fTime1) / CLHEP::second; 
+      fDecay0GenAction->SetDecayTime(time_); 
       fDecay0GenAction->GeneratePrimaries(ev); 
+      printf("DONE\n");
     }
 
   } 
@@ -126,7 +129,7 @@ void SLArBackgroundGeneratorAction::PrintBackgroundModel() {
   printf("--------------------------------------------------\n");
   printf("Isotope      | Volume      | Rate [Bq/kg]\n");
   for (const auto& bkg : fBkgModel) {
-    printf("%s         | %s       | %g\n", 
+    printf("%s         | %s        | %g\n", 
         bkg.second.fIsotope.c_str(), bkg.second.fVolume.c_str(), bkg.second.fRate);
   }
   printf("--------------------------------------------------\n");

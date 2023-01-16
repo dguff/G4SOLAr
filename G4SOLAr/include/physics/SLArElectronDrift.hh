@@ -24,7 +24,8 @@ class SLArElectronDrift {
     void ComputeProperties(); 
 
     void Drift(const int& n, const int& trkId, const G4ThreeVector& pos, 
-         SLArCfgSystemPix* pixCfg, SLArEventReadoutTileSystem* pixEv);
+        const double& time, 
+        SLArCfgSystemPix* pixCfg, SLArEventReadoutTileSystem* pixEv);
 
     void PrintProperties(); 
 
