@@ -13,6 +13,21 @@ SLArBulkVertexGenerator::SLArBulkVertexGenerator()
   fBulkInverseRotation = fBulkRotation.inverse();
 }
 
+SLArBulkVertexGenerator::SLArBulkVertexGenerator(const SLArBulkVertexGenerator& origin)
+{
+  fLogVol = origin.fLogVol; 
+  fBulkTranslation = origin.fBulkTranslation;
+  fBulkRotation = origin.fBulkRotation;
+  fTolerance = origin.fTolerance; 
+  fRandomSeed = origin.fRandomSeed; 
+  fNoDaughters = origin.fNoDaughters; 
+  fFVFraction = origin.fFVFraction; 
+
+  fSolid = origin.fSolid; 
+  fBulkInverseRotation = origin.fBulkInverseRotation; 
+  fCounter = origin.fCounter; 
+}
+
 SLArBulkVertexGenerator::~SLArBulkVertexGenerator()
 {
   std::clog << "[log] SLArBulkVertexGenerator::DTOR: counter=" << fCounter << " generated vertexes\n";

@@ -32,8 +32,16 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
 
 add_library(SLArMCEventReadout
   SHARED
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventGenericHit.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventGenericHit.hh
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventChargeHit.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargeHit.hh
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventHitsCollection.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventHitsCollection.hh
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventChargePixel.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargePixel.hh
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventTile.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventMegatile.cc
@@ -50,7 +58,11 @@ target_link_libraries(
   PUBLIC 
   SLArReadoutSystemConfig ${ROOT_LIBRARIES})
 ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventGenericHit.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargeHit.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventHitsCollection.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargePixel.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutTileSystem.hh

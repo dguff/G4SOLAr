@@ -1,8 +1,8 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArAnalysisManager
- * @created     : mercoledì feb 12, 2020 15:03:53 CET
- * @brief Custom G4SOLAr Analysis Manager
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArAnalysisManager.hh
+ * @created     Wed Feb 12, 2020 15:03:53 CET
+ * @brief       Custom SoLAr-sim Analysis Manager
  *
  * Custom analysis manager reimplemented from 
  * G4RootAnalysisManager
@@ -15,6 +15,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "config/SLArCfgSystemPix.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -25,7 +26,6 @@
 #include "G4ToolsAnalysisManager.hh"
 #include "globals.hh"
 
-typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArPDSystemConfig; 
 
 class SLArAnalysisManager 
 {
@@ -38,8 +38,8 @@ class SLArAnalysisManager
     static G4bool IsInstance();
 
     G4bool CreateFileStructure();
-    G4bool LoadPDSCfg         (SLArPDSystemConfig*  pdsCfg );
-    G4bool LoadPixCfg         (SLArCfgPixSys*  pixCfg );
+    G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
+    G4bool LoadPixCfg         (SLArCfgSystemPix*  pixCfg );
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
@@ -47,12 +47,14 @@ class SLArAnalysisManager
     bool   IsPathValid        (G4String path);
     int    WriteVariable      (G4String name, G4double val); 
     int    WriteArray         (G4String name, G4int size, G4double* val); 
+    int    WriteCfgFile       (G4String name, const char* path); 
+    int    WriteCfg           (G4String name, const char* cfg); 
 
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
-    SLArPDSystemConfig* GetPDSCfg() {return  fPDSysCfg;}
-    SLArCfgPixSys* GetPixCfg() {return fPixSysCfg;}
+    SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
+    SLArCfgSystemPix* GetPixCfg() {return fPixSysCfg;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
@@ -78,8 +80,8 @@ class SLArAnalysisManager
     TTree*              fEventTree;
     SLArMCEvent*          fMCEvent;
 
-    SLArPDSystemConfig* fPDSysCfg;
-    SLArCfgPixSys* fPixSysCfg;
+    SLArCfgSystemSuperCell* fPDSysCfg;
+    SLArCfgSystemPix* fPixSysCfg;
 };
 
 #endif /* end of include guard SLArANALYSISMANAGER_HH */

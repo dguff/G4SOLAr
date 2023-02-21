@@ -23,7 +23,7 @@ SLArEventSuperCellSystem::SLArEventSuperCellSystem(const SLArEventSuperCellSyste
   return;
 }
 
-SLArEventSuperCellSystem::SLArEventSuperCellSystem(SLArCfgSCSys* cfg) {
+SLArEventSuperCellSystem::SLArEventSuperCellSystem(SLArCfgSystemSuperCell* cfg) {
   SetName(cfg->GetName()); 
   ConfigSystem(cfg); 
   return;
@@ -36,10 +36,10 @@ SLArEventSuperCellSystem::~SLArEventSuperCellSystem() {
   fSuperCellMap.clear(); 
 }
 
-int SLArEventSuperCellSystem::ConfigSystem(SLArCfgSCSys* cfg) {
+int SLArEventSuperCellSystem::ConfigSystem(SLArCfgSystemSuperCell* cfg) {
   int nsc = 0; 
-  for (const auto &scarr : cfg->GetModuleMap()) {
-    int array_idx = scarr.second->GetIdx(); 
+  for (const auto &scarr : cfg->GetMap()) {
+    //int array_idx = scarr.second->GetIdx(); 
     for (const auto &sc : scarr.second->GetMap()) {
       if (fSuperCellMap.count(sc.first) == 0) {
         fSuperCellMap.insert(

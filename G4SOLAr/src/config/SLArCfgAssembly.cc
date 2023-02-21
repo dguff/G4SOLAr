@@ -1,11 +1,12 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgAssembly
- * @created     : martedì lug 19, 2022 11:53:34 CEST
+ * @file        : SLArCfgAssembly.cc
+ * @created     : Tuesday Jul 19, 2022 11:53:34 CEST
  */
 
 #include "TRegexp.h"
 #include "TPRegexp.h"
+#include "TList.h"
 
 #include "config/SLArCfgReadoutTile.hh"
 #include "config/SLArCfgSuperCell.hh"
@@ -15,42 +16,40 @@ templateClassImp(SLArCfgAssembly)
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::SLArCfgAssembly() 
-  : fH2Bins(nullptr), fSerie(0), fNElements(0)
+  : SLArCfgBaseModule()/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName("aAssemblyHasNoName");
 }
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie) 
-  : fH2Bins(nullptr), fNElements(0)
+  : SLArCfgBaseModule(serie)/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName(name);
-  fSerie = serie;
   printf("SLArCfgAssembly created with name %s\n", fName.Data());
 }
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
-  : SLArCfgBaseModule(cfg), fH2Bins(0), fNElements(0)
+  : SLArCfgBaseModule(cfg)/*, fH2Bins(0)*/, fNElements(0)
 {
   SLArCfgAssembly<TBAseModule>();
   SetName(cfg.fName);
-  fSerie = cfg.fSerie;
 
-  for (auto &pmt : cfg.fElementsMap)
+  for (auto &el : cfg.fElementsMap)
   {
     fElementsMap.insert(std::make_pair(
-          pmt.first, (TBAseModule*)pmt.second->Clone()));
+          el.first, (TBAseModule*)el.second->Clone()));
     fNElements++;
   }
 
-  if (fNElements) SetTH2BinIdx();
+  //if (fNElements) SetTH2BinIdx();
 }
 
 template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::~SLArCfgAssembly()
 {
-  if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
+  //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
   for (auto &sc : fElementsMap)
     if (sc.second) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();
@@ -88,46 +87,143 @@ TBaseModule* SLArCfgAssembly<TBaseModule>::GetBaseElement(int idx)
 }
 
 template<class TBaseModule>
-void SLArCfgAssembly<TBaseModule>::BuildPolyBinHist()
+TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
+    ESubModuleReferenceFrame kFrame, 
+    int n, int m)
 {
-  fH2Bins = new TH2Poly();
-  fH2Bins->SetName(fName+"_bins");
+  TH2Poly* h2Bins = new TH2Poly();
+  h2Bins->SetName(fName+"_bins");
 
-  fH2Bins->SetFloat();
+  h2Bins->SetFloat();
 
   int iBin = 1;
-  for (auto &pmt : fElementsMap) 
+  for (auto &el : fElementsMap) 
   {
-    if (!pmt.second->GetGraphShape()) {
-      pmt.second->BuildGShape(); 
+    TGraph* g = el.second->BuildGShape(); 
+    if (kFrame == kRelative) {
+      for (int i=0; i<g->GetN(); i++) {
+        g->GetX()[i] -= fZ; 
+        g->GetY()[i] -= fY; 
+      }
     }
     TString gBinName = Form("gBin%i", iBin);
-    int bin_idx = fH2Bins->AddBin(
-        pmt.second->GetGraphShape()->Clone(gBinName));
-    pmt.second->SetBinIdx(bin_idx);
+    int bin_idx = h2Bins->AddBin(
+        g->Clone(gBinName));
+    el.second->SetBinIdx(bin_idx);
     iBin ++;
+    delete g; 
   }
+
+  h2Bins->ChangePartition(n, m); 
+  return h2Bins;
+}
+
+/*
+ *template<class TBaseModule>
+ *TH2Poly* SLArCfgAssembly<TBaseModule>::GetTH2()
+ *{
+ *  return fH2Bins;
+ *}
+ */
+
+/*
+ *template<class TBaseModule>
+ *void SLArCfgAssembly<TBaseModule>::SetTH2BinIdx()
+ *{
+ *  BuildPolyBinHist();
+ *
+ *  for (auto &elements : fElementsMap)
+ *  {
+ *    double x = elements.second->GetX();
+ *    double y = elements.second->GetY();
+ *    int  idx = fH2Bins->FindBin(x, y);
+ *    elements.second->SetBinIdx(idx);
+ *  }
+ *}
+ */
+
+template<class TBaseModule>
+TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
+  //if (!fH2Bins) BuildPolyBinHist(); 
+
+  double x_min =  1e10;
+  double x_max = -1e10; 
+  double y_min =  1e10; 
+  double y_max = -1e10; 
+
+/*
+ *  auto list_bins = fH2Bins->GetBins(); 
+ *  for (const auto &bin_ : *list_bins) {
+ *    TH2PolyBin* bin = static_cast<TH2PolyBin*>(bin_); 
+ *    TGraph* gbin = static_cast<TGraph*>(bin->GetPolygon()); 
+ *    double* x = gbin->GetX(); 
+ *    double* y = gbin->GetY(); 
+ *    int n = gbin->GetN(); 
+ *    double x_min_bin = *std::min_element(x, x+n);
+ *    double x_max_bin = *std::max_element(x, x+n); 
+ *    double y_min_bin = *std::min_element(y, y+n); 
+ *    double y_max_bin = *std::max_element(y, y+n); 
+ *
+ *    if (x_min_bin < x_min) x_min = x_min_bin; 
+ *    if (x_max_bin > x_max) x_max = x_max_bin; 
+ *    if (y_min_bin < y_min) y_min = y_min_bin; 
+ *    if (y_max_bin > y_max) y_max = y_max_bin;  
+ *  }
+ *
+ */
+
+  for (const auto &el : fElementsMap) {
+    TGraph* gbin = el.second->BuildGShape(); 
+    double* x = gbin->GetX(); 
+    double* y = gbin->GetY(); 
+    int n = gbin->GetN(); 
+    double x_min_bin = *std::min_element(x, x+n);
+    double x_max_bin = *std::max_element(x, x+n); 
+    double y_min_bin = *std::min_element(y, y+n); 
+    double y_max_bin = *std::max_element(y, y+n); 
+
+    if (x_min_bin < x_min) x_min = x_min_bin; 
+    if (x_max_bin > x_max) x_max = x_max_bin; 
+    if (y_min_bin < y_min) y_min = y_min_bin; 
+    if (y_max_bin > y_max) y_max = y_max_bin;
+
+    delete gbin; 
+  }
+
+
+
+  TGraph* g = new TGraph(5); 
+  g->SetPoint(0, x_min, y_min); 
+  g->SetPoint(1, x_min, y_max); 
+  g->SetPoint(2, x_max, y_max); 
+  g->SetPoint(3, x_max, y_min); 
+  g->SetPoint(4, x_min, y_min); 
+
+  g->SetName(Form("g%s", fName.Data())); 
+  return g;
 }
 
 template<class TBaseModule>
-TH2Poly* SLArCfgAssembly<TBaseModule>::GetTH2()
+TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin) 
 {
-  return fH2Bins;
-}
-
-template<class TBaseModule>
-void SLArCfgAssembly<TBaseModule>::SetTH2BinIdx()
-{
-  BuildPolyBinHist();
-
-  for (auto &elements : fElementsMap)
-  {
-    double x = elements.second->GetX();
-    double y = elements.second->GetY();
-    int  idx = fH2Bins->FindBin(x, y);
-    elements.second->SetBinIdx(idx);
+  TBaseModule* module_cfg = nullptr;
+  for (const auto& mod : fElementsMap) {
+    if (mod.second->GetBinIdx() == ibin) {
+      module_cfg = mod.second; 
+      break;
+    }
   }
+
+  return module_cfg;
 }
+
+/*
+ *template<class TBaseModule> 
+ *void SLArCfgAssembly<TBaseModule>::ResetH2Hits()
+ *{
+ *  if (fH2Bins) fH2Bins->Reset("ices");  
+ *}
+ */
 
 template class SLArCfgAssembly<SLArCfgSuperCell>; 
 template class SLArCfgAssembly<SLArCfgReadoutTile>;

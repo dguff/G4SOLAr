@@ -37,19 +37,22 @@
 #include "G4VPhysicalVolume.hh"
 #include "globals.hh"
 
-class G4ParticleGun;
 class G4Event;
 class SLArBulkVertexGenerator;
 class SLArPrimaryGeneratorMessenger;
+class SLArPGunGeneratorAction; 
+class SLArBackgroundGeneratorAction;
 
 namespace bxdecay0_g4 {
-  class PrimaryGeneratorAction;
+  class SLArDecay0GeneratorAction;
 }
-class SLArMarleyGen;
+namespace marley {
+  class SLArMarleyGeneratorAction;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGunMode {kGun = 0, kRadio = 1, kMarley = 2};
+enum  EGenerator {kParticleGun = 0, kDecay0 = 1, kMarley = 2, kBackground = 3};
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
@@ -61,22 +64,29 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     virtual void GeneratePrimaries(G4Event*);
 
+    G4String GetMarleyConf() {return fMarleyCfg;}
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
     bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
 
-    void SetGunMode       (EGunMode gunMode);
-    void SetGunPosition   (G4ThreeVector pos) {fGunPosition = pos;}
-    void SetGunDirection  (G4ThreeVector dir) {fGunDirection = dir;}
-    void SetBulkName      (G4String vol);
-    void SetMarleyConf    (G4String marley_conf); 
+    void SetGenerator(EGenerator gen) {fGeneratorEnum = gen;}
+    void SetSourcePosition(G4ThreeVector pos) {fGunPosition = pos;}
+    void SetEventDirection(G4ThreeVector dir) {fGunDirection = dir;}
+    void SetBulkName(G4String vol);
+    void SetBackgroundConf(G4String background_conf); 
+    void SetMarleyConf(G4String marley_conf); 
+    void SetPGunEnergy(G4double ekin); 
+    void SetPGunParticle(G4String particle_name); 
     void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
 
 
   private:
-    G4ParticleGun* fParticleGun;
-    bxdecay0_g4::PrimaryGeneratorAction* fDecay0Gen;
-    SLArMarleyGen* fMarleyGen; 
+    std::vector<G4VUserPrimaryGeneratorAction*> fGeneratorActions; 
+    //SLArPGunGeneratorAction* fPGunGen;
+    //bxdecay0_g4::PrimaryGeneratorAction* fDecay0Gen;
+    //marley::SLArMarleyGeneratorAction*   fMarleyGen; 
+
+
     SLArPrimaryGeneratorMessenger* fGunMessenger;
 
     SLArBulkVertexGenerator* fBulkGenerator;
@@ -85,10 +95,13 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4String       fVolumeName;
     G4String       fMarleyCfg; 
 
-    EGunMode       fGunMode;
+    EGenerator     fGeneratorEnum;
     G4ThreeVector  fGunPosition;
     G4ThreeVector  fGunDirection;
+    G4double       fGunEnergy; 
     bool           fDoTraceOptPhotons;
+    bool           fIncludeBackground; 
+    G4String       fBackgoundModelCfg;
 
     G4ThreeVector  SampleRandomDirection(); 
 

@@ -44,11 +44,11 @@ class SLArCfgBaseModule : public TNamed {
     inline void SetPhysZ(float z) {fPhysZ =  z;}
     inline int GetBinIdx() {return  fBin;}
     inline void SetBinIdx(int bin) {fBin =  bin;}
-    inline TGraph* GetGraphShape() {return fGShape;}
+    //inline TGraph* GetGraphShape() {return fGShape;}
     inline void SetNormal(double x, double y, double z) {fNormal = TVector3(x, y, z);};
     inline void SetNormal(TVector3 vN) {fNormal = vN;}
     inline TVector3 GetNormal() {return fNormal;}
-    virtual void BuildGShape() {}; 
+    virtual TGraph* BuildGShape() {return nullptr;} 
 
   protected: 
     int                 fIdx   ; //!< Module index
@@ -63,12 +63,11 @@ class SLArCfgBaseModule : public TNamed {
     float               fPhysY ; //!< Module y coordinate in the World frame
     float               fPhysZ ; //!< Module z coordinate in the World frame 
     TVector3            fNormal; //!< Module normal vector
-    TGraph*             fGShape; //!< Module shape in the TH2Poly projection
+    //TGraph*             fGShape; //!< Module shape in the TH2Poly projection
 
 
   public:
     ClassDef(SLArCfgBaseModule, 1); 
-
 };
 
 

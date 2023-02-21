@@ -12,7 +12,7 @@
   source: {
      type: "tgraph",
      neutrino: "ve",
-     tfile: "marley_cfg/hep_oscillated_file.root",  // Name of the ROOT file containing
+     tfile: "assets/marley_cfg/hep_oscillated_file.root",  // Name of the ROOT file containing
                                   // the TGraph object
   
      namecycle: "hep_nue",        // Name of the TGraph object (used to

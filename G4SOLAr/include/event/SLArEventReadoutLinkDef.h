@@ -9,16 +9,21 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class SLArEventGenericHit++; 
 #pragma link C++ class SLArEventPhotonHit++; 
+#pragma link C++ class SLArEventChargeHit++; 
+#pragma link C++ class std::vector<SLArEventChargeHit*>++; 
 #pragma link C++ class std::vector<SLArEventPhotonHit*>++;
+#pragma link C++ class SLArEventHitsCollection<SLArEventPhotonHit>++;
+#pragma link C++ class SLArEventHitsCollection<SLArEventChargeHit>++;
+#pragma link C++ class SLArEventChargePixel++; 
+#pragma link C++ class std::map<int, SLArEventChargePixel*>++; 
 #pragma link C++ class SLArEventTile++;
 #pragma link C++ class std::map<int, SLArEventTile*>++;
 #pragma link C++ class SLArEventMegatile++;
-#pragma link C++ typedef SLArCfgPixSys++;
 #pragma link C++ class SLArEventReadoutTileSystem++;
 #pragma link C++ class SLArEventSuperCell++;
 #pragma link C++ class std::map<int, SLArEventSuperCell*>++;
-#pragma link C++ typedef SLArCfgSCSys++;
 #pragma link C++ class SLArEventSuperCellSystem++;
 
 #endif

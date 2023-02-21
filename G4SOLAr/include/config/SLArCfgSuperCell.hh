@@ -26,7 +26,7 @@ class SLArCfgSuperCell : public SLArCfgBaseModule
     void   Set2DSize_X(float _x) {f2DSize_X = _x;}
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
     void   DumpInfo() override;
-    void   BuildGShape() override;
+    TGraph* BuildGShape() override;
 
   protected:
     float   f2DSize_X; 

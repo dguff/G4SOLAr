@@ -108,16 +108,16 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS") {
         fEventAction->IncPhotonCount_WLS();
       }
-
-
-      SLArPrimaryGeneratorAction* primaryGen = 
-        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
-      if (primaryGen->DoTraceOptPhotons() == false) kClassification = G4ClassificationOfNewTrack::fKill;
 #ifdef SLAR_DEBUG
       else 
         printf("SLArStackingAction::ClassifyNewTrack unknown photon creation process %s\n", 
             aTrack->GetCreatorProcess()->GetProcessName().c_str());
 #endif
+
+
+      SLArPrimaryGeneratorAction* primaryGen = 
+        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
+      if (primaryGen->DoTraceOptPhotons() == false) kClassification = G4ClassificationOfNewTrack::fKill;
     }
   }
 

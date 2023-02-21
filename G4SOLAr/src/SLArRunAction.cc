@@ -5,6 +5,8 @@
  */
 
 #include "SLArAnalysisManager.hh"
+#include "SLArDetectorConstruction.hh"
+#include "SLArPrimaryGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"
 
@@ -15,7 +17,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArRunAction::SLArRunAction()
- : G4UserRunAction()
+ : G4UserRunAction(), fG4MacroFile(""), fEventAction(nullptr), fElectronDrift(nullptr)
 { 
   // Create custom SLAr Analysis Manager
   SLArAnalysisManager* anamgr = SLArAnalysisManager::Instance();
@@ -51,6 +53,9 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
   SLArAnaMgr->CreateFileStructure();
 
+  fElectronDrift = new SLArElectronDrift(); 
+  fElectronDrift->ComputeProperties(); 
+  fElectronDrift->PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
@@ -114,7 +119,25 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_2", ncapt_2); 
   SLArAnaMgr->WriteVariable("nCurrent_outerWall", ncurr_0);
   SLArAnaMgr->WriteVariable("nCurrent_innerWall", ncurr_1);
+
+  if (!fG4MacroFile.empty()) {
+    SLArAnaMgr->WriteCfgFile("g4macro", fG4MacroFile.c_str()); 
+  }
+
+  auto RunMngr = G4RunManager::GetRunManager(); 
+  auto SLArDetConstr = 
+    (SLArDetectorConstruction*)RunMngr->GetUserDetectorConstruction(); 
+  SLArAnaMgr->WriteCfgFile("geometry", SLArDetConstr->GetGeometryCfgFile().c_str());
+  SLArAnaMgr->WriteCfgFile("materials", SLArDetConstr->GetMaterialCfgFile().c_str());
+
+  auto SLArGen = (SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
+  if (!SLArGen->GetMarleyConf().empty()) {
+    SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+  }
+
   SLArAnaMgr->Save();
+
+  delete fElectronDrift;  fElectronDrift = nullptr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

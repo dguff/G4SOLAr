@@ -11,13 +11,13 @@
 /SLAr/manager/SetOutputName slar_b8_nue_es.root
 
 # Select MARLEY generator
-/SLAr/gun/mode Marley
+/SLAr/gen/type Marley
 # Set the MARLEY configuration file
-/SLAr/gun/marleyconf marley_cfg/b8_osc_spect_ES_nue.js
+/SLAr/gen/marleyconf assets/marley_cfg/b8_osc_spect_ES_nue.js
 # Set isotropic directions of incoming neutrinos
-/SLAr/gun/SetDirectionMode isotropic
+/SLAr/gen/SetDirectionMode isotropic
 # Produce vertices uniformly in the volume name "Target"
-/SLAr/gun/volume Target
+/SLAr/gen/volume Target
 
 # Fire!
 /run/beamOn 50000

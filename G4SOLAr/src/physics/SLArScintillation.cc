@@ -382,7 +382,7 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
 
 
   G4double TotalEnergyDeposit = aStep.GetTotalEnergyDeposit();
-  G4double NonIonizingEnergyDeposit = aStep.GetNonIonizingEnergyDeposit();
+  //G4double NonIonizingEnergyDeposit = aStep.GetNonIonizingEnergyDeposit();
 
   G4MaterialPropertiesTable* MPT = aMaterial->GetMaterialPropertiesTable();
   if(!MPT)

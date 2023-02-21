@@ -1,6 +1,6 @@
-# G4SOLAr
+# SOLAr-sim
 
-**G4SOLAr** implements a Geant4-based Monte Carlo simulation of a LAr TPC
+**SOLAr-sim** implements a Geant4-based Monte Carlo simulation of a LAr TPC
 optimized for low-energy events searches. 
 
 ## Disclaimer
@@ -20,27 +20,27 @@ Hopefully, a more appropriate naming convention will gain ground.
 - **Core:** `Geant4` `v11.0` and newer, **compiled without `MULTI_THREAD` support**, 
   `ROOT` (possibly compiled from source)
   and respective dependencies (`cmake`, `g++`, `gcc`)
-- **Generators:** `G4SOLAr` integrates some external events generators that
+- **Generators:** `SOLAr-sim` integrates some external events generators that
   are relevant for the physics goal of the project. 
   * **MARLEY**: Low-energy neutrino interactions in LAr
   * **BxDecay0**: Generic radioactive decay generator, with the possibility 
     of producing neutrinoless *ββ*-decay final states.
-- **Utilities**: `G4SOLAr` uses the `RapidJSON` package to parse configuration 
+- **Utilities**: `SOLAr-sim` uses the `RapidJSON` package to parse configuration 
   files formatted according to the `json` standard. 
     
   At the preset state of the development, these three packages have to be installed
-  manually by the user. The `G4SOLAr` package includes a convenient script 
+  manually by the user. The `SOLAr-sim` package includes a convenient script 
   to automatically download, build and install the external dependencies
   (see [External dependencies installation and configuration](README_EXTERNALS.md)). 
   
 ## Download and build the project
 
 The procedure to build the code have some subtle differences wether one is 
-installing the simulation on a [generic machine](#installing-g4solar-on-a-generic-machine)
+installing the simulation on a [generic machine](#installing-SOLAr-sim-on-a-generic-machine)
 or on a more complex system 
-such as the [Fermilab computing environment](#installing-g4solar-on-fermilab-gpvm). 
+such as the [Fermilab computing environment](#installing-SOLAr-sim-on-fermilab-gpvm). 
 
-### Installing G4SOLAr on Fermilab gpvm
+### Installing SOLAr-sim on Fermilab gpvm
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
 $ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
@@ -48,7 +48,7 @@ $ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
 ```bash
-$ cd G4SOLAr
+$ cd SOLAr-sim
 $ source setup_g4solar.sh
 ```
 If the project dependencies are not yet installed, follow the instructions
@@ -72,7 +72,7 @@ Note that the geant4 version installed on `dunegpvm` nodes is compiled
 against an independent installation of `CLHEP`, so one has to specify the 
 `CLHEP` include directory when calling `cmake`.
 
-### Installing G4SOLAr on a generic machine
+### Installing SOLAr-sim on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
 $ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
@@ -93,7 +93,7 @@ The project will search for the external dependencies in the
 specify a specific installation directory by setting it in the `cmake`
 command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
 
-### Run G4SOLAr
+### Run SOLAr-sim
 
 It is possible to run the simulation directly from the installation folder, but it
 is advised to add the build directory to the executable PATH to be able to run 
@@ -127,7 +127,7 @@ Finally, the fourth input (`-p`, `--materials`) is a json table containing
 the definitions of all materials used in the simulation. 
 
 If no geometry or material table are provided, the simulation will take 
-by default `G4SOLAr/geometry.json` and `G4SOLAr/materials/materials_db.json`
+by default `assets/geometry/geometry.json` and `assets/materials/materials_db.json`
 respectively. 
 
 ## Interpreting the output
@@ -171,12 +171,12 @@ PDS event object.
 | **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
 
 
-### G4SOLAr Event Dictionaries
+### SOLAr-sim Event Dictionaries
 
 To be able to access the event information in an interactive ROOT session, 
 one should load the shared libraries defining the event and configuration 
 objects. 
-These libraries are built when compiling `G4SOLAr` and are installed in 
+These libraries are built when compiling `SOLAr-sim` and are installed in 
 the `G4SOLAR_INSTALL_DIR/lib` folder. During the installation process, 
 a `rootlogon.C` file loading the libraries is created in 
 `G4SOLAR_BASE_DIR/SOLArAnalysis`. In the same folder, one can
@@ -185,7 +185,7 @@ simulated MC event.
 
 ### Running jobs on the grid
 
-You can run G4SOLAr jobs on the grid with
+You can run SOLAr-sim jobs on the grid with
 
 ```
 cd grid

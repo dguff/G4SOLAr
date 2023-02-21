@@ -3,7 +3,6 @@
  * @file        : SLArAnalysisManagerMsgr
  * @created     : martedì mar 03, 2020 17:15:44 CET
  */
-
 #include "SLArAnalysisManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -26,6 +25,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
   fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
+  fCmdWriteCfgFile(nullptr),
   fGDMLFileName("slar_export.gdml")
 {
   TString UIManagerPath = "/SLAr/manager/";
@@ -48,6 +48,11 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdOutputPath->SetGuidance("Set output folder");
   fCmdOutputPath->SetParameterName("Path", "./output/");
   fCmdOutputPath->SetDefaultValue("./output/");
+
+  fCmdWriteCfgFile = 
+    new G4UIcmdWithAString(UIManagerPath+"WriteCfgFile", this);
+  fCmdOutputPath->SetGuidance("Write cfg file to output");
+  fCmdOutputPath->SetParameterName("name path", false); 
   
   fCmdGDMLFileName = 
     new G4UIcmdWithAString(UIExportPath+"SetGDMLFileName", this); 
@@ -70,6 +75,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdOutputFileName) delete fCmdOutputFileName;
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
+  if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
   G4cerr << "SLArAnalysisManagerMsgr DONE" << G4endl;
 }
 
@@ -93,7 +99,15 @@ void SLArAnalysisManagerMsgr::SetNewValue
         parser.Write(fGDMLFileName, pv); 
       }
     }
+  }
+  else if (cmd == fCmdWriteCfgFile) {
+    std::stringstream strm;
+    strm << newVal.c_str(); 
+    std::string name;
+    std::string file_path; 
+    strm >> name >> file_path; 
 
+    SLArAnaMgr->WriteCfgFile(name, file_path.c_str()); 
   }
 }
 
