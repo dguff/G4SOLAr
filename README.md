@@ -43,7 +43,7 @@ such as the [Fermilab computing environment](#installing-g4solar-on-fermilab-gpv
 ### Installing G4SOLAr on Fermilab gpvm
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
-$ git clone https://github.com/dguff/G4SOLAr.git
+$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
 ```
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
@@ -75,7 +75,7 @@ against an independent installation of `CLHEP`, so one has to specify the
 ### Installing G4SOLAr on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
-$ git clone https://github.com/dguff/G4SOLAr.git
+$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
