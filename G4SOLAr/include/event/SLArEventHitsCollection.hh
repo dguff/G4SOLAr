@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventHitsCollection
- * @created     : venerdì nov 11, 2022 14:21:29 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArEventHitsCollection.cc
+ * @created     Fri Nov 11, 2022 14:21:29 CET
  */
 
 #ifndef SLAREVENTHITSCOLLECTION_HH

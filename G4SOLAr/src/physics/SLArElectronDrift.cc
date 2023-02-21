@@ -91,13 +91,14 @@ void SLArElectronDrift::PrintProperties() {
 
 void SLArElectronDrift::Drift(const int& n, const int& trkId,
     const G4ThreeVector& pos, 
-    const double& time, 
+    const double time, 
     SLArCfgSystemPix* pixCfg, 
     SLArEventReadoutTileSystem* pixEv) 
 {
   // Find the megatile interested by the hit
   auto pixID = pixCfg->FindPixel(pos.z(), pos.y()); 
-  //printf("%i electrons at [%.0f, %0.f, %0.f] mm\n", n, pos.x(), pos.y(), pos.z());
+  //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
+      //n, pos.x(), pos.y(), pos.z(), time);
   //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
 
   auto mtile = pixCfg->FindBaseElementInMap(pixID[0]); 

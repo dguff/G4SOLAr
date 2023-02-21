@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventTile.hh
- * @created     : mercoledì ago 10, 2022 12:13:26 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArEventTile.hh
+ * @created     Wed Aug 10, 2022 12:13:26 CEST
  */
 
 #ifndef SLAREVENTTILE_HH
