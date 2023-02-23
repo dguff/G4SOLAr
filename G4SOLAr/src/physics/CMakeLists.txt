@@ -14,7 +14,8 @@ add_library(SLArScintillation
   ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
   ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
   )
-target_link_libraries(SLArScintillation ${Geant4_LIBRARIES})
+add_dependencies(SLArScintillation SLArMCEventReadout SLArReadoutSystemConfig)
+target_link_libraries(SLArScintillation ${Geant4_LIBRARIES} SLArMCEventReadout SLArReadoutSystemConfig)
 
 #----------------------------------------------------------------------------
 # Install instructions

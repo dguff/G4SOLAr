@@ -12,8 +12,9 @@
 #include <vector>
 #include <functional>
 #include "G4ThreeVector.hh"
-#include "event/SLArEventReadoutTileSystem.hh"
-#include "config/SLArCfgSystemPix.hh"
+
+class SLArEventReadoutTileSystem; 
+class SLArCfgSystemPix;
 
 class SLArElectronDrift {
   public:
