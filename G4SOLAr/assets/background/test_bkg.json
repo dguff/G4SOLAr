@@ -1,0 +1,7 @@
+{
+  "backgrounds" : 
+  [
+    {"isotope" : "Ar39", "volume" : "Target", "rate" : 1.0}, 
+    {"isotope" : "Ar42", "volume" : "Target", "rate" : 0.2}
+  ]
+}

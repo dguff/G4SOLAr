@@ -32,17 +32,103 @@
   },
   "ReadoutTile": {
     "dimensions" : [
-      {"name" : "tile_x", "val" :10.0, "unit" : "cm" },
+      {"name" : "tile_x", "val" :12.0, "unit" : "cm" },
       {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
-      {"name" : "tile_z", "val" :10.0, "unit" : "cm" },
-      {"name" : "sipm_x", "val" : 6.0, "unit" : "mm" },
-      {"name" : "sipm_y", "val" : 1.8, "unit" : "mm" },
-      {"name" : "sipm_z", "val" : 6.0, "unit" : "mm" }, 
-      {"name" : "sipm_fill_factor",    "val"  :0.85  }, 
-      {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
-      {"name" : "pix_y" , "val" : 1.0, "unit" : "mm" },
-      {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+      {"name" : "tile_z", "val" :12.0, "unit" : "cm" }
     ], 
+    "components" : [
+      {
+        "name" : "pixel", 
+        "dimensions" : [
+          {"name" : "pix_x" , "val" : 2.7, "unit" : "mm" },
+          {"name" : "pix_y" , "val" : 1.8, "unit" : "mm" },
+          {"name" : "pix_z" , "val" : 2.7, "unit" : "mm" }
+        ]
+      }, 
+      {
+        "name" : "sipm", 
+        "dimensions" : [
+          {"name" : "sipm_fill_factor",    "val"  :0.999 }, 
+          {"name" : "sipm_x", "val" :12.0, "unit" : "mm" },
+          {"name" : "sipm_y", "val" : 1.2, "unit" : "mm" },
+          {"name" : "sipm_z", "val" :12.0, "unit" : "mm" }
+        ]
+      }
+    ],
+    "unit_cell" : {
+      "dimensions" : [{"name" : "cell_x", "val" : 1.2, "unit" : "cm"}, {"name" : "cell_z", "val" : 1.2, "unit" : "cm"}], 
+      "lineup" : [
+        {"component" : "sipm" , "name" : "sipm" , "copy" : 0, "pos_z" : {"val" :  0.0, "unit" : "mm"}, "pos_x" : {"val" : 0.0, "unit" : "mm"}}
+      ], 
+      "pixelmap" : [
+        {"name" : "qpix1", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix2", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]},
+        {"name" : "qpix3", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}
+        ]},
+
+        {"name" : "qpix4", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix5", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]},
+        {"name" : "qpix6", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val":-2, "unit":"mm"}}
+        ]},
+
+        {"name" : "qpix7", "edges" : [
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]}, 
+        {"name" : "qpix8", "edges" : [
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val":-2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]},
+        {"name" : "qpix9", "edges" : [
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}, 
+          {"z" : {"val": 6, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 6, "unit":"mm"}}, 
+          {"z" : {"val": 2, "unit": "mm"}, "x":{"val": 2, "unit":"mm"}}
+        ]}
+      ]
+    },
+ 
     "modules" : [
       {
         "name" : "StdReadoutPlane", 
@@ -53,7 +139,7 @@
         ], 
         "positions" : [
           {"copy":2001, "xyz":[ 1.803,  2.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
-/*          {"copy":2002, "xyz":[ 1.803,  1.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
+          {"copy":2002, "xyz":[ 1.803,  1.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
           {"copy":2003, "xyz":[ 1.803,  0.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
           {"copy":2004, "xyz":[ 1.803, -0.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
           {"copy":2005, "xyz":[ 1.803, -1.5, -6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
@@ -147,7 +233,7 @@
           {"copy":2132, "xyz":[ 1.803,  1.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
           {"copy":2133, "xyz":[ 1.803,  0.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
           {"copy":2134, "xyz":[ 1.803, -0.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]},
-          {"copy":2135, "xyz":[ 1.803, -1.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]}, */
+          {"copy":2135, "xyz":[ 1.803, -1.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]}, 
           {"copy":2136, "xyz":[ 1.803, -2.5,  6.5], "unit": "m", "rot":[0, 0, 90], "norm":[-1, 0, 0]}
         ]
       }

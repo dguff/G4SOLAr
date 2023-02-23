@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArBulkVertexGenerator
- * @created     : giovedì giu 23, 2022 15:31:58 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArBulkVertexGenerator.hh
+ * @created     Thur Jun 23, 2022 15:31:58 CEST
  */
 
 #ifndef SLARBULKVERTEXGENERATOR_HH
@@ -25,6 +25,8 @@ class SLArBulkVertexGenerator
 public:
 
   SLArBulkVertexGenerator();
+
+  SLArBulkVertexGenerator(const SLArBulkVertexGenerator&);
 
   ~SLArBulkVertexGenerator() override;
   

@@ -9,6 +9,7 @@
 #define SLARDETREADOUTPLANE_HH
 
 #include "detector/SLArBaseDetModule.hh"
+#include "G4VPVParameterisation.hh"
 
 class SLArDetReadoutTile;
 
@@ -31,6 +32,25 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
     SLArBaseDetModule* fTileRow;
     void BuildTileRow(SLArDetReadoutTile*);
 
+  public: 
+    class SLArMTileParametrization : public G4VPVParameterisation {
+      public: 
+        SLArMTileParametrization(EAxis, G4ThreeVector, G4double);
+        ~SLArMTileParametrization() {};
+
+        void ComputeTransformation(G4int, G4VPhysicalVolume*) const; 
+
+        G4ThreeVector GetReplicationAxisVector() {return fAxisVector;}
+        EAxis GetReplicationAxis() {return fReplicaAxis;}
+        G4double GetSpacing() {return fSpacing;}
+        G4ThreeVector GetStartPos() {return fStartPos;}
+
+      private:
+        EAxis fReplicaAxis; 
+        G4ThreeVector fStartPos; 
+        G4double fSpacing; 
+        G4ThreeVector fAxisVector; 
+    }; 
 };
 
 

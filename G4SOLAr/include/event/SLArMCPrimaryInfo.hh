@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArMCPrimaryInfo
- * @created     : venerdì feb 14, 2020 16:43:28 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArMCPrimaryInfo.hh
+ * @created     Fri Feb 14, 2020 16:43:28 CET
  */
 
 #ifndef SLArMCPRIMARYINFO_HH
@@ -21,9 +21,11 @@ class SLArMCPrimaryInfo : public TNamed
 
     void SetPosition(double  x, double  y, double  z, double t = 0);
     void SetMomentum(double px, double py, double pz, double   ene);
-    void SetID      (int           id) {fID    =   id;}
-    void SetTrackID (int           id) {fTrkID =   id;}
+    void SetID      (const int id) {fID    =   id;}
+    void SetTrackID (const int id) {fTrkID =   id;}
     void SetName    (const char* name) {fName = name;}
+    void SetTime    (const double time) {fTime = time;}
+
     void SetTotalEdep   (float edep)   {fTotalEdep    = edep;}
 
     TString   GetParticleName() {return fName     ;}

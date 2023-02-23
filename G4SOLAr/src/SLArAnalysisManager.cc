@@ -6,7 +6,10 @@
 
 #include "SLArAnalysisManager.hh"
 #include <sys/stat.h>
+#include <fstream>
+#include <sstream>
 
+#include "TObjString.h"
 #include "TVectorD.h"
 #include "TParameter.h"
 
@@ -112,14 +115,14 @@ G4bool SLArAnalysisManager::Save()
 }
 
 
-G4bool SLArAnalysisManager::LoadPDSCfg(SLArPDSystemConfig* pdsCfg)
+G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell* pdsCfg)
 {
   fPDSysCfg = pdsCfg;
   if (!fPDSysCfg) return false;
   else             return true ; 
 }
 
-G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgPixSys* pixCfg)
+G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgSystemPix* pixCfg)
 {
   fPixSysCfg = pixCfg;
   if (!fPixSysCfg) return false;
@@ -214,6 +217,39 @@ int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
   return status; 
 }
 
+int SLArAnalysisManager::WriteCfg(G4String name, const char* cfg) {
+  if (!fRootFile) {
+    printf("SLArAnalysisManager::WriteVariable WARNING ");
+    printf("rootfile not present yet. Cannot write %s variable.\n", 
+        name.c_str());
+    return 666;
+  } 
+
+  TObjString cfg_str(cfg); 
+  fRootFile->cd(); 
+  int status = cfg_str.Write(name); 
+  return status; 
+}
+
+int SLArAnalysisManager::WriteCfgFile(G4String name, const char* path) {
+  std::ifstream ifile; 
+  ifile.open(path); 
+  if (!ifile.is_open()) {
+    printf("SLArAnalysisManager::WriteCfgFile WARNING ");
+    printf("Unable to open file %s\n", path);
+    return 4; 
+  }
+
+  std::stringstream strm; 
+  strm << ifile.rdbuf(); 
+  const std::string buff(strm.str()); 
+
+  WriteCfg(name, buff.c_str()); 
+
+  ifile.close(); 
+
+  return 0;
+}
 
 G4bool SLArAnalysisManager::FakeAccess()
 {

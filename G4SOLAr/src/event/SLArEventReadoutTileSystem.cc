@@ -23,7 +23,7 @@ SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(const SLArEventReadoutTil
   }
 }
 
-SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(SLArCfgPixSys* cfg) {
+SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(SLArCfgSystemPix* cfg) {
   SetName(cfg->GetName()); 
   ConfigSystem(cfg); 
   return;
@@ -36,9 +36,9 @@ SLArEventReadoutTileSystem::~SLArEventReadoutTileSystem() {
   fMegaTilesMap.clear(); 
 }
 
-int SLArEventReadoutTileSystem::ConfigSystem(SLArCfgPixSys* cfg) {
+int SLArEventReadoutTileSystem::ConfigSystem(SLArCfgSystemPix* cfg) {
   int imegatile = 0; 
-  for (const auto &mtcfg : cfg->GetModuleMap()) {
+  for (const auto &mtcfg : cfg->GetMap()) {
     int megatile_idx = mtcfg.second->GetIdx(); 
     if (fMegaTilesMap.count(megatile_idx) == 0) {
       fMegaTilesMap.insert(

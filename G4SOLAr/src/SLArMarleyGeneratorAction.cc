@@ -30,9 +30,14 @@
 #include "marley/Particle.hh"
 #include "marley/RootJSONConfig.hh"
 // marg4 includes
-#include "SLArMarleyGen.hh"
+#include "SLArMarleyGeneratorAction.hh"
 
-SLArMarleyGen::SLArMarleyGen(
+namespace marley {
+SLArMarleyGeneratorAction::SLArMarleyGeneratorAction() 
+  : G4VUserPrimaryGeneratorAction(), marley_vertex_generator_(0), marley_nu_direction(0, 0, 1) 
+{}
+
+SLArMarleyGeneratorAction::SLArMarleyGeneratorAction(
   const std::string& config_file_name) 
   : G4VUserPrimaryGeneratorAction(), marley_vertex_generator_(0), marley_nu_direction(0, 0, 1) 
 {
@@ -45,13 +50,19 @@ SLArMarleyGen::SLArMarleyGen(
   marley_generator_= config.create_generator();
 }
 
-void SLArMarleyGen::SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface* vtx_gen)
+void SLArMarleyGeneratorAction::SetupMarleyGen(const std::string& config_file_name) 
+{
+  marley::RootJSONConfig config( config_file_name );
+  marley_generator_= config.create_generator();
+}
+
+void SLArMarleyGeneratorAction::SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface* vtx_gen)
 {
   marley_vertex_generator_ = vtx_gen; 
   return;
 }
 
-void SLArMarleyGen::GeneratePrimaries(G4Event* anEvent)
+void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // Create a new primary vertex at the spacetime origin.
   G4ThreeVector vtx(0., 0., 0); 
@@ -92,4 +103,5 @@ void SLArMarleyGen::GeneratePrimaries(G4Event* anEvent)
   // from the MARLEY event. Add it to the G4Event object so that Geant4 can
   // begin tracking the particles through the simulated geometry.
   anEvent->AddPrimaryVertex( vertex );
+}
 }

@@ -10,21 +10,21 @@ ClassImp(SLArCfgBaseModule)
 
 SLArCfgBaseModule::SLArCfgBaseModule() : TNamed(), 
   fIdx(-1), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
-  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1), 
-  fGShape(nullptr)
+  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1) 
+  //fGShape(nullptr)
 {}
 
 SLArCfgBaseModule::SLArCfgBaseModule(int idx) : TNamed(),
   fIdx(idx), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
-  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1),
-  fGShape(nullptr)
+  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1)
+  //fGShape(nullptr)
 {}
 
 SLArCfgBaseModule::SLArCfgBaseModule(int idx, float xc, float yc, float zc, 
              float phi, float theta, float psi) : TNamed(), 
   fIdx(idx), fBin(0), fX(xc), fY(yc), fZ(zc), fPhi(phi), fTheta(theta), fPsi(psi), 
-  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1),
-  fGShape(nullptr)
+  fPhysX(0.), fPhysY(0.), fPhysZ(0.), fNormal(0, 0, 1)
+  //fGShape(nullptr)
 {
   fIdx   = idx  ; 
   fX     = xc   ;
@@ -50,14 +50,14 @@ SLArCfgBaseModule::SLArCfgBaseModule(const SLArCfgBaseModule& base) :
     fPhysY = base.fPhysY;
     fPhysZ = base.fPhysZ;
     fNormal = base.fNormal;
-    if (base.fGShape) {
-      fGShape = (TGraph*)base.fGShape->Clone();
-    }
+    //if (base.fGShape) {
+      //fGShape = (TGraph*)base.fGShape->Clone();
+    //}
 }
 
 SLArCfgBaseModule::~SLArCfgBaseModule()
 {
-  if (fGShape) delete fGShape;
+  //if (fGShape) delete fGShape;
 }
 
 

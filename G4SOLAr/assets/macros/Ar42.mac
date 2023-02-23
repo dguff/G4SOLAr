@@ -12,7 +12,7 @@
 /SLAr/manager/SetOutputFolder ./../SOLArAnalysis
 
 # Select bxdecay0 generator
-/SLAr/gun/mode Radio
+/SLAr/gen/type Decay0
 
 # Set secondary production cuts for gamma and electrons
 /SLAr/phys/gammaCut 0.5 mm

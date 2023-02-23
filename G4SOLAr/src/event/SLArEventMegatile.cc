@@ -9,7 +9,7 @@
 ClassImp(SLArEventMegatile)
 
 SLArEventMegatile::SLArEventMegatile() 
-  : fIdx(0), fIsActive(true), fNhits(0) {}; 
+  : fIdx(0), fIsActive(true), fNhits(0) {}
 
 SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right) 
   : TNamed(right) 
@@ -63,6 +63,26 @@ int SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
     return 0; 
   }
 }
+
+int SLArEventMegatile::GetNPhotonHits() {
+  int nhits = 0;
+  for (auto &tile : fTilesMap) {
+    nhits += tile.second->GetNhits(); 
+  }
+
+  return nhits; 
+}
+
+int SLArEventMegatile::GetNChargeHits() {
+  int nhits = 0;
+  for (auto &tile : fTilesMap) {
+    nhits += tile.second->GetPixelHits(); 
+  }
+
+  return nhits; 
+}
+
+
 
 int SLArEventMegatile::ResetHits() {
   int nhits = 0;

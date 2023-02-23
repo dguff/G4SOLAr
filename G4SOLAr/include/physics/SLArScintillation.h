@@ -56,7 +56,7 @@
 #include "G4VRestDiscreteProcess.hh"
 #include "G4GenericMessenger.hh"
 #include <fstream>
-#include "SLArLightYield.h"
+#include "SLArIonAndScint.h"
 
 class G4PhysicsTable;
 class G4Step;
@@ -70,11 +70,11 @@ class G4Track;
 class SLArScintillation : public G4VRestDiscreteProcess
 {
  public:
-  explicit SLArScintillation(const G4String& processName = "Scintillation",
+  explicit SLArScintillation(const G4String& processName = "SLArScintillation",
                            G4ProcessType type          = fElectromagnetic);
   ~SLArScintillation();
 
-  SLArLightYield* LightYield = nullptr; //LArQL_LightYield object to call the light yield function
+  SLArIonAndScint* IonAndScint = nullptr; //LArQL_LightYield object to call the light yield function
 
   SLArScintillation(const SLArScintillation& right) = delete;
   SLArScintillation& operator=(const SLArScintillation& right) = delete;

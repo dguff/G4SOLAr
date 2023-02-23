@@ -9,33 +9,58 @@
 #define SLARDETREADOUTTILE_HH
 
 #include "detector/SLArBaseDetModule.hh"
+#include "G4VPVParameterisation.hh"
 #include "G4LogicalSkinSurface.hh"
 
+class TH2Poly; 
 
 class SLArDetReadoutTile : public SLArBaseDetModule
 {
 
+struct SUnitCellComponent {
+  G4String fName; 
+  SLArBaseDetModule* fMod; 
+  G4ThreeVector fPos;
+  G4int fCopyNo;
+
+  SUnitCellComponent(G4String, G4int, SLArBaseDetModule*, G4ThreeVector); 
+}; 
+
+struct SUnitCellPixelArea {
+  G4String fName; 
+  std::vector<G4ThreeVector> fEdges; 
+
+  SUnitCellPixelArea(G4String); 
+}; 
+
 public:
-  SLArDetReadoutTile            ();
-  SLArDetReadoutTile            (const SLArDetReadoutTile &detReadoutTile);
-  ~SLArDetReadoutTile ();
+  SLArDetReadoutTile();
+  SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile);
+  ~SLArDetReadoutTile();
   
-  void          SetPerfectQE(G4bool kQE);
+  void SetPerfectQE(G4bool kQE);
 
-  void          BuildMaterial(G4String materials_db);
-  void          BuildDefalutGeoParMap();
+  void BuildMaterial(G4String materials_db);
+  void BuildComponentsDefinition(const rapidjson::Value&); 
+  void BuildUnitCellPixMap(const rapidjson::Value&); 
+  void BuildUnitCellStructure(const rapidjson::Value&); 
   G4LogicalSkinSurface* BuildLogicalSkinSurface(); 
-  void          BuildReadoutTile();
-  void          BuildPCB();
-  void          BuildSiPM();
-  void          BuildChargePix();
-  void          SetVisAttributes();
+  void BuildReadoutTile();
+  void BuildPCB();
+  void BuildSiPM();
+  TH2Poly* BuildTileChgPixelMap(G4ThreeVector* _shift = nullptr, G4RotationMatrix* _rot = nullptr); 
+  void BuildChargePix();
+  void BuildUnitCell(); 
 
-  SLArBaseDetModule*       GetSiPMActive();
-  SLArMaterial*    GetSiPMActiveMaterial();
-  G4LogicalSkinSurface*    GetSiPMLgSkin() {return fSkinSurface;}
+  void SetVisAttributes();
 
-
+  SLArBaseDetModule* GetSiPMActive();
+  SLArBaseDetModule* GetUnitCell() {return fUnitCell;}
+  SLArMaterial* GetSiPMActiveMaterial();
+  SLArBaseDetModule* GetChargePixel() {return fChargePix;}
+  G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+  const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
+  const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
 protected:
 
 private:
@@ -48,17 +73,52 @@ private:
   SLArBaseDetModule* fChargePix;
   SLArBaseDetModule* fSiPM;
   SLArBaseDetModule* fSiPMActive; 
+  SLArBaseDetModule* fUnitCell; 
 
   SLArMaterial*  fMatReadoutTile; 
   SLArMaterial*  fMatPCB;
   SLArMaterial*  fMatChargePix;
   SLArMaterial*  fMatSiPM; 
   SLArMaterial*  fMatSiPMCapsule;
-
   G4LogicalSkinSurface* fSkinSurface;
 
+  std::vector<SUnitCellComponent> fCellStructure; 
+  std::vector<SUnitCellPixelArea> fCellPixelMap; 
+
   friend class SLArDetReadoutPlane;
+
+public: 
+  class SLArRTileParametrization : public G4VPVParameterisation {
+    public: 
+      SLArRTileParametrization(EAxis, G4ThreeVector, G4double);
+
+      void ComputeTransformation(G4int copyNo, G4VPhysicalVolume* physVol) const; 
+
+      EAxis GetReplicationAxis() {return fReplicaAxis;}
+      G4ThreeVector GetReplicationAxisVector() {return fAxisVector;}
+      G4double GetSpacing() {return fSpacing;}
+      G4ThreeVector GetStartPos() {return fStartPos;}
+
+
+    private: 
+      EAxis fReplicaAxis; 
+      G4ThreeVector fAxisVector; 
+      G4ThreeVector fStartPos; 
+      G4double  fSpacing; 
+
+  };
 };
+
+inline SLArDetReadoutTile::SUnitCellComponent::SUnitCellComponent(
+    G4String name, G4int copyNo, SLArBaseDetModule* mod, G4ThreeVector pos) {
+ fName = name; 
+ fCopyNo = copyNo; 
+ fMod = mod; 
+ fPos = pos; 
+}
+
+inline SLArDetReadoutTile::SUnitCellPixelArea::SUnitCellPixelArea(G4String name) 
+  : fName(name) {}
 
 #endif /* end of include guard SLARDETREADOUTTILE_HH */
 

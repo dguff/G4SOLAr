@@ -29,11 +29,15 @@
 
 class G4Event;
 
-class SLArMarleyGen : public G4VUserPrimaryGeneratorAction
+namespace marley {
+
+class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    SLArMarleyGen(const std::string& config_file_name);
+    SLArMarleyGeneratorAction();
+    SLArMarleyGeneratorAction(const std::string& config_file_name);
 
+    void SetupMarleyGen(const std::string& config_file_name); 
     void SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface*); 
     virtual void GeneratePrimaries(G4Event*) override;
     void SetNuDirection(G4ThreeVector dir) {marley_nu_direction = dir;} 
@@ -45,3 +49,4 @@ class SLArMarleyGen : public G4VUserPrimaryGeneratorAction
     bxdecay0_g4::VertexGeneratorInterface* marley_vertex_generator_;
     G4ThreeVector marley_nu_direction; 
 };
+}

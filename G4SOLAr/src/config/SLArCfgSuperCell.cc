@@ -26,20 +26,21 @@ SLArCfgSuperCell::SLArCfgSuperCell(int idx, float xc, float yc, float zc,
 
 SLArCfgSuperCell::~SLArCfgSuperCell() 
 {
-  if (fGShape) {delete fGShape; fGShape = nullptr;}
+  //if (fGShape) {delete fGShape; fGShape = nullptr;}
 }
 
-void SLArCfgSuperCell::BuildGShape() 
+TGraph* SLArCfgSuperCell::BuildGShape() 
 {
-  fGShape = new TGraph(5);
-  fGShape->SetPoint(0, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
-  fGShape->SetPoint(1, fPhysZ-0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
-  fGShape->SetPoint(2, fPhysZ+0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
-  fGShape->SetPoint(3, fPhysZ+0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
-  fGShape->SetPoint(4, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  TGraph* g = new TGraph(5);
+  g->SetPoint(0, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  g->SetPoint(1, fPhysZ-0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
+  g->SetPoint(2, fPhysZ+0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
+  g->SetPoint(3, fPhysZ+0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  g->SetPoint(4, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
 
 
-  if (fGShape) fGShape->SetName(Form("gShape%i", fIdx)); 
+  g->SetName(Form("gShape%i", fIdx)); 
+  return g; 
 }
 
 void SLArCfgSuperCell::DumpInfo() 

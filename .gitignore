@@ -42,6 +42,20 @@ build/
 install/
 _deprecated/
 
-#cache
-/.cache
+# automatically generated files
+SOLArAnalysis/rootlogon.C
+G4SOLAr/include/SLArUserPath.hh
 
+#cache
+.cache/
+
+#vim
+.vim/
+
+#tags
+G4SOLAr/tags
+
+#documentation
+docs/ext/
+docs/html/
+docs/latex/

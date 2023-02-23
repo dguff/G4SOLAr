@@ -44,7 +44,6 @@ set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
 set(G4SOLAR_ANALSYS_DIR "${PROJECT_SOURCE_DIR}/../SOLArAnalysis")
 set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 
-
 #----------------------------------------------------------------------------
 # Find external dependencies of G4SOLAr.
 # If not already installed cd into the G4SOLAR/extern directory and execute the
@@ -138,6 +137,7 @@ configure_file(SLArUserPath.hh.in ${G4SOLAR_INCLUDE_DIR}/SLArUserPath.hh @ONLY)
 #----------------------------------------------------------------------------
 # Configure rootlogon
 configure_file(${G4SOLAR_INCLUDE_DIR}/rootlogon.C.in ${G4SOLAR_ANALSYS_DIR}/rootlogon.C @ONLY)
+
 #----------------------------------------------------------------------------
 # Generate SLArEvent and SLArConfig libraries and dictionaries
 add_subdirectory(${G4SOLAR_SRC_DIR}/config)
