@@ -53,10 +53,11 @@ add_library(SLArMCEventReadout
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellSystem.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellSystem.hh
   )
+add_dependencies(SLArMCEventReadout SLArScintillation)
 target_link_libraries(
   SLArMCEventReadout 
   PUBLIC 
-  SLArReadoutSystemConfig ${ROOT_LIBRARIES})
+  SLArReadoutSystemConfig ${ROOT_LIBRARIES} SLArScintillation)
 ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventGenericHit.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh

@@ -14,12 +14,13 @@ add_library(SLArScintillation
   ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
   ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
   )
-target_link_libraries(SLArScintillation ${GEANT4_LIBRARIES})
+target_link_libraries(SLArScintillation ${Geant4_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Install instructions
 
 
 install(TARGETS SLArScintillation
+  EXPORT                      G4SOLArTargets
   LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}"
   RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
