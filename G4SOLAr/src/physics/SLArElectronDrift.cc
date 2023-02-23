@@ -5,7 +5,10 @@
  */
 
 #include <functional>
+#include "event/SLArEventReadoutTileSystem.hh"
 #include "event/SLArEventChargeHit.hh"
+#include "config/SLArCfgSystemPix.hh"
+
 #include "physics/SLArElectronDrift.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
