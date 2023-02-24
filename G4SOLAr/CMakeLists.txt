@@ -32,6 +32,8 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 
+message(STATUS "Geant4 GDML SUPPORT: ${Geant4_gdml_FOUND}")
+
 #----------------------------------------------------------------------------
 # Setup Projects PATHS
 set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
@@ -166,6 +168,7 @@ export(EXPORT G4SOLArTargets
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
+
 add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
@@ -174,7 +177,11 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
-target_compile_definitions(solar_sim PUBLIC $<$<CONFIG:Debug>:SLAR_DEBUG>)
+target_compile_definitions(solar_sim 
+  PUBLIC 
+  $<$<CONFIG:Debug>:SLAR_DEBUG>
+  $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
+  )
 
 list(APPEND G4SOLAR_RPATH
   "${G4SOLAR_LIB_DIR}"
