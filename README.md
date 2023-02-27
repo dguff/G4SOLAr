@@ -1,6 +1,6 @@
-# SOLAr-sim
+# G4SOLAr
 
-**SOLAr-sim** implements a Geant4-based Monte Carlo simulation of a LAr TPC
+**G4SOLAr** implements a Geant4-based Monte Carlo simulation of a LAr TPC
 optimized for low-energy events searches. 
 
 ## Disclaimer
@@ -40,15 +40,15 @@ installing the simulation on a [generic machine](#installing-SOLAr-sim-on-a-gene
 or on a more complex system 
 such as the [Fermilab computing environment](#installing-SOLAr-sim-on-fermilab-gpvm). 
 
-### Installing SOLAr-sim on Fermilab gpvm
+### Installing G4SOLAr on Fermilab gpvm
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
-$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
+$ git clone https://github.com/dguff/G4SOLAr.git
 ```
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
 ```bash
-$ cd SOLAr-sim
+$ cd G4SOLAr
 $ source setup_g4solar.sh
 ```
 If the project dependencies are not yet installed, follow the instructions
@@ -75,7 +75,7 @@ against an independent installation of `CLHEP`, so one has to specify the
 ### Installing SOLAr-sim on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
-$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
+$ git clone https://github.com/dguff/G4SOLAr.git
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
@@ -93,7 +93,7 @@ The project will search for the external dependencies in the
 specify a specific installation directory by setting it in the `cmake`
 command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
 
-### Run SOLAr-sim
+### Run G4SOLAr
 
 It is possible to run the simulation directly from the installation folder, but it
 is advised to add the build directory to the executable PATH to be able to run 
