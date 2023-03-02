@@ -35,6 +35,7 @@ class SLArMaterial {
     void                ParseSurfaceProperties(const rapidjson::Value& jptable);
     void                ParseMPT(const rapidjson::Value& jptable, 
         G4MaterialPropertiesTable* mpt, G4Material* mat = nullptr);
+    G4double            ParseUnit(const rapidjson::Value& junit); 
     G4Material*         BuildFromNist(const rapidjson::Value& jptable); 
     G4Material*         BuildFromAtoms(const rapidjson::Value& jptable); 
     G4Material*         BuildFromMixture(const rapidjson::Value& jptable); 
