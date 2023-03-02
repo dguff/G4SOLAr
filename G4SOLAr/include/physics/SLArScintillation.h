@@ -56,7 +56,8 @@
 #include "G4VRestDiscreteProcess.hh"
 #include "G4GenericMessenger.hh"
 #include <fstream>
-#include "SLArIonAndScint.h"
+#include "SLArIonAndScintModel.h"
+#include "SLArIonAndScintLArQL.h"
 
 class G4PhysicsTable;
 class G4Step;
@@ -74,7 +75,7 @@ class SLArScintillation : public G4VRestDiscreteProcess
                            G4ProcessType type          = fElectromagnetic);
   ~SLArScintillation();
 
-  SLArIonAndScint* IonAndScint = nullptr; //LArQL_LightYield object to call the light yield function
+  std::map<SLArIonAndScintModel::EISModel, SLArIonAndScintModel*> IonAndScint; 
 
   SLArScintillation(const SLArScintillation& right) = delete;
   SLArScintillation& operator=(const SLArScintillation& right) = delete;

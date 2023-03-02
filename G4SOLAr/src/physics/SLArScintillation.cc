@@ -62,6 +62,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#ifdef SLAR_DEBUG
+  #define G4DEBUG_SCINTILLATION
+#endif
+
 #include "globals.hh"
 #include "G4DynamicParticle.hh"
 #include "G4EmProcessSubType.hh"
@@ -81,7 +85,10 @@
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 #include "G4PhysicsModelCatalog.hh"
-#include "SLArScintillation.h"
+#include "physics/SLArScintillation.h"
+#include "physics/SLArIonAndScintLArQL.h"
+#include "physics/SLArIonAndScintSeparate.h"
+
 
 #include <unistd.h>     //required for usleep()
 #include <cstdlib>
@@ -117,7 +124,10 @@ SLArScintillation::SLArScintillation(const G4String& processName,
 
   Initialise();
 
-  IonAndScint = new SLArIonAndScint();
+  IonAndScint.insert(std::make_pair(
+        SLArIonAndScintModel::kSeparate, new SLArIonAndScintSeparate()));  
+  IonAndScint.insert(std::make_pair(
+        SLArIonAndScintModel::kLArQL, new SLArIonAndScintLArQL())); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -413,27 +423,29 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
   if(fScintillationByParticleType)
   {
     // LArQL is usable only for MIP's, so we have to check if the particle is one (Paper says below 40MeV/cm) - lets ignore this for now...
-    G4bool MIP = true;//((TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) < 40);
+    G4bool MIP = ((TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) < 40);
     if(MIP){
+      SLArIonAndScintLArQL* ion_and_scint  = 
+        (SLArIonAndScintLArQL*)IonAndScint[SLArIonAndScintModel::kLArQL]; 
 #ifdef SLAR_DEBUG
       printf("SLArScintillation: %s - getting nr of photons from SLArIonAndScint\n", 
           aTrack.GetParticleDefinition()->GetParticleName().data());
-      printf("dE/dx = %g MeV/cm\n", TotalEnergyDeposit/CLHEP::MeV / StepWidth/CLHEP::cm); 
+      printf("dE/dx = %g MeV/cm\n", (TotalEnergyDeposit/CLHEP::MeV) / (StepWidth/CLHEP::cm) ); 
 #endif
       //Get yield1,2,3 from the MaterialPropertiesTable - this is a little bit hacky, but it works
       MeanNumberOfPhotons = GetScintillationYieldByParticleType(aTrack, aStep, yield1, yield2, yield3);
       // Set MeanNumberOfPhotons
-      MeanNumberOfPhotons = IonAndScint->LArQL(
+      G4double LightYield = ion_and_scint->ComputeScintYield(
           TotalEnergyDeposit/CLHEP::MeV,
-          StepWidth/CLHEP::cm,electricField_)
-        *(TotalEnergyDeposit/CLHEP::MeV);
+          StepWidth/CLHEP::cm,electricField_); 
+
+      MeanNumberOfPhotons = LightYield*(TotalEnergyDeposit/CLHEP::MeV);
       // Set MeanNumberOfIonElectrons
-      MeanNumberOfIonElectrons = 
-        IonAndScint->LArQQ(
+      G4double ChargeYield = ion_and_scint->ComputeIonYield(
             TotalEnergyDeposit/CLHEP::MeV,
             StepWidth/CLHEP::cm,
-            electricField_)
-        *(TotalEnergyDeposit/CLHEP::MeV); 
+            electricField_); 
+      MeanNumberOfIonElectrons = ChargeYield*(TotalEnergyDeposit/CLHEP::MeV); 
 
       //MeanNumberOfPhotons = LightYield->Flat()*TotalEnergyDeposit/CLHEP::MeV; // Example for other implemented light yields
 
@@ -450,6 +462,8 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
               G4cout << "TotalEnergyDeposit = " << TotalEnergyDeposit / CLHEP::MeV<< " MeV" << G4endl;
               G4cout << "StepWidth = " << StepWidth / CLHEP::cm << " cm" << G4endl;
               G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
+              G4cout << "Light yield = " << LightYield << " ph/MeV" << G4endl; 
+              G4cout << "Charge yield = " << LightYield << " elec/MeV" << G4endl; 
               G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
               G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
 #endif
@@ -461,7 +475,21 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
       printf("SLArScintillation: %s - getting nr of photons for particle type\n", 
           aTrack.GetParticleDefinition()->GetParticleName().data());
 #endif
-      MeanNumberOfPhotons = GetScintillationYieldByParticleType(aTrack, aStep, yield1, yield2, yield3);
+      SLArIonAndScintSeparate* ion_and_scint = 
+        (SLArIonAndScintSeparate*)IonAndScint[SLArIonAndScintModel::kSeparate]; 
+      ion_and_scint->SetLightYield(
+          GetScintillationYieldByParticleType(aTrack, aStep, yield1, yield2, yield3) 
+          / (TotalEnergyDeposit/CLHEP::MeV));
+      const double LightYield = ion_and_scint->ComputeScintYield(
+          TotalEnergyDeposit/CLHEP::MeV,
+          StepWidth/CLHEP::cm,
+          electricField_);
+      const double IonYield   = ion_and_scint->ComputeIonYield(
+          TotalEnergyDeposit/CLHEP::MeV,
+          StepWidth/CLHEP::cm,
+          electricField_);
+      MeanNumberOfPhotons = LightYield * (TotalEnergyDeposit/CLHEP::MeV); 
+      MeanNumberOfIonElectrons = IonYield * (TotalEnergyDeposit/CLHEP::MeV); 
     }
 
   }
