@@ -135,6 +135,8 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
     SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
   }
 
+  SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 
+
   SLArAnaMgr->Save();
 
   delete fElectronDrift;  fElectronDrift = nullptr;

@@ -156,6 +156,19 @@ configure_package_config_file(
   PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_INSTALL_CMAKE_DIR
   )
 
+# extract git branch and commit hash
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
   DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
 
@@ -164,6 +177,21 @@ export(EXPORT G4SOLArTargets
   FILE "${G4SOLAR_INSTALL_CMAKE_DIR}/G4SOLArTargets.cmake"
   NAMESPACE G4SOLAr::
 )
+
+
+# extract git branch and commit hash
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
@@ -181,6 +209,8 @@ target_compile_definitions(solar_sim
   PUBLIC 
   $<$<CONFIG:Debug>:SLAR_DEBUG>
   $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
+  PRIVATE
+  "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
   )
 
 list(APPEND G4SOLAR_RPATH
