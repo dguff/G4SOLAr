@@ -16,17 +16,21 @@
 #include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
-#include "G4GDMLParser.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4VPhysicalVolume.hh"
 
+#ifdef SLAR_GDML
+#include "G4GDMLParser.hh"
+#endif
 
 SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
-  fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
-  fCmdWriteCfgFile(nullptr),
+  fCmdWriteCfgFile(nullptr)
+#ifdef SLAR_GDML
+  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
+#endif
 {
   TString UIManagerPath = "/SLAr/manager/";
   TString UIExportPath = "/SLAr/export/"; 
@@ -54,6 +58,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdOutputPath->SetGuidance("Write cfg file to output");
   fCmdOutputPath->SetParameterName("name path", false); 
   
+#ifdef SLAR_GDML
   fCmdGDMLFileName = 
     new G4UIcmdWithAString(UIExportPath+"SetGDMLFileName", this); 
   fCmdGDMLFileName->SetGuidance("Set file name for GDML volume export"); 
@@ -65,6 +70,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdGDMLExport->SetGuidance("Export volume to gdml file"); 
   fCmdGDMLExport->SetParameterName("VolumeName", true);
   fCmdGDMLExport->SetDefaultValue("World"); 
+#endif
 }
 
 SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
@@ -73,9 +79,12 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fMsgrDir          ) delete fMsgrDir          ;
   if (fCmdOutputPath    ) delete fCmdOutputPath    ;
   if (fCmdOutputFileName) delete fCmdOutputFileName;
+  if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
+#ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
-  if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
+#endif
+
   G4cerr << "SLArAnalysisManagerMsgr DONE" << G4endl;
 }
 
@@ -88,6 +97,16 @@ void SLArAnalysisManagerMsgr::SetNewValue
     SLArAnaMgr->SetOutputPath(newVal);
   else if (cmd == fCmdOutputFileName)
     SLArAnaMgr->SetOutputName(newVal);
+  else if (cmd == fCmdWriteCfgFile) {
+    std::stringstream strm;
+    strm << newVal.c_str(); 
+    std::string name;
+    std::string file_path; 
+    strm >> name >> file_path; 
+
+    SLArAnaMgr->WriteCfgFile(name, file_path.c_str()); 
+  }
+#ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {
     fGDMLFileName = newVal; 
   }
@@ -100,15 +119,7 @@ void SLArAnalysisManagerMsgr::SetNewValue
       }
     }
   }
-  else if (cmd == fCmdWriteCfgFile) {
-    std::stringstream strm;
-    strm << newVal.c_str(); 
-    std::string name;
-    std::string file_path; 
-    strm >> name >> file_path; 
-
-    SLArAnaMgr->WriteCfgFile(name, file_path.c_str()); 
-  }
+#endif
 }
 
 

@@ -1,0 +1,69 @@
+/**
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArIonAndScintSeparate
+ * @created     mercoledì mar 01, 2023 10:55:35 CET
+ */
+
+#include <math.h>
+#include "G4MaterialPropertiesTable.hh"
+
+#include "physics/SLArIonAndScintSeparate.h"
+
+SLArIonAndScintSeparate::SLArIonAndScintSeparate() : 
+  SLArIonAndScintModel(), 
+  fModBoxA(0.930), fModBoxB(0.212), fUseModBoxRecomb(true), fLightYield(0) 
+{}
+
+SLArIonAndScintSeparate::SLArIonAndScintSeparate(const G4MaterialPropertiesTable* mpt) :
+  SLArIonAndScintModel(mpt), 
+  fModBoxA( mpt->GetConstProperty("SPRT_MODBOXA") ), 
+  fModBoxB( mpt->GetConstProperty("SPRT_MODBOXB") ), 
+  fUseModBoxRecomb( static_cast<bool>( mpt->GetConstProperty("SPRT_USEMODBOX") ) )
+{}
+
+double SLArIonAndScintSeparate::ComputeIonYield(const double energy_deposit, const double step_length, const double electric_field) const {
+  float ds = step_length;
+
+  double recomb = 0.;
+  double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
+
+  // Guard against spurious values of dE/dx. Note: assumes density of LAr
+  if (dEdx < 1.) { dEdx = 1.; }
+
+  if (fUseModBoxRecomb) {
+    if (ds > 0) {
+      double const scaled_modboxb = fModBoxB / fLArDensity;
+      double const Xi = scaled_modboxb * dEdx / electric_field;
+      recomb = log(fModBoxA + Xi) / Xi;
+    }
+    else {
+      recomb = 0;
+    }
+  }
+  else {
+    double const scaled_recombk = fBirksK / fLArDensity;
+    recomb = fBirksA / (1. + dEdx * scaled_recombk / electric_field);
+  }
+
+  // 1.e-3 converts fEnergyDeposit to GeV
+  auto const numIonElectrons =  recomb / fWion;
+
+#ifdef SLAR_DEBUG
+  printf("SLArIonAndScintSeparate: Electrons produced for %g MeV deposited with %g recombination: %g\n", energy_deposit, recomb, numIonElectrons); 
+#endif
+  return numIonElectrons;
+}
+
+double SLArIonAndScintSeparate::ComputeIon(const double energy_deposit, const double step_length, const double electric_field) const {
+  const double yield = ComputeIonYield(energy_deposit, step_length, electric_field); 
+  return energy_deposit* yield; 
+}
+
+double SLArIonAndScintSeparate::ComputeScintYield(const double energy_deposit, const double step_length, const double electric_field) const {
+  return fLightYield; 
+}
+
+double SLArIonAndScintSeparate::ComputeScint(const double energy_deposit, const double step_length, const double electric_field) const {
+  const double yield = ComputeScintYield(energy_deposit, step_length, electric_field); 
+  return yield * energy_deposit; 
+}

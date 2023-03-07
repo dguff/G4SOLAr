@@ -32,6 +32,8 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 
+message(STATUS "Geant4 GDML SUPPORT: ${Geant4_gdml_FOUND}")
+
 #----------------------------------------------------------------------------
 # Setup Projects PATHS
 set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
@@ -154,6 +156,19 @@ configure_package_config_file(
   PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_INSTALL_CMAKE_DIR
   )
 
+# extract git branch and commit hash
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
   DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
 
@@ -163,9 +178,25 @@ export(EXPORT G4SOLArTargets
   NAMESPACE G4SOLAr::
 )
 
+
+# extract git branch and commit hash
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
+
 add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
@@ -174,7 +205,13 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
-target_compile_definitions(solar_sim PUBLIC $<$<CONFIG:Debug>:SLAR_DEBUG>)
+target_compile_definitions(solar_sim 
+  PUBLIC 
+  $<$<CONFIG:Debug>:SLAR_DEBUG>
+  $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
+  PRIVATE
+  "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
+  )
 
 list(APPEND G4SOLAR_RPATH
   "${G4SOLAR_LIB_DIR}"

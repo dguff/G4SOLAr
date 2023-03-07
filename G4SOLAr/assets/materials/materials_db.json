@@ -1,12 +1,10 @@
 {
   "materials" :
   [
-    {
-      "name" : "Vacuum",
+    {"name" : "Vacuum",
       "NIST" : "G4_Galactic"
     },
-    {
-      "name" : "Air",
+    {"name" : "Air",
       "NIST" : "G4_AIR", 
       "PropertiesTable" : [
         {"property" : "RINDEX" , 
@@ -28,12 +26,10 @@
         }
       ]
     },
-    {
-      "name" : "Steel", 
+    {"name" : "Steel", 
       "NIST" : "G4_STAINLESS-STEEL"
     },
-    {
-      "name" : "Polyurethane", 
+    {"name" : "Polyurethane", 
       "density" : {"val" : 90, "unit" : "kg/m3"}, 
       "atomic_components" : [
         {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 27},
@@ -42,32 +38,27 @@
         {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 10}
       ]
     },
-    {
-      "name" : "Polyethilene", 
+    {"name" : "Polyethilene", 
       "NIST" : "G4_POLYETHYLENE"
     },
-    {
-      "name" : "BoronOxide", 
+    {"name" : "BoronOxide", 
       "density" : {"val" : 2.50, "unit" : "g/cm3"}, 
       "atomic_components" : [
         {"name" : "Boron", "symb" : "B", "Z" : 5, "A" : 10.811, "nAtom" : 2},
         {"name" : "Oxygen", "symb" : "O", "Z" : 8, "A" : 15.999, "nAtom" : 3}
       ]
     },
-    {
-      "name" : "BoratedPolyethilene", 
+    {"name" : "BoratedPolyethilene", 
       "density" : {"val" : 1.0, "unit" : "g/cm3"},
       "mixture_components" : [
         {"name" : "Polyethilene", "massFraction" : 0.85}, 
         {"name" : "BoronOxide", "massFraction" : 0.15}
       ]
     },
-    {
-      "name" : "Cellulose", 
+    {"name" : "Cellulose", 
       "NIST" : "G4_CELLULOSE_BUTYRATE"
     }, 
-    {
-      "name" : "Lignine", 
+    {"name" : "Lignine", 
       "density" : {"val" : 1.40, "unit" : "g/cm3"}, 
       "atomic_components" : [
         {"name" : "Carbon", "symb" : "C", "Z" : 6, "A" : 12.011, "nAtom" : 18},
@@ -78,16 +69,14 @@
         {"name" : "Sulphur", "symb" : "S", "Z" : 16, "A" : 32.065, "nAtom" : 2}        
       ]
     }, 
-    {
-      "name" : "Plywood", 
+    {"name" : "Plywood", 
       "density" : {"val" : 0.5, "unit": "g/cm3"}, 
       "mixture_components" : [
         {"name" : "Cellulose", "massFraction" : 0.70}, 
         {"name" : "Lignine", "massFraction" : 0.30}
       ]
     },
-    {  
-      "name" : "Water",
+    {"name" : "Water",
       "NIST" : "G4_WATER", 
       "PropertiesTable" : [
         {"property" : "Birks", "value" : 0.126}, 
@@ -107,17 +96,14 @@
         }
       ]
     },
-    {
-      "name" :"PCB",
+    {"name" :"PCB",
       "NIST": "G4_POLYETHYLENE"
     },
-    {
-      "name" : "Plastic", 
+    {"name" : "Plastic", 
       "NIST" : "G4_PLASTIC_SC_VINYLTOLUENE"
     },
 
-    {
-      "name" : "PTP", 
+    {"name" : "PTP", 
       "NIST" : "G4_POLYVINYLIDENE_FLUORIDE",
       "SurfaceProperties" : {
         "name" : "PTP_Surf", 
@@ -137,8 +123,7 @@
         ]
       }
     },
-    {
-      "name" : "LAr", 
+    {"name" : "LAr", 
       "density" : {"val" : 1.390, "unit" : "g/cm3"},
       "temperature" : {"val" : 87, "unit"  : "K"},
       "atomic_components" : [
@@ -202,13 +187,24 @@
         ]}, 
         {"property" : "IONSCINTILLATIONYIELD1", "value" : 0.44},  
         {"property" : "IONSCINTILLATIONYIELD2", "value" : 0.56},  
+        {"property" : "RESOLUTIONSCALE", "value" : 1.00}, 
 
-        {"property" : "BIRKSCONSTANT", "value" : 0.069},
-        {"property" : "RESOLUTIONSCALE", "value" : 1.00}
+        {"property" : "BIRKSRECOMBK", "value" : 0.0486, "unit" : "cm/MeV", "custom" : true},
+        {"property" : "BIRKSRECOMBA", "value" : 0.800 , "custom" : true}, 
+        {"property" : "WION", "value" : 23.6, "unit" : "eV", "custom" : true},
+        {"property" : "LARQL_ELECTRONIONRATIO", "value" : 0.29, "custom" : true}, 
+        {"property" : "LARQL_ALPHA", "value" : 0.0372, "custom" : true}, 
+        {"property" : "LARQL_BETA", "value" : 0.0124, "custom" : true}, 
+        {"property" : "LARQL_CHIPAR0", "value" : 0.00338427, "custom" : true},  
+        {"property" : "LARQL_CHIPAR1", "value" : -6.57037, "custom" : true},  
+        {"property" : "LARQL_CHIPAR2", "value" : 1.88418, "custom" : true},  
+        {"property" : "LARQL_CHIPAR3", "value" : 0.000129379, "custom" : true},  
+        {"property" : "SPRT_MODBOXA", "val" : 0.930, "custom" : true}, 
+        {"property" : "SPRT_MODBOXB", "val" : 0.212, "custom" : true}, 
+        {"property" : "SPRT_USEMODBOX", "val" : 1, "custom" : true}
       ]
     }, 
-    {
-      "name" : "SiliconActive",
+    {"name" : "SiliconActive",
       "NIST": "G4_Si", 
       "SurfaceProperties" : {
         "name" : "SiPM_Surf", 
@@ -228,8 +224,7 @@
         ]
       }
     },
-    {
-      "name" : "SiliconPassive",
+    {"name" : "SiliconPassive",
       "NIST": "G4_Si"
     }
   ]

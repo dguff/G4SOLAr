@@ -9,8 +9,12 @@ add_library(SLArScintillation
   SHARED
   ${PROJECT_SOURCE_DIR}/src/physics/SLArScintillation.cc
   ${PROJECT_SOURCE_DIR}/include/physics/SLArScintillation.h
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScint.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScint.h
+  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintLArQL.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintLArQL.h
+  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintSeparate.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintSeparate.h
+  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintModel.cc
+  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintModel.h
   ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
   ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
   )

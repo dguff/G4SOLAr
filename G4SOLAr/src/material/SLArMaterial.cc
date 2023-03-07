@@ -15,6 +15,9 @@
 #include "G4UIcommand.hh"
 #include "G4NistManager.hh"
 #include <cassert>
+#include <regex>
+#include <iterator>
+
 
 SLArMaterial::SLArMaterial() : 
   fDBFile(""), fMaterialID(""), fMaterial(nullptr), fOpticalSurf(nullptr)
@@ -266,6 +269,7 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
     assert(p.HasMember("value")); 
 
     G4String pname = p["property"].GetString(); 
+    printf("Parsing %s\n", pname.c_str());
 
     if (p["value"].IsArray()) {
       assert(p["value"].GetArray().Size() == 2); 
@@ -277,7 +281,8 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
         assert(v["val"].IsArray()); 
         G4double vunit = 1.0; 
         if (v.HasMember("unit")) {
-          vunit = G4UIcommand::ValueOf(v["unit"].GetString());
+          //vunit = G4UIcommand::ValueOf(v["unit"].GetString());
+          vunit = ParseUnit(v["unit"]); 
         }
         if (strcmp("Energy", v["var"].GetString()) == 0) {
           for (const auto &val : v["val"].GetArray()) {
@@ -294,8 +299,10 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
       mpt->AddProperty(pname, vE, vP, is_custom); 
     } else {
       G4double punit = 1.0; 
-      if (p.HasMember("unit")) 
-        punit = G4UIcommand::ValueOf(p["unit"].GetString()); 
+      if (p.HasMember("unit")) {
+        //punit = G4UIcommand::ValueOf(p["unit"].GetString()); 
+        punit = ParseUnit(p["unit"]); 
+      }
       G4double pvalue = p["value"].GetDouble(); 
       G4bool is_custom = false; 
       if (p.HasMember("custom")) is_custom = p["custom"].GetBool(); 
@@ -359,5 +366,37 @@ void SLArMaterial::ParseSurfaceProperties(const rapidjson::Value& jptable) {
   }
 
   return;
+}
+
+G4double SLArMaterial::ParseUnit(const rapidjson::Value& junit) {
+  G4double vunit = 1.0; 
+  assert(junit.IsString()); 
+  G4String sunit = junit.GetString(); 
+
+  std::regex rgx_unit( "((^|\\*|/)\\w+)" );
+  auto unit_begin = std::sregex_iterator(sunit.begin(), sunit.end(), rgx_unit); 
+  auto unit_end   = std::sregex_iterator(); 
+
+  for (std::sregex_iterator i = unit_begin; i!=unit_end; ++i) {
+    std::smatch match = *(i); 
+    G4String unit_match = match.str(); 
+    char front = unit_match.front(); 
+    if (front == '*') {
+      unit_match.erase(0, 1); 
+      printf("Multiply %s\n", unit_match.c_str());
+      vunit *= G4UIcommand::ValueOf(unit_match); 
+    } else if (front == '/') {
+      unit_match.erase(0, 1); 
+      printf("Divide %s\n", unit_match.c_str());
+      vunit /= G4UIcommand::ValueOf(unit_match);  
+    } else {
+      printf("Multiply %s\n", unit_match.c_str());
+      vunit *= G4UIcommand::ValueOf(unit_match); 
+    }
+  }
+
+  printf("vunit is %g\n", vunit);
+
+  return vunit; 
 }
 
