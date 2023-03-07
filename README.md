@@ -1,7 +1,7 @@
-# G4SOLAr
+# ENUDet
 
-**G4SOLAr** implements a Geant4-based Monte Carlo simulation of a LAr TPC
-optimized for low-energy events searches. 
+**ENUDet** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
+for studying beam events in the context of the ENUBET experiment. 
 
 ## Disclaimer
 This code has never been properly tested, but there are some reasonable 
@@ -38,18 +38,19 @@ Hopefully, a more appropriate naming convention will gain ground.
 The procedure to build the code have some subtle differences wether one is 
 installing the simulation on a [generic machine](#installing-SOLAr-sim-on-a-generic-machine)
 or on a more complex system 
-such as the [Fermilab computing environment](#installing-SOLAr-sim-on-fermilab-gpvm). 
+such as the [CERN computing environment](#installing-SOLAr-sim-on-cern-lxplus). 
 
-### Installing G4SOLAr on Fermilab gpvm
+### Installing G4SOLAr on CERN lxplus
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
+$ git checkout enudet
 ```
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
 ```bash
 $ cd G4SOLAr
-$ source setup_g4solar.sh
+$ source setup_g4solar_lxplus.sh
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
@@ -72,10 +73,11 @@ Note that the geant4 version installed on `dunegpvm` nodes is compiled
 against an independent installation of `CLHEP`, so one has to specify the 
 `CLHEP` include directory when calling `cmake`.
 
-### Installing SOLAr-sim on a generic machine
+### Installing ENUDet on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
+$ git checkout enudet
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
@@ -171,7 +173,7 @@ PDS event object.
 | **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
 
 
-### SOLAr-sim Event Dictionaries
+### ENUDet Event Dictionaries
 
 To be able to access the event information in an interactive ROOT session, 
 one should load the shared libraries defining the event and configuration 
@@ -185,6 +187,10 @@ simulated MC event.
 
 ### Running jobs on the grid
 
+#### CERN
+Work in progress
+
+#### FNAL
 You can run SOLAr-sim jobs on the grid with
 
 ```
