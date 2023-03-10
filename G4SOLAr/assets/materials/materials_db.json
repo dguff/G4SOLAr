@@ -199,9 +199,9 @@
         {"property" : "LARQL_CHIPAR1", "value" : -6.57037, "custom" : true},  
         {"property" : "LARQL_CHIPAR2", "value" : 1.88418, "custom" : true},  
         {"property" : "LARQL_CHIPAR3", "value" : 0.000129379, "custom" : true},  
-        {"property" : "SPRT_MODBOXA", "val" : 0.930, "custom" : true}, 
-        {"property" : "SPRT_MODBOXB", "val" : 0.212, "custom" : true}, 
-        {"property" : "SPRT_USEMODBOX", "val" : 1, "custom" : true}
+        {"property" : "SPRT_MODBOXA", "value" : 0.930, "custom" : true}, 
+        {"property" : "SPRT_MODBOXB", "value" : 0.212, "custom" : true}, 
+        {"property" : "SPRT_USEMODBOX", "value" : 1, "custom" : true}
       ]
     }, 
     {"name" : "SiliconActive",
