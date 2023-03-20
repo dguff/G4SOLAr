@@ -114,30 +114,51 @@ void SLArGeoInfo::DumpParMap()
 
 G4double SLArGeoInfo::ParseJsonVal(const rapidjson::Value& jval) {
   assert(jval.HasMember("val")); 
-  double vunit = 1.;
+  G4double vunit = GetJSONunit(jval); 
   
-  if (jval.HasMember("unit")) {
-    const char* unit = jval["unit"].GetString();
-    vunit = G4UIcommand::ValueOf(unit); 
-  }
-
   return jval["val"].GetDouble() * vunit; 
 }
 
-bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value& dim) {
-  assert(dim.IsArray()); 
-  for (const auto &xx : dim.GetArray()) {
+bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value::ConstArray& dim) {
+  for (const auto &xx : dim) {
     const auto entry = xx.GetObj(); 
     const char* name = entry["name"].GetString();
-    //double vunit = 1.; 
-    //if (xx.HasMember("unit")) {
-      //const char* unit = entry["unit"].GetString();
-      //vunit = G4UIcommand::ValueOf(unit);
-    //}
-    //G4double val = entry["val"].GetFloat() *vunit ;
     G4double val = ParseJsonVal(entry); 
     RegisterGeoPar(name, val); 
   }
   return true;
 }
 
+G4double SLArGeoInfo::Unit2Val(const char* unit) {
+  return G4UIcommand::ValueOf( unit );
+}
+
+G4double SLArGeoInfo::GetJSONunit(const rapidjson::Value& obj) {
+  if (!obj.HasMember("unit")) return 1.0; 
+
+  return Unit2Val(obj["unit"].GetString()); 
+}
+
+bool SLArGeoInfo::ReadFromJSON(const rapidjson::Value::ConstObject& obj, const char* prefix) {
+  if (obj.HasMember("xyz")) {
+    auto jxyz = obj["xyz"].GetArray(); 
+    assert(jxyz.Size() == 3);
+    G4double vunit = GetJSONunit(obj); 
+    
+    G4String suff[3] = {"_x", "_y", "_z"}; 
+    int j=0; 
+    for (const auto &jval : jxyz) {
+      G4double val  = jval.GetDouble() * vunit; 
+      G4String name = prefix + suff[j];  
+      RegisterGeoPar(name, val); 
+      ++j;
+    }
+    return true; 
+  }
+  else if (obj.HasMember("name") && obj.HasMember("val")) {
+    G4double val = ParseJsonVal(obj); 
+    RegisterGeoPar(obj["name"].GetString(), val); 
+  }
+
+  return true; 
+}

@@ -288,7 +288,7 @@ void SLArDetReadoutTile::SetVisAttributes()
   fBasePCB->GetModLV()->SetVisAttributes( visAttributes );
 
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
-  fSiPM->GetModLV()->SetVisAttributes( visAttributes );
+  fSiPM->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
 
   if (fChargePix) {
     visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
@@ -381,7 +381,7 @@ void SLArDetReadoutTile::BuildComponentsDefinition(const rapidjson::Value& comps
     }
 
     assert(comp["dimensions"].IsArray()); 
-    mod->GetGeoInfo()->ReadFromJSON(comp["dimensions"]); 
+    mod->GetGeoInfo()->ReadFromJSON(comp["dimensions"].GetArray()); 
   }
 }
 
@@ -389,7 +389,7 @@ void SLArDetReadoutTile::BuildUnitCellStructure(const rapidjson::Value& celldef)
   assert(celldef.HasMember("dimensions")); 
   assert(celldef.HasMember("lineup")); 
   if (!fUnitCell) fUnitCell = new SLArBaseDetModule(); 
-  fUnitCell->GetGeoInfo()->ReadFromJSON(celldef["dimensions"]);
+  fUnitCell->GetGeoInfo()->ReadFromJSON(celldef["dimensions"].GetArray());
 
   assert(celldef["lineup"].IsArray()); 
   for (const auto& comp : celldef["lineup"].GetArray()) {
