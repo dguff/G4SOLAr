@@ -76,6 +76,90 @@
         {"name" : "Lignine", "massFraction" : 0.30}
       ]
     },
+    {"name" : "SiO2", 
+     "density" : {"val" : 2.65, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+        {"name" : "Silicon", "symb" : "Si", "Z": 14, "nAtom" : 1}, 
+        {"name" : "Oxygen", "symb" : "O", "Z" : 8, "nAtom" : 2}
+     ]
+    }, 
+    {"name" : "Al2O3", 
+     "density" : {"val" : 3.95, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+        {"name": "Aluminum", "symb" : "Al", "Z" : 13, "nAtom" : 2}, 
+        {"name": "Oxygen"  , "symb" :  "O", "Z" :  8, "nAtom" : 3}
+     ]
+    }, 
+    {"name" : "CaO",
+     "density" : {"val" : 3.34, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+        {"name": "Calcium" , "symb" : "Ca", "Z" : 20, "nAtom" : 1}, 
+        {"name": "Oxygen"  , "symb" :  "O", "Z" :  8, "nAtom" : 1}
+     ]
+    },
+    {"name" : "B2O3", 
+      "density" : {"val": 2.46, "unit" : "g/cm3"}, 
+      "atomic_components" : [
+        {"name" : "Boron" , "symb" : "B", "Z" : 5, "nAtom" : 2}, 
+        {"name" : "Oxygen", "symb" : "O", "Z" : 8, "nAtom" : 3}
+      ]
+    },
+    {"name" : "Na2O", 
+     "density": {"val": 2.27, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+        {"name" : "Sodium" , "symb" : "Na", "Z" : 11, "nAtom" : 2}, 
+        {"name" : "Oxygen" , "symb" : "O" , "Z" :  8, "nAtom" : 1}
+     ]
+    },
+    {"name" : "C19H20O4", 
+     "density" : {"val": 1.1, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+       {"name" : "Carbon"  , "symb" : "C" , "Z" :  6, "nAtom" : 19}, 
+       {"name" : "Hydrogen", "symb" : "H" , "Z" :  1, "nAtom" : 20},
+       {"name" : "Oxygen"  , "symb" : "O" , "Z" :  8, "nAtom" :  4}
+     ]
+    },
+    {"name" : "C10H18O4", 
+    "density" : {"val" : 1.21, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+       {"name" : "Carbon"  , "symb" : "C" , "Z" :  6, "nAtom" : 10}, 
+       {"name" : "Hydrogen", "symb" : "H" , "Z" :  1, "nAtom" : 18},
+       {"name" : "Oxygen"  , "symb" : "O" , "Z" :  8, "nAtom" :  4}
+     ]
+    }, 
+    {"name" : "C9H22N2", 
+     "density" : {"val" : 0.867, "unit" : "g/cm3"}, 
+     "atomic_components" : [
+       {"name" : "Carbon"  , "symb" : "C" , "Z" :  6, "nAtom" :  9}, 
+       {"name" : "Hydrogen", "symb" : "H" , "Z" :  1, "nAtom" : 22},
+       {"name" : "Nitrogen", "symb" : "N" , "Z" :  7, "nAtom" :  2}
+     ]
+    },
+    {"name": "Epoxi",
+      "density" : {"val" : 1.19, "unit" : "g/cm3"}, 
+      "mixture_components" : [
+        {"name" : "C19H20O4", "massFraction" : 0.56},
+        {"name" : "C10H18O4", "massFraction" : 0.24},
+        {"name" : "C9H22N2" , "massFraction" : 0.20}
+      ]
+    }, 
+    {"name" : "GlassFiber", 
+     "density" : {"val": 2.61, "unit" : "g/cm3"}, 
+     "mixture_components" : [
+       {"name" : "SiO2", "massFraction" : 0.56}, 
+       {"name" : "CaO", "massFraction" : 0.21}, 
+       {"name" : "Al2O3", "massFraction" : 0.14}, 
+       {"name" : "B2O3", "massFraction" : 0.08}, 
+       {"name" : "Na2O", "massFraction" : 0.01}
+     ]
+    },
+    {"name" : "FR4", 
+     "density" : {"val": 1.80, "unit" : "g/cm3"}, 
+      "mixture_components" : [
+        {"name" : "GlassFiber", "massFraction" : 0.60},
+        {"name" : "Epoxi", "massFraction" : 0.40}
+      ]
+    },
     {"name" : "Water",
       "NIST" : "G4_WATER", 
       "PropertiesTable" : [

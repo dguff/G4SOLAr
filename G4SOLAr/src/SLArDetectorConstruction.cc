@@ -78,7 +78,6 @@ SLArDetectorConstruction::SLArDetectorConstruction(
  : G4VUserDetectorConstruction(),
    fGeometryCfgFile(""), 
    fMaterialDBFile(""),
-   fTPC(nullptr),
    fSuperCell(nullptr),
    fWorldLog(nullptr)
 { 
@@ -133,7 +132,7 @@ void SLArDetectorConstruction::Init() {
   if (d.HasMember("World")) {
     const rapidjson::Value& wrld = d["World"]; 
     assert(wrld.HasMember("dimensions")); 
-    fWorldGeoPars.ReadFromJSON(wrld["dimensions"]);
+    fWorldGeoPars.ReadFromJSON(wrld["dimensions"].GetArray());
   } else {
     fWorldGeoPars.RegisterGeoPar("size_x", 5*CLHEP::m); 
     fWorldGeoPars.RegisterGeoPar("size_y", 8*CLHEP::m); 
@@ -144,18 +143,16 @@ void SLArDetectorConstruction::Init() {
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
   G4cerr << "SLArDetectorConstruction::Init TPC" << G4endl;
-  fTPC     = new SLArDetTPC();
-  if (d.HasMember("TPC")) {
-    const rapidjson::Value& tpc = d["TPC"]; 
-    assert(tpc.HasMember("dimensions"));
-    assert(tpc.HasMember("Cryostat_structure")); 
-    fTPC->GetGeoInfo()->ReadFromJSON(tpc["dimensions"]);
-    fTPC->BuildCryostatStructure(tpc["Cryostat_structure"]); 
-  } else {
-    fTPC->BuildDefalutGeoParMap();
-  }
-  fTPC->BuildMaterial(fMaterialDBFile);
-  G4cerr << "SLArDetectorConstruction::Init Tank DONE" << G4endl;
+  InitTPC(d["TPC"]); 
+  InitCathode(d["Cathode"]);
+  ConstructTarget(); 
+
+  fCryostat = new SLArDetCryostat(); 
+  fCryostat->SetGeoPar( "target_x", fDetector->GetGeoPar("det_x") ); 
+  fCryostat->SetGeoPar( "target_y", fDetector->GetGeoPar("det_y") ); 
+  fCryostat->SetGeoPar( "target_z", fDetector->GetGeoPar("det_z") ); 
+  fCryostat->BuildCryostatStructure(d["Cryostat_structure"]); 
+  G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
@@ -178,6 +175,52 @@ void SLArDetectorConstruction::Init() {
   std::fclose(geo_cfg_file);
 }
 
+void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
+  assert(jtpc.IsArray()); 
+
+  //loop over TPC modules
+  for (const auto &tpc : jtpc.GetArray()) {
+    assert(tpc.HasMember("dimensions")); 
+    assert(tpc.HasMember("position"  )); 
+    assert(tpc.HasMember("copyID"    )); 
+    SLArDetTPC* detTPC = new SLArDetTPC();
+    detTPC->GetGeoInfo()->ReadFromJSON(tpc["dimensions"].GetArray()); 
+
+    const auto jposition = tpc["position"].GetObj(); 
+    G4double vunit = 1.0; 
+    if (jposition.HasMember("unit")) {
+      vunit = G4UIcommand::ValueOf(jposition["unit"].GetString());
+    }
+    G4String xvar[3] = {"x", "y", "z"}; 
+    assert(jposition.HasMember("xyz")); 
+    int ii=0; 
+    for (const auto &v : jposition["xyz"].GetArray()) {
+      G4double tmp = v.GetDouble() * vunit; 
+      detTPC->GetGeoInfo()->RegisterGeoPar("tpc_pos_"+xvar[ii], tmp); 
+      ++ii; 
+    }
+    detTPC->SetID(tpc["copyID"].GetInt()); 
+    fTPC.insert(std::make_pair(detTPC->GetID(), detTPC)); 
+  }
+
+}
+
+void SLArDetectorConstruction::InitCathode(const rapidjson::Value& jcathode) {
+  assert(jcathode.IsArray()); 
+
+  for (const auto &jcath : jcathode.GetArray()) {
+    assert(jcath.HasMember("dimensions")); 
+    assert(jcath.HasMember("position")); 
+    assert(jcath.HasMember("copyID")); 
+    SLArDetCathode* detCathode = new SLArDetCathode(); 
+    detCathode->SetID(jcath["copyID"].GetInt()); 
+    detCathode->GetGeoInfo()->ReadFromJSON(jcath["position"].GetObj(), "pos"); 
+    detCathode->GetGeoInfo()->ReadFromJSON(jcath["dimensions"].GetArray()); 
+
+    fCathode.insert(std::make_pair(detCathode->GetID(), detCathode)); 
+  }
+} 
+
 /**
  * @details Construct the fSuperCell object and parse the supercell 
  * geometry from the pds object described in the geometry configuration
@@ -191,7 +234,7 @@ void SLArDetectorConstruction::Init() {
 void SLArDetectorConstruction::InitPDS(const rapidjson::Value& pds) {
   fSuperCell = new SLArDetSuperCell(); 
   assert(pds.HasMember("dimensions")); 
-  fSuperCell->GetGeoInfo()->ReadFromJSON(pds["dimensions"]); 
+  fSuperCell->GetGeoInfo()->ReadFromJSON(pds["dimensions"].GetArray()); 
   fSuperCell->BuildMaterial(fMaterialDBFile); 
 
   printf("Building SuperCell configuration object...\n");
@@ -267,7 +310,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   assert(pixsys.HasMember("components")); 
   assert(pixsys.HasMember("unit_cell")); 
 
-  fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"]); 
+  fReadoutTile->GetGeoInfo()->ReadFromJSON(pixsys["dimensions"].GetArray()); 
   fReadoutTile->BuildComponentsDefinition(pixsys["components"]); 
   fReadoutTile->BuildUnitCellStructure(pixsys["unit_cell"]); 
   fReadoutTile->BuildMaterial(fMaterialDBFile);
@@ -279,7 +322,7 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
       // Setup megatile
       SLArDetReadoutPlane* megatile = new SLArDetReadoutPlane(); 
       assert(mtile.HasMember("dimensions")); 
-      megatile->GetGeoInfo()->ReadFromJSON(mtile["dimensions"]); 
+      megatile->GetGeoInfo()->ReadFromJSON(mtile["dimensions"].GetArray()); 
       megatile->BuildMaterial(fMaterialDBFile); 
       fReadoutMegaTile.insert(std::make_pair(mtile["name"].GetString(),megatile)); 
 
@@ -332,6 +375,90 @@ void SLArDetectorConstruction::InitPix(const rapidjson::Value& pixsys) {
   } // endif pixsys.HasMember("modules")
 }
 
+void SLArDetectorConstruction::ConstructTarget() {
+  G4ThreeVector target_min   (0, 0, 0); 
+  G4ThreeVector target_max   (0, 0, 0); 
+
+  for (const auto &tpc_ : fTPC) {
+    auto tpc = tpc_.second; 
+    G4ThreeVector local_center; 
+    G4ThreeVector local_dim;  
+    local_center.setX(tpc->GetGeoPar("tpc_pos_x")); 
+    local_center.setY(tpc->GetGeoPar("tpc_pos_y")); 
+    local_center.setZ(tpc->GetGeoPar("tpc_pos_z"));
+    local_dim   .setX(tpc->GetGeoPar("tpc_x")); 
+    local_dim   .setY(tpc->GetGeoPar("tpc_y")); 
+    local_dim   .setZ(tpc->GetGeoPar("tpc_z"));
+
+    G4ThreeVector local_min = local_center - 0.5*local_dim; 
+    G4ThreeVector local_max = local_center + 0.5*local_dim; 
+
+    G4cout << local_center << G4endl; 
+    G4cout << local_min << G4endl; 
+    G4cout << local_max << G4endl; 
+
+    for (int idim = 0; idim <3; idim++) {
+      if (local_min[idim] < target_min[idim]) target_min[idim] = local_min[idim]; 
+      if (local_max[idim] > target_max[idim]) target_max[idim] = local_max[idim]; 
+
+      //printf("target_max: [%g, %g, %g], target_min: [%g, %g, %g]\n", 
+          //target_max[0], target_max[1], target_max[2], 
+          //target_min[0], target_min[1], target_min[2]); 
+    }
+  }
+
+  G4ThreeVector target_center = 0.5*(target_min + target_max); 
+  G4double target_dim[3] = {0.}; 
+  for (int idim = 0; idim < 3; idim++) {
+    target_dim[idim] = target_max[idim] - target_min[idim]; 
+  }
+
+  fDetector = new SLArBaseDetModule(); 
+  fDetector->SetGeoPar("det_pos_x", target_center.x()); 
+  fDetector->SetGeoPar("det_pos_y", target_center.y()); 
+  fDetector->SetGeoPar("det_pos_z", target_center.z()); 
+  
+  fDetector->SetGeoPar("det_x", target_dim[0]); 
+  fDetector->SetGeoPar("det_y", target_dim[1]); 
+  fDetector->SetGeoPar("det_z", target_dim[2]); 
+
+  printf("LAr target: pos (%g, %g, %g) mm - size %g x %g x %g\n", 
+      target_center.x(), target_center.y(), target_center.z(), 
+      target_dim[0], target_dim[1], target_dim[2]); 
+
+  fDetector->SetSolidVolume( new G4Box("target_solid", 
+      0.5*target_dim[0], 0.5*target_dim[1], 0.5*target_dim[2]) ); 
+  SLArMaterial* matTarget = new SLArMaterial("LAr"); 
+  matTarget->BuildMaterialFromDB(fMaterialDBFile); 
+  fDetector->SetLogicVolume( new G4LogicalVolume(fDetector->GetModSV(), 
+      matTarget->GetMaterial(), "lar_target_lv") ); 
+
+}
+
+void SLArDetectorConstruction::ConstructCryostat() {
+
+  fCryostat->BuildCryostat(); 
+
+  fCryostat->GetModPV("cryostat_pv", 0, 
+      fDetector->GetModPV()->GetTranslation(), 
+      fWorldLog, 0) ; 
+
+}
+
+void SLArDetectorConstruction::ConstructCathode() {
+  for (auto &cathode : fCathode) {
+    cathode.second->BuildMaterial(fMaterialDBFile); 
+    cathode.second->BuildCathode(); 
+    auto geoinfo = cathode.second->GetGeoInfo(); 
+    cathode.second->GetModPV(
+        "cathode_pv_"+std::to_string(cathode.first), 0, 
+        G4ThreeVector(geoinfo->GetGeoPar("pos_x"), 
+          geoinfo->GetGeoPar("pos_y"), 
+          geoinfo->GetGeoPar("pos_z")), 
+        fDetector->GetModLV(), 0, cathode.first); 
+  }
+}
+
 /**
  * @details Construct the world volume, build and place the 
  * SLArDetectorConstruction::fTPC object. 
@@ -365,12 +492,31 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   G4VPhysicalVolume* expHall_phys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
 
-  // 2. Build and place the Cryostat/LAr target
-  G4cerr << "\nSLArDetectorConstruction: Building the Tank" << G4endl;
-  fTPC->BuildTPC();
-  fTPC->GetModPV("TPC", 0,
-      G4ThreeVector(0, 0, 0), 
-      fWorldLog, false, 20);
+  // 2. Build and place the LAr target
+  G4cerr << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
+  fDetector->SetModPV( new G4PVPlacement(0, 
+        G4ThreeVector(fDetector->GetGeoPar("det_pos_x"), 
+          fDetector->GetGeoPar("det_pos_y"), 
+          fDetector->GetGeoPar("det_pos_z")), 
+        fDetector->GetModLV(), "target_lar_pv", fWorldLog, 0, 9) ); 
+  
+  // 3. Build and place the Cryostat
+  G4cerr << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
+  fCryostat->SetWorldMaterial(matWorld); 
+  ConstructCryostat(); 
+
+  G4cerr << "\nSLArDetectorConstruction: Building the Cathode" << G4endl;
+  ConstructCathode(); 
+
+  G4cerr << "\nSLArDetectorConstruction: Building the TPCs" << G4endl;
+  for (auto &tpc : fTPC) {
+    tpc.second->BuildMaterial(fMaterialDBFile); 
+    tpc.second->BuildTPC();
+    tpc.second->GetModPV("TPC"+std::to_string(tpc.first), 0,
+        tpc.second->GetTPCcenter(), 
+        fDetector->GetModLV(), false, tpc.first);
+    tpc.second->SetVisAttributes(); 
+  }
 
   // 3. Build and place the "conventional" Photon Detection System 
   if (fSuperCell) BuildAndPlaceSuperCells();
@@ -380,7 +526,6 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //Visualization attributes
-  fTPC->SetVisAttributes();
   if (fSuperCell) fSuperCell->SetVisAttributes();
 
   G4VisAttributes* visAttributes = new G4VisAttributes();
@@ -444,12 +589,14 @@ void SLArDetectorConstruction::ConstructSDandField()
   }
   
   // Set LAr-volume SD
-  G4VSensitiveDetector* targetSD
-    = new SLArLArSD(SDname="/TPC/LAr");
-  SDman->AddNewDetector(targetSD);
-  SetSensitiveDetector(
-      fTPC->GetTarget()->GetModLV(), 
-      targetSD);
+  for (const auto tpc : fTPC) {
+    G4VSensitiveDetector* targetSD
+      = new SLArLArSD(SDname="/TPC/LArTPC"+std::to_string(tpc.first));
+    SDman->AddNewDetector(targetSD);
+    SetSensitiveDetector(
+        tpc.second->GetModLV(), 
+        targetSD);
+  }
 
   ConstructCryostatScorer(); 
 }
@@ -485,7 +632,7 @@ void SLArDetectorConstruction::ConstructCryostatScorer() {
     SDman->AddNewDetector( BPolyethileneSD[i] );  
 
     G4LogicalVolume* lv_mother = 
-      fTPC->GetCryostatStructure()[iBPltCryostatLayerID[i]]->fModule->GetModLV(); 
+      fCryostat->GetCryostatStructure()[iBPltCryostatLayerID[i]]->fModule->GetModLV(); 
     auto lv = lv_mother->GetDaughter(0)->GetLogicalVolume();
 
     SetSensitiveDetector(lv, BPolyethileneSD[i]); 
@@ -504,7 +651,7 @@ void SLArDetectorConstruction::ConstructCryostatScorer() {
     SDman->AddNewDetector( CryostatWall[i] ); 
     
     G4LogicalVolume* lv_mother = 
-      fTPC->GetCryostatStructure()[iCryostatWallLayerID[i]]->fModule->GetModLV(); 
+      fCryostat->GetCryostatStructure()[iCryostatWallLayerID[i]]->fModule->GetModLV(); 
     auto lv = lv_mother->GetDaughter(0)->GetLogicalVolume();
 
     SetSensitiveDetector(lv, CryostatWall[i]); 
@@ -512,9 +659,16 @@ void SLArDetectorConstruction::ConstructCryostatScorer() {
 
 }
 
-SLArDetTPC* SLArDetectorConstruction::GetDetTPC() 
+SLArDetTPC* SLArDetectorConstruction::GetDetTPC(int copyid) 
 {
-  return fTPC;
+  int count = fTPC.count(copyid); 
+  if (!count) {
+    printf("SLArDetectorConstruction::GetDetTPC(%i) ERROR:", copyid); 
+    printf("Unable to find TPC with copy id %i\n", copyid); 
+    return nullptr;
+  }
+
+  return fTPC.find(copyid)->second;
 }
 
 //SLArDetPMT* SLArDetectorConstruction::GetDetPMT(const char* mod) 
@@ -590,7 +744,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
           fSuperCell->GetModPV(
             Form("SC%i", scinfo.first), rotPMT, 
             pmtPos,
-            fTPC->GetTarget()->GetModLV(), 
+            fDetector->GetModLV(), 
             false, 
             scinfo.second->GetIdx()
             )
@@ -657,7 +811,7 @@ void SLArDetectorConstruction::BuildAndPlaceReadoutTiles() {
       mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 
       auto pv = megatile->GetModPV(mtileCfg->GetName(), 
-          mtile_rot, mtile_pos, fTPC->GetTarget()->GetModLV(), 
+          mtile_rot, mtile_pos, fDetector->GetModLV(), 
           false, mtileCfg->GetIdx());
       auto lv  = megatile->GetModLV();
       auto row = megatile->GetTileRow();

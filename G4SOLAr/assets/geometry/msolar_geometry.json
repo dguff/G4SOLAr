@@ -7,14 +7,47 @@
       {"name" : "size_z" , "val" :  6.5, "unit": "m"}
     ]
   },
-  "TPC" : {
-    "copyID" : 20, 
-    "dimensions" : [
-      {"name" : "target_x"  , "val" : 1.05, "unit" :  "m"},
-      {"name" : "target_y"  , "val" : 1.62, "unit" :  "m"},
-      {"name" : "target_z"  , "val" : 2.62, "unit" :  "m"}
-    ], 
-    "Cryostat_structure" : [
+  "TPC" : [
+    {"copyID" : 10, 
+      "position": {"xyz" : [-50.05, 0, 65], "unit" : "cm"},
+      "dimensions" : [
+        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
+        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
+        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+      ]},
+    {"copyID" : 11, 
+      "position": {"xyz" : [50.05, 0, 65], "unit" : "cm"},
+      "dimensions" : [
+        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
+        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
+        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+      ]},
+    {"copyID" : 12, 
+      "position": {"xyz" : [-50.05, 0, -65], "unit" : "cm"},
+      "dimensions" : [
+        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
+        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
+        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+      ]},
+    {"copyID" : 13, 
+      "position": {"xyz" : [50.05, 0, -65], "unit" : "cm"},
+      "dimensions" : [
+        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
+        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
+        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+      ]}
+  ],
+  "Cathode" : [
+    {"copyID": 15, 
+     "position" : {"xyz": [0, 0, 0], "unit" : "cm"}, 
+     "dimensions" : [
+       {"name" : "dim_x", "val" : 1.00, "unit" : "mm"},
+       {"name" : "dim_y", "val" : 1.55, "unit" : "m" },
+       {"name" : "dim_z", "val" : 2.50, "unit" : "m" }
+     ]
+    }
+  ],
+  "Cryostat_structure" : [
       {"id" : 21 , "name" : "outer_frame"     , "material" : "Steel"               , "thickness" : {"val":  1.0 , "unit" : "cm"}} ,
       {"id" : 22 , "name" : "plywood_1"       , "material" : "Plywood"             , "thickness" : {"val":  1.0 , "unit" : "cm"}} ,
       {"id" : 23 , "name" : "bpolyethilene_1" , "material" : "BoratedPolyethilene" , "thickness" : {"val": 10.0 , "unit" : "cm"}} ,
@@ -28,8 +61,7 @@
       {"id" : 31 , "name" : "bpolyethilene_2" , "material" : "BoratedPolyethilene" , "thickness" : {"val": 10.0 , "unit" : "cm"}} ,
       {"id" : 32 , "name" : "plywood_6"       , "material" : "Plywood"             , "thickness" : {"val":  1.0 , "unit" : "cm"}} ,
       {"id" : 33 , "name" : "inner_frame"     , "material" : "Steel"               , "thickness" : {"val":  1.2 , "unit" : "mm"}}
-    ]
-  },
+  ],
   "ReadoutTile": {
     "dimensions" : [
       {"name" : "tile_x", "val" :12.0, "unit" : "cm" },
@@ -138,7 +170,7 @@
         ], 
         "positions" : [
           {"copy":2001, "xyz":[ 50,  54, -108], "unit": "cm", "rot":[0, 0, 90]},
-          {"copy":2002, "xyz":[ 50,  54,  -72], "unit": "cm", "rot":[0, 0, 90]},
+/*          {"copy":2002, "xyz":[ 50,  54,  -72], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2003, "xyz":[ 50,  54,  -36], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2004, "xyz":[ 50,  54,    0], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2005, "xyz":[ 50,  54,   36], "unit": "cm", "rot":[0, 0, 90]},
@@ -165,7 +197,7 @@
           {"copy":2023, "xyz":[ 50, -54,  -72], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2024, "xyz":[ 50, -54,  -36], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2025, "xyz":[ 50, -54,    0], "unit": "cm", "rot":[0, 0, 90]},
-          {"copy":2026, "xyz":[ 50, -54,   36], "unit": "cm", "rot":[0, 0, 90]},
+          {"copy":2026, "xyz":[ 50, -54,   36], "unit": "cm", "rot":[0, 0, 90]},*/
           {"copy":2027, "xyz":[ 50, -54,   72], "unit": "cm", "rot":[0, 0, 90]},
           {"copy":2028, "xyz":[ 50, -54,  108], "unit": "cm", "rot":[0, 0, 90]}
         ]
@@ -192,7 +224,7 @@
           {"copy":3105,"xyz":[-40, 79,-110],"unit":"cm","rot":[0,0,180],"norm":[0,-1, 0]}
         ]
       },
-      {
+/*      {
 	"id" : 3110,
         "name" : "SCArray3120",
         "positions" : [
@@ -433,7 +465,7 @@
           {"copy":3414,"xyz":[-20,-79, 90],"unit":"cm","rot":[0,0,0],"norm":[0, 1, 0]},
           {"copy":3415,"xyz":[-40,-79, 90],"unit":"cm","rot":[0,0,0],"norm":[0, 1, 0]}
         ]
-      },
+      },*/
       {
 	"id" : 3420,
         "name" : "SCArray3420",

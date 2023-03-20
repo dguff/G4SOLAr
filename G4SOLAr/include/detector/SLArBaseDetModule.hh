@@ -49,6 +49,9 @@ class SLArBaseDetModule
 
     G4RotationMatrix*  GetRotation();
     G4ThreeVector*     GetTranslation();
+    
+    void               SetID(const int id) {fID = id;}
+    G4int              GetID() {return fID;}
 
     void               ResetGeometry();
 
@@ -73,6 +76,7 @@ class SLArBaseDetModule
     G4RotationMatrix*  fRot     ;
     G4ThreeVector      fVec     ;
     G4String           fName    ;
+    G4int              fID      ; 
 };
 
 

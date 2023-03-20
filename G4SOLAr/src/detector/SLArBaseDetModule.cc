@@ -14,7 +14,7 @@
 
 SLArBaseDetModule::SLArBaseDetModule() 
   : fMaterial(nullptr), fModLV(nullptr), fModSV(nullptr), 
-  fRot(nullptr), fVec(0., 0., 0.), fName("")
+  fRot(nullptr), fVec(0., 0., 0.), fName(""), fID(999)
 {
   fGeoInfo = new SLArGeoInfo();
 }
@@ -29,6 +29,7 @@ SLArBaseDetModule::SLArBaseDetModule(const SLArBaseDetModule &base)
   fRot      = base.fRot     ;
   fVec      = base.fVec     ;
   fName     = base.fName    ;
+  fID       = base.fID      ; 
 }
 
 SLArBaseDetModule::~SLArBaseDetModule() {
@@ -69,6 +70,8 @@ G4VPhysicalVolume* SLArBaseDetModule::GetModPV(
   fRot  = rot;
   fName = name;
   fVec  = vec;
+  if (pCopyNo == 0) pCopyNo = fID;
+  else fID = pCopyNo;
 
   G4bool surf_check = false; 
 #ifdef SLAR_DEBUG
