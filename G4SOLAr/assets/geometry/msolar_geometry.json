@@ -9,32 +9,20 @@
   },
   "TPC" : [
     {"copyID" : 10, 
-      "position": {"xyz" : [-50.05, 0, 65], "unit" : "cm"},
+      "position": {"xyz" : [-50.05, 0, 0], "unit" : "cm"},
+      "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [1, 0, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" : 2.60, "unit" :  "m"}
       ]},
     {"copyID" : 11, 
-      "position": {"xyz" : [50.05, 0, 65], "unit" : "cm"},
+      "position": {"xyz" : [50.05, 0, 0], "unit" : "cm"},
+      "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [-1, 0, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
-      ]},
-    {"copyID" : 12, 
-      "position": {"xyz" : [-50.05, 0, -65], "unit" : "cm"},
-      "dimensions" : [
-        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
-        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
-      ]},
-    {"copyID" : 13, 
-      "position": {"xyz" : [50.05, 0, -65], "unit" : "cm"},
-      "dimensions" : [
-        {"name" : "tpc_x"  , "val" : 1.00, "unit" :  "m"},
-        {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 1.30, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" : 2.60, "unit" :  "m"}
       ]}
   ],
   "Cathode" : [

@@ -28,7 +28,6 @@
 
 
 SLArDetTPC::SLArDetTPC() : SLArBaseDetModule(),
-  fMatWorld (nullptr), 
   fMatTarget(nullptr)
 {
 
@@ -44,7 +43,6 @@ SLArDetTPC::~SLArDetTPC() {
 void SLArDetTPC::BuildMaterial(G4String db_file) 
 {
   // TODO: IMPLEMENT PROPER MATERIALS IN /materials
-  fMatWorld  = new SLArMaterial();
   fMatTarget = new SLArMaterial();
 
   fMatTarget->SetMaterialID("LAr");
@@ -54,10 +52,9 @@ void SLArDetTPC::BuildMaterial(G4String db_file)
 void SLArDetTPC::BuildDefalutGeoParMap() 
 {
   G4cerr << "SLArDetTPC::BuildGeoParMap()" << G4endl;
-  fGeoInfo->RegisterGeoPar("target_y"       , 150.0*CLHEP::cm);
-  fGeoInfo->RegisterGeoPar("target_z"       , 200.0*CLHEP::cm);
-  fGeoInfo->RegisterGeoPar("target_x"       ,  60.0*CLHEP::cm); 
-  fGeoInfo->RegisterGeoPar("cryo_tk"        ,   1.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("tpc_y"       , 150.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("tpc_z"       , 200.0*CLHEP::cm);
+  fGeoInfo->RegisterGeoPar("tpc_x"       ,  60.0*CLHEP::cm); 
   G4cerr << "Exit method\n" << G4endl;
 }
 
@@ -86,7 +83,7 @@ void SLArDetTPC::BuildTPC()
     );
 }
 
-G4ThreeVector SLArDetTPC::GetTPCcenter() {
+const G4ThreeVector SLArDetTPC::GetTPCcenter() {
   if ( fGeoInfo->Contains("tpc_pos_x") && 
        fGeoInfo->Contains("tpc_pos_y") &&
        fGeoInfo->Contains("tpc_pos_z") ) {
@@ -109,4 +106,50 @@ void SLArDetTPC::SetVisAttributes()
   fModLV->SetVisAttributes( visAttributes );
 
   return;
+}
+
+void SLArDetTPC::Init(const rapidjson::Value& jconf) {
+  assert(jconf.IsObject()); 
+  auto jtpc = jconf.GetObject(); 
+  assert(jtpc.HasMember("dimensions")); 
+  assert(jtpc.HasMember("position"  )); 
+  assert(jtpc.HasMember("copyID"    )); 
+
+  SetID(jtpc["copyID"].GetInt()); 
+
+  fGeoInfo->ReadFromJSON(jtpc["dimensions"].GetArray()); 
+
+  const auto jposition = jtpc["position"].GetObj(); 
+  G4double vunit = 1.0; 
+  if (jposition.HasMember("unit")) {
+    vunit = G4UIcommand::ValueOf(jposition["unit"].GetString());
+  }
+  G4String xvar[3] = {"x", "y", "z"}; 
+  assert(jposition.HasMember("xyz")); 
+  int ii=0; 
+  for (const auto &v : jposition["xyz"].GetArray()) {
+    G4double tmp = v.GetDouble() * vunit; 
+    fGeoInfo->RegisterGeoPar("tpc_pos_"+xvar[ii], tmp); 
+    ++ii; 
+  }
+
+  if (jtpc.HasMember("electric_field")) {
+    fElectricField = SLArGeoInfo::ParseJsonVal( jtpc["electric_field"] ); 
+    printf("electric_field is %g kV/cm\n", fElectricField/(CLHEP::kilovolt/CLHEP::cm)); 
+    auto jfield = jtpc["electric_field"].GetObj(); 
+    auto jdir   = jfield["direction"].GetArray(); 
+    assert(jdir.Size() == 3); 
+    int idim = 0; 
+    for (const auto &v : jdir) {
+      fElectronDriftDir[idim] = v.GetDouble();
+      idim++; 
+    }
+  } 
+  else {
+    printf("SLArDetTPC::Init WARNING: Electric field properties are not specified. "); 
+    printf("Setting default values: E = 0.5 kV/cm, drift dir (1, 0, 0)\n"); 
+    fElectricField = 0.5*(CLHEP::kilovolt/CLHEP::cm); 
+    fElectronDriftDir = G4ThreeVector(1, 0, 0); 
+  } 
+
 }
