@@ -36,6 +36,7 @@ class SLArGeoInfo {
     bool     ReadFromJSON    (const rapidjson::Value::ConstObject&, const char* prefix = ""); 
     static G4double ParseJsonVal    (const rapidjson::Value&); 
     static G4double Unit2Val        (const char* unit); 
+    static G4double Unit2Val        (const rapidjson::Value&);
     static G4double GetJSONunit      (const rapidjson::Value& obj); 
 
 
