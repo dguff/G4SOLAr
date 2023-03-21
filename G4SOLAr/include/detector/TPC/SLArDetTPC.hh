@@ -29,14 +29,18 @@ public:
   void          BuildDefalutGeoParMap();
   void          BuildCryostatStructure(const rapidjson::Value& jcryo); 
 
-  G4ThreeVector GetTPCcenter();
-
+  const G4ThreeVector GetTPCcenter();
+  const G4ThreeVector& GetElectronDriftDir() {return fElectronDriftDir;}
+  const G4double& GetElectricField() {return fElectricField;}
+  virtual void  Init(const rapidjson::Value& jconf) override; 
   void          SetVisAttributes();
+
 
 private:
   // Some useful global variables
-  SLArMaterial* fMatWorld;
   SLArMaterial* fMatTarget;
+  G4double      fElectricField; 
+  G4ThreeVector fElectronDriftDir; 
 
  
 };

@@ -179,27 +179,9 @@ void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
   assert(jtpc.IsArray()); 
 
   //loop over TPC modules
-  for (const auto &tpc : jtpc.GetArray()) {
-    assert(tpc.HasMember("dimensions")); 
-    assert(tpc.HasMember("position"  )); 
-    assert(tpc.HasMember("copyID"    )); 
-    SLArDetTPC* detTPC = new SLArDetTPC();
-    detTPC->GetGeoInfo()->ReadFromJSON(tpc["dimensions"].GetArray()); 
-
-    const auto jposition = tpc["position"].GetObj(); 
-    G4double vunit = 1.0; 
-    if (jposition.HasMember("unit")) {
-      vunit = G4UIcommand::ValueOf(jposition["unit"].GetString());
-    }
-    G4String xvar[3] = {"x", "y", "z"}; 
-    assert(jposition.HasMember("xyz")); 
-    int ii=0; 
-    for (const auto &v : jposition["xyz"].GetArray()) {
-      G4double tmp = v.GetDouble() * vunit; 
-      detTPC->GetGeoInfo()->RegisterGeoPar("tpc_pos_"+xvar[ii], tmp); 
-      ++ii; 
-    }
-    detTPC->SetID(tpc["copyID"].GetInt()); 
+  for (auto &tpc : jtpc.GetArray()) {
+    SLArDetTPC* detTPC = new SLArDetTPC(); 
+    detTPC->Init(tpc); 
     fTPC.insert(std::make_pair(detTPC->GetID(), detTPC)); 
   }
 
@@ -209,14 +191,8 @@ void SLArDetectorConstruction::InitCathode(const rapidjson::Value& jcathode) {
   assert(jcathode.IsArray()); 
 
   for (const auto &jcath : jcathode.GetArray()) {
-    assert(jcath.HasMember("dimensions")); 
-    assert(jcath.HasMember("position")); 
-    assert(jcath.HasMember("copyID")); 
     SLArDetCathode* detCathode = new SLArDetCathode(); 
-    detCathode->SetID(jcath["copyID"].GetInt()); 
-    detCathode->GetGeoInfo()->ReadFromJSON(jcath["position"].GetObj(), "pos"); 
-    detCathode->GetGeoInfo()->ReadFromJSON(jcath["dimensions"].GetArray()); 
-
+    detCathode->Init(jcath); 
     fCathode.insert(std::make_pair(detCathode->GetID(), detCathode)); 
   }
 } 

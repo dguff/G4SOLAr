@@ -42,6 +42,7 @@ class SLArDetCryostat : public SLArBaseDetModule {
     void BuildCryostatStructure(const rapidjson::Value& jcryo);
 
     SLArCryostatStructure& GetCryostatStructure() {return fCryostatStructure;}
+    virtual void Init(const rapidjson::Value&) override {}
     void SetWorldMaterial(SLArMaterial* mat) {fMatWorld = mat;}
     void SetVisAttributes();
 

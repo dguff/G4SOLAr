@@ -28,7 +28,7 @@ public:
   void          BuildDefalutGeoParMap();
 
   G4ThreeVector GetCathodeCenter();
-
+  virtual void  Init(const rapidjson::Value&) override; 
   void          SetVisAttributes();
 
 private:

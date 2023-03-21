@@ -109,3 +109,18 @@ void SLArDetCathode::SetVisAttributes()
 
   return;
 }
+
+void SLArDetCathode::Init(const rapidjson::Value& jconf) {
+  assert(jconf.IsObject()); 
+  auto jcathode = jconf.GetObject(); 
+
+  assert(jcathode.HasMember("dimensions")); 
+  assert(jcathode.HasMember("position")); 
+  assert(jcathode.HasMember("copyID")); 
+
+  jcathode["copyID"].GetInt(); 
+  fGeoInfo->ReadFromJSON(jcathode["position"].GetObj(), "pos"); 
+  fGeoInfo->ReadFromJSON(jcathode["dimensions"].GetArray()); 
+
+  return;
+}

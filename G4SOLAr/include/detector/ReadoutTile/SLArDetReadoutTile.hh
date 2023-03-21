@@ -59,6 +59,7 @@ public:
   SLArMaterial* GetSiPMActiveMaterial();
   SLArBaseDetModule* GetChargePixel() {return fChargePix;}
   G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+  virtual void Init(const rapidjson::Value&) override {}
   const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
   const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
 protected:

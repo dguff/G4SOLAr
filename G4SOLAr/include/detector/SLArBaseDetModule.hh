@@ -29,11 +29,13 @@ class SLArBaseDetModule
     SLArBaseDetModule(const SLArBaseDetModule &base);
     virtual ~SLArBaseDetModule();
 
-    SLArGeoInfo*         GetGeoInfo();
+    SLArGeoInfo*       GetGeoInfo();
     G4bool             ContainsGeoPar(G4String str);
     void               SetGeoPar(G4String str, G4double val);
     void               SetGeoPar(std::pair<G4String, G4double> p);
     G4double           GetGeoPar(G4String str); 
+
+    virtual void       Init(const rapidjson::Value&) {}
     
     void               SetSolidVolume(G4VSolid* sol_vol);
     G4VSolid*          GetModSV();

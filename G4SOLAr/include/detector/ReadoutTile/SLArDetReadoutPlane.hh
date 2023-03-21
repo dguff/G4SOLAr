@@ -24,7 +24,7 @@ class SLArDetReadoutPlane : public SLArBaseDetModule
     void BuildDefalutGeoParMap(); 
     void BuildReadoutPlane(SLArDetReadoutTile*); 
     SLArBaseDetModule* GetTileRow() {return fTileRow;}
-
+    virtual void Init(const rapidjson::Value&) override {}
   protected:
 
   private: 
