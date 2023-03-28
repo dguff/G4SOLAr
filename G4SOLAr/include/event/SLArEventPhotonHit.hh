@@ -26,17 +26,19 @@ class SLArEventPhotonHit : public SLArEventGenericHit
     void  SetProcess (EPhProcess p) {fProcess = p;}
     void  SetLocalPos(float x, float y, float z);
     void  SetWavelength(float w) {fWavelength = w;}
-    void  SetMegaTileIdx(int id) {fMegaTileIdx = id;}
+    void  SetMegaTileROwNr(int id) {fMegaTileRowNr = id;}
+    void  SetMegaTileNr(int id) {fMegaTileNr = id;}
     void  SetRowTileNr(int id) {fRowTileNr = id;}
     void  SetTileNr(int id) {fTileNr = id;}
     void  SetCellNr(int n) {fCellNr = n;}
     void  SetRowCellNr(int n) {fRowCellNr = n; }
-    void  SetTileInfo(int mg, int row, int tile); 
+    void  SetTileInfo(int mtrow, int mg, int row, int tile); 
 
-    int   GetMegaTileIdx() {return fMegaTileIdx;}
+    int   GetMegaTileNr() {return fMegaTileNr;}
     int   GetRowTileNr() {return fRowTileNr;}
     int   GetTileNr() {return fTileNr;}
-    int   GetTileIdx() {return (fRowTileNr+1)*100 + fTileNr;}
+    inline int GetTileIdx() {return (fRowTileNr+1)*100 + fTileNr;}
+    inline int GetMegaTileIdx() {return (fMegaTileRowNr+1)*1000 + fMegaTileNr;}
     int   GetCellNr() {return fCellNr;}
     int   GetRowCellNr() {return fRowCellNr;}
     float GetWavelength() {return fWavelength;}
@@ -46,7 +48,8 @@ class SLArEventPhotonHit : public SLArEventGenericHit
     void  DumpInfo  ();
 
   private:
-    int          fMegaTileIdx; 
+    int          fMegaTileRowNr; 
+    int          fMegaTileNr; 
     int          fRowTileNr; 
     int          fTileNr; 
     int          fRowCellNr; 

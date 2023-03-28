@@ -64,12 +64,18 @@ public:
     G4int     GetPhotonProcessId();
     G4String  GetPhotonProcessName();
 
-    void SetSuperCellIdx(G4int idx) { fSuperCellIdx= idx; }
-    G4int GetSuperCellIdx() const { return fSuperCellIdx; }
-
+    void SetSuperCellNo(G4int idx) { fSuperCellNo= idx; }
+    G4int GetSuperCellNo() const { return fSuperCellNo; }
+    void SetSuperCellRowNo(G4int n) {fSuperCellRowNo = n; }
+    G4int GetSuperCellRowNo() const {return fSuperCellRowNo;}
+    void SetSuperCellArrayNo(G4int n) {fSuperCellArrayNo = n; }
+    G4int GetSuperCellArrayNo() const {return fSuperCellArrayNo;}
     G4String GetProcessName(int kType);
+
 private:
-    G4int         fSuperCellIdx;
+    G4int         fSuperCellNo;
+    G4int         fSuperCellRowNo;
+    G4int         fSuperCellArrayNo;
     G4double      fEnergy;
     G4double      fWavelength; 
     G4double      fTime;

@@ -192,3 +192,15 @@ void SLArDetCryostat::SetVisAttributes() {
     pv->GetLogicalVolume()->SetVisAttributes(visAttributes); 
   }
 }
+
+void SLArDetCryostat::BuildMaterials(G4String material_db) {
+  for (auto &layer : fCryostatStructure) {
+    SLArMaterial* mat = new SLArMaterial; 
+    mat->SetMaterialID( layer.second->fMaterialName ); 
+    mat->BuildMaterialFromDB(material_db); 
+    layer.second->fMaterial = mat->GetMaterial(); 
+  }
+
+  return;
+}
+

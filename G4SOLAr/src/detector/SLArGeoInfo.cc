@@ -134,7 +134,7 @@ G4double SLArGeoInfo::Unit2Val(const rapidjson::Value& junit) {
   G4double vunit = 1.0; 
   assert(junit.IsString()); 
 
-  Unit2Val(junit.GetString()); 
+  vunit = Unit2Val(junit.GetString()); 
 
   return vunit; 
 }
@@ -161,10 +161,11 @@ G4double SLArGeoInfo::Unit2Val(const char* cunit) {
       vunit /= G4UIcommand::ValueOf(unit_match);  
     } else {
       //printf("Multiply %s\n", unit_match.c_str());
-      vunit *= G4UIcommand::ValueOf(unit_match); 
+      vunit *= G4UIcommand::ValueOf(unit_match);
     }
   }
 
+  printf("SLArGeoInfo::Unit2Val(%s): %g\n", cunit, vunit); 
   return vunit; 
 }
 

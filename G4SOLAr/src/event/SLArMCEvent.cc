@@ -9,49 +9,64 @@
 ClassImp(SLArMCEvent)
 
 SLArMCEvent::SLArMCEvent() : 
-  fEvNumber(0), fDirection{0, 0, 0},
-  fEvSystemTile(nullptr), fEvSystemSuperCell(nullptr)
-{
-  fEvSystemTile = new SLArEventReadoutTileSystem();
-  fEvSystemSuperCell = new SLArEventSuperCellSystem(); 
-}
+  fEvNumber(0), fDirection{0, 0, 0}
+{}
 
 SLArMCEvent::~SLArMCEvent()
 {
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
-  if (fEvSystemTile)  delete fEvSystemTile; 
-  if (fEvSystemSuperCell) delete fEvSystemSuperCell; 
+  for (auto &evAnode : fEvAnode) {
+    if (evAnode.second) delete evAnode.second;
+  }
+  fEvAnode.clear(); 
+
+  for ( auto &scArray : fEvSuperCellArray ) {
+    if (scArray.second) delete scArray.second;
+  }
+  fEvSuperCellArray.clear(); 
+
   for (auto &p : fSLArPrimary) {
     delete p; p = nullptr; 
   }
   fSLArPrimary.clear();
-  std::cerr << "SLArMCEvent DONE" << std::endl;
+  std::cerr << "~SLArMCEvent DONE" << std::endl;
 }
 
-int SLArMCEvent::ConfigReadoutTileSystem(SLArCfgSystemPix* pixSysCfg)
+int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
-  if (!fEvSystemTile) {
-    std::cout << "SLArMCEvent::ConfigReadoutTileSystem: fEvSystemTile is null!"
-              << std::endl;
-    return 0;
+  for (const auto& anode : anodeCfg) {
+    SLArEventAnode* evAnode = new SLArEventAnode(anode.second); 
+    evAnode->ConfigSystem(anode.second); 
+    fEvAnode.insert(std::make_pair(anode.first, evAnode)); 
   }
-
-  fEvSystemTile->ConfigSystem(pixSysCfg);
-  return fEvSystemTile->GetMegaTilesMap().size();
+  
+  return fEvAnode.size();
 }
 
 int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
 {
-  if (!fEvSystemSuperCell) {
-    std::cout << "SLArMCEvent::ConfigSuperCellSystem: fEvSystemSuperCell is null!"
-              << std::endl;
-    return 0;
+  for (const auto& scArray : supercellSysCfg->GetMap()) {
+    if (fEvSuperCellArray.count(scArray.first)) {
+      printf("SLArMCEvent::ConfigSuperCellSystem() WARNING: "); 
+      printf("SuperCelll array with index %i is aleady stored in the MCEvent. Skipping.\n", scArray.first);
+      continue;
+    }
+
+    SLArEventSuperCellArray* evSCArray = new SLArEventSuperCellArray(scArray.second); 
+    evSCArray->ConfigSystem(scArray.second); 
+    fEvSuperCellArray.insert(std::make_pair(scArray.first, evSCArray));
   }
 
-  fEvSystemSuperCell->ConfigSystem(supercellSysCfg);
-  return fEvSystemSuperCell->GetSuperCellMap().size();
+  return fEvSuperCellArray.size();
 }
 
+SLArEventAnode* SLArMCEvent::GetEventAnodeByID(int id) {
+  for (auto &anode : fEvAnode) {
+    if (anode.second->GetID() == id) {return anode.second;}
+  }
+
+  return nullptr;
+}
 
 int SLArMCEvent::SetEvNumber(int nEv)
 {
@@ -61,8 +76,13 @@ int SLArMCEvent::SetEvNumber(int nEv)
 
 void SLArMCEvent::Reset()
 {
-  if (fEvSystemTile ) fEvSystemTile->ResetHits();
-  if (fEvSystemSuperCell) fEvSystemSuperCell->ResetHits(); 
+  for (auto &anode : fEvAnode) {
+    if (anode.second) anode.second->ResetHits();
+  }
+
+  for (auto &scArray : fEvSuperCellArray) {
+    if (scArray.second) scArray.second->ResetHits(); 
+  }
 
   for (auto &p : fSLArPrimary) {
     delete p; p = nullptr; 

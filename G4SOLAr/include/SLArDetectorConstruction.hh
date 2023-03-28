@@ -1,7 +1,7 @@
 /**
  * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        SLArDetectorConstruction.hh
- * @created     mercoledì nov 16, 2022 09:42:24 CET
+ * @created     Wed Nov 16, 2022 09:42:24 CET
  */
 
 #ifndef SLArDetectorConstruction_h
@@ -11,8 +11,10 @@
 #include "detector/TPC/SLArDetCryostat.hh"
 #include "detector/TPC/SLArDetCathode.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
-#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
-#include "detector/ReadoutTile/SLArDetReadoutPlane.hh"
+#include "detector/SuperCell/SLArDetSuperCellArray.hh"
+#include "detector/Anode/SLArDetReadoutTile.hh"
+#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
+#include "detector/Anode/SLArDetAnodeAssembly.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -67,7 +69,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //! Build SuperCell object and place the SuperCells according to the given configuration
     void BuildAndPlaceSuperCells();
     //! Build the ReadoutTile object and the place the MegaTiles according to the given configuration
-    void BuildAndPlaceReadoutTiles();
+    void BuildAndPlaceAnode();
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
@@ -96,17 +98,23 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
+    std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
-    std::map<G4String, SLArDetReadoutPlane*> fReadoutMegaTile; 
+    std::map<int, SLArDetAnodeAssembly*> fAnodes; 
+    std::map<G4String, SLArDetReadoutTileAssembly*> fReadoutMegaTile; 
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
     
     //! Parse the description of the supercell detector system
-    void InitPDS(const rapidjson::Value&); 
+    void InitSuperCell(const rapidjson::Value&); 
+    //! Parse the description of the SC PDS
+    void InitPDS(const rapidjson::Value&);
     //! Parse the description of the ReadoutTile detector system
-    void InitPix(const rapidjson::Value&); 
+    void InitReadoutTile(const rapidjson::Value&); 
+    //! Parse the description of the ReadoutTile detector system
+    void InitAnode(const rapidjson::Value&);
     //! Parse the description of the TPC volumes
     void InitTPC(const rapidjson::Value&); 
     //! Parse the description of the cathode elements

@@ -31,16 +31,12 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     void DumpMap(); 
     TBaseModule* FindBaseElementInMap(int ibin); 
     TBaseModule* GetBaseElement(int idx); 
-    std::map<int, TBaseModule*>& GetMap() {return fElementsMap;}
-    //TH2Poly* GetTH2(); 
+    inline std::map<int, TBaseModule*>& GetMap() {return fElementsMap;}
     void RegisterElement(TBaseModule* element);
-    //void SetTH2BinIdx();
-    TH2Poly* BuildPolyBinHist(ESubModuleReferenceFrame kFrame = kWorld, int n = 25, int m = 25);
+    virtual TH2Poly* BuildPolyBinHist(ESubModuleReferenceFrame kFrame = kWorld, int n = 25, int m = 25);
     TGraph* BuildGShape() override; 
-    //void ResetH2Hits(); 
 
   protected: 
-    //TH2Poly* fH2Bins; 
     int fNElements; 
     std::map<int, TBaseModule*> fElementsMap;
 

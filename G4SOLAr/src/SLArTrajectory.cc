@@ -30,6 +30,7 @@ SLArTrajectory::SLArTrajectory()
   fParticleDefinition = nullptr;
   fEdepContainer.reserve(500);
   fNphtContainer.reserve(500); 
+  fCopyNumberContainer.reserve(500);
   fNionElectronsContainer.reserve(500); 
 }
 
@@ -48,6 +49,7 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
 
   fEdepContainer.reserve(500);
   fNphtContainer.reserve(500); 
+  fCopyNumberContainer.reserve(500);
   fNionElectronsContainer.reserve(500); 
   fParticleDefinition=aTrack->GetDefinition();
   
@@ -83,6 +85,9 @@ SLArTrajectory::SLArTrajectory(SLArTrajectory &right)
 
   fNionElectronsContainer.resize(right.fNionElectronsContainer.size() ); 
   fNionElectronsContainer.assign(right.fNionElectronsContainer.begin(), right.fNionElectronsContainer.end());
+
+  fCopyNumberContainer.resize(right.fCopyNumberContainer.size() ); 
+  fCopyNumberContainer.assign(right.fCopyNumberContainer.begin(), right.fCopyNumberContainer.end());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -91,6 +96,7 @@ SLArTrajectory::~SLArTrajectory() {
   fEdepContainer.clear();
   fNphtContainer.clear(); 
   fNionElectronsContainer.clear(); 
+  fCopyNumberContainer.clear(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,11 +112,12 @@ void SLArTrajectory::MergeTrajectory(SLArTrajectory* secondTrajectory) {
     AddEdep(secondTrajectory->GetEdep().at(i)); 
     AddOpticalPhotons(secondTrajectory->GetNphotons().at(i)); 
     AddIonizationElectrons(secondTrajectory->GetIonElectrons().at(i)); 
-  
+    AddVolCopyNumber(secondTrajectory->GetVolCopyNumumber().at(i));  
   }
   secondTrajectory->GetEdep().clear(); 
   secondTrajectory->GetNphotons().clear(); 
   secondTrajectory->GetIonElectrons().clear(); 
+  secondTrajectory->GetVolCopyNumumber().clear(); 
 
   G4Trajectory::MergeTrajectory(secondTrajectory); 
   return; 

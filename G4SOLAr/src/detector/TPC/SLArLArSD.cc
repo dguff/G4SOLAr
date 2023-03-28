@@ -6,9 +6,15 @@
 
 
 #include "SLArAnalysisManager.hh"
+#include "SLArTrackingAction.hh"
+#include "SLArRunAction.hh"
+#include "SLArTrajectory.hh"
 #include "detector/TPC/SLArLArSD.hh"
 #include "detector/TPC/SLArLArHit.hh"
+#include "physics/SLArElectronDrift.hh"
 
+#include "G4EventManager.hh"
+#include "G4RunManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
 #include "G4VPhysicalVolume.hh"
@@ -56,20 +62,39 @@ void SLArLArSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
-  //G4StepPoint* preStepPoint  = step->GetPreStepPoint();
-  //G4StepPoint* postStepPoint = step->GetPostStepPoint();
+  G4StepPoint* preStepPoint  = step->GetPreStepPoint();
+  G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
   G4double     edep          = step->GetTotalEnergyDeposit();
 
-  //G4TouchableHistory* touchable
-    //= (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
+  G4TouchableHistory* touchable
+    = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
 
   if (step->GetTrack()->GetDynamicParticle()
-      ->GetDefinition()->GetParticleName() != "opticalphoton") {
+      ->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
+
+    SLArTrackingAction* trackingAction = 
+      (SLArTrackingAction*)G4EventManager::GetEventManager()->GetUserTrackingAction(); 
+
+    SLArRunAction* runAction = 
+      (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
+
+    SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
 
     // Get hit from collection
     SLArLArHit* hit = (*fHitsCollection)[0];
+    SLArTrajectory* trajectory =
+      (SLArTrajectory*)trackingAction->GetTrackingManager()->GimmeTrajectory();
+    int n_ion = trajectory->GetIonElectrons().back();
 
+    runAction->GetElectronDrift()->Drift(n_ion, 
+        step->GetTrack()->GetTrackID(), 
+        0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
+        postStepPoint->GetGlobalTime(), 
+        anaMngr->GetAnodeCfg(touchable->GetCopyNumber(0)), 
+        anaMngr->GetEvent()->GetEventAnodeByTPCID(touchable->GetCopyNumber(0))); 
+
+    
     hit->Add(edep);
   }     
 

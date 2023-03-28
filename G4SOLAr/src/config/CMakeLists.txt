@@ -21,8 +21,8 @@ add_library(SLArReadoutSystemConfig
   ${PROJECT_SOURCE_DIR}/include/config/SLArCfgMegaTile.hh
   ${PROJECT_SOURCE_DIR}/src/config/SLArCfgBaseSystem.cc
   ${PROJECT_SOURCE_DIR}/include/config/SLArCfgBaseSystem.hh
-  ${PROJECT_SOURCE_DIR}/src/config/SLArCfgSystemPix.cc
-  ${PROJECT_SOURCE_DIR}/include/config/SLArCfgSystemPix.hh
+  ${PROJECT_SOURCE_DIR}/src/config/SLArCfgAnode.cc
+  ${PROJECT_SOURCE_DIR}/include/config/SLArCfgAnode.hh
   )
 
 target_link_libraries(SLArReadoutSystemConfig PUBLIC ${ROOT_LIBRARIES})

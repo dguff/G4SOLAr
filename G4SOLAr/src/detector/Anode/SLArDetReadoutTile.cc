@@ -5,7 +5,8 @@
  */
 
 
-#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+#include "detector/Anode/SLArDetReadoutTile.hh"
+#include "detector/SLArPlaneParameterisation.hpp"
 #include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
@@ -215,14 +216,14 @@ void SLArDetReadoutTile::BuildReadoutTile()
   G4cout << "SLArDetReadoutTile::BuildReadoutTile()" << G4endl;
   fhTot = fGeoInfo->GetGeoPar("tile_y") + fUnitCell->GetGeoPar("cell_y"); 
 
-  G4VSolid* ReadoutTile_box = new G4Box("ReadoutTile",
+  fModSV = new G4Box("ReadoutTile",
       fGeoInfo->GetGeoPar("tile_x")*0.5,
       fhTot*0.5,
       fGeoInfo->GetGeoPar("tile_z")*0.5
       );
 
   fModLV
-    = new G4LogicalVolume(ReadoutTile_box, 
+    = new G4LogicalVolume(fModSV, 
         fMatReadoutTile->GetMaterial(),
         "ReadoutTileLV",0,0,0);
 
@@ -244,8 +245,8 @@ void SLArDetReadoutTile::BuildReadoutTile()
   G4int n_z = floor(tile_z / cell_z); 
   G4int n_x = floor(tile_x / cell_x); 
 
-  SLArRTileParametrization* rowParametrization = 
-    new SLArRTileParametrization(kZAxis, 
+  SLArPlaneParameterisation* rowParametrization = 
+    new SLArPlaneParameterisation(kZAxis, 
         G4ThreeVector(0, 0, -0.5*cell_z*(n_z-1)), 
         cell_z); 
   printf("Creating a row of %i sensor cells...\n", n_z);
@@ -258,8 +259,8 @@ void SLArDetReadoutTile::BuildReadoutTile()
   
   // 4. Full sensor plane
   printf("Creating %i repilacas of rows...\n", n_x);
-  SLArRTileParametrization* tplaneParametrization = 
-    new SLArRTileParametrization(kXAxis, 
+  SLArPlaneParameterisation* tplaneParametrization = 
+    new SLArPlaneParameterisation(kXAxis, 
         G4ThreeVector(-0.5*cell_x*(n_x-1), 0, 0), 
         cell_x); 
 
@@ -289,6 +290,9 @@ void SLArDetReadoutTile::SetVisAttributes()
 
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
   fSiPM->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+  for (size_t ii=0; ii < fSiPM->GetModLV()->GetNoDaughters(); ii++) {
+    fSiPM->GetModLV()->GetDaughter(ii)->GetLogicalVolume()->SetVisAttributes( G4VisAttributes(false) ); 
+  }
 
   if (fChargePix) {
     visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
@@ -296,8 +300,15 @@ void SLArDetReadoutTile::SetVisAttributes()
   }
 
   visAttributes = new G4VisAttributes();
-  visAttributes->SetColor(0.305, 0.294, 0.345, 0.0);
-  fModLV->SetVisAttributes( visAttributes );
+  visAttributes->SetColor(0.305, 0.294, 0.345);
+  fModLV->SetVisAttributes( G4VisAttributes(false) );
+
+  for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
+    auto lv = fModLV->GetDaughter(ii)->GetLogicalVolume(); 
+    if ( std::strcmp(lv->GetName().data(), "rdtile_cell_plane_lv") == 0) {
+      lv->SetVisAttributes( visAttributes ); 
+    }
+  }
 
   return;
 }
@@ -448,27 +459,6 @@ G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
   return fSkinSurface;
 }
 
-SLArDetReadoutTile::SLArRTileParametrization::SLArRTileParametrization(
-    EAxis replica_axis, G4ThreeVector start_pos, G4double spacing) 
-  : fReplicaAxis(replica_axis), fStartPos(start_pos), fSpacing(spacing) 
-{
-
-  if      (fReplicaAxis == kXAxis) {fAxisVector = G4ThreeVector(1, 0, 0);} 
-  else if (fReplicaAxis == kYAxis) {fAxisVector = G4ThreeVector(0, 1, 0);} 
-  else                             {fAxisVector = G4ThreeVector(0, 0, 1);} 
-
-  return; 
-}
-
-void SLArDetReadoutTile::SLArRTileParametrization::ComputeTransformation(
-    G4int copyNo, G4VPhysicalVolume* physVol) const {
-  G4ThreeVector origin = fStartPos; 
-  origin += fAxisVector*(copyNo)*fSpacing; 
-
-  physVol->SetTranslation(origin); 
-  physVol->SetRotation(0); 
-  return; 
-}
 
 TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4RotationMatrix* _rot) {
   TH2Poly* h2 = new TH2Poly("h2TileChgPixMap", 
@@ -485,8 +475,8 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4Rotat
 
 
   if (tilesens_pv->IsParameterised()) {
-    auto trow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
-      tilesens_pv->GetParameterisation(); 
+    auto trow_parametrization = 
+      (SLArPlaneParameterisation*)tilesens_pv->GetParameterisation(); 
     EAxis axis_ = kUndefined; G4double offset_ = 0.; G4bool cons_;
     tilesens_pv->GetReplicationData(axis_, n_row, crow_x, offset_, cons_); 
     crow_x = trow_parametrization->GetSpacing(); 
@@ -496,8 +486,8 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4Rotat
     // getting cell_row_pv
     auto crow_pv = tilesens_pv->GetLogicalVolume()->GetDaughter(0); 
     if (crow_pv->IsParameterised()) {
-      auto crow_parametrization = (SLArDetReadoutTile::SLArRTileParametrization*)
-        crow_pv->GetParameterisation(); 
+      auto crow_parametrization = 
+        (SLArPlaneParameterisation*)crow_pv->GetParameterisation(); 
       EAxis caxis_ = kUndefined; G4double coffset_ = 0.; G4bool ccons_;
       crow_pv->GetReplicationData(caxis_, n_cell, cell_z, coffset_, ccons_); 
       cell_z = crow_parametrization->GetSpacing(); 

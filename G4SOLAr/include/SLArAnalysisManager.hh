@@ -15,7 +15,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "config/SLArCfgSystemPix.hh"
+#include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -39,7 +39,7 @@ class SLArAnalysisManager
 
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
-    G4bool LoadPixCfg         (SLArCfgSystemPix*  pixCfg );
+    G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
@@ -54,7 +54,12 @@ class SLArAnalysisManager
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
     SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
-    SLArCfgSystemPix* GetPixCfg() {return fPixSysCfg;}
+    std::map<int, SLArCfgAnode*>& GetAnodeCfg() {return fAnodeCfg;}
+    inline SLArCfgAnode* GetAnodeCfg(int id) {
+      SLArCfgAnode* anodeCfg = nullptr;
+      if ( fAnodeCfg.count(id) ) anodeCfg = fAnodeCfg[id];
+      return anodeCfg;}
+
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
@@ -78,10 +83,10 @@ class SLArAnalysisManager
 
     TFile*              fRootFile;
     TTree*              fEventTree;
-    SLArMCEvent*          fMCEvent;
+    SLArMCEvent*        fMCEvent;
 
     SLArCfgSystemSuperCell* fPDSysCfg;
-    SLArCfgSystemPix* fPixSysCfg;
+    std::map<int, SLArCfgAnode*> fAnodeCfg;
 };
 
 #endif /* end of include guard SLArANALYSISMANAGER_HH */

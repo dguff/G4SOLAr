@@ -10,7 +10,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "detector/ReadoutTile/SLArReadoutTileHit.hh"
+#include "detector/Anode/SLArReadoutTileHit.hh"
 
 class G4Step;
 class G4HCofThisEvent;

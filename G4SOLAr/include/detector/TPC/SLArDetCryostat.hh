@@ -39,6 +39,7 @@ class SLArDetCryostat : public SLArBaseDetModule {
     ~SLArDetCryostat(); 
 
     void BuildCryostat(); 
+    void BuildMaterials(G4String); 
     void BuildCryostatStructure(const rapidjson::Value& jcryo);
 
     SLArCryostatStructure& GetCryostatStructure() {return fCryostatStructure;}
