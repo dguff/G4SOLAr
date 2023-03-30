@@ -17,7 +17,7 @@
 SLArElectronDrift::SLArElectronDrift() :
   fElectricField(0.5), fLArTemperature(87.7), fMuElectron(1.), 
   fDiffCoefficientL(0.), fDiffCoefficientT(0.), 
-  fvDrift(1.0), fElectronLifetime(1e6)
+  fvDrift(1.0), fElectronLifetime(1e7)
 {}
 
 void SLArElectronDrift::ComputeProperties() {
@@ -109,9 +109,9 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
   auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
-  printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
-      n, pos.x(), pos.y(), pos.z(), time);
-  printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+  //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
+      //n, pos.x(), pos.y(), pos.z(), time);
+  //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
 
   auto mtile = anodeCfg->FindBaseElementInMap(pixID[0]); 
   if (mtile) {
@@ -126,8 +126,8 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
     G4double f_surv      = exp (-driftTime/fElectronLifetime); 
 
-    printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
-        driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+    //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
+        //driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
 
     G4int n_elec_anode = G4Poisson(n*f_surv); 
 

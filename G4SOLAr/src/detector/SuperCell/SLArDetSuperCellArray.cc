@@ -162,6 +162,7 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     if (rpars == fParameterisation.back()) {
       target = this; 
       origin = fSubModules.back();
+      origin->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
       prefix = "SC_row";
     } 
     else if (rpars == fParameterisation.front()) {

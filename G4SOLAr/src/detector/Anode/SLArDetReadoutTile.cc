@@ -96,8 +96,8 @@ void SLArDetReadoutTile::BuildPCB()
       "PCBBaseLV", 0, 0, 0)
     );
 
-  printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
-      fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
+  //printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
+      //fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
 }
 
 void SLArDetReadoutTile::BuildSiPM()
@@ -300,13 +300,13 @@ void SLArDetReadoutTile::SetVisAttributes()
   }
 
   visAttributes = new G4VisAttributes();
-  visAttributes->SetColor(0.305, 0.294, 0.345);
-  fModLV->SetVisAttributes( G4VisAttributes(false) );
+  visAttributes->SetColor(0.80, 0.80, 0.80);
+  fModLV->SetVisAttributes( visAttributes );
 
   for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
     auto lv = fModLV->GetDaughter(ii)->GetLogicalVolume(); 
     if ( std::strcmp(lv->GetName().data(), "rdtile_cell_plane_lv") == 0) {
-      lv->SetVisAttributes( visAttributes ); 
+      lv->SetVisAttributes( G4VisAttributes(false) ); 
     }
   }
 
