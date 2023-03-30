@@ -1,12 +1,12 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArReadoutTileSD
- * @created     : mercoledì ago 10, 2022 08:53:56 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArReadoutTileSD.cc
+ * @created     Wed Aug 10, 2022 08:53:56 CEST
  */
 
 
-#include "detector/ReadoutTile//SLArReadoutTileSD.hh"
-#include "detector/ReadoutTile//SLArReadoutTileHit.hh"
+#include "detector/Anode/SLArReadoutTileSD.hh"
+#include "detector/Anode/SLArReadoutTileHit.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
@@ -75,7 +75,7 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
      != G4OpticalPhoton::OpticalPhotonDefinition()) return false;
 
   G4double phEne = 0*CLHEP::eV;
-  G4StepPoint* preStepPoint  = step->GetPreStepPoint();
+  //G4StepPoint* preStepPoint  = step->GetPreStepPoint();
   G4StepPoint* postStepPoint = step->GetPostStepPoint();
   
   G4TouchableHistory* touchable
@@ -103,6 +103,8 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
     hit->SetTime(postStepPoint->GetGlobalTime());
+    hit->SetAnodeIdx(touchable->GetCopyNumber(9));
+    hit->SetRowMegaTileIdx(touchable->GetCopyNumber(8)); 
     hit->SetMegaTileIdx(touchable->GetCopyNumber(7));
     hit->SetRowTileIdx(touchable->GetCopyNumber(6));
     hit->SetTileIdx(touchable->GetCopyNumber(5));

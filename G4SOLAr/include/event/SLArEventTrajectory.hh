@@ -20,15 +20,17 @@ struct trj_point {
   float fEdep;
   int   fNph; 
   int   fNel; 
+  int   fCopy; 
 
-  trj_point() : fX(0.), fY(0.), fZ(0.), fEdep(0.), fNph(0), fNel(0) {}
-  trj_point(double x, double y, double z, double edep, int n_ph, int n_el) {
+  trj_point() : fX(0.), fY(0.), fZ(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0) {}
+  trj_point(double x, double y, double z, double edep, int n_ph = 0, int n_el = 0, int copy = 0) {
     fX = x; 
     fY = y; 
     fZ = z; 
     fEdep = edep;
     fNph = n_ph; 
     fNel = n_el; 
+    fCopy = copy;
   }
 };
 
@@ -65,7 +67,7 @@ class SLArEventTrajectory : public TObject
     void    SetTime(float t)                {fTime = t           ;}
 
     std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
-    void    RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el);
+    void    RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el, int copy);
 
 
   private:

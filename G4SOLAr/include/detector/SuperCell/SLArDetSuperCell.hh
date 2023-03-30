@@ -38,6 +38,7 @@ public:
 
   G4double GetTotalHeight();
   G4double GetSize();
+  virtual void Init(const rapidjson::Value&) override {}
 
 protected:
 

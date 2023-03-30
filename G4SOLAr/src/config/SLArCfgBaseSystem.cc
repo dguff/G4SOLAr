@@ -162,5 +162,4 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
 //}
 
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
-template class SLArCfgBaseSystem<SLArCfgMegaTile>;
 
