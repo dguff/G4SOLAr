@@ -75,6 +75,8 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  // handle exception of particles reaching the end of the world
+  if (!thePostPV) thePostPV = thePrePV;
   
   if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
     SLArTrajectory* trajectory =
