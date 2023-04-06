@@ -9,7 +9,6 @@
 #define SLARDETREADOUTTILE_HH
 
 #include "detector/SLArBaseDetModule.hh"
-#include "G4VPVParameterisation.hh"
 #include "G4LogicalSkinSurface.hh"
 
 class TH2Poly; 
@@ -59,6 +58,7 @@ public:
   SLArMaterial* GetSiPMActiveMaterial();
   SLArBaseDetModule* GetChargePixel() {return fChargePix;}
   G4LogicalSkinSurface* GetSiPMLgSkin() {return fSkinSurface;}
+  virtual void Init(const rapidjson::Value&) override {}
   const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
   const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
 protected:
@@ -88,25 +88,6 @@ private:
   friend class SLArDetReadoutPlane;
 
 public: 
-  class SLArRTileParametrization : public G4VPVParameterisation {
-    public: 
-      SLArRTileParametrization(EAxis, G4ThreeVector, G4double);
-
-      void ComputeTransformation(G4int copyNo, G4VPhysicalVolume* physVol) const; 
-
-      EAxis GetReplicationAxis() {return fReplicaAxis;}
-      G4ThreeVector GetReplicationAxisVector() {return fAxisVector;}
-      G4double GetSpacing() {return fSpacing;}
-      G4ThreeVector GetStartPos() {return fStartPos;}
-
-
-    private: 
-      EAxis fReplicaAxis; 
-      G4ThreeVector fAxisVector; 
-      G4ThreeVector fStartPos; 
-      G4double  fSpacing; 
-
-  };
 };
 
 inline SLArDetReadoutTile::SUnitCellComponent::SUnitCellComponent(

@@ -8,6 +8,7 @@
 #include "TPRegexp.h"
 #include "TList.h"
 
+#include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgReadoutTile.hh"
 #include "config/SLArCfgSuperCell.hh"
 #include "config/SLArCfgAssembly.hh"
@@ -92,6 +93,7 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
     int n, int m)
 {
   TH2Poly* h2Bins = new TH2Poly();
+  
   h2Bins->SetName(fName+"_bins");
 
   h2Bins->SetFloat();
@@ -99,12 +101,17 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
   int iBin = 1;
   for (auto &el : fElementsMap) 
   {
+    //printf("el position (global): %g, %g, %g \n", 
+        //el.second->GetPhysX(), el.second->GetPhysY(), el.second->GetPhysZ());
     TGraph* g = el.second->BuildGShape(); 
     if (kFrame == kRelative) {
       for (int i=0; i<g->GetN(); i++) {
-        g->GetX()[i] -= fZ; 
-        g->GetY()[i] -= fY; 
+        //printf("(%g, %g) -> ", g->GetX()[i], g->GetY()[i]);
+        g->GetX()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis0 ); 
+        g->GetY()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis1 ); 
+        //printf("(%g, %g)\n", g->GetX()[i], g->GetY()[i]);
       }
+      //getchar(); 
     }
     TString gBinName = Form("gBin%i", iBin);
     int bin_idx = h2Bins->AddBin(
@@ -144,33 +151,11 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
 
 template<class TBaseModule>
 TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
-  //if (!fH2Bins) BuildPolyBinHist(); 
 
   double x_min =  1e10;
   double x_max = -1e10; 
   double y_min =  1e10; 
   double y_max = -1e10; 
-
-/*
- *  auto list_bins = fH2Bins->GetBins(); 
- *  for (const auto &bin_ : *list_bins) {
- *    TH2PolyBin* bin = static_cast<TH2PolyBin*>(bin_); 
- *    TGraph* gbin = static_cast<TGraph*>(bin->GetPolygon()); 
- *    double* x = gbin->GetX(); 
- *    double* y = gbin->GetY(); 
- *    int n = gbin->GetN(); 
- *    double x_min_bin = *std::min_element(x, x+n);
- *    double x_max_bin = *std::max_element(x, x+n); 
- *    double y_min_bin = *std::min_element(y, y+n); 
- *    double y_max_bin = *std::max_element(y, y+n); 
- *
- *    if (x_min_bin < x_min) x_min = x_min_bin; 
- *    if (x_max_bin > x_max) x_max = x_max_bin; 
- *    if (y_min_bin < y_min) y_min = y_min_bin; 
- *    if (y_max_bin > y_max) y_max = y_max_bin;  
- *  }
- *
- */
 
   for (const auto &el : fElementsMap) {
     TGraph* gbin = el.second->BuildGShape(); 
@@ -189,8 +174,6 @@ TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
 
     delete gbin; 
   }
-
-
 
   TGraph* g = new TGraph(5); 
   g->SetPoint(0, x_min, y_min); 
@@ -217,13 +200,7 @@ TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin)
   return module_cfg;
 }
 
-/*
- *template<class TBaseModule> 
- *void SLArCfgAssembly<TBaseModule>::ResetH2Hits()
- *{
- *  if (fH2Bins) fH2Bins->Reset("ices");  
- *}
- */
 
 template class SLArCfgAssembly<SLArCfgSuperCell>; 
 template class SLArCfgAssembly<SLArCfgReadoutTile>;
+template class SLArCfgAssembly<SLArCfgMegaTile>;

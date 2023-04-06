@@ -1,16 +1,20 @@
 /**
  * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        SLArDetectorConstruction.hh
- * @created     mercoledì nov 16, 2022 09:42:24 CET
+ * @created     Wed Nov 16, 2022 09:42:24 CET
  */
 
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
 #include "detector/TPC/SLArDetTPC.hh"
+#include "detector/TPC/SLArDetCryostat.hh"
+#include "detector/TPC/SLArDetCathode.hh"
 #include "detector/SuperCell/SLArDetSuperCell.hh"
-#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
-#include "detector/ReadoutTile/SLArDetReadoutPlane.hh"
+#include "detector/SuperCell/SLArDetSuperCellArray.hh"
+#include "detector/Anode/SLArDetReadoutTile.hh"
+#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
+#include "detector/Anode/SLArDetAnodeAssembly.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -38,59 +42,43 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
   friend class SLArAnalysisManagerMsgr;
 
   public:
-    /**
-     * @brief Constructor
-     */
+    //! Constructor
     SLArDetectorConstruction(G4String, G4String);
-    /**
-     * @brief Destructor
-     */
+    //! Destructor
     virtual ~SLArDetectorConstruction();
 
   public:
-    /**
-     * @brief Construct world and place detectors
-     */
+    
+    //! Construct world and place detectors
     virtual G4VPhysicalVolume* Construct();
-    /**
-     * @brief Construct Sensitive Detectors and cryostat scorers
-     */
+    //! Construct Target
+    void ConstructTarget(); 
+    //! Construct Cathode
+    void ConstructCathode();
+    //! Construct Cryostat
+    void ConstructCryostat(); 
+    //! Construct Sensitive Detectors and cryostat scorers
     virtual void ConstructSDandField();
-    /**
-     * @brief Construct virtual pixelization of the anode readout system
-     */
+    //! Construct virtual pixelization of the anode readout system
     void ConstructAnodeMap(); 
-    /**
-     * @brief Return SLArDetectorConstruction::fTPC object
-     */
-    SLArDetTPC* GetDetTPC();
-    /**
-     * @brief Build SuperCell object and place the SuperCells according to the
-     * given configuration
-     */
+    //! Return SLArDetectorConstruction::fTPCs map
+    std::map<G4int, SLArDetTPC*>& GetDetTPCs();
+    //! Return TPC with given id
+    SLArDetTPC* GetDetTPC(G4int tpcid);
+
+    //! Build SuperCell object and place the SuperCells according to the given configuration
     void BuildAndPlaceSuperCells();
-    /**
-     * @brief Build the ReadoutTile object and the place the MegaTiles 
-     * according to the given configuration
-     */
-    void BuildAndPlaceReadoutTiles();
-    /**
-     * @brief Get the World's logical volume
-     */
+    //! Build the ReadoutTile object and the place the MegaTiles according to the given configuration
+    void BuildAndPlaceAnode();
+    //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
-    /**
-     * @brief  Return the geometry configuration file
-     */
+    //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
-    /**
-     * @brief  Return the material configuration file
-     */
+    //!  Return the material configuration file
     G4String                        GetMaterialCfgFile() {return fMaterialDBFile;}
     void                            DumpSuperCellMap(G4String path = "");
-    /**
-     * @brief Construct scorers in the cryostat layers for neutron shielding studies
-     */
+    //! Construct scorers in the cryostat layers for neutron shielding studies
     void                            ConstructCryostatScorer(); 
 
   private:
@@ -103,21 +91,34 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::vector<G4VisAttributes*>   fVisAttributes; 
 
     //! TPC detector object (cryostat + LAr target)
-    SLArDetTPC* fTPC;
+    SLArBaseDetModule* fDetector;
+    SLArDetCryostat* fCryostat; 
+    std::map<int, SLArDetTPC*> fTPC;
+    std::map<int, SLArDetCathode*> fCathode; 
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
+    std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
-    std::map<G4String, SLArDetReadoutPlane*> fReadoutMegaTile; 
+    std::map<int, SLArDetAnodeAssembly*> fAnodes; 
+    std::map<G4String, SLArDetReadoutTileAssembly*> fReadoutMegaTile; 
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
     
     //! Parse the description of the supercell detector system
-    void InitPDS(const rapidjson::Value&); 
+    void InitSuperCell(const rapidjson::Value&); 
+    //! Parse the description of the SC PDS
+    void InitPDS(const rapidjson::Value&);
     //! Parse the description of the ReadoutTile detector system
-    void InitPix(const rapidjson::Value&); 
+    void InitReadoutTile(const rapidjson::Value&); 
+    //! Parse the description of the ReadoutTile detector system
+    void InitAnode(const rapidjson::Value&);
+    //! Parse the description of the TPC volumes
+    void InitTPC(const rapidjson::Value&); 
+    //! Parse the description of the cathode elements
+    void InitCathode(const rapidjson::Value&); 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -1,11 +1,12 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArDetReadoutPlane
- * @created     : lunedì lug 18, 2022 11:10:23 CEST
+ * @file        : SLArDetReadoutTileAssembly.cc
+ * @created     : Mon Jul 18, 2022 11:10:23 CEST
  */
 
-#include "detector/ReadoutTile/SLArDetReadoutPlane.hh"
-#include "detector/ReadoutTile/SLArDetReadoutTile.hh"
+#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
+#include "detector/Anode/SLArDetReadoutTile.hh"
+#include "detector/SLArPlaneParameterisation.hpp"
 
 #include "G4VSolid.hh"
 #include "G4Box.hh"
@@ -20,37 +21,37 @@
 #include "G4VisAttributes.hh"
 #include "G4MaterialPropertyVector.hh"
 
-SLArDetReadoutPlane::SLArDetReadoutPlane() 
+SLArDetReadoutTileAssembly::SLArDetReadoutTileAssembly() 
   : SLArBaseDetModule(), fMatReadoutPlane(nullptr), fTileRow(nullptr)
 {
   fGeoInfo = new SLArGeoInfo();  
 }
 
-SLArDetReadoutPlane::SLArDetReadoutPlane(const SLArDetReadoutPlane& detReadoutPlane) 
+SLArDetReadoutTileAssembly::SLArDetReadoutTileAssembly(const SLArDetReadoutTileAssembly& detReadoutPlane) 
   : SLArBaseDetModule(detReadoutPlane), fMatReadoutPlane(nullptr), fTileRow(nullptr) 
 {
   fMatReadoutPlane = new SLArMaterial(*detReadoutPlane.fMatReadoutPlane);
 }
 
-SLArDetReadoutPlane::~SLArDetReadoutPlane()
+SLArDetReadoutTileAssembly::~SLArDetReadoutTileAssembly()
 {}
 
-void SLArDetReadoutPlane::BuildDefalutGeoParMap() 
+void SLArDetReadoutTileAssembly::BuildDefalutGeoParMap() 
 {
-  G4cout  << "SLArDetReadoutPlane::BuildGeoParMap()" << G4endl;
+  G4cout  << "SLArDetReadoutTileAssembly::BuildGeoParMap()" << G4endl;
   
   fGeoInfo->RegisterGeoPar("rdoutplane_z"   ,  1.0*CLHEP::m);
   fGeoInfo->RegisterGeoPar("rdoutplane_x"   ,  2.0*CLHEP::m);
 }
 
-void SLArDetReadoutPlane::BuildMaterial(G4String materials_db)
+void SLArDetReadoutTileAssembly::BuildMaterial(G4String materials_db)
 {
   fMatReadoutPlane = new SLArMaterial(); 
   fMatReadoutPlane->SetMaterialID("LAr");
   fMatReadoutPlane->BuildMaterialFromDB(materials_db);
 }
 
-void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
+void SLArDetReadoutTileAssembly::BuildTileRow(SLArDetReadoutTile* tile) {
   fTileRow = new SLArBaseDetModule();
   fTileRow->SetMaterial(fMatReadoutPlane->GetMaterial());
   G4double tile_x  = tile->GetGeoPar("tile_x"); 
@@ -71,8 +72,8 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
       );
   fTileRow->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
 
-  SLArMTileParametrization* rowTileParametrization = 
-    new SLArMTileParametrization(
+  SLArPlaneParameterisation* rowTileParametrization = 
+    new SLArPlaneParameterisation(
       kZAxis, G4ThreeVector(0, 0, -0.5*(true_plane_z-tile_z)), tile_z);
   
   fTileRow->SetModPV(
@@ -85,7 +86,7 @@ void SLArDetReadoutPlane::BuildTileRow(SLArDetReadoutTile* tile) {
   fTileRow->SetGeoPar("tilerow_z", true_plane_z);
 }
 
-void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile) 
+void SLArDetReadoutTileAssembly::BuildReadoutPlane(SLArDetReadoutTile* tile) 
 {
   G4double tile_x  = tile->GetGeoPar("tile_x"); 
   G4double tile_y  = tile->GetGeoPar("tile_y") + tile->GetUnitCell()->GetGeoPar("cell_y");
@@ -102,14 +103,14 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
   
   BuildTileRow(tile);
 
-  G4VSolid* ReadoutPlane_box = new G4Box("ReadoutPlane_box", 
+  fModSV = new G4Box("ReadoutPlane_box", 
       true_plane_x*0.5, plane_y*0.5, true_plane_z*0.5);
-  fModLV = new G4LogicalVolume(ReadoutPlane_box, 
+  fModLV = new G4LogicalVolume(fModSV, 
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
   fModLV->SetVisAttributes( G4VisAttributes(false) ); 
   
-  SLArMTileParametrization* planeParametrization = 
-    new SLArMTileParametrization(
+  SLArPlaneParameterisation* planeParametrization = 
+    new SLArPlaneParameterisation(
         kXAxis, G4ThreeVector(-0.5*(true_plane_x-tile_x), 0., 0.), tile_x); 
 
 
@@ -122,26 +123,6 @@ void SLArDetReadoutPlane::BuildReadoutPlane(SLArDetReadoutTile* tile)
 
 
 
-SLArDetReadoutPlane::SLArMTileParametrization::SLArMTileParametrization(
-    EAxis replica_axis, G4ThreeVector start_pos, G4double spacing) 
-  : fReplicaAxis(replica_axis), fStartPos(start_pos), fSpacing(spacing)
-{
-  if      (fReplicaAxis == kXAxis) {fAxisVector = G4ThreeVector(1, 0, 0);} 
-  else if (fReplicaAxis == kYAxis) {fAxisVector = G4ThreeVector(0, 1, 0);} 
-  else                             {fAxisVector = G4ThreeVector(0, 0, 1);} 
-
-  return; 
-}
-
-void SLArDetReadoutPlane::SLArMTileParametrization::ComputeTransformation(
-    G4int copyNo, G4VPhysicalVolume* physVol) const {
-  G4ThreeVector origin = fStartPos; 
-  origin += fAxisVector*(copyNo)*fSpacing; 
-
-  physVol->SetTranslation(origin); 
-  physVol->SetRotation(0); 
-  return; 
-}
 
 
 

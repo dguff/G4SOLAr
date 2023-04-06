@@ -1,19 +1,20 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventReadoutTileSystem
+ * @file        : SLArEventAnode.cc
  * @created     : mercoledì ago 10, 2022 14:39:21 CEST
  */
 
-#include "event/SLArEventReadoutTileSystem.hh"
+#include "event/SLArEventAnode.hh"
 
-ClassImp(SLArEventReadoutTileSystem)
+ClassImp(SLArEventAnode)
 
-SLArEventReadoutTileSystem::SLArEventReadoutTileSystem()
-  : fNhits(0), fIsActive(true) {}
+SLArEventAnode::SLArEventAnode()
+  : fID(0), fNhits(0), fIsActive(true) {}
 
-SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(const SLArEventReadoutTileSystem& right) 
+SLArEventAnode::SLArEventAnode(const SLArEventAnode& right) 
   : TNamed(right) 
 {
+  fID = right.fID; 
   fNhits = right.fNhits;
   fIsActive = right.fIsActive; 
   for (const auto &mgev : right.fMegaTilesMap) {
@@ -23,21 +24,22 @@ SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(const SLArEventReadoutTil
   }
 }
 
-SLArEventReadoutTileSystem::SLArEventReadoutTileSystem(SLArCfgSystemPix* cfg) {
+SLArEventAnode::SLArEventAnode(SLArCfgAnode* cfg) {
   SetName(cfg->GetName()); 
   ConfigSystem(cfg); 
   return;
 }
 
-SLArEventReadoutTileSystem::~SLArEventReadoutTileSystem() {
+SLArEventAnode::~SLArEventAnode() {
   for (auto &mgtile : fMegaTilesMap) {
     delete mgtile.second; mgtile.second = nullptr;
   }
   fMegaTilesMap.clear(); 
 }
 
-int SLArEventReadoutTileSystem::ConfigSystem(SLArCfgSystemPix* cfg) {
+int SLArEventAnode::ConfigSystem(SLArCfgAnode* cfg) {
   int imegatile = 0; 
+  fID = cfg->GetIdx(); 
   for (const auto &mtcfg : cfg->GetMap()) {
     int megatile_idx = mtcfg.second->GetIdx(); 
     if (fMegaTilesMap.count(megatile_idx) == 0) {
@@ -48,24 +50,23 @@ int SLArEventReadoutTileSystem::ConfigSystem(SLArCfgSystemPix* cfg) {
       imegatile++;
     }
   }
-
   return imegatile;
 }
 
-int SLArEventReadoutTileSystem::RegisterHit(SLArEventPhotonHit* hit) {
+int SLArEventAnode::RegisterHit(SLArEventPhotonHit* hit) {
   int mgtile_idx = hit->GetMegaTileIdx(); 
   if (fMegaTilesMap.count(mgtile_idx)) {
     fMegaTilesMap.find(mgtile_idx)->second->RegisterHit(hit);
     fNhits++;
     return 1; 
   } else {
-    printf("SLArEventReadoutTileSystem::RegisterHit WARNING\n"); 
+    printf("SLArEventAnode::RegisterHit WARNING\n"); 
     printf("Megatile with ID %i is not in store\n", mgtile_idx); 
     return 0; 
   }
 }
 
-int SLArEventReadoutTileSystem::ResetHits() {
+int SLArEventAnode::ResetHits() {
   int nn = 0; 
   for (auto &mgtile : fMegaTilesMap) {
     nn += mgtile.second->ResetHits(); 
@@ -73,14 +74,14 @@ int SLArEventReadoutTileSystem::ResetHits() {
   return nn; 
 }
 
-void SLArEventReadoutTileSystem::SetActive(bool is_active) {
+void SLArEventAnode::SetActive(bool is_active) {
   fIsActive = is_active; 
   for (auto &mgtile : fMegaTilesMap) {
     mgtile.second->SetActive(is_active); 
   }
 }
 
-bool SLArEventReadoutTileSystem::SortHits() {
+bool SLArEventAnode::SortHits() {
   int isort = true;
   for (auto &mgtile : fMegaTilesMap) {
     isort *= mgtile.second->SortHits(); 

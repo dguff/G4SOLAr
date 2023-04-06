@@ -4,7 +4,7 @@
  * @created     : mercoledì ago 10, 2022 08:58:05 CEST
  */
 
-#include "detector/ReadoutTile/SLArReadoutTileHit.hh"
+#include "detector/Anode/SLArReadoutTileHit.hh"
 
 #include "G4VVisManager.hh"
 #include "G4VisAttributes.hh"
@@ -24,7 +24,7 @@ G4ThreadLocal G4Allocator<SLArReadoutTileHit>* SLArReadoutTileHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArReadoutTileHit::SLArReadoutTileHit()
-: G4VHit(), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
+: G4VHit(), fAnodeIdx(0), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
   fRowCellNr(0), fCellNr(0),
   fWavelength(-1), fTime(0.), fPhType(-1),
   fLocalPos(0), fWorldPos(0) 
@@ -33,7 +33,7 @@ SLArReadoutTileHit::SLArReadoutTileHit()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArReadoutTileHit::SLArReadoutTileHit(G4double z)
-: G4VHit(), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
+: G4VHit(), fAnodeIdx(0), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
   fRowCellNr(0), fCellNr(0),
   fWavelength(z), fTime(0.), fPhType(-1),
   fLocalPos(0), fWorldPos(0) 
@@ -52,6 +52,7 @@ SLArReadoutTileHit::SLArReadoutTileHit(const SLArReadoutTileHit &right)
     fWorldPos   = right.fWorldPos;
     fLocalPos   = right.fLocalPos;
     fTime       = right.fTime;
+    fAnodeIdx   = right.fAnodeIdx;
     fMegaTileIdx= right.fMegaTileIdx;
     fRowTileIdx = right.fRowTileIdx; 
     fTileIdx    = right.fTileIdx; 
@@ -68,6 +69,7 @@ const SLArReadoutTileHit& SLArReadoutTileHit::operator=(const SLArReadoutTileHit
     fWorldPos     = right.fWorldPos;
     fLocalPos     = right.fLocalPos;
     fTime         = right.fTime;
+    fAnodeIdx     = right.fAnodeIdx;
     fMegaTileIdx  = right.fMegaTileIdx;
     fRowTileIdx   = right.fRowTileIdx; 
     fTileIdx      = right.fTileIdx; 
@@ -122,6 +124,9 @@ const std::map<G4String,G4AttDef>* SLArReadoutTileHit::GetAttDefs() const
         (*store)["Pos"] 
           = G4AttDef("Pos", "Position", "Physics","G4BestUnit","G4ThreeVector");
     
+        (*store)["AnodeIdx"] 
+          = G4AttDef("AnodeIdx","Position","Physics","","G4int");
+
         (*store)["MegaTileIdx"] 
           = G4AttDef("MegatileIdx","Position","Physics","","G4int");
 
@@ -158,6 +163,8 @@ std::vector<G4AttValue>* SLArReadoutTileHit::CreateAttValues() const
     values
       ->push_back(G4AttValue("Pos", G4BestUnit(fWorldPos,"Length"),""));
     values
+      ->push_back(G4AttValue("AnodeIdx", G4UIcommand::ConvertToString(fAnodeIdx), ""));
+    values
       ->push_back(G4AttValue("MegaTileIdx", G4UIcommand::ConvertToString(fMegaTileIdx), ""));
     values
       ->push_back(G4AttValue("RowTileNr", G4UIcommand::ConvertToString(fRowTileIdx), ""));
@@ -179,7 +186,7 @@ std::vector<G4AttValue>* SLArReadoutTileHit::CreateAttValues() const
 void SLArReadoutTileHit::Print()
 {
 
-    G4cout << " Tile: "<<fMegaTileIdx<<"/"<<fRowTileIdx<<"/"<<fTileIdx<< "\n"
+    G4cout << " Tile: "<<fAnodeIdx<<"/"<<fMegaTileIdx<<"/"<<fRowTileIdx<<"/"<<fTileIdx<< "\n"
            << GetPhotonProcessName()
            << " Ph wavelength" << fWavelength << "[nm]"
            << " : time "         << fTime/CLHEP::ns << " (nsec)"

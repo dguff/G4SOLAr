@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCfgBaseSystem.hh
- * @created     : martedì lug 19, 2022 12:56:56 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArCfgBaseSystem.hh
+ * @created     Tue Jul 19, 2022 12:56:56 CEST
  */
 
 #ifndef SLARCFGBASESYSTEM_HH
@@ -27,24 +27,20 @@ class SLArCfgBaseSystem : public SLArCfgBaseModule
     SLArCfgBaseSystem(TString name);
     ~SLArCfgBaseSystem();
 
-    TH2Poly* BuildPolyBinHist(); 
+    virtual TH2Poly* BuildPolyBinHist(); 
     void DumpMap();
     TAssemblyModule* GetBaseElement(int idx); 
     TAssemblyModule* GetBaseElement(const char* name);
     TAssemblyModule* FindBaseElementInMap(int ibin); 
     std::map<int, TAssemblyModule*>& GetMap() {return fElementsMap;}
-    //TH2Poly* GetTH2() {return fH2Bins;}
-    //void SetTH2BinIdx();
     void RegisterElement(TAssemblyModule* mod); 
-    //void ResetH2Hits(); 
 
   protected:
-    //TH2Poly* fH2Bins; 
     int fNElements; 
     std::map<int, TAssemblyModule*> fElementsMap;
 
   public:
-    ClassDefOverride(SLArCfgBaseSystem, 2);
+    ClassDefOverride(SLArCfgBaseSystem, 1);
 };
 
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArCfgSystemSuperCell; 

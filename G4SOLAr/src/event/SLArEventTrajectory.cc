@@ -45,12 +45,14 @@ SLArEventTrajectory::~SLArEventTrajectory()
   fTrjPoints.clear();
 }
 
-void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el)
+void SLArEventTrajectory::RegisterPoint(const trj_point& point) {
+  fTrjPoints.push_back( point ); 
+  return; 
+}
+
+void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el, int copy)
 {
-  fTrjPoints.push_back( trj_point(x, y, z, edep, n_ph, n_el) );
-  fTotalEdep+=edep; 
-  fTotalNph +=n_ph; 
-  fTotalNel +=n_el; 
+  fTrjPoints.push_back( trj_point(x, y, z, edep, n_ph, n_el, copy) );
   return;
 }
 

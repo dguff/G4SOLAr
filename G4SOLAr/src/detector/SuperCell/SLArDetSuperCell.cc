@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArDetSupperCell
- * @created     : martedì mag 24, 2022 11:54:17 CEST
+ * @file        : SLArDetSupperCell.cc
+ * @created     : Tue May 24, 2022 11:54:17 CEST
  */
 
 #include "detector/SuperCell/SLArDetSuperCell.hh"
@@ -46,7 +46,6 @@ SLArDetSuperCell::SLArDetSuperCell(const SLArDetSuperCell &detSuperCell)
 
 SLArDetSuperCell::~SLArDetSuperCell() {
   G4cerr << "Deleting SLArDetSuperCell... " <<  G4endl;
-
   if (fLightGuide)   {delete fLightGuide; fLightGuide = 0;}
   if (fCoating)      {delete fCoating; fCoating = 0;}
   if (fMatSuperCell) {delete fMatSuperCell; fMatSuperCell = 0;}
@@ -135,7 +134,7 @@ void SLArDetSuperCell::BuildSuperCell()
   fhTot = fGeoInfo->GetGeoPar("cell_y") 
     + fGeoInfo->GetGeoPar("coating_y");
 
-  G4VSolid* SuperCell_box = new G4Box("SuperCell",
+  fModSV = new G4Box("SuperCell",
       fGeoInfo->GetGeoPar("cell_x")*0.5,
       fhTot,
       fGeoInfo->GetGeoPar("cell_z")*0.5
@@ -143,7 +142,7 @@ void SLArDetSuperCell::BuildSuperCell()
 
 
   fModLV
-    = new G4LogicalVolume(SuperCell_box, 
+    = new G4LogicalVolume(fModSV, 
         fMatSuperCell->GetMaterial(),
         "SuperCellLV",0,0,0);
 
@@ -257,7 +256,7 @@ void SLArDetSuperCell::BuildMaterial(G4String materials_db)
 G4LogicalSkinSurface* SLArDetSuperCell::BuildLogicalSkinSurface() {
   fSkinSurface = 
     new G4LogicalSkinSurface(
-        "SiPM_LgSkin", 
+        "PTP_LgSkin", 
         fCoating->GetModLV(), 
         fMatCoating->GetMaterialOpticalSurf());
 
