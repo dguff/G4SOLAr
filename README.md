@@ -1,8 +1,8 @@
 
-# ENUDet
+# G4SOLAr
 
-**ENUDet** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
-for studying beam events in the context of the ENUBET experiment. 
+**G4SOLAr** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
+for studying low-energy events in the context of the SOLAr project.
 
 ## Disclaimer
 This code has never been properly tested, but there are some reasonable 
@@ -45,7 +45,6 @@ such as the [CERN computing environment](#installing-SOLAr-sim-on-cern-lxplus).
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
-$ git checkout enudet
 ```
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
@@ -74,11 +73,10 @@ Note that the geant4 version installed on `dunegpvm` nodes is compiled
 against an independent installation of `CLHEP`, so one has to specify the 
 `CLHEP` include directory when calling `cmake`.
 
-### Installing ENUDet on a generic machine
+### Installing G4SOLAr on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
 $ git clone https://github.com/dguff/G4SOLAr.git
-$ git checkout enudet
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
@@ -174,7 +172,7 @@ PDS event object.
 | **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
 
 
-### ENUDet Event Dictionaries
+### G4SOLAr Event Dictionaries
 
 To be able to access the event information in an interactive ROOT session, 
 one should load the shared libraries defining the event and configuration 
