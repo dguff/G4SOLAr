@@ -14,6 +14,7 @@
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TRandom3.h"
+#include "TDatabasePDG.h"
 
 #include "event/SLArMCEvent.hh"
 #include "config/SLArCfgAnode.hh"
@@ -24,7 +25,7 @@ void refactor_test_sc()
 {
   gStyle->SetPalette(kBlackBody); 
   TColor::InvertPalette(); 
-  TFile* mc_file = new TFile("../install/electrons.root"); 
+  TFile* mc_file = new TFile("../install/high_energy.root"); 
   TTree* mc_tree = (TTree*)mc_file->Get("EventTree"); 
 
   //- - - - - - - - - - - - - - - - - - - - - - Access readout configuration
@@ -75,7 +76,7 @@ void refactor_test_sc()
   //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
   mc_tree->SetBranchAddress("MCEvent", &ev); 
-  mc_tree->GetEntry(0); 
+  mc_tree->GetEntry(1); 
 
   auto primaries = ev->GetPrimaries(); 
 
@@ -114,24 +115,48 @@ void refactor_test_sc()
       ht->Draw("col same"); 
     }
 
+    auto pdg = TDatabasePDG::Instance(); 
+
     for (const auto &p : primaries) {
       auto trajectories = p->GetTrajectories(); 
       for (const auto &t : trajectories) {
         auto points = t->GetPoints(); 
+        auto pdg_particle = pdg->GetParticle(t->GetPDGID()); 
+        printf("%s [%i]: K = %.2f - n_scint = %g, n_elec = %g\n", 
+            t->GetParticleName().Data(), t->GetTrackID(), t->GetInitKineticEne(), 
+            t->GetTotalNph(), t->GetTotalNph());
+        if (t->GetInitKineticEne() < 1) continue;
         TGraph g; 
+        Color_t col = kBlack; 
+        TString name = ""; 
+
+        if (!pdg_particle) {
+          col = kBlack; 
+          name = Form("g_%i_trk%i", t->GetPDGID(), t->GetTrackID()); 
+        }
+        else {
+          if (pdg_particle == pdg->GetParticle(22)) continue;
+          else if (pdg_particle == pdg->GetParticle( 11)) col = kCyan-6;
+          else if (pdg_particle == pdg->GetParticle(-11)) col = kRed-7;
+          else if (pdg_particle == pdg->GetParticle(2212)) col = kRed; 
+          else if (pdg_particle == pdg->GetParticle(2112)) col = kBlue;
+          else if (pdg_particle == pdg->GetParticle(-211)) col = kOrange+7; 
+          else if (pdg_particle == pdg->GetParticle( 211)) col = kViolet-2; 
+          else if (pdg_particle == pdg->GetParticle( 111)) col = kGreen; 
+          else    col = kGray+2;
+          name = Form("g_%s_trk_%i", pdg_particle->GetName(), t->GetTrackID()); 
+        }
+        
         for (const auto &pt : points) {
           if (pt.fCopy == tpc_id) g.AddPoint( 
               TVector3(pt.fX, pt.fY, pt.fZ).Dot( AnodeSysCfg[tpc_id]->GetAxis0()), 
               TVector3(pt.fX, pt.fY, pt.fZ).Dot( AnodeSysCfg[tpc_id]->GetAxis1()) );
         }
 
-        if (g.GetN() > 0) {
-          if (t->GetParticleName() == "e-") g.SetLineColor(kBlack); 
-          else if (t->GetParticleName() == "gamma") g.SetLineColor(kYellow);
-          else g.SetLineColor(kGray+1);
-          g.SetLineWidth(2); 
-          g.DrawClone("l");
-        }
+        g.SetName(name); 
+        g.SetLineColor(col); 
+        g.SetLineWidth(2);
+        if (g.GetN() > 2) g.DrawClone("l");
       }
     }
 
