@@ -65,9 +65,13 @@ class SLArEventTrajectory : public TObject
     void    SetTrackLength (float l)        {fTrackLength = l    ;}
     void    SetInitMomentum(TVector3 p)     {fInitMomentum = p   ;}
     void    SetTime(float t)                {fTime = t           ;}
+    void    IncrementEdep(double edep)      {fTotalEdep += edep  ;}
+    void    IncrementNion(int nion)         {fTotalNel += nion   ;}
+    void    IncrementNph(int nph)           {fTotalNph += nph    ;}
 
     std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
     void    RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el, int copy);
+    void    RegisterPoint(const trj_point& point); 
 
 
   private:

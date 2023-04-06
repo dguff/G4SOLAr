@@ -265,6 +265,19 @@
         ]}, 
         {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
         {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  
+        {"property" : "DEUTERONSCINTILLATIONYIELD",  "value" : [
+          {"var" : "Energy", "unit" : "MeV", "val" : [0.0, 10.0e3]},  
+          {"var" : "Yield", "val" : [3.84, 1.92e8]} 
+        ]}, 
+        {"property" : "DEUTERONSCINTILLATIONYIELD1", "value" : 0.71},  
+        {"property" : "DEUTERONSCINTILLATIONYIELD2", "value" : 0.29},  
+        {"property" : "TRITONSCINTILLATIONYIELD",  "value" : [
+          {"var" : "Energy", "unit" : "MeV", "val" : [0.0, 10.0e3]},  
+          {"var" : "Yield", "val" : [3.84, 1.92e8]} 
+        ]}, 
+        {"property" : "TRITONSCINTILLATIONYIELD1", "value" : 0.71},  
+        {"property" : "TRITONSCINTILLATIONYIELD2", "value" : 0.29},  
+
         {"property" : "IONSCINTILLATIONYIELD", "value" : [
           {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 10e3]},  
           {"var" : "Yield", "val" : [3.36, 1.68e8]}

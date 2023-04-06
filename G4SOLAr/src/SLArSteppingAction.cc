@@ -30,6 +30,7 @@
 #include "SLArScintillation.h"
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
+#include "SLArUserTrackInformation.hh"
 #include "SLArTrajectory.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
@@ -75,13 +76,14 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  // handle exception of particles reaching the end of the world
+  if (!thePostPV) thePostPV = thePrePV;
   
   if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
-    SLArTrajectory* trajectory =
-      (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
+    auto trkInfo = (SLArUserTrackInformation*)track->GetUserInformation(); 
+    auto trajectory = trkInfo->GimmeEvTrajectory();
     double edep = step->GetTotalEnergyDeposit();
     auto stepMngr = fTrackinAction->GetTrackingManager()->GetSteppingManager(); 
-    trajectory->AddEdep(edep);
     int n_ph = 0; 
     int n_el = 0; 
 
@@ -101,14 +103,39 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       }
     }
 
+    if (trkInfo->CheckStoreTrajectory() == true) {
+      trj_point step_point; 
+      if (trkInfo->GimmeEvTrajectory()->GetPoints().empty()) {
+        // record origin point
+        const auto pos = thePrePoint->GetPosition(); 
+        step_point.fX = pos.x(); 
+        step_point.fY = pos.y(); 
+        step_point.fZ = pos.z(); 
+        step_point.fEdep = 0.; 
+        step_point.fCopy = thePrePV->GetCopyNo(); 
+        step_point.fNel = 0.;
+        step_point.fNph = 0.; 
+        trajectory->RegisterPoint(step_point); 
+      }
+      const auto pos = step->GetPostStepPoint()->GetPosition(); 
+      step_point.fX = pos.x(); 
+      step_point.fY = pos.y(); 
+      step_point.fZ = pos.z(); 
+      step_point.fEdep = edep; 
+      step_point.fCopy = thePostPV->GetCopyNo(); 
+      step_point.fNel = n_el;
+      step_point.fNph = n_ph; 
+      trajectory->RegisterPoint(step_point); 
+    }
+
+    trajectory->IncrementEdep( edep ); 
+    trajectory->IncrementNion( n_el ); 
+    trajectory->IncrementNph ( n_ph ); 
+
     //printf("SLArSteppingAction::UserSteppingAction: adding %i ph and %i e ion. to %s [%i]\n", 
         //n_ph, n_el, 
         //particleDef->GetParticleName().c_str(), track->GetTrackID());
     //getchar(); 
-    trajectory->AddOpticalPhotons(n_ph); 
-    trajectory->AddIonizationElectrons(n_el); 
-    trajectory->AddVolCopyNumber( thePostPV->GetCopyNo() ); 
-
     //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
         //track->GetTrackID(), 
         //trajectory->GetTrackID(), 
