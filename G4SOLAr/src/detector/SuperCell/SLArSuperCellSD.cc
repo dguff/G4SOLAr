@@ -72,33 +72,32 @@ void SLArSuperCellSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool SLArSuperCellSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
-  G4StepPoint* preStepPoint  = step->GetPreStepPoint();
-  G4StepPoint* postStepPoint = step->GetPostStepPoint();
+  //G4StepPoint* preStepPoint  = step->GetPreStepPoint();
+  //G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
 
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
-  if (step->GetTrack()->GetDynamicParticle()
-      ->GetDefinition()->GetParticleName() != "opticalphoton") {
-    //wavelength = h_Planck / step->GetTrack()->GetTotalEnergy();
-    //else wavelength = -1;
+  //if (step->GetTrack()->GetDynamicParticle()
+      //->GetDefinition()->GetParticleName() != "opticalphoton") {
 
-    G4ThreeVector worldPos = preStepPoint->GetPosition();
-    G4ThreeVector localPos
-      = touchable->GetHistory()
-        ->GetTopTransform().TransformPoint(worldPos);
+    //G4ThreeVector worldPos = preStepPoint->GetPosition();
+    //G4ThreeVector localPos
+      //= touchable->GetHistory()
+        //->GetTopTransform().TransformPoint(worldPos);
 
-    SLArSuperCellHit* hit = new SLArSuperCellHit();
-    hit->SetWorldPos(worldPos);
-    hit->SetLocalPos(localPos);
-    hit->SetPhotonEnergy(preStepPoint->GetTotalEnergy());
-    hit->SetTime(preStepPoint->GetGlobalTime());
-    hit->SetSuperCellIdx(
-        preStepPoint->GetTouchableHandle()->GetCopyNumber(1));
+    //SLArSuperCellHit* hit = new SLArSuperCellHit();
+    //hit->SetWorldPos(worldPos);
+    //hit->SetLocalPos(localPos);
+    //hit->SetPhotonEnergy(preStepPoint->GetTotalEnergy());
+    //hit->SetTime(preStepPoint->GetGlobalTime());
+    //hit->SetSuperCellNo(
+        //preStepPoint->GetTouchableHandle()->GetCopyNumber(1));
 
-    fHitsCollection->insert(hit);
+    //delete hit;
+    ////fHitsCollection->insert(hit);
 
-  }     
+  //}     
 
   return true;
 }
@@ -126,9 +125,6 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
     = touchable->GetHistory()
       ->GetTopTransform().TransformPoint(worldPos);
  
-  //User replica number 1 since photocathode is a daughter volume
-  //to the pmt which was replicated (see LXe example)
-  
   SLArSuperCellHit* hit = nullptr;
   //Find the correct hit collection (in case of multple PMTs)
 
@@ -149,8 +145,18 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
     hit->SetTime(preStepPoint->GetGlobalTime());
-    hit->SetSuperCellIdx(postStepPoint->
-        GetTouchableHandle()->GetCopyNumber(1));
+    //for (int i=0; i<5; i++) {
+      //printf("[%i] volume: %s - copyNo: %i\n", 
+          //i, touchable->GetVolume(i)->GetName().data(), touchable->GetCopyNumber(i));
+    //}
+    //getchar(); 
+
+    //hit->SetSuperCellIdx(postStepPoint->
+        //GetTouchableHandle()->GetCopyNumber(1));
+    hit->SetSuperCellNo( touchable->GetCopyNumber(1) ); 
+    hit->SetSuperCellRowNo( touchable->GetCopyNumber(2) ); 
+    hit->SetSuperCellArrayNo( touchable->GetCopyNumber(3) ); 
+
     hit->SetPhotonProcess(procName);
     
     fHitsCollection->insert(hit);

@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArReadoutTileHit
- * @created     : mercoledì ago 10, 2022 08:56:55 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArReadoutTileHit.hh
+ * @created     Wed Aug 10, 2022 08:56:55 CEST
  */
 
 #ifndef SLARREADOUTTILEHIT_HH
@@ -62,6 +62,10 @@ public:
     G4int     GetPhotonProcessId();
     G4String  GetPhotonProcessName();
 
+    void SetAnodeIdx(G4int idx) { fAnodeIdx= idx; }
+    G4int GetAnodeIdx() const { return fAnodeIdx; }
+    void SetRowMegaTileIdx(G4int idx) { fRowMegaTileIdx= idx; }
+    G4int GetRowMegaTileIdx() const { return fRowMegaTileIdx; }
     void SetMegaTileIdx(G4int idx) { fMegaTileIdx= idx; }
     G4int GetMegaTileIdx() const { return fMegaTileIdx; }
     void SetRowTileIdx(G4int idx) { fRowTileIdx= idx; }
@@ -76,6 +80,8 @@ public:
 
     G4String GetProcessName(int kType);
 private:
+    G4int         fAnodeIdx; 
+    G4int         fRowMegaTileIdx;
     G4int         fMegaTileIdx;
     G4int         fRowTileIdx; 
     G4int         fTileIdx;

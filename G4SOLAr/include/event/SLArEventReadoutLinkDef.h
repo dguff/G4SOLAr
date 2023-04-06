@@ -21,10 +21,12 @@
 #pragma link C++ class SLArEventTile++;
 #pragma link C++ class std::map<int, SLArEventTile*>++;
 #pragma link C++ class SLArEventMegatile++;
-#pragma link C++ class SLArEventReadoutTileSystem++;
+#pragma link C++ class SLArEventAnode++;
+#pragma link C++ class std::map<int, SLArEventAnode*>++;
 #pragma link C++ class SLArEventSuperCell++;
 #pragma link C++ class std::map<int, SLArEventSuperCell*>++;
-#pragma link C++ class SLArEventSuperCellSystem++;
+#pragma link C++ class SLArEventSuperCellArray++;
+#pragma link C++ class std::map<int, SLArEventSuperCellArray*>++;
 
 #endif
 

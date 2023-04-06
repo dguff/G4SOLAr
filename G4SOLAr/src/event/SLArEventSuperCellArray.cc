@@ -1,17 +1,17 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventSuperCellSystem
- * @created     : giovedì ott 20, 2022 16:16:03 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArEventSuperCellArray.cc
+ * @created     Thur Oct 20, 2022 16:16:03 CEST
  */
 
-#include "event/SLArEventSuperCellSystem.hh"
+#include "event/SLArEventSuperCellArray.hh"
 
-ClassImp(SLArEventSuperCellSystem)
+ClassImp(SLArEventSuperCellArray)
 
-SLArEventSuperCellSystem::SLArEventSuperCellSystem()
+SLArEventSuperCellArray::SLArEventSuperCellArray()
   : TNamed(), fNhits(0), fIsActive(true) {}
 
-SLArEventSuperCellSystem::SLArEventSuperCellSystem(const SLArEventSuperCellSystem& ev)
+SLArEventSuperCellArray::SLArEventSuperCellArray(const SLArEventSuperCellArray& ev)
   : TNamed(ev) 
 {
   fNhits = ev.fNhits; 
@@ -23,30 +23,29 @@ SLArEventSuperCellSystem::SLArEventSuperCellSystem(const SLArEventSuperCellSyste
   return;
 }
 
-SLArEventSuperCellSystem::SLArEventSuperCellSystem(SLArCfgSystemSuperCell* cfg) {
-  SetName(cfg->GetName()); 
+SLArEventSuperCellArray::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg) 
+  : SLArEventSuperCellArray()
+{
+  SetName(cfg->GetName());
   ConfigSystem(cfg); 
   return;
 }
 
-SLArEventSuperCellSystem::~SLArEventSuperCellSystem() {
+SLArEventSuperCellArray::~SLArEventSuperCellArray() {
   for (auto &scevent : fSuperCellMap) {
     delete scevent.second; scevent.second = nullptr;
   }
   fSuperCellMap.clear(); 
 }
 
-int SLArEventSuperCellSystem::ConfigSystem(SLArCfgSystemSuperCell* cfg) {
+int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
   int nsc = 0; 
-  for (const auto &scarr : cfg->GetMap()) {
-    //int array_idx = scarr.second->GetIdx(); 
-    for (const auto &sc : scarr.second->GetMap()) {
+  for (const auto &sc : cfg->GetMap()) {
       if (fSuperCellMap.count(sc.first) == 0) {
         fSuperCellMap.insert(
               std::make_pair(sc.first, new SLArEventSuperCell(sc.first))
             ); 
         nsc++;
-      } 
     }
   }
 
@@ -54,36 +53,37 @@ int SLArEventSuperCellSystem::ConfigSystem(SLArCfgSystemSuperCell* cfg) {
 }
 
 
-int SLArEventSuperCellSystem::RegisterHit(SLArEventPhotonHit* hit) {
-  int sc_idx = hit->GetTileNr(); 
+int SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
+  int sc_idx = hit->GetTileIdx(); 
   if (fSuperCellMap.count(sc_idx)) {
     fSuperCellMap.find(sc_idx)->second->RegisterHit(hit);
     fNhits++;
     return 1; 
   } else {
-    printf("SLArEventSuperCellSystem::RegisterHit WARNING\n"); 
+    printf("SLArEventSuperCellArray::RegisterHit WARNING\n"); 
     printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
         sc_idx, hit->GetMegaTileIdx(), hit->GetRowTileNr(), hit->GetTileNr()); 
     return 0; 
   }
 }
 
-int SLArEventSuperCellSystem::ResetHits() {
+int SLArEventSuperCellArray::ResetHits() {
   int nn = 0; 
   for (auto &sc : fSuperCellMap) {
     nn += sc.second->ResetHits(); 
   }
+  fNhits = 0; 
   return nn; 
 }
 
-void SLArEventSuperCellSystem::SetActive(bool is_active) {
+void SLArEventSuperCellArray::SetActive(bool is_active) {
   fIsActive = is_active; 
   for (auto &sc : fSuperCellMap) {
     sc.second->SetActive(is_active); 
   }
 }
 
-bool SLArEventSuperCellSystem::SortHits() {
+bool SLArEventSuperCellArray::SortHits() {
   int isort = true;
   for (auto &sc : fSuperCellMap) {
     isort *= sc.second->SortHits(); 

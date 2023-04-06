@@ -46,12 +46,12 @@ add_library(SLArMCEventReadout
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventMegatile.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventReadoutTileSystem.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutTileSystem.hh
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventAnode.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventAnode.hh
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCell.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCell.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellSystem.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellSystem.hh
+  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellArray.cc
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellArray.hh
   )
 target_link_libraries(
   SLArMCEventReadout 
@@ -65,9 +65,9 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargePixel.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutTileSystem.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventAnode.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCell.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellSystem.hh
+  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellArray.hh
   MODULE SLArMCEventReadout
   LINKDEF
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutLinkDef.h

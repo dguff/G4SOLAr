@@ -12,10 +12,11 @@
 #pragma link C++ class SLArCfgAssembly<SLArCfgReadoutTile>+; 
 #pragma link C++ class SLArCfgSuperCellArray+; 
 #pragma link C++ class SLArCfgMegaTile+; 
-#pragma link C++ class std::map<int, SLArCfgSuperCellArray*>+;
 #pragma link C++ class std::map<int, SLArCfgMegaTile*>+;
+#pragma link C++ class SLArCfgAssembly<SLArCfgMegaTile>+;
+#pragma link C++ class std::map<size_t, TH2Poly*>+;
+#pragma link C++ class SLArCfgAnode+;
+#pragma link C++ class std::map<int, SLArCfgSuperCellArray*>+;
 #pragma link C++ class SLArCfgBaseSystem<SLArCfgSuperCellArray>+;
-#pragma link C++ class SLArCfgBaseSystem<SLArCfgMegaTile>+;
-#pragma link C++ class SLArCfgSystemPix+;
 #endif
 

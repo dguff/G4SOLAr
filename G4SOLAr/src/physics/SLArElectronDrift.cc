@@ -5,9 +5,9 @@
  */
 
 #include <functional>
-#include "event/SLArEventReadoutTileSystem.hh"
+#include "event/SLArEventAnode.hh"
 #include "event/SLArEventChargeHit.hh"
-#include "config/SLArCfgSystemPix.hh"
+#include "config/SLArCfgAnode.hh"
 
 #include "physics/SLArElectronDrift.hh"
 #include "G4SystemOfUnits.hh"
@@ -95,20 +95,31 @@ void SLArElectronDrift::PrintProperties() {
 void SLArElectronDrift::Drift(const int& n, const int& trkId,
     const G4ThreeVector& pos, 
     const double time, 
-    SLArCfgSystemPix* pixCfg, 
-    SLArEventReadoutTileSystem* pixEv) 
+    SLArCfgAnode* anodeCfg, 
+    SLArEventAnode* anodeEv) 
 {
   // Find the megatile interested by the hit
-  auto pixID = pixCfg->FindPixel(pos.z(), pos.y()); 
-  //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
-      //n, pos.x(), pos.y(), pos.z(), time);
-  //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+  G4ThreeVector anodeXaxis = 
+    G4ThreeVector(anodeCfg->GetAxis0().x(), anodeCfg->GetAxis0().y(), anodeCfg->GetAxis0().z());
+  G4ThreeVector anodeYaxis = 
+    G4ThreeVector(anodeCfg->GetAxis1().x(), anodeCfg->GetAxis1().y(), anodeCfg->GetAxis1().z());
+  G4ThreeVector anodeNormal= 
+    G4ThreeVector(anodeCfg->GetNormal().x(), anodeCfg->GetNormal().y(), anodeCfg->GetNormal().z());
+  G4ThreeVector anodePos = 
+    G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
-  auto mtile = pixCfg->FindBaseElementInMap(pixID[0]); 
-  if (mtile) {
+  auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
+
+#ifdef SLAR_DEBUG
+  printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
+      n, pos.x(), pos.y(), pos.z(), time);
+  printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+#endif
+
     // Get anode position and compute drift time
-    G4double tile_x_pos = mtile->GetX(); 
-    G4double driftLength = std::fabs(pos.x() - tile_x_pos); 
+    G4double driftLength = (pos - anodePos).dot(anodeNormal);
+    if (driftLength < 0) return;
+
     G4double driftTime   = driftLength / fvDrift;
     G4double hitTime     = time + driftTime; 
     // compute diffusion length and fraction of surviving electrons
@@ -116,22 +127,24 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
     G4double f_surv      = exp (-driftTime/fElectronLifetime); 
 
-    //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
-        //driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+#ifdef SLAR_DEBUG
+    printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
+        driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+#endif
 
     G4int n_elec_anode = G4Poisson(n*f_surv); 
 
     std::vector<double> x_(n_elec_anode); 
     std::vector<double> y_(n_elec_anode); 
     std::vector<double> t_(n_elec_anode);
-    G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.z(), diffLengthT); 
-    G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.y(), diffLengthT); 
+    G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.dot(anodeXaxis), diffLengthT); 
+    G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
     G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
 
     for (G4int i=0; i<n_elec_anode; i++) {
-      pixID = pixCfg->FindPixel(x_[i], y_[i]); 
+      pixID = anodeCfg->FindPixel(x_[i], y_[i]); 
       if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-
+        SLArCfgMegaTile* mtile = (SLArCfgMegaTile*)anodeCfg->FindBaseElementInMap(pixID[0]); 
         SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->FindBaseElementInMap(pixID[1]); 
         if (!tile) {
           printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
@@ -139,7 +152,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
           getchar(); 
           continue;
         }
-        SLArEventMegatile* evMT=pixEv->GetMegaTilesMap().find(mtile->GetIdx())->second;
+        SLArEventMegatile* evMT=anodeEv->GetMegaTilesMap().find(mtile->GetIdx())->second;
         if (!evMT) {
           printf("SLArElectronDrift::WARNING No MT event registered at idx %i\n", 
               mtile->GetIdx());
@@ -155,12 +168,11 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
         }
         evT->RegisterChargeHit(pixID[2], new SLArEventChargeHit(t_[i], trkId, 0)); 
         //if ( true ) {
-          //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
-          //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
-          //getchar();
+        //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
+        //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
+        ////getchar();
         //}
       }
     }
-  }
 
 }

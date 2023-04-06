@@ -17,38 +17,11 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 
-struct SLArCryostatLayer{
-  public:
-    SLArCryostatLayer(); 
-    SLArCryostatLayer(
-        G4String   model_name, 
-        G4double*  halfSize,  
-        G4double   thickness,
-        G4String   material_name);
-    ~SLArCryostatLayer(); 
-
-    G4String  fName;
-    G4double  fHalfSizeX;
-    G4double  fHalfSizeY; 
-    G4double  fHalfSizeZ; 
-    G4double  fThickness;
-
-    G4String  fMaterialName;
-    G4Material* fMaterial = nullptr;
-    SLArBaseDetModule* fModule = nullptr; 
-};
-
-typedef std::map<int, SLArCryostatLayer*> SLArCryostatStructure; 
-
-class SLArDetTPC : public SLArBaseDetModule
-{
+class SLArDetTPC : public SLArBaseDetModule {
 
 public:
   SLArDetTPC          ();
   virtual ~SLArDetTPC ();
-
-  void          BuildCryostat();
-  void          BuildTarget();
 
   void          BuildTPC();
 
@@ -56,33 +29,20 @@ public:
   void          BuildDefalutGeoParMap();
   void          BuildCryostatStructure(const rapidjson::Value& jcryo); 
 
+  const G4ThreeVector GetTPCcenter();
+  const G4ThreeVector& GetElectronDriftDir() {return fElectronDriftDir;}
+  const G4double& GetElectricField() {return fElectricField;}
+  virtual void  Init(const rapidjson::Value& jconf) override; 
   void          SetVisAttributes();
 
-  SLArBaseDetModule* GetTarget() {return fTarget;}
-  SLArBaseDetModule* GetCryostat() {return fCryostat;}
-  SLArCryostatStructure& GetCryostatStructure() {return fCryostatStructure;}
-
-protected:
-  SLArBaseDetModule* BuildCryostatLayer(G4String name, G4double x_, G4double y_, G4double z_, G4double tk, G4Material* mat); 
 
 private:
-  /* data */
-  SLArBaseDetModule* fTarget;
-  SLArBaseDetModule* fCryostat;
-  SLArBaseDetModule* fWindow;
-  G4VSolid*          fBoxOut;
-  G4VSolid*          fBoxInn;
-  G4VSolid*          fBoxTrg;
-
   // Some useful global variables
-  SLArMaterial* fMatWorld;
-  SLArMaterial* fMatSteel;
-  SLArMaterial* fMatPlywood; 
-  SLArMaterial* fMatPolyurethane; 
-  SLArMaterial* fMatBPolyethilene; 
   SLArMaterial* fMatTarget;
+  G4double      fElectricField; 
+  G4ThreeVector fElectronDriftDir; 
 
-  SLArCryostatStructure fCryostatStructure; 
+ 
 };
 
 

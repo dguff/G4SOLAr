@@ -30,10 +30,11 @@
 #include "SLArScintillation.h"
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
+#include "SLArUserTrackInformation.hh"
 #include "SLArTrajectory.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
-#include "detector/ReadoutTile/SLArReadoutTileSD.hh"
+#include "detector/Anode/SLArReadoutTileSD.hh"
 
 #include "G4VPhysicalVolume.hh"
 #include "G4Step.hh"
@@ -75,13 +76,14 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  // handle exception of particles reaching the end of the world
+  if (!thePostPV) thePostPV = thePrePV;
   
   if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
-    SLArTrajectory* trajectory =
-      (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
+    auto trkInfo = (SLArUserTrackInformation*)track->GetUserInformation(); 
+    auto trajectory = trkInfo->GimmeEvTrajectory();
     double edep = step->GetTotalEnergyDeposit();
     auto stepMngr = fTrackinAction->GetTrackingManager()->GetSteppingManager(); 
-    trajectory->AddEdep(edep);
     int n_ph = 0; 
     int n_el = 0; 
 
@@ -95,21 +97,45 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
           n_ph = scint_process->GetNumPhotons(); 
           n_el = scint_process->GetNumIonElectrons(); 
-
+          
           break;
         } 
       }
     }
 
+    if (trkInfo->CheckStoreTrajectory() == true) {
+      trj_point step_point; 
+      if (trkInfo->GimmeEvTrajectory()->GetPoints().empty()) {
+        // record origin point
+        const auto pos = thePrePoint->GetPosition(); 
+        step_point.fX = pos.x(); 
+        step_point.fY = pos.y(); 
+        step_point.fZ = pos.z(); 
+        step_point.fEdep = 0.; 
+        step_point.fCopy = thePrePV->GetCopyNo(); 
+        step_point.fNel = 0.;
+        step_point.fNph = 0.; 
+        trajectory->RegisterPoint(step_point); 
+      }
+      const auto pos = step->GetPostStepPoint()->GetPosition(); 
+      step_point.fX = pos.x(); 
+      step_point.fY = pos.y(); 
+      step_point.fZ = pos.z(); 
+      step_point.fEdep = edep; 
+      step_point.fCopy = thePostPV->GetCopyNo(); 
+      step_point.fNel = n_el;
+      step_point.fNph = n_ph; 
+      trajectory->RegisterPoint(step_point); 
+    }
+
+    trajectory->IncrementEdep( edep ); 
+    trajectory->IncrementNion( n_el ); 
+    trajectory->IncrementNph ( n_ph ); 
+
     //printf("SLArSteppingAction::UserSteppingAction: adding %i ph and %i e ion. to %s [%i]\n", 
         //n_ph, n_el, 
         //particleDef->GetParticleName().c_str(), track->GetTrackID());
     //getchar(); 
-    trajectory->AddOpticalPhotons(n_ph); 
-    trajectory->AddIonizationElectrons(n_el); 
-
-
-    
     //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
         //track->GetTrackID(), 
         //trajectory->GetTrackID(), 
@@ -140,9 +166,10 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       for( i=0;i<nprocesses;i++){
         if((*pv)[i]->GetProcessName()=="OpBoundary"){
           boundary = (G4OpBoundaryProcess*)(*pv)[i];
-//#ifdef SLAR_DEBUG
-          //G4cout<< "Optical ph at boundary!" << G4endl; 
-//#endif
+#ifdef SLAR_DEBUG
+          G4cout<< "Optical ph at " << thePrePV->GetName() 
+            << "/" << thePostPV->GetName() << " boundary!" << G4endl; 
+#endif
           break;
         }
       }
@@ -175,11 +202,15 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         }
       }
       fExpectedNextStatus=Undefined;
+
       switch(boundaryStatus){
         case Absorption:
           {
 //#ifdef SLAR_DEBUG
             //G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
+            //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+                //track->GetTotalEnergy()*1e6,
+                //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
 //#endif
             phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
@@ -221,19 +252,25 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
             phInfo->AddTrackStatusFlag(hitPMT);
             if (volName=="SiPMActivePV") {
-#ifdef SLAR_DEBUG
-              printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i, %i]\n", 
-                  touchable->GetCopyNumber(0), 
-                  touchable->GetCopyNumber(1),
-                  touchable->GetCopyNumber(2),
-                  touchable->GetCopyNumber(3),
-                  touchable->GetCopyNumber(4),
-                  touchable->GetCopyNumber(5), 
-                  touchable->GetCopyNumber(6), 
-                  touchable->GetCopyNumber(7) 
-                  );
-              getchar(); 
-#endif
+//#ifdef SLAR_DEBUG
+              //printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i, %i, %i, %i]\n", 
+                  //touchable->GetCopyNumber(0), 
+                  //touchable->GetCopyNumber(1),
+                  //touchable->GetCopyNumber(2),
+                  //touchable->GetCopyNumber(3),
+                  //touchable->GetCopyNumber(4),
+                  //touchable->GetCopyNumber(5), 
+                  //touchable->GetCopyNumber(6), 
+                  //touchable->GetCopyNumber(7), 
+                  //touchable->GetCopyNumber(8),
+                  //touchable->GetCopyNumber(9)
+                  //);
+              //for (int i=0; i<10; i++) {
+                //printf("depth %i: %s\n", i, touchable->GetVolume(i)->GetName().c_str());   
+              //}
+
+              //getchar(); 
+//#endif
               sipmSD = (SLArReadoutTileSD*)SDman->FindSensitiveDetector(sdNameSiPM);
               if(sipmSD) { 
                 fEventAction->IncReadoutTileHitCount(); 
@@ -246,10 +283,12 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
               }
             } else if (volName == "SuperCellCoating") {
 #ifdef SLAR_DEBUG
-              printf("Copy No hierarchy: [%i, %i, %i]\n", 
+              printf("Copy No hierarchy: [%i, %i, %i, %i, %i]\n", 
                   touchable->GetCopyNumber(0), 
                   touchable->GetCopyNumber(1),
-                  touchable->GetCopyNumber(2)
+                  touchable->GetCopyNumber(2),
+                  touchable->GetCopyNumber(3),
+                  touchable->GetCopyNumber(4)
                   );
 #endif
 

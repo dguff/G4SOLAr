@@ -38,6 +38,7 @@ class SLArTrajectory : public G4Trajectory
     void AddEdep(G4double edep) {fEdepContainer.push_back(edep);}; 
     void AddIonizationElectrons(G4int nel) {fNionElectronsContainer.push_back(nel); }
     void AddOpticalPhotons(G4int nph) {fNphtContainer.push_back(nph);}
+    void AddVolCopyNumber(size_t copyNo) {fCopyNumberContainer.push_back(copyNo);}
 
     G4String GetCreatorProcess() {return fCreatorProcess;}
     void SetDrawTrajectory(G4bool b){fDrawit=b;}
@@ -47,6 +48,7 @@ class SLArTrajectory : public G4Trajectory
     std::vector<float>& GetEdep() {return fEdepContainer;}
     std::vector<int>& GetNphotons() {return fNphtContainer;}
     std::vector<int>& GetIonElectrons() {return fNionElectronsContainer;}
+    std::vector<size_t>& GetVolCopyNumumber() {return fCopyNumberContainer;}
 
     G4float GetTime() {return fTime;}
 
@@ -63,6 +65,7 @@ class SLArTrajectory : public G4Trajectory
     std::vector<float>  fEdepContainer;
     std::vector<int>    fNphtContainer; 
     std::vector<int>    fNionElectronsContainer; 
+    std::vector<size_t> fCopyNumberContainer; 
     using G4Trajectory::MergeTrajectory; 
 };
 

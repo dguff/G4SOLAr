@@ -33,9 +33,6 @@ SLArCfgReadoutTile::SLArCfgReadoutTile(int idx, float xc, float yc, float zc,
 SLArCfgReadoutTile::SLArCfgReadoutTile(const SLArCfgReadoutTile& ref)
   : SLArCfgBaseModule(ref)
 {
-  f2DSize_X = ref.f2DSize_X; 
-  f2DSize_Y = ref.f2DSize_Y; 
-
   //fH2Pixels = nullptr; 
   //if (ref.fH2Pixels) {
     //fH2Pixels = new TH2Poly(); 
@@ -99,11 +96,18 @@ SLArCfgReadoutTile::~SLArCfgReadoutTile()
 TGraph* SLArCfgReadoutTile::BuildGShape() 
 {
   TGraph* g = new TGraph(5);
-  g->SetPoint(0, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
-  g->SetPoint(1, fPhysZ-0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
-  g->SetPoint(2, fPhysZ+0.5*f2DSize_X, fPhysY+0.5*f2DSize_Y);
-  g->SetPoint(3, fPhysZ+0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
-  g->SetPoint(4, fPhysZ-0.5*f2DSize_X, fPhysY-0.5*f2DSize_Y);
+  TVector3 pos(fPhysX, fPhysY, fPhysZ); 
+  TVector3 size_tmp = fSize; 
+  TRotation rot; 
+  rot.SetXPhi( fPhi ); rot.SetXTheta( fTheta ); rot.SetXPsi( fPsi ); 
+  rot = rot.Inverse(); 
+  size_tmp.Transform( rot ); 
+  
+  g->SetPoint(0, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
+  g->SetPoint(1, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
+  g->SetPoint(2, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
+  g->SetPoint(3, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
+  g->SetPoint(4, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
 
   g->SetName(Form("gShape%i", fIdx)); 
 

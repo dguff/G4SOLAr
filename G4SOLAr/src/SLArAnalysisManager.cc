@@ -39,7 +39,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent  (nullptr), 
-    fPDSysCfg(nullptr), fPixSysCfg(nullptr)
+    fPDSysCfg(nullptr)
 {
   if ( ( isMaster && fgMasterInstance ) || ( fgInstance ) ) {
     G4ExceptionDescription description;
@@ -90,8 +90,11 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   }
 
   fEventTree = new TTree("EventTree", "Event Tree");
-  if (fPixSysCfg) fMCEvent->GetReadoutTileSystem()->ConfigSystem(fPixSysCfg);
-  if (fPDSysCfg) fMCEvent->GetSuperCellSystem()->ConfigSystem(fPDSysCfg);
+  
+  fMCEvent->ConfigAnode( fAnodeCfg ); 
+
+  //if (fPDSysCfg) fMCEvent->GetSuperCellSystem()->ConfigSystem(fPDSysCfg);
+  if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
 
   fEventTree->Branch("MCEvent", &fMCEvent);
 
@@ -122,56 +125,43 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell* pdsCfg)
   else             return true ; 
 }
 
-G4bool SLArAnalysisManager::LoadPixCfg(SLArCfgSystemPix* pixCfg)
+G4bool SLArAnalysisManager::LoadAnodeCfg(SLArCfgAnode* anodeCfg)
 {
-  fPixSysCfg = pixCfg;
-  if (!fPixSysCfg) return false;
-  else             return true ; 
+  if (fAnodeCfg.count(anodeCfg->GetTPCID())) {
+    printf("SLArAnalysisManager::LoadAnodeCfg WARNING "); 
+    printf("an anode configuration with index %i is already registered. skip.\n",
+        anodeCfg->GetIdx());
+    return false;
+  }
+
+  fAnodeCfg.insert(std::make_pair(anodeCfg->GetTPCID(), anodeCfg));
+
+  return true;
 }
 
-
-void SLArAnalysisManager::WriteSysCfg()
-{
-  if (!fRootFile)
-  {
+void SLArAnalysisManager::WriteSysCfg() {
+  if (!fRootFile) {
     G4cout << "SLArAnalysisManager::WriteSysCfg" << G4endl;
     G4cout << "rootfile has null ptr! Quit."   << G4endl;
     return;
   }
 
   if (fPDSysCfg) {
-#ifdef SLAR_DEBUG
-    printf("SLArAnalysisManager::WriteSysCfg(): Writing PDSSysConfig... ");
-#endif
     fRootFile->cd();
     fPDSysCfg->Write("PDSSysConfig");
-#ifdef SLAR_DEBUG
-    printf("OK\n");
-#endif
   } else {
     G4cout << "SLArAnalysisManager::WritePDSSysConfig" << G4endl;
     G4cout << "fPDSysCfg is nullptr! Quit."      << G4endl;
   }
 
-  if (fPixSysCfg) {
-#ifdef SLAR_DEBUG
-    printf("SLArAnalysisManager::WriteSysCfg(): Writing PixSysConfig... ");
-#endif 
+  for (auto &anodeCfg : fAnodeCfg) {
     fRootFile->cd();
-    fPixSysCfg->Write("PixSysConfig");
-#ifdef SLAR_DEBUG
-    printf("OK\n");
-#endif
-  } else {
-    G4cout << "SLArAnalysisManager::WritePixSysConfig" << G4endl;
-    G4cout << "fPixSysCfg is nullptr! Quit."      << G4endl;
-  }
-
-
+    anodeCfg.second->Write(Form("AnodeCfg%i", anodeCfg.second->GetIdx()));
+  } 
+  return;
 }
 
-G4bool SLArAnalysisManager::FillEvTree()
-{
+G4bool SLArAnalysisManager::FillEvTree() {
 #ifdef SLAR_DEBUG
   printf("SLArAnalysisManager::FillEvTree...");
 #endif

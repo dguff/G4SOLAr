@@ -13,8 +13,8 @@
 #include <functional>
 #include "G4ThreeVector.hh"
 
-class SLArEventReadoutTileSystem; 
-class SLArCfgSystemPix;
+class SLArEventAnode; 
+class SLArCfgAnode;
 
 class SLArElectronDrift {
   public:
@@ -26,7 +26,7 @@ class SLArElectronDrift {
 
     void Drift(const int& n, const int& trkId, const G4ThreeVector& pos, 
         const double time, 
-        SLArCfgSystemPix* pixCfg, SLArEventReadoutTileSystem* pixEv);
+        SLArCfgAnode* anodeCfg, SLArEventAnode* anodeEv);
 
     void PrintProperties(); 
 

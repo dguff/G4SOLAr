@@ -47,7 +47,7 @@ SLArPrimaryGeneratorMessenger::
   fCmdBulkVol->SetGuidance("Set bulk volume for bulk event generation"); 
   fCmdBulkVol->SetGuidance("(Physical Volume name)"); 
   fCmdBulkVol->SetParameterName("PhysVol", true, false); 
-  fCmdBulkVol->SetDefaultValue("Target"); 
+  fCmdBulkVol->SetDefaultValue("target_lar_pv"); 
 
   fCmdBulkVolFraction= 
     new G4UIcmdWithADouble("/SLAr/gen/volumeFraction", this); 
