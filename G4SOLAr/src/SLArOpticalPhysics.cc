@@ -75,7 +75,7 @@ void SLArOpticalPhysics::ConstructProcess()
 
   fCerenkovProcess = new G4Cerenkov("Cerenkov");
   fCerenkovProcess->SetMaxNumPhotonsPerStep(300);
-  fCerenkovProcess->SetTrackSecondariesFirst(false);
+  fCerenkovProcess->SetTrackSecondariesFirst(true);
 
   fAbsorptionProcess      = new G4OpAbsorption();
   fRayleighScattering     = new G4OpRayleigh();
@@ -106,7 +106,7 @@ void SLArOpticalPhysics::ConstructProcess()
 
   //fScintProcess->SetScintillationYieldFactor(1.);
   //fScintProcess->SetScintillationExcitationRatio(0.0);
-  fScintProcess->SetTrackSecondariesFirst(false);
+  fScintProcess->SetTrackSecondariesFirst(true);
 
   // Needs to be set for the current LArQL model
   fScintProcess->SetScintillationByParticleType(true); 
