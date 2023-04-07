@@ -58,8 +58,6 @@
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
    fGeneratorActions(4, nullptr),
-   //fPGunGen(0), fDecay0Gen(0), fMarleyGen(0), 
-   //fGunMessenger(0), 
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -74,7 +72,6 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
-  //fGeneratorActions[kDecay0]->SetVertexGenerator(fBulkGenerator); 
 
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
@@ -230,10 +227,11 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
       
 
-      //printf("Adding particle to primary output list\n"); 
-      //tc_primary.PrintParticle(); 
+#ifdef SLAR_DEBUG
+      printf("Adding particle to primary output list\n"); 
+      tc_primary.PrintParticle(); 
+#endif
       SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
-      //getchar(); 
     }
   }
 
