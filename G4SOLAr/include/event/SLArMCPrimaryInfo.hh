@@ -52,14 +52,14 @@ class SLArMCPrimaryInfo : public TNamed
     int RegisterTrajectory(SLArEventTrajectory* trj);
 
   private:
-    int      fID      ; 
-    int      fTrkID   ;
+    Int_t    fID      ; 
+    Int_t    fTrkID   ;
     TString  fName    ; 
     double   fEnergy  ;
     double   fTime    ;
     double   fTotalEdep;
-    int      fTotalScintPhotons;
-    int      fTotalCerenkovPhotons; 
+    Int_t    fTotalScintPhotons;
+    Int_t    fTotalCerenkovPhotons; 
     std::vector<double>   fVertex  ;
     std::vector<double>   fMomentum;
     std::vector<SLArEventTrajectory*> fTrajectories;
