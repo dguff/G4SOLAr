@@ -34,10 +34,11 @@
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
 #include "SLArBulkVertexGenerator.hh"
+#include "SLArBoxSurfaceVertexGenerator.hh"
 #include "SLArPGunGeneratorAction.hh"
 #include "SLArMarleyGeneratorAction.hh"
 #include "SLArDecay0GeneratorAction.hh"
-
+#include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
 
 #include "Randomize.hh"
@@ -57,7 +58,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(4, nullptr),
+   fGeneratorActions(5, nullptr),
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -70,8 +71,10 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
   fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
+  fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
+  fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
 
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
@@ -92,6 +95,7 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
     igen++;
   }
   delete fBulkGenerator;
+  delete fBoxGenerator;
   delete fGunMessenger;
   printf("DONE\n");
 }
@@ -111,6 +115,21 @@ void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
   fBulkGenerator->SetSolidRotation(volume->GetRotation()); 
   return;
 }
+
+void SLArPrimaryGeneratorAction::SetBoxName(G4String vol) {
+  fVolumeName = vol; 
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
+  if (volume == nullptr) {
+    printf("SLArPrimaryGeneratorAction::SetBoxName(%s) WARNING\n", vol.c_str());
+    printf("Unable to find %s in physical volume store.\n", vol.c_str());
+  }
+
+  fBoxGenerator->SetBoxLogicalVolume(volume->GetLogicalVolume()); 
+  fBoxGenerator->SetSolidTranslation(volume->GetTranslation()); 
+  fBoxGenerator->SetSolidRotation(volume->GetRotation()); 
+  return;
+}
+
 
 void SLArPrimaryGeneratorAction::SetPGunParticle(G4String particle_name) 
 {
@@ -170,6 +189,15 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
       break;
 
+    case kExternalGen:
+      {
+        SLArExternalGeneratorAction* ext_gen = 
+          (SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
+        ext_gen->SetVertexGenerator(fBoxGenerator); 
+        gen = ext_gen;
+      }        
+      break;
+
     default:
       {
         printf("SLArPGunGeneratorAction::GeneratePrimaries() ERROR ");
@@ -177,7 +205,6 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         return;
       }
       break;
-      
   };
 
   if (fIncludeBackground) {
@@ -213,7 +240,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         tc_primary.SetID  (particle->GetPDGcode()); 
         tc_primary.SetName("Ion");
       } else {
-        tc_primary.SetID  (particle->GetParticleDefinition()->GetParticleDefinitionID());
+        tc_primary.SetID  (particle->GetPDGcode());
         tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
       }
 
@@ -230,6 +257,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 #ifdef SLAR_DEBUG
       printf("Adding particle to primary output list\n"); 
       tc_primary.PrintParticle(); 
+      getchar();
 #endif
       SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
     }
@@ -250,6 +278,16 @@ void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
     marley_gen->SetVertexGenerator(fBulkGenerator); 
   return; 
 }
+
+void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
+  SLArExternalGeneratorAction* gen = 
+    (SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
+  gen->SetVertexGenerator(fBoxGenerator);
+  gen->SourceExternalConfig(external_cfg); 
+  return; 
+}
+
+
 
 void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
 {

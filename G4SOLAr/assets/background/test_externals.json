@@ -1,0 +1,10 @@
+{
+  "externals" : 
+    {
+      "particle" : "geantino", 
+      "origin_volume" : "target_lar_pv", 
+      "origin_face" : 1,
+      "file" : "/home/guff/Dune/SOLAr/SOLAr-sim/install/assets/background/externals_energy_spectrum.root",
+      "key" : "EnergySpectrum"
+    }
+}
