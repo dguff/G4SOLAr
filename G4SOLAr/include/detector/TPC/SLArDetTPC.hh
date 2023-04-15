@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArDetTPC.hh
- * @created     : giovedì nov 03, 2022 12:22:00 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArDetTPC.hh
+ * @created     Thur Nov 03, 2022 12:22:00 CET
  */
 
 #ifndef SLARDETTPC_HH
@@ -9,7 +9,6 @@
 #define SLARDETTPC_HH
 
 #include "detector/SLArBaseDetModule.hh"
-#include "detector/SuperCell/SLArDetSuperCell.hh"
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
@@ -26,19 +25,23 @@ public:
   void          BuildTPC();
 
   void          BuildMaterial(G4String);
+  void          BuildFieldCage(); 
   void          BuildDefalutGeoParMap();
-  void          BuildCryostatStructure(const rapidjson::Value& jcryo); 
 
   const G4ThreeVector GetTPCcenter();
   const G4ThreeVector& GetElectronDriftDir() {return fElectronDriftDir;}
   const G4double& GetElectricField() {return fElectricField;}
+  SLArBaseDetModule* GetFieldCage() {return fFieldCage;}
   virtual void  Init(const rapidjson::Value& jconf) override; 
+  void  InitFieldCage(const rapidjson::Value& jcon); 
   void          SetVisAttributes();
 
 
 private:
   // Some useful global variables
   SLArMaterial* fMatTarget;
+  SLArMaterial* fMatFieldCage;
+  SLArBaseDetModule* fFieldCage; 
   G4double      fElectricField; 
   G4ThreeVector fElectronDriftDir; 
 

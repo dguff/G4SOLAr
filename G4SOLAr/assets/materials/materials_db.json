@@ -29,6 +29,9 @@
     {"name" : "Steel", 
       "NIST" : "G4_STAINLESS-STEEL"
     },
+    {"name" : "Aluminum", 
+      "NIST" : "G4_ALUMINUM_OXIDE"
+    },
     {"name" : "Polyurethane", 
       "density" : {"val" : 90, "unit" : "kg/m3"}, 
       "atomic_components" : [
