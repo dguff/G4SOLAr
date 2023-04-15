@@ -98,12 +98,13 @@ void SLArDetTPC::BuildFieldCage() {
   
 
   // build solid and logical volumes
-  //auto fc_corner_tub = new G4Tubs("fc_corner_sv", 
-      //R-tk, R, 0.5*std::max(hl, hs), 0, 90*CLHEP::deg); 
-  //auto fc_corner_lv = new G4LogicalVolume(fc_corner_tub, fMatFieldCage->GetMaterial(), 
-      //"fc_corner_lv"); 
-  G4double dly = 0.; G4double dlz = 0.; 
-  if (hy > hz) {dly = 0.; dlz = tk;} else {dly = tk, dlz = 0.;} 
+  auto fc_corner_tub = new G4Tubs("fc_corner_sv", 
+      R-tk, R, 0.5*std::max(hl, hs), 0, 90*CLHEP::deg); 
+  auto fc_corner_lv = new G4LogicalVolume(fc_corner_tub, fMatFieldCage->GetMaterial(), 
+      "fc_corner_lv"); 
+  //G4double dly = 0.; G4double dlz = 0.; 
+  //if (hy > hz) {dly = 0.; dlz = tk;} else {dly = tk, dlz = 0.;} 
+  G4double dly = R; G4double dlz = R; 
   auto fc_yside_box = new G4Box("fc_lside_box", 
       0.5*hy, 0.5*tk, 0.5*Dfc[1] - dly); 
   auto fc_zside_box = new G4Box("fc_sside_box", 
@@ -128,28 +129,28 @@ void SLArDetTPC::BuildFieldCage() {
       "fieldCage_layer_lv"); 
   fc_layer_lv->SetVisAttributes( G4VisAttributes(false) ); 
   // place the corners
-  //G4double delta = _cornerTubAxis.angle( G4ThreeVector(1, 0, 0) ); 
-  //G4RotationMatrix* rot_common = 
-    //new G4RotationMatrix(_cornerTubAxis.cross(G4ThreeVector(1, 0, 0)), delta); 
-  //G4RotationMatrix* rot0 = new G4RotationMatrix(*rot_common); 
-  //G4RotationMatrix* rot1 = new G4RotationMatrix(*rot_common); 
-  //rot1->rotateZ(-90*CLHEP::deg); 
-  //G4RotationMatrix* rot2 = new G4RotationMatrix(*rot_common); 
-  //rot2->rotateZ(-180*CLHEP::deg); 
-  //G4RotationMatrix* rot3 = new G4RotationMatrix(*rot_common); 
-  //rot3->rotateZ(-270*CLHEP::deg); 
-//  /*auto corner_0 = */
-//  new G4PVPlacement(rot0, G4ThreeVector(0, 0.5*Dfc[1]-R, 0.5*Dfc[2]-R),
-//      fc_corner_lv, "fc_corner0_pv", fc_layer_lv, false, 10); 
-//  /*auto corner_1 = */
-//  new G4PVPlacement(rot1, G4ThreeVector(0, 0.5*Dfc[1]-R, -(0.5*Dfc[2]-R)),
-//      fc_corner_lv, "fc_corner1_pv", fc_layer_lv, false, 11); 
-//  /*auto corner_2 = */
-//  new G4PVPlacement(rot2, G4ThreeVector(0, -(0.5*Dfc[1]-R), -(0.5*Dfc[2]-R)),
-//      fc_corner_lv, "fc_corner2_pv", fc_layer_lv, false, 12);   
-//  /*auto corner_3 = */
-//  new G4PVPlacement(rot3, G4ThreeVector(0, -(0.5*Dfc[1]-R), +(0.5*Dfc[2]-R)),
-//      fc_corner_lv, "fc_corner3_pv", fc_layer_lv, false, 13);   
+  G4double delta = _cornerTubAxis.angle( G4ThreeVector(1, 0, 0) ); 
+  G4RotationMatrix* rot_common = 
+    new G4RotationMatrix(_cornerTubAxis.cross(G4ThreeVector(1, 0, 0)), delta); 
+  G4RotationMatrix* rot0 = new G4RotationMatrix(*rot_common); 
+  G4RotationMatrix* rot1 = new G4RotationMatrix(*rot_common); 
+  rot1->rotateZ(-90*CLHEP::deg); 
+  G4RotationMatrix* rot2 = new G4RotationMatrix(*rot_common); 
+  rot2->rotateZ(-180*CLHEP::deg); 
+  G4RotationMatrix* rot3 = new G4RotationMatrix(*rot_common); 
+  rot3->rotateZ(-270*CLHEP::deg); 
+  /*auto corner_0 = */
+  new G4PVPlacement(rot0, G4ThreeVector(0, 0.5*Dfc[1]-R, 0.5*Dfc[2]-R),
+      fc_corner_lv, "fc_corner0_pv", fc_layer_lv, false, 10); 
+  /*auto corner_1 = */
+  new G4PVPlacement(rot1, G4ThreeVector(0, 0.5*Dfc[1]-R, -(0.5*Dfc[2]-R)),
+      fc_corner_lv, "fc_corner1_pv", fc_layer_lv, false, 11); 
+  /*auto corner_2 = */
+  new G4PVPlacement(rot2, G4ThreeVector(0, -(0.5*Dfc[1]-R), -(0.5*Dfc[2]-R)),
+      fc_corner_lv, "fc_corner2_pv", fc_layer_lv, false, 12);   
+  /*auto corner_3 = */
+  new G4PVPlacement(rot3, G4ThreeVector(0, -(0.5*Dfc[1]-R), +(0.5*Dfc[2]-R)),
+      fc_corner_lv, "fc_corner3_pv", fc_layer_lv, false, 13);   
 
   // place the sides
   /*auto yside_0 = */
@@ -258,8 +259,8 @@ void SLArDetTPC::SetVisAttributes()
   G4VisAttributes* visAttributes = new G4VisAttributes();
 
   visAttributes->SetVisibility(true); 
-  visAttributes->SetColor(0.607, 0.847, 0.992, 0.4);
-  fModLV->SetVisAttributes( visAttributes );
+  visAttributes->SetColor(0.607, 0.847, 0.992, 0.1);
+  fModLV->SetVisAttributes( G4VisAttributes(false) );
 
   return;
 }
