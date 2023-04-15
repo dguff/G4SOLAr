@@ -124,7 +124,11 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       if (iter != fHalfLifeTable.end()) {
         double decay_time = SampleDecayTime(iter->second);
         vertex->SetT0(marley_time + decay_time);
+#ifdef SLAR_DEBUG
         std::cout << "Decay time: " << decay_time << std::endl;
+        std::cout << "Energy: " << excited_state << std::endl;
+        getchar(); 
+#endif
       }
       cascade_idx++;
     }

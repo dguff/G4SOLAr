@@ -78,6 +78,17 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
   // handle exception of particles reaching the end of the world
   if (!thePostPV) thePostPV = thePrePV;
+
+//#ifdef SLAR_DEBUG
+  //printf("Particle: %s - Boundary check: %s (%s) | %s (%s)\n", 
+      //particleDef->GetParticleName().data(),
+      //thePrePV->GetName().c_str(), 
+      //thePrePV->GetLogicalVolume()->GetMaterial()->GetName().c_str(), 
+      //thePostPV->GetName().c_str(), 
+      //thePostPV->GetLogicalVolume()->GetMaterial()->GetName().c_str());
+//#endif
+
+
   
   if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
     auto trkInfo = (SLArUserTrackInformation*)track->GetUserInformation(); 
@@ -178,11 +189,11 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
     //Was the photon absorbed by the absorption process
     // [from LXe example]
-    if(thePostPoint->GetProcessDefinedStep()->GetProcessName()
-       =="OpAbsorption"){
-      fEventAction->IncAbsorption();
-      phInfo->AddTrackStatusFlag(absorbed);
-    }
+    //if(thePostPoint->GetProcessDefinedStep()->GetProcessName()
+       //=="OpAbsorption"){
+      //fEventAction->IncAbsorption();
+      //phInfo->AddTrackStatusFlag(absorbed);
+    //}
 
     boundaryStatus=boundary->GetStatus();
     //Check to see if the partcile was actually at a boundary
@@ -206,23 +217,23 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       switch(boundaryStatus){
         case Absorption:
           {
-//#ifdef SLAR_DEBUG
-            //G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
-            //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
-                //track->GetTotalEnergy()*1e6,
-                //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
-//#endif
+#ifdef SLAR_DEBUG
+            G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
+            printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+                track->GetTotalEnergy()*1e6,
+                thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
+#endif
             phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
             break;
           }
         case NoRINDEX:
-//#ifdef SLAR_DEBUG
-          //printf("SLArSteppingAction::UserSteppingAction NoRINDEX\n");
-          //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
-              //track->GetTotalEnergy()*1e6,
-              //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
-//#endif
+#ifdef SLAR_DEBUG
+          printf("SLArSteppingAction::UserSteppingAction NoRINDEX\n");
+          printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+              track->GetTotalEnergy()*1e6,
+              thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
+#endif
           break;
         case Detection: 
           //Note, this assumes that the volume causing detection
@@ -320,5 +331,10 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
     }
   }
+
+//#ifdef SLAR_DEBUG
+    //printf("PASSED\n");
+//#endif
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
