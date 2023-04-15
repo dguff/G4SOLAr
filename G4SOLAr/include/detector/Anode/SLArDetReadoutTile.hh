@@ -47,7 +47,8 @@ public:
   void BuildReadoutTile();
   void BuildPCB();
   void BuildSiPM();
-  TH2Poly* BuildTileChgPixelMap(G4ThreeVector* _shift = nullptr, G4RotationMatrix* _rot = nullptr); 
+  TH2Poly* BuildTileChgPixelMap(const G4ThreeVector& xAxis, const G4ThreeVector& yAxis, 
+      const G4ThreeVector* _shift = nullptr, const G4RotationMatrix* _rot = nullptr); 
   void BuildChargePix();
   void BuildUnitCell(); 
 
