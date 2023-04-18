@@ -25,7 +25,7 @@ void refactor_test_sc()
 {
   gStyle->SetPalette(kBlackBody); 
   TColor::InvertPalette(); 
-  TFile* mc_file = new TFile("../install/high_energy.root"); 
+  TFile* mc_file = new TFile("../install/electrons.root"); 
   TTree* mc_tree = (TTree*)mc_file->Get("EventTree"); 
 
   //- - - - - - - - - - - - - - - - - - - - - - Access readout configuration
@@ -34,44 +34,47 @@ void refactor_test_sc()
   AnodeSysCfg.insert( std::make_pair(10, (SLArCfgAnode*)mc_file->Get("AnodeCfg50") ) );
   AnodeSysCfg.insert( std::make_pair(11, (SLArCfgAnode*)mc_file->Get("AnodeCfg51") ) );
 
-  std::map<int, TH2Poly*> h2SCArray; 
-
-  for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
-    const auto cfgSCArray = cfgSCArray_.second;
-    printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
-        cfgSCArray->GetMap().size());
-    printf("\tposition: [%g, %g, %g] mm\n", 
-        cfgSCArray->GetPhysX(), cfgSCArray->GetPhysY(), cfgSCArray->GetPhysZ()); 
-    printf("\tnormal: [%g, %g, %g]\n", 
-        cfgSCArray->GetNormal().x(), cfgSCArray->GetNormal().y(), cfgSCArray->GetNormal().z() );
-    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
-        cfgSCArray->GetPhi()*TMath::RadToDeg(), 
-        cfgSCArray->GetTheta()*TMath::RadToDeg(), 
-        cfgSCArray->GetPsi()*TMath::RadToDeg());
-    cfgSCArray->BuildGShape(); 
-    auto h2 = cfgSCArray->BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
-    h2SCArray.insert( std::make_pair(cfgSCArray->GetIdx(), h2) ); 
-  }
-  printf("\n");
-
-  for (const auto& anodeCfg_ : AnodeSysCfg) {
-    const auto cfgAnode = anodeCfg_.second;
-    printf("Anode config: %i - %lu mega-tiles\n", cfgAnode->GetIdx(), 
-        cfgAnode->GetMap().size());
-    printf("\tposition: [%g, %g, %g] mm\n", 
-        cfgAnode->GetPhysX(), cfgAnode->GetPhysY(), cfgAnode->GetPhysZ()); 
-    printf("\tnormal: [%g, %g, %g]\n", 
-        cfgAnode->GetNormal().x(), cfgAnode->GetNormal().y(), cfgAnode->GetNormal().z() );
-    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
-        cfgAnode->GetPhi()*TMath::RadToDeg(), 
-        cfgAnode->GetTheta()*TMath::RadToDeg(), 
-        cfgAnode->GetPsi()*TMath::RadToDeg());
-  }
-  printf("\n");
-  
-  TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
-  h2_30->Draw("axis");
-  h2SCArray.find(30)->second->Draw("col same"); 
+/*
+ *  std::map<int, TH2Poly*> h2SCArray; 
+ *
+ *  for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
+ *    const auto cfgSCArray = cfgSCArray_.second;
+ *    printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
+ *        cfgSCArray->GetMap().size());
+ *    printf("\tposition: [%g, %g, %g] mm\n", 
+ *        cfgSCArray->GetPhysX(), cfgSCArray->GetPhysY(), cfgSCArray->GetPhysZ()); 
+ *    printf("\tnormal: [%g, %g, %g]\n", 
+ *        cfgSCArray->GetNormal().x(), cfgSCArray->GetNormal().y(), cfgSCArray->GetNormal().z() );
+ *    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
+ *        cfgSCArray->GetPhi()*TMath::RadToDeg(), 
+ *        cfgSCArray->GetTheta()*TMath::RadToDeg(), 
+ *        cfgSCArray->GetPsi()*TMath::RadToDeg());
+ *    cfgSCArray->BuildGShape(); 
+ *    auto h2 = cfgSCArray->BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
+ *    h2SCArray.insert( std::make_pair(cfgSCArray->GetIdx(), h2) ); 
+ *  }
+ *  printf("\n");
+ *
+ *  for (const auto& anodeCfg_ : AnodeSysCfg) {
+ *    const auto cfgAnode = anodeCfg_.second;
+ *    printf("Anode config: %i - %lu mega-tiles\n", cfgAnode->GetIdx(), 
+ *        cfgAnode->GetMap().size());
+ *    printf("\tposition: [%g, %g, %g] mm\n", 
+ *        cfgAnode->GetPhysX(), cfgAnode->GetPhysY(), cfgAnode->GetPhysZ()); 
+ *    printf("\tnormal: [%g, %g, %g]\n", 
+ *        cfgAnode->GetNormal().x(), cfgAnode->GetNormal().y(), cfgAnode->GetNormal().z() );
+ *    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
+ *        cfgAnode->GetPhi()*TMath::RadToDeg(), 
+ *        cfgAnode->GetTheta()*TMath::RadToDeg(), 
+ *        cfgAnode->GetPsi()*TMath::RadToDeg());
+ *  }
+ *  printf("\n");
+ *  
+ *  TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
+ *  h2_30->Draw("axis");
+ *  h2SCArray.find(30)->second->Draw("col same"); 
+ */
+  TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 200, 0, 5e3); 
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
@@ -90,21 +93,35 @@ void refactor_test_sc()
     std::vector<TH2Poly*> h2pix; h2pix.reserve(500); 
 
     double z_max = 0; 
-
+    printf("ANODE %i:\n", anode->GetID());
     for (const auto &mt: anode->GetMegaTilesMap()) {
       auto h2mt_ = AnodeSysCfg[tpc_id]->ConstructPixHistMap(1, std::vector<int>{mt.first}); 
       h2mt.push_back( h2mt_ ); 
+      //printf("\tMegatilte %i: %i hits\n", mt.first, mt.second->GetNChargeHits());
       if (mt.second->GetNChargeHits() == 0) continue;
       for (auto &t : mt.second->GetTileMap()) {
-        if (t.second->GetNPixelHits() == 0) continue;
+        //printf("\t\tTilte %i: %g hits\n", t.first, t.second->GetNPixelHits());
+        if (t.second->GetPixelHits() == 0 ) continue;
         auto h2t_ = AnodeSysCfg[tpc_id]->ConstructPixHistMap(2, std::vector<int>{mt.first, t.first}); 
         for (const auto &p : t.second->GetPixelEvents()) {
+          //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second->GetNhits());
           h2t_->SetBinContent( p.first, p.second->GetNhits() );
           if (p.second->GetNhits() > z_max) z_max = p.second->GetNhits(); 
         }
         h2pix.push_back( h2t_ ); 
       }
     }
+
+    for (const auto &mt: anode->GetMegaTilesMap()) {
+      if (mt.second->GetNPhotonHits() == 0) continue;
+      for (auto &t : mt.second->GetTileMap()) {
+        if (t.second->GetHits().empty()) continue;
+        for (const auto &p : t.second->GetHits()) {
+          hTime->Fill( p->GetTime() );  
+        }
+      }
+    }
+
 
     TCanvas* c = new TCanvas(Form("cTPC%i", tpc_id), Form("TPC %i", tpc_id), 0, 0, 800, 500); 
     c->SetTicks(1, 1); 
@@ -118,14 +135,20 @@ void refactor_test_sc()
     auto pdg = TDatabasePDG::Instance(); 
 
     for (const auto &p : primaries) {
+      printf("----------------------------------------\n");
+      printf("PRIMARY vertex: %s - K0 = %2f - t = %.2f - vtx [%.1f, %.1f, %.1f]\n", 
+          p->GetParticleName().Data(), p->GetEnergy(), p->GetTime(), 
+          p->GetVertex()[0], p->GetVertex()[1], p->GetVertex()[2]);
       auto trajectories = p->GetTrajectories(); 
       for (const auto &t : trajectories) {
         auto points = t->GetPoints(); 
         auto pdg_particle = pdg->GetParticle(t->GetPDGID()); 
-        printf("%s [%i]: K = %.2f - n_scint = %g, n_elec = %g\n", 
-            t->GetParticleName().Data(), t->GetTrackID(), t->GetInitKineticEne(), 
+        printf("%s [%i]: t = %.2f, K = %.2f - n_scint = %g, n_elec = %g\n", 
+            t->GetParticleName().Data(), t->GetTrackID(), 
+            t->GetTime(),
+            t->GetInitKineticEne(), 
             t->GetTotalNph(), t->GetTotalNph());
-        if (t->GetInitKineticEne() < 1) continue;
+        //if (t->GetInitKineticEne() < 1) continue;
         TGraph g; 
         Color_t col = kBlack; 
         TString name = ""; 
@@ -135,8 +158,8 @@ void refactor_test_sc()
           name = Form("g_%i_trk%i", t->GetPDGID(), t->GetTrackID()); 
         }
         else {
-          if (pdg_particle == pdg->GetParticle(22)) continue;
-          else if (pdg_particle == pdg->GetParticle( 11)) col = kCyan-6;
+          if (pdg_particle == pdg->GetParticle(22)) col = kYellow;
+          else if (pdg_particle == pdg->GetParticle( 11)) col = kBlue-6;
           else if (pdg_particle == pdg->GetParticle(-11)) col = kRed-7;
           else if (pdg_particle == pdg->GetParticle(2212)) col = kRed; 
           else if (pdg_particle == pdg->GetParticle(2112)) col = kBlue;
@@ -159,9 +182,6 @@ void refactor_test_sc()
         if (g.GetN() > 2) g.DrawClone("l");
       }
     }
-
-
-
   }
 
   auto pdsMap = ev->GetEventSuperCellArray(); 
@@ -171,12 +191,20 @@ void refactor_test_sc()
     printf("Array: %i - %i hits\n", scArray.first, scArray.second->GetNhits());
     for (const auto &sc : scArray.second->GetSuperCellMap()) {
       auto n = sc.second->GetNhits(); 
-      printf("SC %i recorded %i hits\n", sc.second->GetIdx(), n); 
+      //printf("SC %i recorded %i hits\n", sc.second->GetIdx(), n); 
       n_sc += n;
+
+      for (const auto &h : sc.second->GetHits()) {
+        hTime->Fill( h->GetTime() ); 
+      }
     }
 
-    printf("SC counting: %i\n", n_sc);
+    //printf("SC counting: %i\n", n_sc);
   }
+
+  TCanvas* cTime = new TCanvas(); 
+  hTime->Draw("hist");
+
   return;
 }
 
