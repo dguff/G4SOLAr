@@ -18,6 +18,7 @@
 
 // Standard library includes
 #include <string>
+#include <map>
 
 // Geant4 includes
 #include "G4VUserPrimaryGeneratorAction.hh"
@@ -48,5 +49,7 @@ class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
     marley::Generator marley_generator_;
     bxdecay0_g4::VertexGeneratorInterface* marley_vertex_generator_;
     G4ThreeVector marley_nu_direction; 
+    double SampleDecayTime(const double half_life) const;
+    std::map<double, double> fHalfLifeTable;
 };
 }

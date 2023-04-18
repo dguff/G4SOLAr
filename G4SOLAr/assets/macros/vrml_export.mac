@@ -1,0 +1,7 @@
+/vis/open VRML2FILE
+
+/vis/drawVolume target_lar_pv
+
+/vis/viewer/flush
+/control/shell mv g4_00.wrl refactored_target.wrl
+

@@ -1,7 +1,7 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArElectronDrift.cc
- * @created     : giovedì nov 10, 2022 18:26:54 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArElectronDrift.cc
+ * @created     Thur Nov 10, 2022 18:26:54 CET
  */
 
 #include <functional>
@@ -109,12 +109,13 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
   auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
-  //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
-      //n, pos.x(), pos.y(), pos.z(), time);
-  //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+#ifdef SLAR_DEBUG
+  printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
+      n, pos.x(), pos.y(), pos.z(), time);
+  printf("axis projection: [%.0f, %.0f]\n", pos.dot(anodeXaxis), pos.dot(anodeYaxis)); 
+  printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+#endif
 
-  auto mtile = anodeCfg->FindBaseElementInMap(pixID[0]); 
-  if (mtile) {
     // Get anode position and compute drift time
     G4double driftLength = (pos - anodePos).dot(anodeNormal);
     if (driftLength < 0) return;
@@ -126,8 +127,11 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
     G4double f_surv      = exp (-driftTime/fElectronLifetime); 
 
-    //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
-        //driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+#ifdef SLAR_DEBUG
+    printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
+        driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+    getchar(); 
+#endif
 
     G4int n_elec_anode = G4Poisson(n*f_surv); 
 
@@ -141,7 +145,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     for (G4int i=0; i<n_elec_anode; i++) {
       pixID = anodeCfg->FindPixel(x_[i], y_[i]); 
       if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-
+        SLArCfgMegaTile* mtile = (SLArCfgMegaTile*)anodeCfg->FindBaseElementInMap(pixID[0]); 
         SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->FindBaseElementInMap(pixID[1]); 
         if (!tile) {
           printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
@@ -164,13 +168,13 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
           continue;
         }
         evT->RegisterChargeHit(pixID[2], new SLArEventChargeHit(t_[i], trkId, 0)); 
-        //if ( true ) {
-          //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
-          //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
-          ////getchar();
-        //}
+#ifdef SLAR_DEBUG
+        printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
+        printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
+        //evT->PrintHits(); 
+        getchar();
+#endif
       }
     }
-  }
 
 }

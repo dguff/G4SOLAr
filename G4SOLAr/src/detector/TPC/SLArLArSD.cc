@@ -6,15 +6,18 @@
 
 
 #include "SLArAnalysisManager.hh"
+#include "SLArUserTrackInformation.hh"
 #include "SLArTrackingAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArTrajectory.hh"
+#include "SLArScintillation.h"
 #include "detector/TPC/SLArLArSD.hh"
 #include "detector/TPC/SLArLArHit.hh"
 #include "physics/SLArElectronDrift.hh"
 
 #include "G4EventManager.hh"
 #include "G4RunManager.hh"
+#include "G4TrackingManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
 #include "G4VPhysicalVolume.hh"
@@ -29,11 +32,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArLArSD::SLArLArSD(G4String name)
+SLArLArSD::SLArLArSD(G4String name, G4int tpcID)
   : G4VSensitiveDetector(name), fHitsCollection(0), 
-    fHCID(-4) 
+    fHCID(-4), fTPCID(tpcID)
 {
-  collectionName.insert("LArColl");
+  collectionName.insert("TPC"+std::to_string(tpcID)+"Coll");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -62,6 +65,7 @@ void SLArLArSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
+
   G4StepPoint* preStepPoint  = step->GetPreStepPoint();
   G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
@@ -73,28 +77,66 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   if (step->GetTrack()->GetDynamicParticle()
       ->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
 
-    SLArTrackingAction* trackingAction = 
-      (SLArTrackingAction*)G4EventManager::GetEventManager()->GetUserTrackingAction(); 
+#ifdef SLAR_DEBUG
+    printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit\n", 
+        step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+        step->GetTrack()->GetTrackID());
+    getchar(); 
+#endif
+
 
     SLArRunAction* runAction = 
       (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
+  
 
     SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
 
     // Get hit from collection
     SLArLArHit* hit = (*fHitsCollection)[0];
-    SLArTrajectory* trajectory =
-      (SLArTrajectory*)trackingAction->GetTrackingManager()->GimmeTrajectory();
-    int n_ion = trajectory->GetIonElectrons().back();
 
-    runAction->GetElectronDrift()->Drift(n_ion, 
-        step->GetTrack()->GetTrackID(), 
-        0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
-        postStepPoint->GetGlobalTime(), 
-        anaMngr->GetAnodeCfg(touchable->GetCopyNumber(0)), 
-        anaMngr->GetEvent()->GetEventAnodeByTPCID(touchable->GetCopyNumber(0))); 
-
+    int n_ph = 0; 
+    int n_el = 0; 
+    auto trackingAction = 
+      (SLArTrackingAction*)G4EventManager::GetEventManager()->GetUserTrackingAction(); 
     
+    auto stepMngr = trackingAction->GetTrackingManager()->GetSteppingManager(); 
+    if (stepMngr->GetfStepStatus() != fAtRestDoItProc) {
+      G4ProcessVector* process_vector = stepMngr->GetfPostStepDoItVector(); 
+      for (size_t iproc = 0; iproc < stepMngr->GetMAXofPostStepLoops(); iproc++) {
+        G4VProcess* proc = (*process_vector)[iproc]; 
+
+        if (proc->GetProcessName() == "Scintillation") {
+          SLArScintillation* scint_process = (SLArScintillation*)proc; 
+
+          n_ph = scint_process->GetNumPhotons(); 
+          n_el = scint_process->GetNumIonElectrons(); 
+          
+          break;
+        } 
+      }
+    }
+
+    auto anodeCfg = anaMngr->GetAnodeCfg(fTPCID); 
+
+#ifdef SLAR_DEBUG
+    printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit: %i electrons to drift\n", 
+        step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+        step->GetTrack()->GetTrackID(), 
+        n_el);
+#endif
+
+    if (anodeCfg) {
+      runAction->GetElectronDrift()->Drift(n_el, 
+          step->GetTrack()->GetTrackID(), 
+          0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
+          postStepPoint->GetGlobalTime(), 
+          anodeCfg, 
+          anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
+    } else {
+      printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
+      getchar(); 
+    }
+
     hit->Add(edep);
   }     
 

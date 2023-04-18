@@ -1,35 +1,14 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-/// \file SLArSteppingAction.cc
-/// \brief Implementation of the SLArSteppingAction class
+/**
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArSteppingAction.cc
+ * @created     Sat Apr 15, 2023 15:26:19 CEST
+ * @brief       Implementation of the SLArSteppingAction class
+ */
 
 #include "SLArScintillation.h"
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
+#include "SLArUserTrackInformation.hh"
 #include "SLArTrajectory.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
@@ -75,13 +54,25 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
   G4StepPoint* thePostPoint = step->GetPostStepPoint();
   G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume();
+  // handle exception of particles reaching the end of the world
+  if (!thePostPV) thePostPV = thePrePV;
+
+//#ifdef SLAR_DEBUG
+  //printf("Particle: %s - Boundary check: %s (%s) | %s (%s)\n", 
+      //particleDef->GetParticleName().data(),
+      //thePrePV->GetName().c_str(), 
+      //thePrePV->GetLogicalVolume()->GetMaterial()->GetName().c_str(), 
+      //thePostPV->GetName().c_str(), 
+      //thePostPV->GetLogicalVolume()->GetMaterial()->GetName().c_str());
+//#endif
+
+
   
   if (track->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
-    SLArTrajectory* trajectory =
-      (SLArTrajectory*)fTrackinAction->GetTrackingManager()->GimmeTrajectory();
+    auto trkInfo = (SLArUserTrackInformation*)track->GetUserInformation(); 
+    auto trajectory = trkInfo->GimmeEvTrajectory();
     double edep = step->GetTotalEnergyDeposit();
     auto stepMngr = fTrackinAction->GetTrackingManager()->GetSteppingManager(); 
-    trajectory->AddEdep(edep);
     int n_ph = 0; 
     int n_el = 0; 
 
@@ -101,14 +92,39 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       }
     }
 
+    if (trkInfo->CheckStoreTrajectory() == true) {
+      trj_point step_point; 
+      if (trkInfo->GimmeEvTrajectory()->GetPoints().empty()) {
+        // record origin point
+        const auto pos = thePrePoint->GetPosition(); 
+        step_point.fX = pos.x(); 
+        step_point.fY = pos.y(); 
+        step_point.fZ = pos.z(); 
+        step_point.fKEnergy = thePrePoint->GetKineticEnergy(); 
+        step_point.fCopy = thePrePV->GetCopyNo(); 
+        step_point.fNel = 0.;
+        step_point.fNph = 0.; 
+        trajectory->RegisterPoint(step_point); 
+      }
+      const auto pos = step->GetPostStepPoint()->GetPosition(); 
+      step_point.fX = pos.x(); 
+      step_point.fY = pos.y(); 
+      step_point.fZ = pos.z(); 
+      step_point.fKEnergy = thePostPoint->GetKineticEnergy(); 
+      step_point.fCopy = thePostPV->GetCopyNo(); 
+      step_point.fNel = n_el;
+      step_point.fNph = n_ph; 
+      trajectory->RegisterPoint(step_point); 
+    }
+
+    trajectory->IncrementEdep( edep ); 
+    trajectory->IncrementNion( n_el ); 
+    trajectory->IncrementNph ( n_ph ); 
+
     //printf("SLArSteppingAction::UserSteppingAction: adding %i ph and %i e ion. to %s [%i]\n", 
         //n_ph, n_el, 
         //particleDef->GetParticleName().c_str(), track->GetTrackID());
     //getchar(); 
-    trajectory->AddOpticalPhotons(n_ph); 
-    trajectory->AddIonizationElectrons(n_el); 
-    trajectory->AddVolCopyNumber( thePostPV->GetCopyNo() ); 
-
     //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
         //track->GetTrackID(), 
         //trajectory->GetTrackID(), 
@@ -151,11 +167,11 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
     //Was the photon absorbed by the absorption process
     // [from LXe example]
-    if(thePostPoint->GetProcessDefinedStep()->GetProcessName()
-       =="OpAbsorption"){
-      fEventAction->IncAbsorption();
-      phInfo->AddTrackStatusFlag(absorbed);
-    }
+    //if(thePostPoint->GetProcessDefinedStep()->GetProcessName()
+       //=="OpAbsorption"){
+      //fEventAction->IncAbsorption();
+      //phInfo->AddTrackStatusFlag(absorbed);
+    //}
 
     boundaryStatus=boundary->GetStatus();
     //Check to see if the partcile was actually at a boundary
@@ -179,23 +195,23 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       switch(boundaryStatus){
         case Absorption:
           {
-//#ifdef SLAR_DEBUG
-            //G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
-            //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
-                //track->GetTotalEnergy()*1e6,
-                //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
-//#endif
+#ifdef SLAR_DEBUG
+            G4cout << "SLArSteppingAction::UserSteppingAction Absorption" << G4endl;
+            printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+                track->GetTotalEnergy()*1e6,
+                thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
+#endif
             phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
             break;
           }
         case NoRINDEX:
-//#ifdef SLAR_DEBUG
-          //printf("SLArSteppingAction::UserSteppingAction NoRINDEX\n");
-          //printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
-              //track->GetTotalEnergy()*1e6,
-              //thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
-//#endif
+#ifdef SLAR_DEBUG
+          printf("SLArSteppingAction::UserSteppingAction NoRINDEX\n");
+          printf("ph E = %.2f eV; pre/post step point volume: %s/%s\n", 
+              track->GetTotalEnergy()*1e6,
+              thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
+#endif
           break;
         case Detection: 
           //Note, this assumes that the volume causing detection
@@ -293,5 +309,10 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
     }
   }
+
+//#ifdef SLAR_DEBUG
+    //printf("PASSED\n");
+//#endif
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

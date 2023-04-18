@@ -34,7 +34,7 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley");
+  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen");
 
   fCmdParticle= 
     new G4UIcmdWithAString("/SLAr/gen/particle", this);
@@ -47,7 +47,7 @@ SLArPrimaryGeneratorMessenger::
   fCmdBulkVol->SetGuidance("Set bulk volume for bulk event generation"); 
   fCmdBulkVol->SetGuidance("(Physical Volume name)"); 
   fCmdBulkVol->SetParameterName("PhysVol", true, false); 
-  fCmdBulkVol->SetDefaultValue("Target"); 
+  fCmdBulkVol->SetDefaultValue("target_lar_pv"); 
 
   fCmdBulkVolFraction= 
     new G4UIcmdWithADouble("/SLAr/gen/volumeFraction", this); 
@@ -68,6 +68,13 @@ SLArPrimaryGeneratorMessenger::
   fCmdBackgoundConf->SetGuidance("Set backgound configuration file"); 
   fCmdBackgoundConf->SetGuidance("(configuration file path)"); 
   fCmdBackgoundConf->SetParameterName("background_config", true, false); 
+
+  fCmdExternalConf= 
+    new G4UIcmdWithAString("/SLAr/gen/externalconf", this); 
+  fCmdExternalConf->SetGuidance("Set external backgound configuration file"); 
+  fCmdExternalConf->SetGuidance("(configuration file path)"); 
+  fCmdExternalConf->SetParameterName("external_background_config", true, false); 
+
 
   fCmdDirectionMode = 
     new G4UIcmdWithAString("/SLAr/gen/SetDirectionMode", this);
@@ -130,6 +137,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     if      (G4StrUtil::contains(strMode, "Gun"   )) gen = kParticleGun;
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
+    else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
 
     fSLArAction->SetGenerator(gen);
   } 
@@ -150,6 +158,9 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   } 
   else if (command == fCmdBackgoundConf) {
     fSLArAction->SetBackgroundConf(newValue); 
+  }
+  else if (command == fCmdExternalConf) {
+    fSLArAction->SetExternalConf(newValue); 
   }
   else if (command == fCmdDirectionMode) {
     if (G4StrUtil::contains(newValue, "fixed")) {

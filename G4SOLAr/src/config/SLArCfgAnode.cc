@@ -34,11 +34,11 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::FindPixel(double x0, double x1) {
   int ibin = fAnodeLevelsMap[0]->FindBin(x0, x1); 
 
   SLArCfgMegaTile* megatile = FindBaseElementInMap(ibin);
-  TVector3 mt_pos = TVector3(megatile->GetPhysX(), megatile->GetPhysY(), megatile->GetPhysZ()); 
-  //printf("megatile_pos: [%g, %g, %g] mm\n", 
-      //mt_pos[0], mt_pos[1], mt_pos[2]); 
-
   if (megatile) {
+    TVector3 mt_pos = TVector3(megatile->GetPhysX(), megatile->GetPhysY(), megatile->GetPhysZ()); 
+    //printf("megatile_pos: [%g, %g, %g] mm\n", 
+    //mt_pos[0], mt_pos[1], mt_pos[2]); 
+ 
     pidx[0] = megatile->GetBinIdx();  
     Double_t mt_x0 = mt_pos.Dot(fAxis0); 
     Double_t mt_x1 = mt_pos.Dot(fAxis1); 
@@ -64,7 +64,7 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::FindPixel(double x0, double x1) {
   } 
 #ifdef SLAR_DEBUG
   else {
-    printf("SLArCfgAnode::FindPixel(%g, %g)\n", x, y);
+    printf("SLArCfgAnode::FindPixel(%g, %g)\n", x0, x1);
     printf("Coordinates outside of anode scope\n"); 
   }
 #endif

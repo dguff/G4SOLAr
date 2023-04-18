@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArEvTrajectory
- * @created     : lunedì ago 31, 2020 17:39:33 CEST
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArEvTrajectory.cc
+ * @created     Mon Aug 31, 2020 17:39:33 CEST
  */
 
 #include "event/SLArEventTrajectory.hh"
@@ -45,12 +45,14 @@ SLArEventTrajectory::~SLArEventTrajectory()
   fTrjPoints.clear();
 }
 
-void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double edep, int n_ph, int n_el, int copy)
+void SLArEventTrajectory::RegisterPoint(const trj_point& point) {
+  fTrjPoints.push_back( point ); 
+  return; 
+}
+
+void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double energy, double edep, int n_ph, int n_el, int copy)
 {
-  fTrjPoints.push_back( trj_point(x, y, z, edep, n_ph, n_el, copy) );
-  fTotalEdep+=edep; 
-  fTotalNph +=n_ph; 
-  fTotalNel +=n_el; 
+  fTrjPoints.push_back( trj_point(x, y, z, energy, n_ph, n_el, copy) );
   return;
 }
 

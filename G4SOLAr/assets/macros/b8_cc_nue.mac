@@ -9,14 +9,14 @@
 
 # Set output path and file name
 /SLAr/manager/SetOutputName slar_b8_cc_nue.root
-/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
 
 # Select MARLEY generator
 /SLAr/gen/type Marley
 # Set the MARLEY configuration file
 /SLAr/gen/marleyconf assets/marley_cfg/b8_osc_spect_CC_nue.js
 # Generate vertices uniformly distributed in the volume named "Target"
-/SLAr/gen/volume Target
+/SLAr/gen/volume TPC10
+/SLAr/gen/SetDirectionMode isotropic
 
 # Fire!
-/run/beamOn 100000
+/run/beamOn 10

@@ -62,7 +62,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //! Construct virtual pixelization of the anode readout system
     void ConstructAnodeMap(); 
     //! Return SLArDetectorConstruction::fTPCs map
-    std::map<G4int, SLArDetTPC*>& GetDetTPCs();
+    inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
 
