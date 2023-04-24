@@ -152,8 +152,12 @@ void SLArDetectorConstruction::Init() {
   fCryostat->SetGeoPar( "target_x", fDetector->GetGeoPar("det_x") ); 
   fCryostat->SetGeoPar( "target_y", fDetector->GetGeoPar("det_y") ); 
   fCryostat->SetGeoPar( "target_z", fDetector->GetGeoPar("det_z") ); 
-  fCryostat->BuildCryostatStructure(d["Cryostat_structure"]); 
-  G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
+
+  if (d.HasMember("Cryostat")) {
+    fCryostat->BuildCryostatStructure(d["Cryostat"]);
+    G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
+  }
+
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
@@ -402,6 +406,8 @@ void SLArDetectorConstruction::ConstructCryostat() {
   fCryostat->GetModPV("cryostat_pv", 0, 
       fDetector->GetModPV()->GetTranslation(), 
       fWorldLog, 0) ; 
+
+  fCryostat->SetVisAttributes(); 
 
 }
 

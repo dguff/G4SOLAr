@@ -1,4 +1,3 @@
-
 # SOLAr-sim
 
 **SOLAr-sim** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
@@ -170,6 +169,7 @@ PDS event object.
 | ![PDS event diagram](./docs/figures/SLArEventPDS.png)                                                |
 | :--:                                                                                                 |
 | **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
+
 
 
 ### SOLAr Event Dictionaries

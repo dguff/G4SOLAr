@@ -17,7 +17,7 @@
 SLArElectronDrift::SLArElectronDrift() :
   fElectricField(0.5), fLArTemperature(87.7), fMuElectron(1.), 
   fDiffCoefficientL(0.), fDiffCoefficientT(0.), 
-  fvDrift(1.0), fElectronLifetime(1e6)
+  fvDrift(1.0), fElectronLifetime(1e7)
 {}
 
 void SLArElectronDrift::ComputeProperties() {
@@ -109,7 +109,6 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
   auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
-
 #ifdef SLAR_DEBUG
   printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
       n, pos.x(), pos.y(), pos.z(), time);

@@ -9,6 +9,7 @@
 #define SLARDETCRYOSTAT_HH
 
 #include "detector/SLArBaseDetModule.hh"
+#include "detector/SLArGeoUtils.hpp"
 
 struct SLArCryostatLayer{
   public:
@@ -49,12 +50,18 @@ class SLArDetCryostat : public SLArBaseDetModule {
 
   private: 
     SLArMaterial* fMatWorld; 
+    SLArMaterial* fMatWaffle; 
+    SLArBaseDetModule* fWaffleUnit;
+    G4bool fBuildSupport; 
     std::map<G4String, SLArMaterial*> fMaterials;
+
     SLArCryostatStructure fCryostatStructure; 
     SLArBaseDetModule* BuildCryostatLayer(
         G4String name, 
         G4double x_, G4double y_, G4double z_, G4double tk_, 
         G4Material* mat);
+    void BuildSupportStructureUnit(); 
+    SLArBaseDetModule* BuildSupportStructure(slargeo::EBoxFace kFace); 
 
 };
 
