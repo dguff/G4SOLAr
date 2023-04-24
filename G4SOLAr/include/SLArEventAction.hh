@@ -75,7 +75,7 @@ public:
 private:
     G4int fTileHCollID;
     G4int fSuperCellHCollID;
-    G4int fLArHCollID;
+    std::vector<G4int> fLArHCollID;
 
     G4int fHitCount;
     G4int fPhotonCount_Scnt;

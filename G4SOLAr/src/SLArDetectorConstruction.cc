@@ -152,8 +152,12 @@ void SLArDetectorConstruction::Init() {
   fCryostat->SetGeoPar( "target_x", fDetector->GetGeoPar("det_x") ); 
   fCryostat->SetGeoPar( "target_y", fDetector->GetGeoPar("det_y") ); 
   fCryostat->SetGeoPar( "target_z", fDetector->GetGeoPar("det_z") ); 
-  fCryostat->BuildCryostatStructure(d["Cryostat_structure"]); 
-  G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
+
+  if (d.HasMember("Cryostat")) {
+    fCryostat->BuildCryostatStructure(d["Cryostat"]);
+    G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
+  }
+
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
@@ -390,6 +394,7 @@ void SLArDetectorConstruction::ConstructTarget() {
   matTarget->BuildMaterialFromDB(fMaterialDBFile); 
   fDetector->SetLogicVolume( new G4LogicalVolume(fDetector->GetModSV(), 
       matTarget->GetMaterial(), "lar_target_lv") ); 
+  fDetector->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
 
 }
 
@@ -401,6 +406,8 @@ void SLArDetectorConstruction::ConstructCryostat() {
   fCryostat->GetModPV("cryostat_pv", 0, 
       fDetector->GetModPV()->GetTranslation(), 
       fWorldLog, 0) ; 
+
+  fCryostat->SetVisAttributes(); 
 
 }
 
@@ -532,8 +539,7 @@ void SLArDetectorConstruction::ConstructSDandField()
       = new SLArReadoutTileSD(SDname="/tile/sipm");
     SDman->AddNewDetector(sipmSD);
     SetSensitiveDetector(
-        fReadoutTile->GetSiPMActive()->GetModLV(), 
-        sipmSD);
+        fReadoutTile->GetSiPMActive()->GetModLV(), sipmSD );
   }
 
   //Set SuperCell SD
@@ -542,21 +548,19 @@ void SLArDetectorConstruction::ConstructSDandField()
       = new SLArSuperCellSD(SDname="/supercell"); 
     SDman->AddNewDetector(superCellSD); 
     SetSensitiveDetector(
-        fSuperCell->GetCoating()->GetModLV(), 
-        superCellSD
-        );
+        fSuperCell->GetCoating()->GetModLV(), superCellSD );
   }
 
   // Set LAr-volume SD
-  G4VSensitiveDetector* targetSD
-    = new SLArLArSD(SDname="/TPC/LArTPC");
-  SDman->AddNewDetector(targetSD);
-
+  G4int iTPC = 0; 
   for (const auto tpc : fTPC) {
-    SetSensitiveDetector(
-        tpc.second->GetModLV(), 
-        targetSD);
+    auto tpcSD = 
+      new SLArLArSD("/TPC/LArTPC"+std::to_string(tpc.first), tpc.first);
+    SDman->AddNewDetector(tpcSD);
+    SetSensitiveDetector(tpc.second->GetModLV(), tpcSD);
+    iTPC++; 
   }
+
 
   ConstructCryostatScorer(); 
 }
@@ -786,7 +790,10 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
     G4RotationMatrix* mtile_rot_inv = new G4RotationMatrix(*mtile_rot); 
     mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 
-    auto hMapPixel = fReadoutTile->BuildTileChgPixelMap(nullptr, mtile_rot_inv);
+    auto hMapPixel = fReadoutTile->BuildTileChgPixelMap(
+        G4ThreeVector(anodeCfg->GetAxis0().x(), anodeCfg->GetAxis0().y(), anodeCfg->GetAxis0().z()), 
+        G4ThreeVector(anodeCfg->GetAxis1().x(), anodeCfg->GetAxis1().y(), anodeCfg->GetAxis1().z()), 
+        nullptr, mtile_rot_inv);
     printf("mapPixel\n");
 
     anodeCfg->RegisterMap(0, hMapMegaTile); 

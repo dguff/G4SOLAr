@@ -10,6 +10,7 @@
 #include "SLArReadoutTileHit.hh"
 #include "SLArSuperCellHit.hh"
 #include "SLArTrajectory.hh"
+#include "SLArDetectorConstruction.hh"
 #include "detector/TPC/SLArLArHit.hh"
 #include "physics/SLArElectronDrift.hh"
 
@@ -31,8 +32,7 @@
 SLArEventAction::SLArEventAction()
 : G4UserEventAction(), 
   fTileHCollID  (-2), 
-  fSuperCellHCollID(-5), 
-  fLArHCollID(-4)
+  fSuperCellHCollID(-5)
 {
   // set printing per each event
   G4RunManager::GetRunManager()->SetPrintProgress(1);
@@ -67,14 +67,24 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
       fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
     if (fSuperCellHCollID == -5) 
       fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
-    if (fLArHCollID == -4)
-      fLArHCollID = sdManager->GetCollectionID("LArColl");
+    if (fLArHCollID.empty()) {
+      auto detConstruction = (SLArDetectorConstruction*)
+        G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+      for (const auto &tpc : detConstruction->GetDetTPCs() ) {
+        auto coll_id = 
+          sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
+        fLArHCollID.push_back(coll_id); 
+      }
+    }
+     
 
 #ifdef SLAR_DEBUG
     G4cout << "SLArEventAction::BeginOfEventAction(): ";
     G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
     G4cout << "SuperCell ID   = " << fSuperCellHCollID << G4endl;
-    G4cout << "LAr volume ID  = " << fLArHCollID << G4endl;
+    G4cout << "LAr volume ID  = "; 
+    for (const auto &id : fLArHCollID) printf("%i \n", id);
+    G4cout << G4endl;
 #endif
 
     // Reset hits in DST event 
@@ -321,17 +331,18 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
 #endif
 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-  if (fLArHCollID == -4) return;
+  if (fLArHCollID.empty()) return;
   else 
   {
     // recover analysis manager
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-    SLArLArHitsCollection* hHC1 
-      = static_cast<SLArLArHitsCollection*>(hce->GetHC(fLArHCollID));
+    //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    for (const auto &id : fLArHCollID) {
+      SLArLArHitsCollection* hHC1 
+        = static_cast<SLArLArHitsCollection*>(hce->GetHC(id));
 
-    SLArLArHit* hit = (*hHC1)[0];
-    fTotEdep = hit->GetDepositedEnergy();
-
+      SLArLArHit* hit = (*hHC1)[0];
+      fTotEdep = hit->GetDepositedEnergy();
+    }
 /*
  *    G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
  *    if (trj_cont)

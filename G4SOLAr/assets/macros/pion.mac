@@ -11,17 +11,17 @@
 /SLAr/phys/positronCut 0.5 mm
 /SLAr/phys/gammaCut 2.5 mm
 /SLAr/phys/stepMax 2.5 mm
-/SLAr/phys/DoTracePhotons true
+/SLAr/phys/DoTracePhotons false
 
 # Set particle energy and source position 
 /SLAr/gen/type ParticleGun
-/SLAr/gen/particle e-
-/SLAr/gen/energy 7 MeV
-/SLAr/gen/volume TPC11
-/SLAr/gen/SetDirectionMode isotropic
+/SLAr/gen/particle e+
+/SLAr/gen/energy 1.2 GeV
+/SLAr/gen/gunPosition 100 0 -200 cm
+/SLAr/gen/direction 0 0 1
 
 # Set output file name
-/SLAr/manager/SetOutputName electrons.root
+/SLAr/manager/SetOutputName pion.root
 
 # Fire!
 /run/beamOn 1

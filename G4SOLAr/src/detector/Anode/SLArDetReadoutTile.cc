@@ -96,8 +96,8 @@ void SLArDetReadoutTile::BuildPCB()
       "PCBBaseLV", 0, 0, 0)
     );
 
-  printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
-      fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
+  //printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
+      //fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
 }
 
 void SLArDetReadoutTile::BuildSiPM()
@@ -300,13 +300,13 @@ void SLArDetReadoutTile::SetVisAttributes()
   }
 
   visAttributes = new G4VisAttributes();
-  visAttributes->SetColor(0.305, 0.294, 0.345);
-  fModLV->SetVisAttributes( G4VisAttributes(false) );
+  visAttributes->SetColor(0.80, 0.80, 0.80);
+  fModLV->SetVisAttributes( visAttributes );
 
   for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
     auto lv = fModLV->GetDaughter(ii)->GetLogicalVolume(); 
     if ( std::strcmp(lv->GetName().data(), "rdtile_cell_plane_lv") == 0) {
-      lv->SetVisAttributes( visAttributes ); 
+      lv->SetVisAttributes( G4VisAttributes(false) ); 
     }
   }
 
@@ -460,7 +460,16 @@ G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
 }
 
 
-TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4RotationMatrix* _rot) {
+TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
+    const G4ThreeVector& xAxis, const G4ThreeVector& yAxis, 
+    const G4ThreeVector* _shift, const G4RotationMatrix* _rot) {
+
+#ifdef SLAR_DEBUG
+  printf("SLArDetReadoutTile::BuildTileChgPixelMap():\n");
+  if (_shift) G4cout<< "shift: " << *_shift << G4endl;
+  if (_rot) G4cout << "rot: " << *_rot << G4endl; 
+#endif
+
   TH2Poly* h2 = new TH2Poly("h2TileChgPixMap", 
       "Tile charge pixel map", 
       -0.5*fGeoInfo->GetGeoPar("tile_z"), + 0.5*fGeoInfo->GetGeoPar("tile_z"), 
@@ -543,10 +552,13 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(G4ThreeVector* _shift, G4Rotat
             } else {
               edge_phys = edge_pos;
             }
+
+            G4double x = edge_phys.dot(xAxis); 
+            G4double y = edge_phys.dot(yAxis); 
 #ifdef SLAR_DEBUG
-            printf("Adding point: %g, %g mm\n", edge_phys.z(), edge_phys.y());
+            printf("Adding point: %g, %g mm\n", x, y);
 #endif
-            g->AddPoint(edge_phys.z(), edge_phys.y()); 
+            g->AddPoint(x, y); 
           }
 
           h2->AddBin(g); 

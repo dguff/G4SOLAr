@@ -48,7 +48,7 @@ ExternalProject_Add("bxdecay0"
 ExternalProject_Add("marley"
   SOURCE_DIR ${CMAKE_INSTALL_PREFIX}/marley
   BINARY_DIR ${CMAKE_INSTALL_PREFIX}/marley/build
-  GIT_REPOSITORY "https://github.com/MARLEY-MC/marley.git"
+  GIT_REPOSITORY "https://github.com/njlane314/marley.git"
   GIT_TAG "main"
   UPDATE_DISCONNECTED 0
   CONFIGURE_COMMAND cmake -E echo "MARLEY: Skipping configure command"

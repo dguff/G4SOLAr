@@ -1,0 +1,9 @@
+{
+  "externals" : 
+    {
+      "particle" : "neutron", 
+      "origin_volume" : "cryostat_pv", 
+      "file" : "/home/guff/Dune/SOLAr/SOLAr-sim/install/assets/background/dune_cavern_n.root",
+      "key" : "EnergySpectrum"
+    }
+}

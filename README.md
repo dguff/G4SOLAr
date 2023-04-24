@@ -1,8 +1,7 @@
+# SOLAr-sim
 
-# G4SOLAr
-
-**G4SOLAr** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
-for studying low-energy events in the context of the SOLAr project.
+**SOLAr-sim** implements a Geant4-based Monte Carlo simulation of a generic LAr TPC
+for studying low-energy events in the context of the SOLAr project. 
 
 ## Disclaimer
 This code has never been properly tested, but there are some reasonable 
@@ -44,7 +43,7 @@ such as the [CERN computing environment](#installing-SOLAr-sim-on-cern-lxplus).
 ### Installing G4SOLAr on CERN lxplus
 #### Step 1 - Download the project from github, setup the environment and install dependencies
 ```bash
-$ git clone https://github.com/dguff/G4SOLAr.git
+$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
 ```
 After cloning the repository, setup the needed dependencies that are already 
 installed on the FNAL ecosystem by sourcing the `setup_g4solar.sh` script. 
@@ -73,10 +72,10 @@ Note that the geant4 version installed on `dunegpvm` nodes is compiled
 against an independent installation of `CLHEP`, so one has to specify the 
 `CLHEP` include directory when calling `cmake`.
 
-### Installing G4SOLAr on a generic machine
+### Installing SOLAr-sim on a generic machine
 #### Step 1 - Download the project from github and install dependencies
 ```bash
-$ git clone https://github.com/dguff/G4SOLAr.git
+$ git clone https://github.com/SoLAr-Neutrinos/SOLAr-sim.git
 ```
 If the project dependencies are not yet installed, follow the instructions
 on [this page](./README_EXTERNALS.md).
@@ -94,7 +93,7 @@ The project will search for the external dependencies in the
 specify a specific installation directory by setting it in the `cmake`
 command line (`-DG4SOLAR_EXT_DIR=/my/g4solar_ext/path`). 
 
-### Run G4SOLAr
+### Run SOLAr-sim
 
 It is possible to run the simulation directly from the installation folder, but it
 is advised to add the build directory to the executable PATH to be able to run 
@@ -172,7 +171,8 @@ PDS event object.
 | **Fig. 2** Schematic representation of the event class for the PDS based on the readout tile concept |
 
 
-### G4SOLAr Event Dictionaries
+
+### SOLAr Event Dictionaries
 
 To be able to access the event information in an interactive ROOT session, 
 one should load the shared libraries defining the event and configuration 

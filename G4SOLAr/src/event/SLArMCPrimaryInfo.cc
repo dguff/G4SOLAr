@@ -1,8 +1,9 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArMCPrimaryInfo
- * @created     : venerdì feb 14, 2020 16:56:53 CET
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        SLArMCPrimaryInfo.cc
+ * @created     Fri Feb 14, 2020 16:56:53 CET
  */
+
 
 #include <iostream>
 #include <string.h>

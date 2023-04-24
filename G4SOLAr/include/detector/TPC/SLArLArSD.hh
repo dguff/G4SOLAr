@@ -21,7 +21,7 @@ class G4TouchableHistory;
 class SLArLArSD : public G4VSensitiveDetector
 {
 public:
-    SLArLArSD(G4String name);
+    SLArLArSD(G4String name, G4int tpcID);
     virtual ~SLArLArSD();
     
     virtual void Initialize(G4HCofThisEvent*HCE);
@@ -30,6 +30,7 @@ public:
 private:
     SLArLArHitsCollection* fHitsCollection;
     G4int    fHCID;
+    G4int    fTPCID;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

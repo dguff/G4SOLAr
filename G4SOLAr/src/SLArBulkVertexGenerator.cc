@@ -112,8 +112,8 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   G4ThreeVector hi;
   fSolid->BoundingLimits(lo, hi);
 
-  printf("lo: [%.1f, %.1f, %.1f]\nhi: [%.1f, %.1f, %.1f]\n", 
-      lo.x(), lo.y(), lo.z(), hi.x(), hi.y(), hi.z());
+  //printf("lo: [%.1f, %.1f, %.1f]\nhi: [%.1f, %.1f, %.1f]\n", 
+      //lo.x(), lo.y(), lo.z(), hi.x(), hi.y(), hi.z());
 
   double delta = 0.; 
   if (fFVFraction < 1.0) {
