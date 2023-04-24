@@ -7,16 +7,6 @@
 #include "SLArBoxSurfaceVertexGenerator.hh"
 #include "G4RandomTools.hh"
 
-std::map<SLArBoxSurfaceVertexGenerator::EBoxFace, G4ThreeVector> 
-SLArBoxSurfaceVertexGenerator::BoxFaceNormal  = {
-  {SLArBoxSurfaceVertexGenerator::kXplus, G4ThreeVector(-1, 0, 0)},
-  {SLArBoxSurfaceVertexGenerator::kXminus, G4ThreeVector(+1, 0, 0)},
-  {SLArBoxSurfaceVertexGenerator::kYplus, G4ThreeVector(0, -1, 0)},
-  {SLArBoxSurfaceVertexGenerator::kYminus, G4ThreeVector(0, +1, 0)},
-  {SLArBoxSurfaceVertexGenerator::kZplus, G4ThreeVector(0, 0, -1)},
-  {SLArBoxSurfaceVertexGenerator::kZminus, G4ThreeVector(0, 0, +1)}
-};
-
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse(); 
@@ -122,13 +112,13 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   if (fFixFace == false) {
     G4double total_area = 2*(dim.x()*dim.y() + dim.x()*dim.z() + dim.y()*dim.z()); 
-    std::map<EBoxFace, G4double> area_fraction; 
+    std::map<slargeo::EBoxFace, G4double> area_fraction; 
 
     for (int i=0; i<6; i++) {
-      EBoxFace kFace = EBoxFace(i); 
+      slargeo::EBoxFace kFace = slargeo::EBoxFace(i); 
       G4double area = 1; 
       for (int  j=0; j < 3; j++) {
-        if (BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
+        if (slargeo::BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
       }
 
       area_fraction.insert( std::make_pair(kFace, area / total_area)); 
@@ -140,30 +130,30 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     //printf("face_sample = %g\n", face_sample);
     while (face_sample > face_prob) {
       iface++;
-      face_prob += area_fraction[(EBoxFace)iface]; 
+      face_prob += area_fraction[(slargeo::EBoxFace)iface]; 
     }
 
-    fVtxFace = (EBoxFace)iface;
+    fVtxFace = (slargeo::EBoxFace)iface;
   }
 
   //printf("vertex generator face is: %i\n", fVtxFace);
   //G4cout << "face normal is: " << BoxFaceNormal[fVtxFace] << G4endl;
   G4ThreeVector face_axis = G4ThreeVector(0, 0, 0); 
   for (int j=0; j<3; j++) {
-    if (axis[j].dot(BoxFaceNormal[fVtxFace]) != 0) {
+    if (axis[j].dot(slargeo::BoxFaceNormal[fVtxFace]) != 0) {
       face_axis = axis[j]; 
       break;
     }
   }
 
   G4ThreeVector face_center_local = 
-    -0.5*dim.dot(BoxFaceNormal[fVtxFace])*face_axis;
+    -0.5*dim.dot(slargeo::BoxFaceNormal[fVtxFace])*face_axis;
   //G4cout << "face_center_local: " << face_center_local << G4endl; 
   G4ThreeVector local_displacement = G4ThreeVector(0, 0, 0); 
   for (int j=0; j<3; j++) {
     double rnd = G4UniformRand() - 0.5; 
     local_displacement[j] += 
-    BoxFaceNormal[fVtxFace].cross( axis[j] ).mag()*rnd*dim[j];
+    slargeo::BoxFaceNormal[fVtxFace].cross( axis[j] ).mag()*rnd*dim[j];
   }
   //G4cout << "local_displacement: " << local_displacement << G4endl;
 

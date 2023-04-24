@@ -16,22 +16,19 @@
 #include "G4Box.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
+#include "detector/SLArGeoUtils.hpp"
 
 class SLArBoxSurfaceVertexGenerator : 
   public bxdecay0_g4::VertexGeneratorInterface 
 {
   public: 
-    enum EBoxFace {kXplus=0, kXminus=1, kYplus=2, kYminus=3, kZplus=4, kZminus=5}; 
-    static std::map<EBoxFace, G4ThreeVector> BoxFaceNormal; 
-    
-
     SLArBoxSurfaceVertexGenerator(); 
     SLArBoxSurfaceVertexGenerator(const SLArBoxSurfaceVertexGenerator&); 
     ~SLArBoxSurfaceVertexGenerator() override; 
 
     void FixVertexFace(const bool isFaceFixed) {fFixFace = isFaceFixed;}
-    void SetVertexFace(const EBoxFace face) {fVtxFace = face;}
-    EBoxFace GetVertexFace() const {return fVtxFace;}
+    void SetVertexFace(const slargeo::EBoxFace face) {fVtxFace = face;}
+    slargeo::EBoxFace GetVertexFace() const {return fVtxFace;}
     const G4LogicalVolume* GetBoxLogicalVolume() const; 
     void SetBoxLogicalVolume(const G4LogicalVolume*); 
     const G4VSolid* GetSolid() const; 
@@ -57,7 +54,7 @@ class SLArBoxSurfaceVertexGenerator :
     unsigned int fRandomSeed{0}; ///< Seed for the random number generator
     bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
     bool fFixFace = false; ///
-    EBoxFace fVtxFace = kXplus; 
+    slargeo::EBoxFace fVtxFace = slargeo::kXplus; 
 
     // Working internals:
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
