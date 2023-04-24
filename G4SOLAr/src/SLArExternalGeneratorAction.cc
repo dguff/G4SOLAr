@@ -63,7 +63,7 @@ void SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path)
     if (fVtxGen) {
       fVtxGen->FixVertexFace(true); 
       fVtxGen->SetVertexFace(
-          (SLArBoxSurfaceVertexGenerator::EBoxFace)external_cfg["origin_face"].GetInt()); 
+          (slargeo::EBoxFace)external_cfg["origin_face"].GetInt()); 
     }
   }
 
@@ -113,7 +113,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
   G4double energy = fEnergySpectrum->GetRandom(); 
   auto face = fVtxGen->GetVertexFace(); 
-  const auto face_normal = SLArBoxSurfaceVertexGenerator::BoxFaceNormal[face]; 
+  const auto face_normal = slargeo::BoxFaceNormal[face]; 
   //printf("SLArExternalGeneratorAction: vtx face is %i\n", face);
   //printf("SLArExternalGeneratorAction: face normal is [%.1f, %.1f, %.1f]\n", 
       //face_normal.x(), face_normal.y(), face_normal.z()); 

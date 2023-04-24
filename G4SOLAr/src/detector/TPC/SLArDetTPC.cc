@@ -102,8 +102,6 @@ void SLArDetTPC::BuildFieldCage() {
       R-tk, R, 0.5*std::max(hl, hs), 0, 90*CLHEP::deg); 
   auto fc_corner_lv = new G4LogicalVolume(fc_corner_tub, fMatFieldCage->GetMaterial(), 
       "fc_corner_lv"); 
-  //G4double dly = 0.; G4double dlz = 0.; 
-  //if (hy > hz) {dly = 0.; dlz = tk;} else {dly = tk, dlz = 0.;} 
   G4double dly = R; G4double dlz = R; 
   auto fc_yside_box = new G4Box("fc_lside_box", 
       0.5*hy, 0.5*tk, 0.5*Dfc[1] - dly); 
@@ -134,11 +132,11 @@ void SLArDetTPC::BuildFieldCage() {
     new G4RotationMatrix(_cornerTubAxis.cross(G4ThreeVector(1, 0, 0)), delta); 
   G4RotationMatrix* rot0 = new G4RotationMatrix(*rot_common); 
   G4RotationMatrix* rot1 = new G4RotationMatrix(*rot_common); 
-  rot1->rotateZ(-90*CLHEP::deg); 
+  rot1->rotateZ(-0.5*CLHEP::pi); 
   G4RotationMatrix* rot2 = new G4RotationMatrix(*rot_common); 
-  rot2->rotateZ(-180*CLHEP::deg); 
+  rot2->rotateZ(-1.0*CLHEP::pi); 
   G4RotationMatrix* rot3 = new G4RotationMatrix(*rot_common); 
-  rot3->rotateZ(-270*CLHEP::deg); 
+  rot3->rotateZ(-1.5*CLHEP::pi); 
   /*auto corner_0 = */
   new G4PVPlacement(rot0, G4ThreeVector(0, 0.5*Dfc[1]-R, 0.5*Dfc[2]-R),
       fc_corner_lv, "fc_corner0_pv", fc_layer_lv, false, 10); 
@@ -154,21 +152,21 @@ void SLArDetTPC::BuildFieldCage() {
 
   // place the sides
   /*auto yside_0 = */
-  new G4PVPlacement(new G4RotationMatrix(axis[0], 90*CLHEP::deg), 
+  new G4PVPlacement(new G4RotationMatrix(axis[0], 0.5*CLHEP::pi), 
       G4ThreeVector(0, 0, -0.5*(Dfc[2]-tk)),
       fc_yside_lv, "fc_yside0_pv", fc_layer_lv, false, 14);   
   /*auto yside_1 = */
-  new G4PVPlacement(new G4RotationMatrix(axis[0], 90*CLHEP::deg), 
+  new G4PVPlacement(new G4RotationMatrix(axis[0], 0.5*CLHEP::pi), 
       G4ThreeVector(0, 0, +0.5*(Dfc[2]-tk)),
       fc_yside_lv, "fc_yside1_pv", fc_layer_lv, false, 15);   
   /*auto zside_0 = */
   new G4PVPlacement(nullptr, 
       G4ThreeVector(0, -0.5*(Dfc[1]-tk), 0.),
-      fc_zside_lv, "fc_zside0_pv", fc_layer_lv, false, 14);   
+      fc_zside_lv, "fc_zside0_pv", fc_layer_lv, false, 16);   
   /*auto zside_1 = */
-  new G4PVPlacement(nullptr, 
+  new G4PVPlacement(0, 
       G4ThreeVector(0, +0.5*(Dfc[1]-tk), 0.),
-      fc_zside_lv, "fc_zside1_pv", fc_layer_lv, false, 15);   
+      fc_zside_lv, "fc_zside1_pv", fc_layer_lv, false, 17);   
 
   auto fcvolume_outer_box = new G4Box("fcvolume_outer_box", 
       0.5*DDriftLength, 0.5*Dfc[1], 0.5*Dfc[2] ); 
@@ -232,10 +230,12 @@ void SLArDetTPC::BuildTPC()
     BuildFieldCage(); 
 
     G4RotationMatrix* rot = new G4RotationMatrix(); 
-    auto _fcAxis = G4ThreeVector(1, 0, 0); 
-    auto _fieldDir   = fElectronDriftDir;
-    auto _angle = _fieldDir.angle(_fcAxis); 
-    rot->set(_fieldDir.cross(_fcAxis), _angle); 
+    const auto _fcAxis = G4ThreeVector(1, 0, 0); 
+    const auto _fieldDir   = fElectronDriftDir;
+    const auto _angle = _fieldDir.angle(_fcAxis);
+    auto rot_axis = _fieldDir.cross(_fcAxis); 
+    if (rot_axis.mag2() < 1e-6) rot_axis = _fcAxis;
+    rot->set(rot_axis, _angle); 
     fFieldCage->GetModPV("field_cage", rot, G4ThreeVector(0, 0, 0), this->GetModLV(), 0, 99); 
   }
 }
