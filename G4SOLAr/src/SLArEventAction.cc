@@ -79,11 +79,11 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
      
 
 #ifdef SLAR_DEBUG
-    G4cout << "SLArEventAction::BeginOfEventAction(): ";
+    G4cout << "SLArEventAction::BeginOfEventAction():" << G4endl;
     G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
     G4cout << "SuperCell ID   = " << fSuperCellHCollID << G4endl;
     G4cout << "LAr volume ID  = "; 
-    for (const auto &id : fLArHCollID) printf("%i \n", id);
+    for (const auto &id : fLArHCollID) printf("%i ", id);
     G4cout << G4endl;
 #endif
 
