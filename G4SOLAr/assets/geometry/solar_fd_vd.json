@@ -1,0 +1,19 @@
+{
+  "World" : {
+    "copyID" : 0, 
+    "dimensions" : [
+      {"name" : "size_x" , "val" : 20.0, "unit": "m"},    
+      {"name" : "size_y" , "val" : 20.0, "unit": "m"},   
+      {"name" : "size_z" , "val" : 75.0, "unit": "m"}
+    ]
+  },
+  #include "solar_fd_tpc_vd.json"
+  ,
+  #include "solar_fd_cryostat.json"
+  ,
+  #include "tile_full_sipm_fd.json"
+  ,
+  #include "solar_fd_vd_pds.json"
+}
+
+
