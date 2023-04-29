@@ -540,9 +540,11 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
           //}
 
           TGraph* g = new TGraph(); 
-//#ifdef SLAR_DEBUG
-          //printf("Registering pixel collection area:\n");
-//#endif
+          int ipoint = 0; 
+#ifdef SLAR_DEBUG
+          printf("Registering pixel collection area:\n");
+#endif
+
           for (const auto &edge : cc.fEdges) {
             G4ThreeVector edge_pos = edge + cell_pos; 
             G4ThreeVector edge_phys(0, 0, 0); 
@@ -555,10 +557,11 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
 
             G4double x = edge_phys.dot(xAxis); 
             G4double y = edge_phys.dot(yAxis); 
-//#ifdef SLAR_DEBUG
-            //printf("Adding point: %g, %g mm\n", x, y);
-//#endif
-            g->AddPoint(x, y); 
+#ifdef SLAR_DEBUG
+            printf("Adding point: %g, %g mm\n", x, y);
+#endif
+            g->SetPoint(ipoint, x, y); 
+            ipoint++; 
           }
 
           h2->AddBin(g); 
