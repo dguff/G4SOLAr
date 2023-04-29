@@ -66,11 +66,14 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     virtual void GeneratePrimaries(G4Event*);
 
+    inline bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
+    inline bool DoDriftElectrons() {return fDoDriftElectrons;}
+    inline void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
+    inline void SetDriftElectrons(bool do_drift) {fDoDriftElectrons = do_drift;}
+
     G4String GetMarleyConf() {return fMarleyCfg;}
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
-    bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
-
     void SetGenerator(EGenerator gen) {fGeneratorEnum = gen;}
     void SetSourcePosition(G4ThreeVector pos) {fGunPosition = pos;}
     void SetEventDirection(G4ThreeVector dir) {fGunDirection = dir;}
@@ -81,8 +84,6 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetMarleyConf(G4String marley_conf); 
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
-    void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
-
 
   private:
     std::vector<G4VUserPrimaryGeneratorAction*> fGeneratorActions; 
@@ -104,9 +105,11 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ThreeVector  fGunPosition;
     G4ThreeVector  fGunDirection;
     G4double       fGunEnergy; 
-    bool           fDoTraceOptPhotons;
     bool           fIncludeBackground; 
     G4String       fBackgoundModelCfg;
+
+    G4bool fDoDriftElectrons;
+    G4bool fDoTraceOptPhotons;
 
     G4ThreeVector  SampleRandomDirection(); 
 

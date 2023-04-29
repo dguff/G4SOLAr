@@ -81,7 +81,7 @@ void SLArDetCathode::BuildCathode()
   SetLogicVolume(
     new G4LogicalVolume(fModSV, 
       fMatCathode->GetMaterial(),
-      "cathode"+std::to_string(fID)+"_lv", 0, 0, 0)
+      "cathode"+std::to_string(fID)+"_lv") 
     );
  }
 
@@ -118,7 +118,7 @@ void SLArDetCathode::Init(const rapidjson::Value& jconf) {
   assert(jcathode.HasMember("position")); 
   assert(jcathode.HasMember("copyID")); 
 
-  jcathode["copyID"].GetInt(); 
+  fID = jcathode["copyID"].GetInt(); 
   fGeoInfo->ReadFromJSON(jcathode["position"].GetObj(), "pos"); 
   fGeoInfo->ReadFromJSON(jcathode["dimensions"].GetArray()); 
 
