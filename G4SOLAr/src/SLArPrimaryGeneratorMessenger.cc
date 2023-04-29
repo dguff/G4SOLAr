@@ -105,6 +105,12 @@ SLArPrimaryGeneratorMessenger::
   fCmdTracePhotons->SetGuidance("Set/unset tracing of optical photons"); 
   fCmdTracePhotons->SetParameterName("do_trace", false, true); 
   fCmdTracePhotons->SetDefaultValue(true);
+
+  fCmdDriftElectrons = 
+    new G4UIcmdWithABool("/SLAr/phys/DoDriftElectrons", this); 
+  fCmdDriftElectrons->SetGuidance("Set/unset drift and collection of ionization electrons"); 
+  fCmdDriftElectrons->SetParameterName("do_trace", false, true); 
+  fCmdDriftElectrons->SetDefaultValue(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -121,7 +127,8 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdGunPosition;
   delete fCmdGunDirection;
   delete fCmdGunDir;
-  delete fCmdTracePhotons;
+  delete fCmdTracePhotons; 
+  delete fCmdDriftElectrons;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -192,6 +199,13 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 
     fSLArAction->SetTraceOptPhotons(do_trace); 
   }
+  else if (command == fCmdDriftElectrons) {
+    bool do_drift = fCmdDriftElectrons->GetNewBoolValue(newValue); 
+    fSLArAction->SetDriftElectrons(do_drift); 
+  }
+
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

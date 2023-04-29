@@ -241,4 +241,4 @@ void SLArPhysicsListMessenger::SetNewValue(G4UIcommand* command,
     G4String name = newValue;
     fPhysicsList->RemoveFromPhysicsList(name);
   }
-}
+ }

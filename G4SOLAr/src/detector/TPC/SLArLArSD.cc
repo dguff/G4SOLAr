@@ -11,6 +11,7 @@
 #include "SLArRunAction.hh"
 #include "SLArTrajectory.hh"
 #include "SLArScintillation.h"
+#include "SLArPrimaryGeneratorAction.hh"
 #include "detector/TPC/SLArLArSD.hh"
 #include "detector/TPC/SLArLArHit.hh"
 #include "physics/SLArElectronDrift.hh"
@@ -73,6 +74,9 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
+#ifdef SLAR_DEBUG
+  printf("SLArLArSD::ProcessHits(trk %i)\n", step->GetTrack()->GetTrackID());
+#endif
 
   if (step->GetTrack()->GetDynamicParticle()
       ->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
@@ -125,18 +129,23 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         n_el);
 #endif
 
-    if (anodeCfg) {
-      runAction->GetElectronDrift()->Drift(n_el, 
-          step->GetTrack()->GetTrackID(), 
-          0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
-          postStepPoint->GetGlobalTime(), 
-          anodeCfg, 
-          anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
-    } else {
-      printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
-      getchar(); 
-    }
+    auto generatorAction = (SLArPrimaryGeneratorAction*)
+      G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
 
+    if (generatorAction->DoDriftElectrons()) {
+
+      if (anodeCfg) {
+        runAction->GetElectronDrift()->Drift(n_el, 
+            step->GetTrack()->GetTrackID(), 
+            0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
+            postStepPoint->GetGlobalTime(), 
+            anodeCfg, 
+            anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
+      } else {
+        printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
+        getchar(); 
+      }
+    }
     hit->Add(edep);
   }     
 

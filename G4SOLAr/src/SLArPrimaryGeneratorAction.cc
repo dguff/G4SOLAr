@@ -64,7 +64,8 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
    fGeneratorEnum(kParticleGun), 
    fGunPosition(0, 0, 0),
    fGunDirection(0, 0, 1), 
-   fDoTraceOptPhotons(true)
+   fDoTraceOptPhotons(true), 
+   fDoDriftElectrons(true)
 {
   G4int n_particle = 1;
   fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
@@ -94,9 +95,9 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
     }
     igen++;
   }
-  delete fBulkGenerator;
-  delete fBoxGenerator;
-  delete fGunMessenger;
+  if (fBulkGenerator) delete fBulkGenerator;
+  if (fBoxGenerator) delete fBoxGenerator;
+  if (fGunMessenger) delete fGunMessenger;
   printf("DONE\n");
 }
 
@@ -166,7 +167,13 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   switch (fGeneratorEnum) {
     
     case kDecay0:
-      gen = fGeneratorActions[kDecay0]; 
+      {
+        auto decay0_gen = 
+          (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0]; 
+        if (!decay0_gen->HasVertexGenerator())
+          decay0_gen->SetVertexGenerator(fBulkGenerator); 
+        gen = decay0_gen; 
+      }
       break;
 
     case kMarley: 
