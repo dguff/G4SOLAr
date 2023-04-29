@@ -286,7 +286,7 @@ void SLArDetReadoutTile::SetVisAttributes()
 {
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.0824, 0.635, 0.019);
-  fBasePCB->GetModLV()->SetVisAttributes( visAttributes );
+  fBasePCB->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
 
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
   fSiPM->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
@@ -301,7 +301,7 @@ void SLArDetReadoutTile::SetVisAttributes()
 
   visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.80, 0.80, 0.80);
-  fModLV->SetVisAttributes( visAttributes );
+  fModLV->SetVisAttributes( G4VisAttributes(false) );
 
   for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
     auto lv = fModLV->GetDaughter(ii)->GetLogicalVolume(); 
@@ -540,9 +540,9 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
           //}
 
           TGraph* g = new TGraph(); 
-#ifdef SLAR_DEBUG
-          printf("Registering pixel collection area:\n");
-#endif
+//#ifdef SLAR_DEBUG
+          //printf("Registering pixel collection area:\n");
+//#endif
           for (const auto &edge : cc.fEdges) {
             G4ThreeVector edge_pos = edge + cell_pos; 
             G4ThreeVector edge_phys(0, 0, 0); 
@@ -555,16 +555,16 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
 
             G4double x = edge_phys.dot(xAxis); 
             G4double y = edge_phys.dot(yAxis); 
-#ifdef SLAR_DEBUG
-            printf("Adding point: %g, %g mm\n", x, y);
-#endif
+//#ifdef SLAR_DEBUG
+            //printf("Adding point: %g, %g mm\n", x, y);
+//#endif
             g->AddPoint(x, y); 
           }
 
           h2->AddBin(g); 
-#ifdef SLAR_DEBUG
-          printf("----------------------------------------------------------------\n");
-#endif
+//#ifdef SLAR_DEBUG
+          //printf("----------------------------------------------------------------\n");
+//#endif
         }
       }
     }
