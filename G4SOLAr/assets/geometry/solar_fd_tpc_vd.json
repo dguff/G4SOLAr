@@ -3,7 +3,7 @@
       "position": {"xyz" : [0, 326.05, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, -1, 0]},
       "dimensions" : [
-        {"name" : "tpc_x"  , "val" : 14.50, "unit" :  "m"},
+        {"name" : "tpc_x"  , "val" : 15.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" :  6.52, "unit" :  "m"},
         {"name" : "tpc_z"  , "val" : 60.50, "unit" :  "m"}
       ], 
@@ -20,7 +20,7 @@
       "position": {"xyz" : [0, -326.05, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, 1, 0]},
       "dimensions" : [
-        {"name" : "tpc_x"  , "val" :14.50, "unit" :  "m"},
+        {"name" : "tpc_x"  , "val" :15.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 6.52, "unit" :  "m"},
         {"name" : "tpc_z"  , "val" :60.50, "unit" :  "m"}
       ], 
@@ -35,7 +35,7 @@
     }
   ],
   "Cathode" : [
-    {"copyID": 15, 
+    {"copyID": 99, 
      "position" : {"xyz": [0, 0, 0], "unit" : "cm"}, 
      "dimensions" : [
        {"name" : "dim_x", "val" : 14.00, "unit" : "m"},
