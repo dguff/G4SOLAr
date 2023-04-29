@@ -540,6 +540,7 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
           //}
 
           TGraph* g = new TGraph(); 
+          int ipoint = 0; 
 #ifdef SLAR_DEBUG
           printf("Registering pixel collection area:\n");
 #endif
@@ -558,7 +559,8 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
 #ifdef SLAR_DEBUG
             printf("Adding point: %g, %g mm\n", x, y);
 #endif
-            g->AddPoint(x, y); 
+            g->SetPoint(ipoint, x, y); 
+            ipoint++; 
           }
 
           h2->AddBin(g); 
