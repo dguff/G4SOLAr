@@ -12,6 +12,7 @@
 #include "SLArTrajectory.hh"
 #include "SLArScintillation.h"
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArEventAction.hh"
 #include "detector/TPC/SLArLArSD.hh"
 #include "detector/TPC/SLArLArHit.hh"
 #include "physics/SLArElectronDrift.hh"
@@ -111,7 +112,6 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
         if (proc->GetProcessName() == "Scintillation") {
           SLArScintillation* scint_process = (SLArScintillation*)proc; 
-
           n_ph = scint_process->GetNumPhotons(); 
           n_el = scint_process->GetNumIonElectrons(); 
           
@@ -147,6 +147,22 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       }
     }
     hit->Add(edep);
+    
+    // Add edep in LAr to the primary 
+    const auto eventAction = (SLArEventAction*)
+      G4RunManager::GetRunManager()->GetUserEventAction(); 
+    auto ancestor_id = eventAction->FindTopParentID(step->GetTrack()->GetTrackID()); 
+
+    SLArMCPrimaryInfo* ancestor = nullptr; 
+    for (auto &p : anaMngr->GetEvent()->GetPrimaries()) {
+      if (p->GetTrackID() == ancestor_id) {
+        ancestor = p;
+        break;
+      }
+    }
+
+    if (ancestor) ancestor->IncrementLArEdep(edep); 
+    
   }     
 
   return true;

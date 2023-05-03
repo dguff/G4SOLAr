@@ -58,8 +58,9 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
   if (!thePostPV) thePostPV = thePrePV;
 
 //#ifdef SLAR_DEBUG
-  //printf("Particle: %s - Boundary check: %s (%s) | %s (%s)\n", 
+  //printf("Particle: %s at [%.0f , %0.f, %0.f]- Boundary check: %s (%s) | %s (%s)\n", 
       //particleDef->GetParticleName().data(),
+      //thePrePoint->GetPosition().x(), thePrePoint->GetPosition().y(), thePrePoint->GetPosition().z(), 
       //thePrePV->GetName().c_str(), 
       //thePrePV->GetLogicalVolume()->GetMaterial()->GetName().c_str(), 
       //thePostPV->GetName().c_str(), 
@@ -101,6 +102,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         step_point.fY = pos.y(); 
         step_point.fZ = pos.z(); 
         step_point.fKEnergy = thePrePoint->GetKineticEnergy(); 
+        step_point.fEdep = 0.; 
         step_point.fCopy = thePrePV->GetCopyNo(); 
         step_point.fNel = 0.;
         step_point.fNph = 0.; 
@@ -111,6 +113,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       step_point.fY = pos.y(); 
       step_point.fZ = pos.z(); 
       step_point.fKEnergy = thePostPoint->GetKineticEnergy(); 
+      step_point.fEdep = step->GetTotalEnergyDeposit(); 
       step_point.fCopy = thePostPV->GetCopyNo(); 
       step_point.fNel = n_el;
       step_point.fNph = n_ph; 
@@ -125,13 +128,12 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //n_ph, n_el, 
         //particleDef->GetParticleName().c_str(), track->GetTrackID());
     //getchar(); 
-    //printf("trk ID %i [%i], PDG ID %i [%i] - edep size %lu - trj size %i\n", 
+    //printf("trk ID %i [%i], PDG ID %i [%i] - trj size %lu\n", 
         //track->GetTrackID(), 
         //trajectory->GetTrackID(), 
         //track->GetParticleDefinition()->GetPDGEncoding(),
-        //trajectory->GetPDGEncoding(), 
-        //trajectory->GetEdep().size(), 
-        //trajectory->GetPointEntries());
+        //trajectory->GetPDGID(), 
+        //trajectory->GetPoints().size());
   }
 
   if (!thePostPV) return;

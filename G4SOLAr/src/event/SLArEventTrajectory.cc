@@ -52,7 +52,7 @@ void SLArEventTrajectory::RegisterPoint(const trj_point& point) {
 
 void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double energy, double edep, int n_ph, int n_el, int copy)
 {
-  fTrjPoints.push_back( trj_point(x, y, z, energy, n_ph, n_el, copy) );
+  fTrjPoints.push_back( trj_point(x, y, z, energy, edep, n_ph, n_el, copy) );
   return;
 }
 
