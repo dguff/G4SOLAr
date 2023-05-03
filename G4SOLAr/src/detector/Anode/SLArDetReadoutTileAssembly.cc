@@ -107,7 +107,8 @@ void SLArDetReadoutTileAssembly::BuildReadoutPlane(SLArDetReadoutTile* tile)
       true_plane_x*0.5, plane_y*0.5, true_plane_z*0.5);
   fModLV = new G4LogicalVolume(fModSV, 
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
-  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+
+  fModLV->SetVisAttributes( G4VisAttributes( G4Colour(0.82, 0.82, 0.82) ) ); 
   
   SLArPlaneParameterisation* planeParametrization = 
     new SLArPlaneParameterisation(

@@ -170,8 +170,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       {
         auto decay0_gen = 
           (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0]; 
-        if (!decay0_gen->HasVertexGenerator())
-          decay0_gen->SetVertexGenerator(fBulkGenerator); 
+        if (decay0_gen->HasVertexGenerator() == false) {
+          decay0_gen->SetVertexGenerator(fBulkGenerator);
+        }
         gen = decay0_gen; 
       }
       break;
