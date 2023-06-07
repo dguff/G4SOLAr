@@ -19,6 +19,7 @@
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4OpBoundaryProcess.hh"
+#include "G4HadProcesses.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -134,6 +135,58 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //track->GetParticleDefinition()->GetPDGEncoding(),
         //trajectory->GetPDGID(), 
         //trajectory->GetPoints().size());
+    if (track->GetTrackStatus() == fStopAndKill) {
+
+      auto process = 
+        const_cast<G4VProcess*>(step->GetPostStepPoint()->GetProcessDefinedStep()); 
+      G4String terminator = process->GetProcessName(); 
+
+      G4HadronicProcess* hproc = dynamic_cast<G4HadronicProcess*>(process);
+      const G4Isotope* target = NULL;
+      if (hproc) {
+        G4String nuclearChannel = "";
+        target = hproc->GetTargetIsotope();
+        G4String targetName = "XXXX";  
+        if (target) targetName = target->GetName();
+        nuclearChannel += " + " + targetName + " --> ";
+
+        std::map<G4ParticleDefinition*, G4int> particle_counter;
+        const std::vector<const G4Track*>* secondary 
+          = step->GetSecondaryInCurrentStep();  
+        for (size_t lp=0; lp<(*secondary).size(); lp++) {
+          auto particle = (*secondary)[lp]->GetDefinition(); 
+          G4String name   = particle->GetParticleName();
+          G4String type   = particle->GetParticleType();      
+          G4double energy = (*secondary)[lp]->GetKineticEnergy();
+
+          particle_counter[particle]++;
+        }
+
+        // nuclear channel
+        const G4int kMax = 16;  
+        const G4String convert[] = {"0","","2 ","3 ","4 ","5 ","6 ","7 ","8 ","9 ",
+          "10 ","11 ","12 ","13 ","14 ","15 ","16 "};
+        std::map<G4ParticleDefinition*,G4int>::iterator ip;               
+        for (ip = particle_counter.begin(); ip != particle_counter.end(); ip++) {
+          auto particle = ip->first;
+          G4String name = particle->GetParticleName();      
+          G4int nb = ip->second;
+          if (nb > kMax) nb = kMax;   
+          G4String Nb = convert[nb];    
+
+          if (ip != particle_counter.begin()) nuclearChannel += " + ";
+          nuclearChannel += /*Nb +*/ name;
+        }
+
+        terminator += nuclearChannel;
+        //printf("terminator: %s\n", terminator.data());
+        //getchar(); 
+
+      }
+
+
+      trkInfo->GimmeEvTrajectory()->SetEndProcess(terminator); 
+    }
   }
 
   if (!thePostPV) return;
