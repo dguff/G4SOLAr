@@ -24,6 +24,10 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4VisAttributes.hh"
 
+#include "G4IStore.hh"
+#include "G4VIStore.hh"
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class SLArCfgSuperCellArray;
@@ -61,6 +65,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     virtual void ConstructSDandField();
     //! Construct virtual pixelization of the anode readout system
     void ConstructAnodeMap(); 
+    G4VIStore* CreateImportanceStore();
     //! Return SLArDetectorConstruction::fTPCs map
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
     //! Return TPC with given id
@@ -72,6 +77,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void BuildAndPlaceAnode();
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
+    G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
     std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
@@ -104,6 +110,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::map<G4String, SLArDetReadoutTileAssembly*> fReadoutMegaTile; 
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
+    G4VPhysicalVolume* fWorldPhys; //!< World physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
     
