@@ -198,6 +198,7 @@ void SLArDetTPC::BuildFieldCage() {
       fc_layer_lv, fc_volume_lv, 
       pararmisation->GetReplicationAxis(), n_replica, pararmisation) 
       );
+  fFieldCage->GetModPV()->SetCopyNo(20);
 
   return;
 }

@@ -265,7 +265,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 #ifdef SLAR_DEBUG
       printf("Adding particle to primary output list\n"); 
       tc_primary.PrintParticle(); 
-      getchar();
+      //getchar();
 #endif
       SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
     }

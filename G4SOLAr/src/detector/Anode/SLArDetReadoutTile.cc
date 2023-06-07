@@ -274,9 +274,9 @@ void SLArDetReadoutTile::BuildReadoutTile()
 
   // 5. Final assembly (PCB + sensor plane)
   G4cout<<"Final placement..." << G4endl; 
-  fModPV = new G4PVPlacement(
+  SetModPV( new G4PVPlacement(
       0, G4ThreeVector(0., 0.5*(fhTot-cell_y), 0.), 
-      cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false);
+      cell_plane_lv, "ReadoutTileSensors",fModLV, false, 50, false) );
 
    return;
 }

@@ -147,11 +147,13 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     rpars->SetStartPos( 
         0.5*rpars->GetReplicationAxisVector()
         *(-start_.second + origin_dim.dot(rpars->GetReplicationAxisVector())) 
-        -0.5*localNormal*(localNormal.dot(max_dim))
+        -0.25*localNormal*(localNormal.dot(max_dim))
         );
     G4cout<< "start pos: " << rpars->GetStartPos() << G4endl; 
+    G4String pvp_name = target_prefix + "_ppv"; 
+    if (target_prefix == "SC_array" && fID != 40) pvp_name += "_"+std::to_string(fID); 
     target->SetModPV(
-        new G4PVParameterised(target_prefix+"_ppv", 
+        new G4PVParameterised(pvp_name, 
           origin->GetModLV(), target->GetModLV(), 
           rpars->GetReplicationAxis(), start_.first,
           rpars, true)); 
@@ -164,13 +166,13 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     if (rpars == fParameterisation.back()) {
       target = this; 
       origin = fSubModules.back();
-      prefix = "SC_array";
+      prefix = "SC_row";
     } 
     else if (rpars == fParameterisation.front()) {
       fSubModules.push_back( new SLArBaseDetModule() ); 
       target = fSubModules.back();
       origin = superCell;
-      prefix = "SC_row";
+      prefix = "SC_module";
     }
     else {
       G4cout << "SLArDetSuperCellArray::BuildSuperCellArray() WARNING: " << G4endl;
@@ -183,12 +185,16 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     build_parameterised_vol(origin, target, prefix, rpars);
   }
 
+  fModPV->SetCopyNo(800+fID); 
+  auto vol = fModLV->GetDaughter(0); 
+  //printf("vol name: %s (%lu daughters)\n", vol->GetName().data(), fModLV->GetNoDaughters());
+  vol->SetCopyNo(800+fID); 
+
   for (auto &subModules : fSubModules) {
     subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
   }
 
   fModLV->SetVisAttributes( G4VisAttributes(false) ); 
-
 }
 
 std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(
