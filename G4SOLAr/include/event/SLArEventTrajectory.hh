@@ -45,31 +45,35 @@ class SLArEventTrajectory : public TObject
     SLArEventTrajectory(SLArEventTrajectory* trj);
     ~SLArEventTrajectory();
 
-    TString GetParticleName()   {return fParticleName   ;}
-    TString GetCreatorProcess() {return fCreatorProcess ;}
-    int     GetPDGID()          {return fPDGID          ;}
-    int     GetTrackID()        {return fTrackID        ;}
-    int     GetParentID()       {return fParentID       ;}
-    float   GetInitKineticEne() {return fInitKineticEnergy;}
-    float   GetTrakLength()     {return fTrackLength    ;}
-    TVector3& GetInitMomentum() {return fInitMomentum   ;}
-    float   GetTime()           {return fTime           ;}
-    float   GetTotalEdep()      {return fTotalEdep      ;} 
-    float   GetTotalNph ()      {return fTotalNph       ;} 
-    float   GetTotalNel ()      {return fTotalNel       ;} 
+    TString GetParticleName() const {return fParticleName;}
+    TString GetCreatorProcess() const {return fCreatorProcess ;}
+    TString GetEndProcess() const {return fEndProcess ;}
+    int     GetPDGID() const {return fPDGID ;}
+    int     GetTrackID() const {return fTrackID;}
+    int     GetParentID() const {return fParentID;}
+    float   GetInitKineticEne() const {return fInitKineticEnergy;}
+    float   GetTrakLength() const {return fTrackLength;}
+    const TVector3& GetInitMomentum() const {return fInitMomentum;}
+    float GetTime()      const {return fTime;}
+    float GetWeight() const {return fWeight;}
+    float GetTotalEdep() const {return fTotalEdep;} 
+    float GetTotalNph () const {return fTotalNph;} 
+    float GetTotalNel () const {return fTotalNel;} 
 
-    void    SetParticleName(TString name)   {fParticleName = name;}
-    void    SetCreatorProcess(TString proc) {fCreatorProcess = proc;}
-    void    SetPDGID       (int pdgID)      {fPDGID    = pdgID   ;}
-    void    SetTrackID     (int trkID)      {fTrackID  = trkID   ;}
-    void    SetParentID    (int prtID)      {fParentID = prtID   ;}
-    void    SetInitKineticEne(float k)      {fInitKineticEnergy=k;}
-    void    SetTrackLength (float l)        {fTrackLength = l    ;}
-    void    SetInitMomentum(TVector3 p)     {fInitMomentum = p   ;}
-    void    SetTime(float t)                {fTime = t           ;}
-    void    IncrementEdep(double edep)      {fTotalEdep += edep  ;}
-    void    IncrementNion(int nion)         {fTotalNel += nion   ;}
-    void    IncrementNph(int nph)           {fTotalNph += nph    ;}
+    inline void SetParticleName(const TString name) {fParticleName = name;}
+    inline void SetCreatorProcess(const TString proc) {fCreatorProcess = proc;}
+    inline void SetEndProcess(const TString proc) {fEndProcess = proc;}
+    inline void SetPDGID(const int pdgID) {fPDGID = pdgID;}
+    inline void SetTrackID(const int trkID) {fTrackID = trkID;}
+    inline void SetParentID(const int prtID) {fParentID = prtID;}
+    inline void SetInitKineticEne(const float k) {fInitKineticEnergy=k;}
+    inline void SetTrackLength(const float l) {fTrackLength = l;}
+    inline void SetInitMomentum(const TVector3 p) {fInitMomentum = p;}
+    inline void SetTime(const float t) {fTime = t;}
+    inline void SetWeight(const float w) {fWeight = w;}
+    inline void IncrementEdep(const double edep) {fTotalEdep += edep;}
+    inline void IncrementNion(const int nion) {fTotalNel += nion;}
+    inline void IncrementNph(const int nph) {fTotalNph += nph;}
 
     std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
     void    RegisterPoint(double x, double y, double z, double ene, double edep, int n_ph, int n_el, int copy);
@@ -77,14 +81,16 @@ class SLArEventTrajectory : public TObject
 
 
   private:
-    TString                fParticleName     ;
+    TString                fParticleName     ; 
     TString                fCreatorProcess   ; 
+    TString                fEndProcess       ;
     int                    fPDGID            ; 
     int                    fTrackID          ; 
     int                    fParentID         ; 
     float                  fInitKineticEnergy;
     float                  fTrackLength      ; 
     float                  fTime             ; 
+    float                  fWeight           ;
     TVector3               fInitMomentum     ;
     std::vector<trj_point> fTrjPoints        ;
     float                  fTotalEdep        ; 
