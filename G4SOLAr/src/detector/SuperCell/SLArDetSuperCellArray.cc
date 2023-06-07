@@ -133,6 +133,8 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
       if ( fabs(perp_ax[i] * origin_dim[i] ) > 0 ) {
         tmp_dim[i] = origin_dim[i]; 
         module_wdt = origin_dim[i]; 
+      } else {
+        tmp_dim[i] += 1*CLHEP::mm;
       }
     }
 
@@ -147,11 +149,16 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     rpars->SetStartPos( 
         0.5*rpars->GetReplicationAxisVector()
         *(-start_.second + origin_dim.dot(rpars->GetReplicationAxisVector())) 
-        -0.25*localNormal*(localNormal.dot(max_dim))
         );
+
+    if (origin == fSuperCell) {
+      rpars->SetStartPos(
+          rpars->GetStartPos() -
+          0.5*localNormal*(localNormal.dot(tmp_dim))
+          ); 
+    }
     G4cout<< "start pos: " << rpars->GetStartPos() << G4endl; 
     G4String pvp_name = target_prefix + "_ppv"; 
-    if (target_prefix == "SC_array" && fID != 40) pvp_name += "_"+std::to_string(fID); 
     target->SetModPV(
         new G4PVParameterised(pvp_name, 
           origin->GetModLV(), target->GetModLV(), 
@@ -166,13 +173,13 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     if (rpars == fParameterisation.back()) {
       target = this; 
       origin = fSubModules.back();
-      prefix = "SC_row";
+      prefix = "SC_array";
     } 
     else if (rpars == fParameterisation.front()) {
       fSubModules.push_back( new SLArBaseDetModule() ); 
       target = fSubModules.back();
       origin = superCell;
-      prefix = "SC_module";
+      prefix = "SC_row";
     }
     else {
       G4cout << "SLArDetSuperCellArray::BuildSuperCellArray() WARNING: " << G4endl;
@@ -190,11 +197,11 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
   //printf("vol name: %s (%lu daughters)\n", vol->GetName().data(), fModLV->GetNoDaughters());
   vol->SetCopyNo(800+fID); 
 
-  for (auto &subModules : fSubModules) {
-    subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
-  }
+  //for (auto &subModules : fSubModules) {
+    //subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
+  //}
 
-  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  //fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 }
 
 std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(
