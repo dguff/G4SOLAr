@@ -100,6 +100,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetPDGID( aTrack->GetDynamicParticle()->GetPDGcode() ); 
       trajectory->SetCreatorProcess( creatorProc ); 
       trajectory->SetTime( aTrack->GetGlobalTime() ); 
+      trajectory->SetWeight(aTrack->GetWeight()); 
+      
 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
       auto vertex_momentum = aTrack->GetMomentumDirection();
