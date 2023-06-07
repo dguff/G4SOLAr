@@ -61,6 +61,7 @@
 #include "SLArActionInitialization.hh"
 #include "SLArRunAction.hh"
 
+#include "G4ImportanceBiasing.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
@@ -209,10 +210,20 @@ int main(int argc,char** argv)
   //
   // Detector construction
   printf("Creating Detector Construction...\n");
-  runManager-> SetUserInitialization(new SLArDetectorConstruction(geometry_file, material_file));
+  auto detector = new SLArDetectorConstruction(geometry_file, material_file);
+  runManager-> SetUserInitialization(detector);
+#ifdef SLAR_EXTERNAL
+  const char* ext_particle = SLAR_EXTERNAL;
+  G4GeometrySampler mgs(detector->GetPhysicalWorld(), ext_particle);
+#endif
   // Physics list
   printf("Creating Phiscs Lists...\n");
-  runManager-> SetUserInitialization(new SLArPhysicsList(physName));
+  auto physicsList = new SLArPhysicsList(physName);
+#ifdef SLAR_EXTERNAL
+  physicsList->RegisterPhysics(new G4ImportanceBiasing(&mgs));
+#endif
+  runManager-> SetUserInitialization(physicsList);
+
   // User action initialization
   printf("Creating User Action...\n");
   runManager->SetUserInitialization (new SLArActionInitialization());
@@ -221,6 +232,10 @@ int main(int argc,char** argv)
   //
   printf("RunManager initialization...\n");
   runManager->Initialize();
+
+  #ifdef SLAR_EXTERNAL
+    detector->CreateImportanceStore(); 
+  #endif
 
   // Initialize visualization
   //

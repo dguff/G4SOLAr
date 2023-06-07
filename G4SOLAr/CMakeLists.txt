@@ -209,6 +209,7 @@ target_compile_definitions(solar_sim
   PUBLIC 
   $<$<CONFIG:Debug>:SLAR_DEBUG>
   $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
+  SLAR_EXTERNAL="${SLAR_EXTERNAL}"
   PRIVATE
   "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
   )
