@@ -14,7 +14,7 @@
 
 SLArCryostatLayer::SLArCryostatLayer() : 
   fName("CryostatLayer"), 
-  fHalfSizeX(1.), fHalfSizeY(1.), fHalfSizeZ(1.), fThickness(1.), 
+  fHalfSizeX(1.), fHalfSizeY(1.), fHalfSizeZ(1.), fThickness(1.), fImportance(1),
   fMaterialName("MATERIAL_NAME"), fMaterial(nullptr), fModule(nullptr)
 {}
 
@@ -22,7 +22,8 @@ SLArCryostatLayer::SLArCryostatLayer(
     G4String   model_name, 
     G4double*  halfSize,  
     G4double   thickness,
-    G4String   material_name)
+    G4String   material_name, 
+    G4int      importance)
   : fMaterial(nullptr), fModule(nullptr)
 {
 
@@ -30,7 +31,8 @@ SLArCryostatLayer::SLArCryostatLayer(
   fHalfSizeX =  halfSize[0];
   fHalfSizeY =  halfSize[1]; 
   fHalfSizeZ =  halfSize[2]; 
-  fThickness =  thickness; 
+  fThickness =  thickness;
+  fImportance=  importance;
 
   fMaterialName = material_name;
 }
@@ -102,12 +104,17 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
       assert(layer.HasMember("id")); 
       assert(layer.HasMember("name")); 
       assert(layer.HasMember("material")); 
-      for (size_t k=0; k<3; k++) halfSize[k] -= tk_; 
+      for (size_t k=0; k<3; k++) halfSize[k] -= tk_;
+
+      G4int importance = 1; 
+      if (layer.HasMember("importance")) {
+        importance = layer["importance"].GetInt(); 
+      }
       
       SLArCryostatLayer* ll = new SLArCryostatLayer(
           layer["name"].GetString(), halfSize, 
           SLArGeoInfo::ParseJsonVal(layer["thickness"]), 
-          layer["material"].GetString());
+          layer["material"].GetString(),importance);
 
       fCryostatStructure.insert(std::make_pair(layer["id"].GetInt(), ll)); 
     }
@@ -270,7 +277,8 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
       SLArBaseDetModule* origin, 
       SLArBaseDetModule* target, 
       G4String target_prefix,
-      SLArPlaneParameterisation* rpars) {
+      SLArPlaneParameterisation* rpars,
+      int copyNo) {
 
     G4ThreeVector tmp_dim = max_dim; 
     G4ThreeVector origin_dim; 
@@ -301,7 +309,8 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
         new G4PVParameterised(target_prefix+"_ppv", 
           origin->GetModLV(), target->GetModLV(), 
           rpars->GetReplicationAxis(), nReplica[rpars->GetReplicationAxis()],
-          rpars, true)); 
+          rpars, true));
+    target->GetModPV()->SetCopyNo(copyNo); 
   }; 
 
   std::vector<SLArBaseDetModule*> waffle_plane_submodule; 
@@ -310,16 +319,19 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
     SLArBaseDetModule* target = nullptr; 
     SLArBaseDetModule* origin = nullptr;
     G4String prefix = "";
+    G4int copyNo = 666;
     if (rpars == prmtr.back()) {
       target = waffle; 
       origin = waffle_plane_submodule.back();
       prefix = "waffle_plane";
+      copyNo = 7; 
     } 
     else if (rpars == prmtr.front()) {
       waffle_plane_submodule.push_back( new SLArBaseDetModule() ); 
       target = waffle_plane_submodule.back();
       origin = fWaffleUnit;
       prefix = "waffle_row";
+      copyNo = 6; 
     }
     else {
       G4cout << "SLArDetSuperCellArray::BuildSuperCellArray() WARNING: " << G4endl;
@@ -330,7 +342,7 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
       origin = waffle_plane_submodule.rbegin()[1];
     }
 
-    build_parameterised_vol(origin, target, prefix, rpars);
+    build_parameterised_vol(origin, target, prefix, rpars, copyNo);
   }
 
   for (auto &subModules : waffle_plane_submodule) {
@@ -417,6 +429,7 @@ void SLArDetCryostat::BuildCryostat()
          - 0.5*fGeoInfo->GetGeoPar("waffle_major_width")); 
       G4RotationMatrix* rot = new G4RotationMatrix(rot_axis, rot_angle);
       waffle_face->GetModPV(face_pv_name, rot, pos, fModLV, false, i+1); 
+      fSupportStructure.insert( std::make_pair(kFace, waffle_face) ); 
     }
   }
 
@@ -441,15 +454,17 @@ SLArBaseDetModule* SLArDetCryostat::BuildCryostatLayer(
   mod->SetLogicVolume(new G4LogicalVolume(
         mod->GetModSV(), mod->GetMaterial(), name+"LV", 0, 0, 0)); 
 
-  // create a daughter volume on the -z face to be used as a sensitive detector 
-  // for neutron shielding studies
-
-  G4Box* b_test_sv = new G4Box("b_test_sv_"+name, x_, y_, 0.5*tk_); 
-  G4LogicalVolume* b_test_lv = new G4LogicalVolume(b_test_sv, mat, "b_test_lv_"+name, 
-      0, 0, 0, 0); 
-  new G4PVPlacement(0, G4ThreeVector(0, 0, -z_-0.5*tk_), b_test_lv, "b_test_pv_"+name, 
-      mod->GetModLV(), false, 8, true); 
-
+/*
+ *  //create a daughter volume on the -z face to be used as a sensitive detector 
+ *  //for neutron shielding studies
+ *
+ *  G4Box* b_test_sv = new G4Box("b_test_sv_"+name, x_, y_, 0.5*tk_); 
+ *  G4LogicalVolume* b_test_lv = new G4LogicalVolume(b_test_sv, mat, "b_test_lv_"+name, 
+ *      0, 0, 0, 0); 
+ *  new G4PVPlacement(0, G4ThreeVector(0, 0, -z_-0.5*tk_), b_test_lv, "b_test_pv_"+name, 
+ *      mod->GetModLV(), false, 8, true); 
+ *
+ */
   return mod; 
 }
 
