@@ -40,7 +40,8 @@ SLArCryostatLayer::SLArCryostatLayer(
 
 
 SLArDetCryostat::SLArDetCryostat() : 
-  fMatWorld(nullptr), fMatWaffle(nullptr), fWaffleUnit(nullptr), fBuildSupport(false)
+  fMatWorld(nullptr), fMatWaffle(nullptr), fMatBrick(nullptr), 
+  fWaffleUnit(nullptr), fBuildSupport(false), fAddNeutronBricks(false)
 {
     
 }
@@ -76,8 +77,6 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
     G4double support_wd = 0.; 
     const auto jsupport = jcryo["Cryostat_support"].GetObj(); 
     support_wd += SLArGeoInfo::ParseJsonVal(jsupport["steel_major_width"]); 
-    printf("Adding waffle major width = %.2f mm\n", support_wd);
-    cryostat_waffle_tk += support_wd; 
 
     fGeoInfo->RegisterGeoPar("waffle_major_width", 
         SLArGeoInfo::ParseJsonVal(jsupport["steel_major_width"])); 
@@ -88,10 +87,17 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
     fGeoInfo->RegisterGeoPar("waffle_spacing", 
         SLArGeoInfo::ParseJsonVal(jsupport["main_spacing"])); 
 
+    if (jsupport.HasMember("neutron_brick")) {
+      const auto jbrick = jsupport["neutron_brick"].GetObj(); 
+      fGeoInfo->RegisterGeoPar("brick_thickness", 
+          SLArGeoInfo::ParseJsonVal(jbrick["thickness"])); 
+      fMatBrick = new SLArMaterial(); 
+      fMatBrick->SetMaterialID(jbrick["material"].GetString()); 
+      fAddNeutronBricks = true; 
+    }
   }
 
   fGeoInfo->RegisterGeoPar("cryostat_tk", cryostat_tk); 
-  fGeoInfo->RegisterGeoPar("cryostat_total_tk", cryostat_waffle_tk); 
 
   G4double halfSize[3] = {tgtX*0.5 + cryostat_tk, 
                           tgtY*0.5 + cryostat_tk, 
@@ -137,10 +143,16 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
   const G4double minorT_width = 0.20*minor_width; 
   const G4double tk = fGeoInfo->GetGeoPar("steel_thickness"); 
   const G4double trnv_width  = major_width-2*tk; 
+  G4double n_brick_tk  = 0.; 
+  if (fGeoInfo->Contains("brick_thickness") && fAddNeutronBricks) {
+    n_brick_tk = fGeoInfo->GetGeoPar("brick_thickness"); 
+  }
+  const G4double unit_thickness = std::max(major_width, minor_width + n_brick_tk); 
+  fGeoInfo->RegisterGeoPar("waffle_total_width", unit_thickness); 
 
   fWaffleUnit = new SLArBaseDetModule(); 
   fWaffleUnit->SetSolidVolume( new G4Box("waffle_unit_sv", 
-      0.5*(spacing), 0.5*major_width, 0.5*(spacing) ) ); 
+      0.5*(spacing), 0.5*unit_thickness, 0.5*(spacing) ) ); 
   fWaffleUnit->SetLogicVolume( new G4LogicalVolume( 
         fWaffleUnit->GetModSV(), fMatWorld->GetMaterial(), "waffle_unit_lv"));
   fWaffleUnit->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
@@ -161,12 +173,12 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
       waffle_main_sv, fMatWaffle->GetMaterial(), "waffle_main_lv"); 
   waffle_main_lv->SetVisAttributes( new G4VisAttributes( G4Colour(1, 0, 0) ) ); 
   new G4PVPlacement(0, 
-      G4ThreeVector(-0.5*(spacing - 0.5*tk), 0, 0), 
+      G4ThreeVector(-0.5*(spacing - 0.5*tk), -0.5*(unit_thickness - major_width), 0), 
       waffle_main_lv, "waffle_main_pv0", fWaffleUnit->GetModLV(), 0, 1); 
   auto rot = new G4RotationMatrix(0, 0, 0); 
   rot->rotateY(CLHEP::pi); 
   new G4PVPlacement(rot, 
-      G4ThreeVector(+0.5*(spacing - 0.5*tk), 0, 0), 
+      G4ThreeVector(+0.5*(spacing - 0.5*tk), -0.5*(unit_thickness - major_width), 0), 
       waffle_main_lv, "waffle_main_pv1", fWaffleUnit->GetModLV(), 0, 2); 
   
   // Transverse frame (along the x-axis)
@@ -180,43 +192,51 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
   waffle_trnv_sv = new G4UnionSolid(
       "waffle_trnv_sv", waffle_trnv_sv, waffle_trnv_T, 
       nullptr, 
-      G4ThreeVector(0.0, -0.5*(major_width - tk), 0.5*(majorT_width + 0.5*tk) )); 
+      G4ThreeVector(0.0, -0.5*(trnv_width+tk), 0.5*(majorT_width - 0.5*tk) )); 
   auto waffle_trnv_lv = new G4LogicalVolume(
       waffle_trnv_sv, fMatWaffle->GetMaterial(), "waffle_trnv_lv"); 
   waffle_trnv_lv->SetVisAttributes( new G4VisAttributes( G4Colour(1, 0, 0) ) ); 
   new G4PVPlacement(0, 
-      G4ThreeVector(0, 0, -0.5*(spacing - 0.5*tk)), 
+      G4ThreeVector(0, -0.5*(unit_thickness-major_width), -0.5*(spacing - 0.5*tk)), 
       waffle_trnv_lv, "waffle_trnv_pv0", fWaffleUnit->GetModLV(), 0, 3); 
   new G4PVPlacement(rot, 
-      G4ThreeVector(0, 0, +0.5*(spacing - 0.5*tk)), 
+      G4ThreeVector(0, -0.5*(unit_thickness-major_width), +0.5*(spacing - 0.5*tk)), 
       waffle_trnv_lv, "waffle_trnv_pv1", fWaffleUnit->GetModLV(), 0, 4); 
   
   // Minor bar (along z-axis) 
   auto waffle_minor_bar = new G4Box(
-      "waffle_minor_bar", 0.5*tk, 0.5*minor_width, 0.5*(spacing-tk)); 
+      "waffle_minor_bar", 0.5*tk, 0.5*(minor_width)-tk, 0.5*(spacing-tk)); 
   auto waffle_minor_T   = new G4Box(
       "waffle_minor_T", minorT_width, 0.5*tk, 0.5*(spacing-tk)); 
   auto waffle_minor_Tdown   = new G4Box(
       "waffle_minor_Tdown", minorT_width, 0.5*tk, 0.5*(spacing-tk-2*majorT_width)); 
   auto waffle_minor_sv = new G4UnionSolid(
       "waffle_minor_tmp", waffle_minor_bar, waffle_minor_T, nullptr, 
-      G4ThreeVector(0, 0.5*(minor_width+tk), 0)); 
+      G4ThreeVector(0, 0.5*(minor_width-tk), 0)); 
   waffle_minor_sv = new G4UnionSolid(
       "waffle_minor_tmp2", waffle_minor_sv, waffle_minor_Tdown, nullptr, 
-      G4ThreeVector(0, -0.5*(minor_width+tk), 0)); 
+      G4ThreeVector(0, -0.5*(minor_width-tk), 0)); 
   G4RotationMatrix* rotY2 = new G4RotationMatrix(0, 0, 0); 
   rotY2->rotateY(0.5*CLHEP::pi); 
   waffle_minor_sv = new G4UnionSolid(
       "waffle_minor_sv", waffle_minor_sv, waffle_minor_sv,
       rotY2, 
-      G4ThreeVector(0, 0, 0.165*spacing)); 
+      G4ThreeVector(0, 0, 0)); 
 
   auto waffle_minor_lv = new G4LogicalVolume(waffle_minor_sv, fMatWaffle->GetMaterial(),
       "waffle_minor_lv"); 
   waffle_minor_lv->SetVisAttributes( new G4VisAttributes( G4Colour(1, 0, 0) ) ); 
-  new G4PVPlacement(0, G4ThreeVector(0, -0.5*(major_width - minor_width - 2*tk), 0), 
+  new G4PVPlacement(0, G4ThreeVector(0, -0.5*(unit_thickness - minor_width), 0), 
       waffle_minor_lv, "waffle_minor_pv", fWaffleUnit->GetModLV(), 0, 5); 
 
+  if (fAddNeutronBricks) {
+    auto brick_sv = new G4Box("brick_sv", 
+        0.5*(spacing-2*majorT_width-tk), 0.5*n_brick_tk, 0.5*(spacing-2*majorT_width-tk)); 
+    auto brick_lv = new G4LogicalVolume(brick_sv, fMatBrick->GetMaterial(), "brick_lv"); 
+    brick_lv->SetVisAttributes( G4VisAttributes( G4Colour(0, 0, 1) )); 
+    new G4PVPlacement(0, G4ThreeVector(0, 0.5*(unit_thickness-n_brick_tk), 0), 
+        brick_lv, "brick_pv", fWaffleUnit->GetModLV(), 0, 111); 
+  }
 }
 
 SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFace) {
@@ -354,12 +374,16 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
 
 void SLArDetCryostat::BuildCryostat()
 {
+  if (fBuildSupport) {
+    BuildSupportStructureUnit();
+  }
   G4cerr << "SLArDetCryostat::BuildCryostat()" << G4endl;
   G4double tgtZ         = fGeoInfo->GetGeoPar("target_z");
   G4double tgtY         = fGeoInfo->GetGeoPar("target_y");
   G4double tgtX         = fGeoInfo->GetGeoPar("target_x");
   G4double cryo_tk      = fGeoInfo->GetGeoPar("cryostat_tk"); 
-  G4double cryo_tot_tk  = fGeoInfo->GetGeoPar("cryostat_total_tk"); 
+  G4double waffle_tk    = fGeoInfo->GetGeoPar("waffle_total_width"); 
+  const G4double cryo_tot_tk  = cryo_tk + waffle_tk; 
    
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Create Tank 
@@ -411,8 +435,6 @@ void SLArDetCryostat::BuildCryostat()
   }
 
   if (fBuildSupport) {
-    BuildSupportStructureUnit();
-
     for (int i=0; i<6; i++) {
       auto kFace = (slargeo::EBoxFace)i; 
       auto waffle_face = BuildSupportStructure(kFace);
@@ -421,12 +443,12 @@ void SLArDetCryostat::BuildCryostat()
       const G4ThreeVector waffle_local_normal(0, -1, 0); 
       G4ThreeVector rot_axis = face_normal.cross(waffle_local_normal); 
       G4double rot_angle = face_normal.angle(waffle_local_normal); 
-      if (rot_axis.mag2() < 1e-6) rot_axis = face_normal; 
+      if (rot_axis.mag2() < 1e-6) rot_axis = face_normal.orthogonal(); 
 
       G4String face_pv_name = "waffle_face"+std::to_string(i)+"_pv"; 
       G4ThreeVector pos = -face_normal * 
         (fabs(face_normal.dot(cryostat_dim)) 
-         - 0.5*fGeoInfo->GetGeoPar("waffle_major_width")); 
+         - 0.5*fGeoInfo->GetGeoPar("waffle_total_width")); 
       G4RotationMatrix* rot = new G4RotationMatrix(rot_axis, rot_angle);
       waffle_face->GetModPV(face_pv_name, rot, pos, fModLV, false, i+1); 
       fSupportStructure.insert( std::make_pair(kFace, waffle_face) ); 
@@ -492,6 +514,9 @@ void SLArDetCryostat::BuildMaterials(G4String material_db) {
   fMatWaffle->SetMaterialID("Steel"); 
   fMatWaffle->BuildMaterialFromDB(material_db); 
 
+  if (fMatBrick) {
+    fMatBrick->BuildMaterialFromDB(material_db); 
+  }
   return;
 }
 

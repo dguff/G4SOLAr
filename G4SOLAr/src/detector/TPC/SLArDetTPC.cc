@@ -191,12 +191,12 @@ void SLArDetTPC::BuildFieldCage() {
     len_tmp += sp; 
   } 
 
-  auto pararmisation = new SLArPlaneParameterisation(kXAxis, 
-      G4ThreeVector(-0.5*(len - sp) , 0, 0), sp); 
+  auto parameterisation = new SLArPlaneParameterisation(kXAxis, 
+      G4ThreeVector(-0.5*(len - sp + hl) , 0, 0), sp); 
 
   fFieldCage->SetModPV( new G4PVParameterised("fieldCage_ppv", 
       fc_layer_lv, fc_volume_lv, 
-      pararmisation->GetReplicationAxis(), n_replica, pararmisation) 
+      parameterisation->GetReplicationAxis(), n_replica, parameterisation) 
       );
   fFieldCage->GetModPV()->SetCopyNo(20);
 

@@ -54,8 +54,10 @@ class SLArDetCryostat : public SLArBaseDetModule {
   private: 
     SLArMaterial* fMatWorld; 
     SLArMaterial* fMatWaffle; 
+    SLArMaterial* fMatBrick; 
     SLArBaseDetModule* fWaffleUnit;
     G4bool fBuildSupport; 
+    G4bool fAddNeutronBricks; 
     std::map<G4String, SLArMaterial*> fMaterials;
     std::map<slargeo::EBoxFace, SLArBaseDetModule*> fSupportStructure;
 
@@ -66,7 +68,6 @@ class SLArDetCryostat : public SLArBaseDetModule {
         G4Material* mat);
     void BuildSupportStructureUnit(); 
     SLArBaseDetModule* BuildSupportStructure(slargeo::EBoxFace kFace); 
-
 };
 
 
