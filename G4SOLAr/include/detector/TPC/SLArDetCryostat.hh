@@ -10,6 +10,7 @@
 
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/SLArGeoUtils.hpp"
+#include "G4VPVParameterisation.hh"
 
 struct SLArCryostatLayer{
   public:
@@ -56,10 +57,12 @@ class SLArDetCryostat : public SLArBaseDetModule {
     SLArMaterial* fMatWaffle; 
     SLArMaterial* fMatBrick; 
     SLArBaseDetModule* fWaffleUnit;
+    SLArBaseDetModule* fWaffleCornerUnit;
     G4bool fBuildSupport; 
     G4bool fAddNeutronBricks; 
     std::map<G4String, SLArMaterial*> fMaterials;
     std::map<slargeo::EBoxFace, SLArBaseDetModule*> fSupportStructure;
+    std::map<std::pair<slargeo::EBoxFace, slargeo::EBoxFace>, SLArBaseDetModule*> fSupportStructureCorners;
 
     SLArCryostatStructure fCryostatStructure; 
     SLArBaseDetModule* BuildCryostatLayer(
@@ -67,7 +70,10 @@ class SLArDetCryostat : public SLArBaseDetModule {
         G4double x_, G4double y_, G4double z_, G4double tk_, 
         G4Material* mat);
     void BuildSupportStructureUnit(); 
+    void BuildSupportStructureCornerUnit(); 
     SLArBaseDetModule* BuildSupportStructure(slargeo::EBoxFace kFace); 
+    SLArBaseDetModule* BuildSupportStructurePatch(G4double width, G4double len, G4String name); 
+    SLArBaseDetModule* BuildSupportStructureEdge(G4double len, G4String name); 
 };
 
 

@@ -501,12 +501,6 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
   fWorldLog->SetVisAttributes(visAttributes);
 
-  auto pvstore = G4PhysicalVolumeStore::GetInstance(); 
-  for (auto &pv_ : pvstore->GetMap()) {
-    printf("%s - replica no %i\n", pv_.first.data(), pv_.second.at(0)->GetCopyNo());
-  }
-  
-  getchar(); 
   //always return the physical World
   return fWorldPhys;
 }
@@ -762,7 +756,7 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   printf("Support structure\n");
   for (const auto &face_ : fCryostat->GetCryostatSupportStructure() ) {
     auto face = face_.second;
-    const auto lv = face->GetModLV();
+    const auto lv = face->GetModLV()->GetDaughter(0)->GetLogicalVolume();
     auto vol_plane = (G4PVParameterised*)lv->GetDaughter(0);
     G4GeometryCell cell(*vol_plane, vol_plane->GetCopyNo()); 
 
@@ -1039,8 +1033,6 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
     
   
   }
-
-  getchar(); 
 
   return istore;
 }
