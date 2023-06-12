@@ -46,8 +46,10 @@ class SLArDetCryostat : public SLArBaseDetModule {
     void BuildMaterials(G4String); 
     void BuildCryostatStructure(const rapidjson::Value& jcryo);
     SLArCryostatStructure& GetCryostatStructure() {return fCryostatStructure;}
-    std::map<slargeo::EBoxFace, SLArBaseDetModule*>& GetCryostatSupportStructure() {return fSupportStructure;}
-    SLArBaseDetModule* GetWaffleUnit() {return fWaffleUnit;}
+    inline std::map<slargeo::EBoxFace, SLArBaseDetModule*>& GetCryostatSupportStructure() {return fSupportStructure;}
+    inline std::vector<G4VPhysicalVolume*>& GetCryostatSupportStructureEdges() {return fSupportStructureEdges;}
+    inline SLArBaseDetModule* GetWaffleUnit() {return fWaffleUnit;}
+    inline SLArBaseDetModule* GetWaffleCornerUnit() {return fWaffleEdgeUnit;}
     virtual void Init(const rapidjson::Value&) override {}
     void SetWorldMaterial(SLArMaterial* mat) {fMatWorld = mat;}
     void SetVisAttributes();
@@ -57,12 +59,12 @@ class SLArDetCryostat : public SLArBaseDetModule {
     SLArMaterial* fMatWaffle; 
     SLArMaterial* fMatBrick; 
     SLArBaseDetModule* fWaffleUnit;
-    SLArBaseDetModule* fWaffleCornerUnit;
+    SLArBaseDetModule* fWaffleEdgeUnit;
     G4bool fBuildSupport; 
     G4bool fAddNeutronBricks; 
     std::map<G4String, SLArMaterial*> fMaterials;
     std::map<slargeo::EBoxFace, SLArBaseDetModule*> fSupportStructure;
-    std::map<std::pair<slargeo::EBoxFace, slargeo::EBoxFace>, SLArBaseDetModule*> fSupportStructureCorners;
+    std::vector<G4VPhysicalVolume*> fSupportStructureEdges;
 
     SLArCryostatStructure fCryostatStructure; 
     SLArBaseDetModule* BuildCryostatLayer(
@@ -70,7 +72,7 @@ class SLArDetCryostat : public SLArBaseDetModule {
         G4double x_, G4double y_, G4double z_, G4double tk_, 
         G4Material* mat);
     void BuildSupportStructureUnit(); 
-    void BuildSupportStructureCornerUnit(); 
+    void BuildSupportStructureEdgeUnit(); 
     SLArBaseDetModule* BuildSupportStructure(slargeo::EBoxFace kFace); 
     SLArBaseDetModule* BuildSupportStructurePatch(G4double width, G4double len, G4String name); 
     SLArBaseDetModule* BuildSupportStructureEdge(G4double len, G4String name); 

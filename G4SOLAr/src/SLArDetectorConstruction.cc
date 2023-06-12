@@ -756,33 +756,124 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   printf("Support structure\n");
   for (const auto &face_ : fCryostat->GetCryostatSupportStructure() ) {
     auto face = face_.second;
-    const auto lv = face->GetModLV()->GetDaughter(0)->GetLogicalVolume();
-    auto vol_plane = (G4PVParameterised*)lv->GetDaughter(0);
-    G4GeometryCell cell(*vol_plane, vol_plane->GetCopyNo()); 
-
+    G4GeometryCell cell(*face->GetModPV(), face->GetModPV()->GetCopyNo()); 
     if (istore->IsKnown(cell) == false) {
-      printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
-          vol_plane->GetName().data(), imp, vol_plane->GetCopyNo(), 
-          static_cast<void*>(vol_plane) );
-
+      printf("SUPPORT FACE: Adding %s (rp nr %i) to istore with importance %g\n",
+          cell.GetPhysicalVolume().GetName().data(),
+          cell.GetReplicaNumber(), imp);              
       istore->AddImportanceGeometryCell(imp, cell); 
     }
+    
+    const auto pv = face->GetModLV()->GetDaughter(0); 
+    const auto lv = pv->GetLogicalVolume();
 
-    auto vol_row = vol_plane->GetLogicalVolume()->GetDaughter(0); 
-    auto plane_repl = get_plane_replication_data(vol_plane); 
-    for (int irow = 0; irow<plane_repl.fNreplica; irow++) {
-      cell = G4GeometryCell(*vol_row, irow); 
-      if ( istore->IsKnown( cell ) == false) {
+    auto vol_row = (G4PVParameterised*)lv->GetDaughter(0);
+    printf("vol_row: %s[%s]\n", 
+        vol_row->GetName().data(), 
+        vol_row->GetLogicalVolume()->GetName().data()); ;
+
+    auto repl = get_plane_replication_data(static_cast<G4PVParameterised*>(vol_row)); 
+    for (int i=0; i<repl.fNreplica; i++) {
+
+      cell = G4GeometryCell(*vol_row, i); 
+
+      if (istore->IsKnown(cell) == false) {
         printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
-            vol_row->GetName().data(), imp, irow, static_cast<void*>(vol_row));
+            vol_row->GetName().data(), imp, vol_row->GetCopyNo(), 
+            static_cast<void*>(vol_row) );
+
+        istore->AddImportanceGeometryCell(imp, cell); 
+      }
+    }
+
+
+
+    auto vol_unit = vol_row->GetLogicalVolume()->GetDaughter(0); 
+    auto row_repl = get_plane_replication_data(static_cast<G4PVParameterised*>(vol_unit)); 
+    for (int iunit = 0; iunit<row_repl.fNreplica; iunit++) {
+      cell = G4GeometryCell(*vol_unit, iunit); 
+      if ( istore->IsKnown( cell ) == false) {
+        printf("Adding %s [%s] to istore with importance %g (rep nr. %i, %p)\n", 
+            vol_unit->GetName().data(), 
+            vol_unit->GetLogicalVolume()->GetName().data(), 
+            imp, iunit, static_cast<void*>(vol_unit));
         istore->AddImportanceGeometryCell(imp, cell); 
       }
 
-
-      
-
     } // waffle row 
-  } // support structure face
+    getchar(); 
+
+    for (int i=1; i<face->GetModLV()->GetNoDaughters(); i++) {
+      auto pv_patch = face->GetModLV()->GetDaughter(i); 
+      auto lv_patch = pv_patch->GetLogicalVolume(); 
+      
+      G4GeometryCell cell(*pv_patch, pv_patch->GetCopyNo()); 
+      if (istore->IsKnown(cell) == false) {
+        printf("PATCH MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
+            cell.GetPhysicalVolume().GetName().data(), 
+            cell.GetReplicaNumber(), imp);              
+        istore->AddImportanceGeometryCell(imp, cell);  
+
+        const auto ppv_patch = (G4PVParameterised*)lv_patch->GetDaughter(0); 
+        
+        if (ppv_patch->IsParameterised()) {
+          const auto unit_lv = ppv_patch->GetLogicalVolume(); 
+          const auto rpl = get_plane_replication_data(ppv_patch); 
+
+          for (int k=0; k<rpl.fNreplica; k++) {
+            cell = G4GeometryCell(*ppv_patch, k); 
+            if (istore->IsKnown(cell) == false) {
+              printf("PATCH MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
+                  cell.GetPhysicalVolume().GetName().data(),
+                  cell.GetReplicaNumber(), imp);              
+
+              istore->AddImportanceGeometryCell(imp, cell);  
+
+              for (int k=0; k<unit_lv->GetNoDaughters(); k++) {
+                const auto component_pv = unit_lv->GetDaughter(k); 
+                cell = G4GeometryCell(*component_pv, component_pv->GetCopyNo()); 
+                if (istore->IsKnown(cell) == false) {
+                  printf("PATCH UNIT: Adding %s (rp nr %i) to istore with importance %g\n",
+                      cell.GetPhysicalVolume().GetName().data(),
+                      cell.GetReplicaNumber(), imp);              
+
+                  istore->AddImportanceGeometryCell(imp, cell);  
+                }
+              }
+            }
+          }
+        }
+      }
+    } // end of patch
+  } // end of waffle face 
+
+  for (const auto edge : fCryostat->GetCryostatSupportStructureEdges()) {
+    const auto edge_lv = edge->GetLogicalVolume(); 
+    const auto edge_ppv = edge_lv->GetDaughter(0); 
+    const auto edge_unit_lv = edge_ppv->GetLogicalVolume(); 
+
+    auto cell = G4GeometryCell(*edge, edge->GetCopyNo()); 
+    if (istore->IsKnown(cell) == false) {
+      printf("EDGE MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
+          cell.GetPhysicalVolume().GetName().data(),
+          cell.GetReplicaNumber(), imp);              
+      istore->AddImportanceGeometryCell(imp, cell); 
+
+      const auto repl = get_plane_replication_data(static_cast<G4PVParameterised*>(edge_ppv)); 
+      for (int k=0; k<repl.fNreplica; k++) {
+        cell = G4GeometryCell(*edge_ppv, k); 
+        if (istore->IsKnown(cell) == false) {
+          printf("EDGE UNIT: Adding %s (rp nr %i) to istore with importance %g\n",
+              cell.GetPhysicalVolume().GetName().data(),
+              cell.GetReplicaNumber(), imp);              
+          istore->AddImportanceGeometryCell(imp, cell); 
+        }
+      }
+    }
+
+
+  }
+  getchar(); 
 
   printf("\nWaffle unit\n");
   const auto waffle = fCryostat->GetWaffleUnit(); 
@@ -790,6 +881,20 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
 
   for (G4int k=0; k<waffle_lv->GetNoDaughters(); k++) {
     auto vol = waffle_lv->GetDaughter(k); 
+    auto cell = G4GeometryCell(*vol, vol->GetCopyNo()); 
+    if (istore->IsKnown(cell)==false) {
+      printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
+          cell.GetPhysicalVolume().GetName().data(), 
+          imp, cell.GetReplicaNumber(), static_cast<void*>(vol) );
+      istore->AddImportanceGeometryCell(imp, cell); 
+    }
+  }
+
+  printf("\nWaffle edge unit\n");
+  const auto edgeunit = fCryostat->GetWaffleCornerUnit(); 
+  const auto edgeunit_lv = edgeunit->GetModLV(); 
+  for (G4int k=0; k<edgeunit_lv->GetNoDaughters(); k++) {
+    auto vol = edgeunit_lv->GetDaughter(k); 
     auto cell = G4GeometryCell(*vol, vol->GetCopyNo()); 
     if (istore->IsKnown(cell)==false) {
       printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
