@@ -1,6 +1,6 @@
 "TPC" : [
     {"copyID" : 10, 
-      "position": {"xyz" : [-50.05, 0, 0], "unit" : "cm"},
+      "position": {"xyz" : [-50.55, 0, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [1, 0, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.01, "unit" :  "m"},
@@ -17,7 +17,7 @@
       }
     },
     {"copyID" : 11, 
-      "position": {"xyz" : [50.05, 0, 0], "unit" : "cm"},
+      "position": {"xyz" : [50.55, 0, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [-1, 0, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.01, "unit" :  "m"},
@@ -53,8 +53,8 @@
       "tile_assembly" : "StdReadoutPlane", 
       "dimensions" : [
         {"name" : "dim_y", "val" : 1.00, "unit" : "cm"},
-        {"name" : "dim_x", "val" : 0.55, "unit" :  "m"},
-        {"name" : "dim_z", "val" : 0.50, "unit" :  "m"}
+        {"name" : "dim_x", "val" : 1.55, "unit" :  "m"},
+        {"name" : "dim_z", "val" : 2.50, "unit" :  "m"}
       ]
     }, 
     {"copyID" : 51, 
@@ -65,8 +65,8 @@
       "tile_assembly" : "StdReadoutPlane", 
       "dimensions" : [
         {"name" : "dim_y", "val" : 1.00, "unit" : "cm"},
-        {"name" : "dim_x", "val" : 0.55, "unit" :  "m"},
-        {"name" : "dim_z", "val" : 0.50, "unit" :  "m"}
+        {"name" : "dim_x", "val" : 1.55, "unit" :  "m"},
+        {"name" : "dim_z", "val" : 2.50, "unit" :  "m"}
       ]
     }
   ]
