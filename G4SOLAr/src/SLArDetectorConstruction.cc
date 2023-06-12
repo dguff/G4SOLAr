@@ -801,7 +801,6 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
       }
 
     } // waffle row 
-    getchar(); 
 
     for (int i=1; i<face->GetModLV()->GetNoDaughters(); i++) {
       auto pv_patch = face->GetModLV()->GetDaughter(i); 
@@ -873,7 +872,6 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
 
 
   }
-  getchar(); 
 
   printf("\nWaffle unit\n");
   const auto waffle = fCryostat->GetWaffleUnit(); 
