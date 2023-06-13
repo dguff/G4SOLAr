@@ -17,6 +17,7 @@
 #include "G4ParticleGun.hh"
 
 #include "TH1D.h"
+#include "TRandom3.h"
 
 class G4ParticleTable;
 
@@ -37,6 +38,7 @@ class SLArExternalGeneratorAction : public G4VUserPrimaryGeneratorAction
     SLArBoxSurfaceVertexGenerator* fVtxGen;
     TH1D* fEnergySpectrum; 
     G4String fParticleName; 
+    TRandom3* fRandomEngine; 
 
     G4ThreeVector SampleRandomDirection(); 
 

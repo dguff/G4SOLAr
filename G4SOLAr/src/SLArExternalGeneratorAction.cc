@@ -16,23 +16,28 @@
 
 #include "TFile.h"
 #include "TH1D.h"
+#include "TRandom3.h"
 
 #include "G4PhysicalVolumeStore.hh"
 #include "G4RandomTools.hh"
 #include "G4Poisson.hh"
 #include "G4Event.hh"
+#include "G4RunManager.hh"
 
 
 SLArExternalGeneratorAction::SLArExternalGeneratorAction()
   : fParticleGun(nullptr), fVtxGen(nullptr), fEnergySpectrum(nullptr)
 {
   fParticleGun = new SLArPGunGeneratorAction(1); 
+
+  fRandomEngine = new TRandom3( G4Random::getTheSeed() ); 
 }
 
 SLArExternalGeneratorAction::~SLArExternalGeneratorAction()
 {
   if (fParticleGun) {delete fParticleGun; fParticleGun=nullptr;}
   if (fEnergySpectrum) {delete fEnergySpectrum; fEnergySpectrum=nullptr;}
+  if (fRandomEngine) {delete fRandomEngine; fRandomEngine=nullptr;}
 }
 
 void SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path) {
@@ -111,7 +116,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   
   //printf("Energy spectrum pointer: %p\n", static_cast<void*>(fEnergySpectrum));
   //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
-  G4double energy = fEnergySpectrum->GetRandom(); 
+  G4double energy = fEnergySpectrum->GetRandom( fRandomEngine ); 
   auto face = fVtxGen->GetVertexFace(); 
   const auto face_normal = slargeo::BoxFaceNormal[face]; 
   //printf("SLArExternalGeneratorAction: vtx face is %i\n", face);
