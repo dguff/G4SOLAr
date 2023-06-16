@@ -1,7 +1,7 @@
 ######################################################################
 # @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
 # @file        : CMakeLists
-# @created     : mercoledì giu 22, 2022 15:14:17 CEST
+# @created     : Wed Jun 22, 2022 15:14:17 CEST
 ######################################################################
 
 # SLArReadoutSystemConfig dictionary 

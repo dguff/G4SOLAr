@@ -12,9 +12,10 @@ add_library(SLArMCPrimaryInfo
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventTrajectory.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTrajectory.hh
   )
-
+target_include_directories(SLArMCPrimaryInfo 
+  PUBLIC 
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
 target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
-
 ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
   ${PROJECT_SOURCE_DIR}/include/event/SLArMCPrimaryInfo.hh
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventTrajectory.hh
@@ -29,7 +30,6 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
 #add_library(SLArEventPhotonHit 
   #SHARED ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc)
 #target_link_libraries(SLArEventPhotonHit PUBLIC ROOT::Core)
-
 add_library(SLArMCEventReadout
   SHARED
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventGenericHit.cc
@@ -53,6 +53,9 @@ add_library(SLArMCEventReadout
   ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellArray.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellArray.hh
   )
+target_include_directories(SLArMCEventReadout 
+  PUBLIC 
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
 target_link_libraries(
   SLArMCEventReadout 
   PUBLIC 
@@ -79,12 +82,14 @@ add_library(SLArMCEvent
   ${PROJECT_SOURCE_DIR}/src/event/SLArMCEvent.cc
   ${PROJECT_SOURCE_DIR}/include/event/SLArMCEvent.hh
   )
+target_include_directories(SLArMCEvent 
+  PUBLIC 
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
 target_link_libraries(SLArMCEvent 
                       PUBLIC
                       ${ROOT_LIBRARIES} 
                       SLArMCPrimaryInfo
                       SLArMCEventReadout)
-
 ROOT_GENERATE_DICTIONARY(G__SLArMCEvent
   ${PROJECT_SOURCE_DIR}/include/event/SLArMCEvent.hh
   MODULE SLArMCEvent
