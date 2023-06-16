@@ -77,6 +77,8 @@ include(CMakePackageConfigHelpers)
 # configure rootlogon and setup script
 configure_file(${PROJECT_SOURCE_DIR}/source/rootlogon.C.in 
                ${PROJECT_SOURCE_DIR}/rootlogon.C @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/source/SLArAnalysisLibSetup.hpp.in 
+               ${G4S_ANALYSIS_INC_DIR}/SLArAnalysisLibSetup.hpp @ONLY)
 configure_file(${PROJECT_SOURCE_DIR}/source/setup_g4s_analysis.sh.in 
                ${G4S_ANALYSIS_BIN_DIR}/setup_g4s_analysis.sh @ONLY)
 #----------------------------------------------------------------------------

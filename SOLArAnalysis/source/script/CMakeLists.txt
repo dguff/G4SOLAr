@@ -39,7 +39,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
   #G4SOLAr::SLArMCPrimaryInfo)
 #target_link_libraries(build_vis_map PUBLIC SLArLightPropagation)
 
-add_executable(externals ext_neutrons.cc)
+add_executable(externals external_strip.cc)
 target_link_libraries(externals PUBLIC ${ROOT_LIBRARIES})
 target_link_libraries(externals PUBLIC 
   G4SOLAr::SLArReadoutSystemConfig 
