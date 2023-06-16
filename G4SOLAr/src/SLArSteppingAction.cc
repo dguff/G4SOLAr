@@ -105,6 +105,11 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         step_point.fKEnergy = thePrePoint->GetKineticEnergy(); 
         step_point.fEdep = 0.; 
         step_point.fCopy = thePrePV->GetCopyNo(); 
+        const auto material_name = 
+          thePostPV->GetLogicalVolume()->GetMaterial()->GetName();
+        if ( G4StrUtil::contains(material_name, "LAr") ) {
+          step_point.fLAr = true;
+        }
         step_point.fNel = 0.;
         step_point.fNph = 0.; 
         trajectory->RegisterPoint(step_point); 
@@ -114,8 +119,13 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
       step_point.fY = pos.y(); 
       step_point.fZ = pos.z(); 
       step_point.fKEnergy = thePostPoint->GetKineticEnergy(); 
-      step_point.fEdep = step->GetTotalEnergyDeposit(); 
+      step_point.fEdep = edep; 
       step_point.fCopy = thePostPV->GetCopyNo(); 
+      const auto material_name = 
+        thePostPV->GetLogicalVolume()->GetMaterial()->GetName();
+      if ( G4StrUtil::contains(material_name, "LAr") ) {
+        step_point.fLAr = true;
+      }
       step_point.fNel = n_el;
       step_point.fNph = n_ph; 
       trajectory->RegisterPoint(step_point); 
@@ -292,6 +302,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 #ifdef SLAR_DEBUG
              printf("Detection in %s - copy id [%i]\n", 
                  volName.c_str(), touchable->GetCopyNumber(0)); 
+             getchar(); 
 #endif
 
             phInfo->AddTrackStatusFlag(hitPMT);
@@ -334,6 +345,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
                   touchable->GetCopyNumber(3),
                   touchable->GetCopyNumber(4)
                   );
+              getchar(); 
 #endif
 
               supercellSD = (SLArSuperCellSD*)SDman->FindSensitiveDetector(sdNameSC);
