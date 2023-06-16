@@ -7,51 +7,51 @@
 # SLArMCPrimaryInfo dictionary 
 add_library(SLArMCPrimaryInfo
   SHARED
-  ${PROJECT_SOURCE_DIR}/src/event/SLArMCPrimaryInfo.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCPrimaryInfo.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventTrajectory.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventTrajectory.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArMCPrimaryInfo.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventTrajectory.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTrajectory.hh
   )
 target_include_directories(SLArMCPrimaryInfo 
   PUBLIC 
   "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
 target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
 ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCPrimaryInfo.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventTrajectory.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTrajectory.hh
   MODULE SLArMCPrimaryInfo
   LINKDEF
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCPrimaryInfoLinkDef.h)
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfoLinkDef.h)
 
 
 #ROOT_GENERATE_DICTIONARY(SLArPhotonHitsDict
   #LINKDEF 
-  #${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHitLinkDef.h)
+  #${G4SOLAR_INCLUDE_DIR}/event/SLArEventPhotonHitLinkDef.h)
 #add_library(SLArEventPhotonHit 
-  #SHARED ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc)
+  #SHARED ${G4SOLAR_SRC_DIR}/event/SLArEventPhotonHit.cc)
 #target_link_libraries(SLArEventPhotonHit PUBLIC ROOT::Core)
 add_library(SLArMCEventReadout
   SHARED
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventGenericHit.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventGenericHit.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventChargeHit.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargeHit.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventPhotonHit.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventHitsCollection.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventHitsCollection.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventChargePixel.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargePixel.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventTile.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventMegatile.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventAnode.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventAnode.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCell.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCell.hh
-  ${PROJECT_SOURCE_DIR}/src/event/SLArEventSuperCellArray.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellArray.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventGenericHit.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventGenericHit.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventChargeHit.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargeHit.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventPhotonHit.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventPhotonHit.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventHitsCollection.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventHitsCollection.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventChargePixel.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargePixel.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventTile.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTile.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventMegatile.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventMegatile.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventAnode.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventAnode.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventSuperCell.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCell.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventSuperCellArray.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCellArray.hh
   )
 target_include_directories(SLArMCEventReadout 
   PUBLIC 
@@ -61,26 +61,26 @@ target_link_libraries(
   PUBLIC 
   SLArReadoutSystemConfig ${ROOT_LIBRARIES})
 ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventGenericHit.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventPhotonHit.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargeHit.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventHitsCollection.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventChargePixel.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventTile.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventMegatile.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventAnode.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCell.hh
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventSuperCellArray.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventGenericHit.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventPhotonHit.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargeHit.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventHitsCollection.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargePixel.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTile.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventMegatile.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventAnode.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCell.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCellArray.hh
   MODULE SLArMCEventReadout
   LINKDEF
-  ${PROJECT_SOURCE_DIR}/include/event/SLArEventReadoutLinkDef.h
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventReadoutLinkDef.h
   )
 
 # Master MC EVENT
 add_library(SLArMCEvent 
   SHARED
-  ${PROJECT_SOURCE_DIR}/src/event/SLArMCEvent.cc
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCEvent.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArMCEvent.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEvent.hh
   )
 target_include_directories(SLArMCEvent 
   PUBLIC 
@@ -91,10 +91,10 @@ target_link_libraries(SLArMCEvent
                       SLArMCPrimaryInfo
                       SLArMCEventReadout)
 ROOT_GENERATE_DICTIONARY(G__SLArMCEvent
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCEvent.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEvent.hh
   MODULE SLArMCEvent
   LINKDEF
-  ${PROJECT_SOURCE_DIR}/include/event/SLArMCEventLinkDef.h
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEventLinkDef.h
   )
 
 #----------------------------------------------------------------------------
