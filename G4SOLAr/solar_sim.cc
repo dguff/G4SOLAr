@@ -213,13 +213,18 @@ int main(int argc,char** argv)
   auto detector = new SLArDetectorConstruction(geometry_file, material_file);
   runManager-> SetUserInitialization(detector);
 #ifdef SLAR_EXTERNAL
-  const char* ext_particle = SLAR_EXTERNAL;
+#ifndef SLAR_EXTERNAL_PARTICLE
+  printf("solar-sim WARNING: target built with SLAR_EXTERNAL flag but external particle is not specified"); 
+#else
+  const char* ext_particle = SLAR_EXTERNAL_PARTICLE;
   G4GeometrySampler mgs(detector->GetPhysicalWorld(), ext_particle);
+  printf("Built with SLAR_EXTERNAL flag for particle %s\n", ext_particle);
+#endif
 #endif
   // Physics list
   printf("Creating Phiscs Lists...\n");
   auto physicsList = new SLArPhysicsList(physName);
-#ifdef SLAR_EXTERNAL
+#if (defined SLAR_EXTERNAL &&  defined SLAR_EXTERNAL_PARTICLE)
   physicsList->RegisterPhysics(new G4ImportanceBiasing(&mgs));
 #endif
   runManager-> SetUserInitialization(physicsList);
