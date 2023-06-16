@@ -22,9 +22,10 @@ struct trj_point {
   int   fNph; 
   int   fNel; 
   int   fCopy; 
+  bool  fLAr;
 
-  trj_point() : fX(0.), fY(0.), fZ(0.), fKEnergy(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0) {}
-  trj_point(double x, double y, double z, double energy, double edep, int n_ph = 0, int n_el = 0, int copy = 0) {
+  trj_point() : fX(0.), fY(0.), fZ(0.), fKEnergy(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0), fLAr(false) {}
+  trj_point(double x, double y, double z, double energy, double edep, int n_ph = 0, int n_el = 0, int copy = 0, bool in_lar = false) {
     fX = x; 
     fY = y; 
     fZ = z; 
@@ -33,6 +34,7 @@ struct trj_point {
     fNph = n_ph; 
     fNel = n_el; 
     fCopy = copy;
+    fLAr = in_lar;
   }
 };
 
@@ -98,7 +100,7 @@ class SLArEventTrajectory : public TObject
     float                  fTotalNel         ; 
 
   public:
-    ClassDef(SLArEventTrajectory, 3);
+    ClassDef(SLArEventTrajectory, 4);
 };
 
 
