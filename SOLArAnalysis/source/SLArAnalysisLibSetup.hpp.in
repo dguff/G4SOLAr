@@ -1,23 +1,22 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : rootlogon.C
- * @created     : mercoledì lug 20, 2022 16:33:35 CEST
+ * @file        : SLArAnalysisLibSetup.hpp
+ * @created     : Fri Jun 16, 2022 10:13:21 CEST
  */
 
 #include <iostream>
 #include "TSystem.h"
 
-void rootlogon()
+void setup_slar_lib()
 {
-  gSystem->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
-  gSystem->AddIncludePath("@G4S_ANALYSIS_INC_DIR@");
+  printf("--------------------------------------------\n");
+  printf("SOLArAnalysis: Loading SOLAr Event Libraries\n\n");
   gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
-  gSystem->Load("@G4S_ANALYSIS_LIB_DIR@/libSLArLightPropagation.so");
 }
 
 

@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArTrackingAction.cc
- * @created     : martedì ago 09, 2022 22:04:56 CEST
+ * @created     : Tue Aug 09, 2022 22:04:56 CEST
  */
 
 #include "SLArAnalysisManager.hh"
@@ -34,14 +34,13 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     fpTrackingManager->SetStoreTrajectory(true);
   }
   else {
-    fpTrackingManager->SetStoreTrajectory(false);
+    fpTrackingManager->SetStoreTrajectory(true);
     //This user track information is only relevant to the photons
     fpTrackingManager->SetUserTrackInformation(
         new SLArUserPhotonTrackInformation);
   }
   //Use custom trajectory class
   fpTrackingManager->SetTrajectory(new SLArTrajectory(aTrack));
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,26 +77,6 @@ void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   else //draw all other trajectories and store them in SLArMCPrimaryInfo
   {
     trajectory->SetDrawTrajectory(true);
-/*
- *    // Copy relevant attributes into SLArEvTrajectory
- *    SLArEventTrajectory* evTrajectory = new SLArEventTrajectory();
- *    evTrajectory->SetParticleName(trajectory->GetParticleName());
- *    evTrajectory->SetPDGID(trajectory->GetPDGEncoding());
- *    evTrajectory->SetTrackID(trajectory->GetTrackID());
- *    evTrajectory->SetParentID(trajectory->GetParentID());
- *    // store trajectory points
- *    for (int n=0; n<trajectory->GetPointEntries(); n++)
- *      evTrajectory->RegisterPoint(
- *          trajectory->GetPoint(n)->GetPosition().getX(),
- *          trajectory->GetPoint(n)->GetPosition().getY(),
- *          trajectory->GetPoint(n)->GetPosition().getZ()
- *          );
- *
- *    // store SLArEventTrajectory into SLArMCPrimaryInfo
- *    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
- *    SLArMCPrimaryInfo* evInfo = SLArAnaMgr->GetEvent()->GetPrimary();
- *    evInfo->RegisterTrajectory(evTrajectory);
- */
   }  
 
 

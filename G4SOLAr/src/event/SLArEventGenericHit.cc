@@ -6,6 +6,8 @@
 
 #include "event/SLArEventGenericHit.hh"
 
+ClassImp(SLArEventGenericHit)
+
 SLArEventGenericHit::SLArEventGenericHit()
   : fTime(-1) {}
 
