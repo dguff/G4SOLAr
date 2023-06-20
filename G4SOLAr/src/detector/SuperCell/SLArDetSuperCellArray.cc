@@ -105,7 +105,7 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
   G4ThreeVector max_dim; 
   fSuperCell = superCell;
   max_dim[0] = fGeoInfo->GetGeoPar("dim_x");
-  max_dim[1] = fGeoInfo->GetGeoPar("dim_y");
+  max_dim[1] = superCell->GetTotalHeight();
   max_dim[2] = fGeoInfo->GetGeoPar("dim_z");
 
   G4ThreeVector localNormal = G4ThreeVector(0, 1, 0); 
@@ -129,10 +129,13 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
 
     G4ThreeVector perp_ax = localNormal.cross(rpars->GetReplicationAxisVector()); 
     G4double module_wdt = 0.; 
+    printf("tmp_dim: %g, %g, %g\n", tmp_dim[0], tmp_dim[1], tmp_dim[2]);
     for (int i=0; i<3; i++) {
       if ( fabs(perp_ax[i] * origin_dim[i] ) > 0 ) {
         tmp_dim[i] = origin_dim[i]; 
         module_wdt = origin_dim[i]; 
+      } else {
+        tmp_dim[i] += 1*CLHEP::mm;
       }
     }
 
@@ -147,11 +150,14 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
     rpars->SetStartPos( 
         0.5*rpars->GetReplicationAxisVector()
         *(-start_.second + origin_dim.dot(rpars->GetReplicationAxisVector())) 
-        -0.5*localNormal*(localNormal.dot(max_dim))
         );
-    G4cout<< "start pos: " << rpars->GetStartPos() << G4endl; 
+    printf("SLArDetSuperCellArray::build_parameterised_vol: origin %s -> target %s\n", 
+        origin->GetModLV()->GetName().data(), 
+        target->GetModLV()->GetName().data());
+
+    G4String pvp_name = target_prefix + "_ppv"; 
     target->SetModPV(
-        new G4PVParameterised(target_prefix+"_ppv", 
+        new G4PVParameterised(pvp_name, 
           origin->GetModLV(), target->GetModLV(), 
           rpars->GetReplicationAxis(), start_.first,
           rpars, true)); 
@@ -160,17 +166,17 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
   for (auto &rpars : fParameterisation) {
     SLArBaseDetModule* target = nullptr; 
     SLArBaseDetModule* origin = nullptr;
-    G4String prefix = "";
+    G4String target_prefix = "";
     if (rpars == fParameterisation.back()) {
       target = this; 
       origin = fSubModules.back();
-      prefix = "SC_array";
+      target_prefix = "SC_row";
     } 
     else if (rpars == fParameterisation.front()) {
       fSubModules.push_back( new SLArBaseDetModule() ); 
       target = fSubModules.back();
       origin = superCell;
-      prefix = "SC_row";
+      target_prefix = "SC_module";
     }
     else {
       G4cout << "SLArDetSuperCellArray::BuildSuperCellArray() WARNING: " << G4endl;
@@ -180,15 +186,19 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
       origin = fSubModules.rbegin()[1];
     }
 
-    build_parameterised_vol(origin, target, prefix, rpars);
+    build_parameterised_vol(origin, target, target_prefix, rpars);
   }
 
-  for (auto &subModules : fSubModules) {
-    subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
-  }
+  fModPV->SetCopyNo(800+fID); 
+  auto vol = fModLV->GetDaughter(0); 
+  //printf("vol name: %s (%lu daughters)\n", vol->GetName().data(), fModLV->GetNoDaughters());
+  vol->SetCopyNo(800+fID); 
 
-  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  //for (auto &subModules : fSubModules) {
+    //subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
+  //}
 
+  //fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 }
 
 std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(

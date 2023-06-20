@@ -256,18 +256,18 @@ namespace slarAna {
     TVector3 XPlane[2]; 
 
     if (kFace == kNorth || kFace == kSouth) {
-      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));
+      detSize.SetZ((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm"));
       XPlane[0] = TVector3(0, 0, 1); 
       XPlane[1] = TVector3(0, 1, 0); 
     } else if (kFace == kTop || kFace == kBottom) {
-      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetX(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetZ((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetX((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
       XPlane[0] = TVector3(0, 0, 1); 
       XPlane[1] = TVector3(1, 0, 0); 
     } else if (kFace == kUpstrm || kFace == kDownstrm) {
-      detSize.SetX(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));  
+      detSize.SetX((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm"));  
       XPlane[0] = TVector3(1, 0, 0); 
       XPlane[1] = TVector3(0, 1, 0); 
     }
@@ -364,18 +364,18 @@ namespace slarAna {
     TVector3 XPlane[2]; 
 
     if (kFace == kNorth || kFace == kSouth) {
-      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));
+      detSize.SetZ((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm"));
       XPlane[0] = TVector3(0, 0, 1); 
       XPlane[1] = TVector3(0, 1, 0); 
     } else if (kFace == kTop || kFace == kBottom) {
-      detSize.SetZ(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetX(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm")); 
+      detSize.SetZ((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetX((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
       XPlane[0] = TVector3(0, 0, 1); 
       XPlane[1] = TVector3(1, 0, 0); 
     } else if (kFace == kUpstrm || kFace == kDownstrm) {
-      detSize.SetX(cfgTile->Get2DSize_X()/G4UIcommand::ValueOf("cm")); 
-      detSize.SetY(cfgTile->Get2DSize_Y()/G4UIcommand::ValueOf("cm"));  
+      detSize.SetX((cfgTile->GetAxis0().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm")); 
+      detSize.SetY((cfgTile->GetAxis1().Dot(cfgTile->GetSize()))/G4UIcommand::ValueOf("cm"));  
       XPlane[0] = TVector3(1, 0, 0); 
       XPlane[1] = TVector3(0, 1, 0); 
     }

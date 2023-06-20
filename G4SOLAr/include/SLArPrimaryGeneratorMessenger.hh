@@ -17,6 +17,7 @@ class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWith3Vector;
 class G4UIcmdWithAString;
 class G4UIcmdWithADouble; 
+class G4UIcmdWithAnInteger;
 class G4UIcmdWithABool; 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -46,6 +47,7 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithAString*                 fCmdExternalConf; 
 
     G4UIcmdWithABool*                   fCmdTracePhotons;
+    G4UIcmdWithABool*                   fCmdDriftElectrons;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -17,7 +17,7 @@ void rootlogon()
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
   gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
-  gSystem->Load("@G4S_ANALYSIS_LIB_DIR/libSLArLightPropagation.so");
+  gSystem->Load("@G4S_ANALYSIS_LIB_DIR@/libSLArLightPropagation.so");
 }
 
 

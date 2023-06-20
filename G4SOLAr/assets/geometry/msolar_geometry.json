@@ -102,7 +102,7 @@
       "main_spacing" : {"val" : 60, "unit" : "cm"}
     }
   },
-  "ReadoutTile": {
+  "ReadoutTile" : {
     "dimensions" : [
       {"name" : "tile_x", "val" :12.0, "unit" : "cm" },
       {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
@@ -131,7 +131,7 @@
       "dimensions" : [{"name" : "cell_x", "val" : 1.2, "unit" : "cm"}, {"name" : "cell_z", "val" : 1.2, "unit" : "cm"}], 
       "lineup" : [
         {"component" : "sipm"  , "name" : "sipm"  , "copy" : 0, "pos_z" : {"val" :  0.0, "unit" : "mm"}, "pos_x" : {"val" : 0.0, "unit" : "mm"}}
-], 
+      ], 
       "pixelmap" : [
         {"name" : "qpix1", "edges" : [
           {"z" : {"val":-6, "unit": "mm"}, "x":{"val":-6, "unit":"mm"}}, 
@@ -210,7 +210,8 @@
         ]
       }
     ]
-  },
+  }
+  ,
   "SuperCell" : {
     "dimensions" : [
       {"name" : "cell_z"   , "val" : 60.0, "unit" : "cm"}, 

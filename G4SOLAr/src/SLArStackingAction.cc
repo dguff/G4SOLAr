@@ -44,8 +44,6 @@
 #include "G4Track.hh"
 #include "G4ios.hh"
 
-#include "SLArPhysicsList.hh"
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArStackingAction::SLArStackingAction(SLArEventAction* ea)
@@ -102,6 +100,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetPDGID( aTrack->GetDynamicParticle()->GetPDGcode() ); 
       trajectory->SetCreatorProcess( creatorProc ); 
       trajectory->SetTime( aTrack->GetGlobalTime() ); 
+      trajectory->SetWeight(aTrack->GetWeight()); 
+      
 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
       auto vertex_momentum = aTrack->GetMomentumDirection();
@@ -174,9 +174,11 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 #endif
 
 
-      SLArPrimaryGeneratorAction* primaryGen = 
-        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
-      if (primaryGen->DoTraceOptPhotons() == false) kClassification = G4ClassificationOfNewTrack::fKill;
+      auto generatorAction = 
+        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
+      if (generatorAction->DoTraceOptPhotons() == false) {
+        kClassification = G4ClassificationOfNewTrack::fKill;
+      }
     }
   }
 

@@ -34,11 +34,6 @@ SLArRunAction::~SLArRunAction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4Run* SLArRunAction::GenerateRun() {
-  fSDName.push_back("BPolyethilene_1"); 
-  fSDName.push_back("BPolyethilene_2"); 
-  fSDName.push_back("CryostatWall0");
-  fSDName.push_back("CryostatWall1");
-
   return (new SLArRun(fSDName)); 
 }
 
@@ -63,6 +58,7 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
 
 void SLArRunAction::EndOfRunAction(const G4Run* aRun)
 {
+  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
   //- SLArRun object.
   SLArRun* solarRun = (SLArRun*)aRun;
@@ -70,55 +66,54 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   solarRun->DumpAllScorer();
   //---
 
-  auto hmap_capture1 = solarRun->GetHitsMap("BPolyethilene_1", "captureCnts1"); 
-  auto hmap_capture2 = solarRun->GetHitsMap("BPolyethilene_2", "captureCnts2"); 
-  G4double ncapt_1 = 0.; 
-  G4double ncapt_2 = 0.; 
-  for (const auto& v : *hmap_capture1) {
-    G4double val = *v.second; 
-    G4int    idx =  v.first;
-    printf("hmap_capture1[%i]: %g\n", idx, val);
-    ncapt_1 += val;
-  }
+  //auto hmap_capture1 = solarRun->GetHitsMap("BPolyethilene_1", "captureCnts1"); 
+  //auto hmap_capture2 = solarRun->GetHitsMap("BPolyethilene_2", "captureCnts2"); 
+  //G4double ncapt_1 = 0.; 
+  //G4double ncapt_2 = 0.; 
+  //for (const auto& v : *hmap_capture1) {
+    //G4double val = *v.second; 
+    //G4int    idx =  v.first;
+    //printf("hmap_capture1[%i]: %g\n", idx, val);
+    //ncapt_1 += val;
+  //}
 
-  for (const auto& v : *hmap_capture2) {
-    G4double val = *v.second; 
-    G4int    idx =  v.first;
-    printf("hmap_capture2[%i]: %g\n", idx, val);
-    ncapt_2 += val;
-  }
+  //for (const auto& v : *hmap_capture2) {
+    //G4double val = *v.second; 
+    //G4int    idx =  v.first;
+    //printf("hmap_capture2[%i]: %g\n", idx, val);
+    //ncapt_2 += val;
+  //}
 
-  printf("%g neutrons capured in layer 1\n", ncapt_1);
-  printf("%g neutrons capured in layer 2\n", ncapt_2);
-
-
-  auto hmap_current_w0 = solarRun->GetHitsMap("CryostatWall0", "nCurrent0"); 
-  auto hmap_current_w1 = solarRun->GetHitsMap("CryostatWall1", "nCurrent1"); 
-  G4double ncurr_0 = 0; 
-  G4double ncurr_1 = 0; 
-  for (const auto& v : *hmap_current_w0) {
-    G4double val = *v.second; 
-    G4int    idx =  v.first;
-    printf("hmap_current_w0[%i]: %g\n", idx, val);
-    ncurr_0 += val; 
-  }
-
-  for (const auto& v : *hmap_current_w1) {
-    G4double val = *v.second; 
-    G4int    idx =  v.first;
-    printf("hmap_current_w1[%i]: %g\n", idx, val);
-    ncurr_1 += val; 
-  }
+  //printf("%g neutrons capured in layer 1\n", ncapt_1);
+  //printf("%g neutrons capured in layer 2\n", ncapt_2);
 
 
-  // save histograms & ntuple
-  //
-  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  SLArAnaMgr->WriteVariable("nEvents", static_cast<G4double>(aRun->GetNumberOfEvent())); 
-  SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_1", ncapt_1); 
-  SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_2", ncapt_2); 
-  SLArAnaMgr->WriteVariable("nCurrent_outerWall", ncurr_0);
-  SLArAnaMgr->WriteVariable("nCurrent_innerWall", ncurr_1);
+  //auto hmap_current_w0 = solarRun->GetHitsMap("CryostatWall0", "nCurrent0"); 
+  //auto hmap_current_w1 = solarRun->GetHitsMap("CryostatWall1", "nCurrent1"); 
+  //G4double ncurr_0 = 0; 
+  //G4double ncurr_1 = 0; 
+  //for (const auto& v : *hmap_current_w0) {
+    //G4double val = *v.second; 
+    //G4int    idx =  v.first;
+    //printf("hmap_current_w0[%i]: %g\n", idx, val);
+    //ncurr_0 += val; 
+  //}
+
+  //for (const auto& v : *hmap_current_w1) {
+    //G4double val = *v.second; 
+    //G4int    idx =  v.first;
+    //printf("hmap_current_w1[%i]: %g\n", idx, val);
+    //ncurr_1 += val; 
+  //}
+
+
+  //// save histograms & ntuple
+  ////
+  //SLArAnaMgr->WriteVariable("nEvents", static_cast<G4double>(aRun->GetNumberOfEvent())); 
+  //SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_1", ncapt_1); 
+  //SLArAnaMgr->WriteVariable("nCapture_BPolyethilene_2", ncapt_2); 
+  //SLArAnaMgr->WriteVariable("nCurrent_outerWall", ncurr_0);
+  //SLArAnaMgr->WriteVariable("nCurrent_innerWall", ncurr_1);
 
   if (!fG4MacroFile.empty()) {
     SLArAnaMgr->WriteCfgFile("g4macro", fG4MacroFile.c_str()); 
