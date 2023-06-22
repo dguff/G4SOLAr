@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArRun.cc
- * @created     : giovedì nov 03, 2022 19:09:24 CET
+ * @created     : Thur Nov 03, 2022 19:09:24 CET
  */
 
 #include "SLArRun.hh"
@@ -188,12 +188,12 @@ void SLArRun::DumpAllScorer(){
       G4cout << " PrimitiveScorer RUN " 
              << runMap->GetSDname() <<","<< runMap->GetName() << G4endl;
       G4cout << " Number of entries " << runMap->entries() << G4endl;
-////      std::map<G4int,G4double*>::iterator itr = runMap->GetMap()->begin();
-////      for(; itr != runMap->GetMap()->end(); itr++) {
-////        G4cout << "  copy no.: " << itr->first
-////               << "  Run Value : " << *(itr->second) 
-////               << G4endl;
-////      }
+      std::map<G4int,G4double*>::iterator itr = runMap->GetMap()->begin();
+      for(; itr != runMap->GetMap()->end(); itr++) {
+        G4cout << "  copy no.: " << itr->first
+               << "  Run Value : " << *(itr->second) 
+               << G4endl;
+      }
     }
   }
 }

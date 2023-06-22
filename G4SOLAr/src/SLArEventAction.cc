@@ -79,11 +79,11 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
      
 
 #ifdef SLAR_DEBUG
-    G4cout << "SLArEventAction::BeginOfEventAction(): ";
+    G4cout << "SLArEventAction::BeginOfEventAction():" << G4endl;
     G4cout << "ReadoutTile ID = " << fTileHCollID   << G4endl;
     G4cout << "SuperCell ID   = " << fSuperCellHCollID << G4endl;
     G4cout << "LAr volume ID  = "; 
-    for (const auto &id : fLArHCollID) printf("%i \n", id);
+    for (const auto &id : fLArHCollID) printf("%i ", id);
     G4cout << G4endl;
 #endif
 
@@ -343,97 +343,7 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
       SLArLArHit* hit = (*hHC1)[0];
       fTotEdep = hit->GetDepositedEnergy();
     }
-/*
- *    G4TrajectoryContainer* trj_cont =  ev->GetTrajectoryContainer();
- *    if (trj_cont)
- *    {
- *      auto primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
- *      TrajectoryVector* trj_vec = trj_cont->GetVector();
- *
- *      for (auto const t : *trj_vec)
- *      {
- *        SLArTrajectory* SLArTrj = (SLArTrajectory*)t;
- *        // filter optical photons
- *        // NOTE that in Geant4 v11.0.1 OpticalPhoton PDG encoding is -22
- *        if (SLArTrj->GetPDGEncoding()!=0 && SLArTrj->GetPDGEncoding() != -22)
- *        {
- *
- *          // Copy relevant attributes into SLArEvTrajectory
- *          SLArEventTrajectory* evTrajectory = new SLArEventTrajectory();
- *          evTrajectory->SetParticleName(SLArTrj->GetParticleName());
- *          evTrajectory->SetPDGID(SLArTrj->GetPDGEncoding());
- *          evTrajectory->SetTrackID(SLArTrj->GetTrackID());
- *          evTrajectory->SetParentID(SLArTrj->GetParentID());
- *          evTrajectory->SetCreatorProcess(SLArTrj->GetCreatorProcess());
- *          evTrajectory->SetInitKineticEne(SLArTrj->GetInitialKineticEnergy());
- *          evTrajectory->SetTime(SLArTrj->GetTime()); 
- *
- *#ifdef SLAR_DEBUG
- *  printf("%*cRecording trk %i to register: PGD ID %i (%s) -- %i points\n", 6, ' ', 
- *      SLArTrj->GetTrackID(), 
- *      SLArTrj->GetPDGEncoding(), 
- *      SLArTrj->GetParticleName().c_str(),
- *      SLArTrj->GetPointEntries()); 
- *#endif
- *          // store trajectory points
- *          size_t npoints = SLArTrj->GetPointEntries(); 
- *          size_t nedeps = SLArTrj->GetEdep().size();
- *          if ( npoints != nedeps+1) {
- *            printf("SLArEventAction::RecordEventTarget WARNING:\n");
- *            printf("Nr of trajectory points != edep points (%lu - %lu)\n\n", 
- *                npoints, nedeps);
- *            //for (int iip =0; iip < SLArTrj->GetPointEntries(); iip++) {
- *                //double x = SLArTrj->GetPoint(iip)->GetPosition().getX();
- *                //double y = SLArTrj->GetPoint(iip)->GetPosition().getY();
- *                //double z = SLArTrj->GetPoint(iip)->GetPosition().getZ();
- *                //printf("Trj points: [%.2f, %.2f, %.2f]\n", 
- *                    //x/CLHEP::m, y/CLHEP::m, z/CLHEP::m);
- *            //}
- *          }
- *          G4double trj_edep = 0; 
- *          for (const auto &edep : SLArTrj->GetEdep()) trj_edep += edep; 
- *          float edep = 0; 
- *          int   n_ph = 0; 
- *          int   n_el = 0; 
- *          int   copyNo = 0; 
- *          for (int n=0; n<SLArTrj->GetPointEntries(); n++) {
- *            if (n == 0) {
- *              edep = 0; n_ph = 0; n_el = 0; copyNo = 0;
- *            } else {
- *              edep = SLArTrj->GetEdep().at(n-1);
- *              n_ph = SLArTrj->GetNphotons().at(n-1); 
- *              n_el = SLArTrj->GetIonElectrons().at(n-1);
- *              copyNo = SLArTrj->GetVolCopyNumumber().at(n-1); 
- *            } 
- *
- *            evTrajectory->RegisterPoint(
- *                SLArTrj->GetPoint(n)->GetPosition().getX(),
- *                SLArTrj->GetPoint(n)->GetPosition().getY(),
- *                SLArTrj->GetPoint(n)->GetPosition().getZ(),
- *                edep, n_ph, n_el, copyNo
- *                );
- *           
- *          } // end of trj points loop
- *
- *          // find the right primary to associate the trajectory
- *          for (auto &primary : primaries) {
- *            if (SLArTrj->GetTrackID() == primary->GetTrackID() || 
- *                SLArTrj->GetParentID() == primary->GetTrackID()) {
- *              primary->RegisterTrajectory(evTrajectory);
- *            } else {
- *              auto slar_trjs = primary->GetTrajectories(); 
- *              for (const auto &strj : slar_trjs) {
- *                if (strj->GetTrackID() == SLArTrj->GetParentID()) {
- *                  primary->RegisterTrajectory(evTrajectory); 
- *                }
- *              }
- *            }
- *          }    
- *        }  
- *
- *      } 
- *    }
- */
+
   }
 
 

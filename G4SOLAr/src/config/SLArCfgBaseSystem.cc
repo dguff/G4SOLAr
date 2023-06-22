@@ -71,7 +71,7 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(const char* 
 {
   TAssemblyModule* module_cfg = nullptr;
   for (const auto& mod : fElementsMap) {
-    if (std::strcmp(mod.second->GetName(),name) == 0) {
+    if (strcmp(mod.second->GetName(),name) == 0) {
       module_cfg = mod.second; 
       break;
     }

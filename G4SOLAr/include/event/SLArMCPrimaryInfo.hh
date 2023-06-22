@@ -28,20 +28,22 @@ class SLArMCPrimaryInfo : public TNamed
 
     void SetTotalEdep   (float edep)   {fTotalEdep    = edep;}
 
-    TString   GetParticleName() {return fName     ;}
-    std::vector<double>   GetMomentum    () {return fMomentum ;}
-    std::vector<double>   GetVertex      () {return fVertex   ;}
-    double    GetEnergy      () {return fEnergy   ;}
-    int       GetCode        () {return fID       ;}
-    double    GetTime        () {return fTime     ;}
-    double    GetTotalEdep   () {return fTotalEdep;}
-    int       GetID          () {return fID       ;}
-    int       GetTrackID     () {return fTrkID    ;}
+    inline TString   GetParticleName() {return fName     ;}
+    inline std::vector<double>   GetMomentum    () {return fMomentum ;}
+    inline std::vector<double>   GetVertex      () {return fVertex   ;}
+    inline double    GetEnergy      () {return fEnergy   ;}
+    inline int       GetCode        () {return fID       ;}
+    inline double    GetTime        () {return fTime     ;}
+    inline double    GetTotalEdep   () {return fTotalEdep;}
+    inline double    GetTotalLArEdep() {return fTotalLArEdep;}
+    inline int       GetID          () {return fID       ;}
+    inline int       GetTrackID     () {return fTrkID    ;}
     std::vector<SLArEventTrajectory*>&
               GetTrajectories() {return fTrajectories;}
     int       GetTotalScintPhotons() {return fTotalScintPhotons;}
     int       GetTotalCerenkovPhotons() {return fTotalCerenkovPhotons;}
 
+    void      IncrementLArEdep(const double edep) {fTotalLArEdep += edep;}
     void      IncrementScintPhotons() {fTotalScintPhotons++;}
     void      IncrementCherPhotons() {fTotalCerenkovPhotons++;}
 
@@ -59,13 +61,14 @@ class SLArMCPrimaryInfo : public TNamed
     double   fTime    ;
     double   fTotalEdep;
     Int_t    fTotalScintPhotons;
-    Int_t    fTotalCerenkovPhotons; 
+    Int_t    fTotalCerenkovPhotons;
+    double   fTotalLArEdep; 
     std::vector<double>   fVertex  ;
     std::vector<double>   fMomentum;
     std::vector<SLArEventTrajectory*> fTrajectories;
   
   public:
-    ClassDef(SLArMCPrimaryInfo, 1);
+    ClassDef(SLArMCPrimaryInfo, 2);
 };
 
 

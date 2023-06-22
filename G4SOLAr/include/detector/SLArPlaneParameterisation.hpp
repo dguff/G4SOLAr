@@ -11,6 +11,7 @@
 #include "SLArGeoInfo.hh"
 
 #include "G4VPVParameterisation.hh"
+#include "G4PVParameterised.hh"
 #include "G4VPhysicalVolume.hh"
 
 class SLArPlaneParameterisation : public G4VPVParameterisation {
@@ -95,6 +96,18 @@ inline SLArPlaneParameterisation::PlaneReplicationData_t::PlaneReplicationData_t
   fReplicaAxis(kZAxis), fNreplica(0), fWidth(0.), fOffset(0.), fConsuming(false), 
   fReplicaAxisVec(0, 0, 1), fStartingPos(0, 0, 0) 
 {}
+
+inline static SLArPlaneParameterisation::PlaneReplicationData_t  
+get_plane_replication_data(G4PVParameterised* pv) {
+  SLArPlaneParameterisation::PlaneReplicationData_t data; 
+  pv->GetReplicationData(data.fReplicaAxis, data.fNreplica, 
+      data.fWidth, data.fOffset, data.fConsuming); 
+  auto parameterisation = (SLArPlaneParameterisation*)pv->GetParameterisation(); 
+  data.fReplicaAxisVec = parameterisation->GetReplicationAxisVector(); 
+  data.fStartingPos = parameterisation->GetStartPos(); 
+  data.fWidth = parameterisation->GetSpacing(); 
+  return data;
+};
 
 
 

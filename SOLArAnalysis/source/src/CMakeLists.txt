@@ -12,8 +12,8 @@ add_library(SLArLightPropagation SHARED
   ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationPars.hpp
   )
 
-target_link_libraries(SLArLightPropagation PRIVATE ${ROOT_LIBRARIES})
-target_link_libraries(SLArLightPropagation PRIVATE G4SOLAr::SLArReadoutSystemConfig)
+target_link_libraries(SLArLightPropagation PUBLIC ${ROOT_LIBRARIES})
+target_link_libraries(SLArLightPropagation PUBLIC G4SOLAr::SLArReadoutSystemConfig)
 
 ROOT_GENERATE_DICTIONARY(G__SLArLightPropagation
   ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationModel.hh

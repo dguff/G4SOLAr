@@ -136,7 +136,7 @@ void SLArDetSuperCell::BuildSuperCell()
 
   fModSV = new G4Box("SuperCell",
       fGeoInfo->GetGeoPar("cell_x")*0.5,
-      fhTot,
+      fhTot*0.5,
       fGeoInfo->GetGeoPar("cell_z")*0.5
       );
 
@@ -151,14 +151,14 @@ void SLArDetSuperCell::BuildSuperCell()
    *  *  *  *  *  *  *  *  *  *  *  *  */
 
   G4double h = 0*CLHEP::mm;
-  h = 0.5*fhTot - 0.5*fCoating->GetGeoPar("coating_y");
+  h = -0.5*fCoating->GetGeoPar("coating_y");
 
   G4cout<<"GetModPV light guide..." << G4endl; 
   fLightGuide->GetModPV("SuperCellLightGuide", 0, 
       G4ThreeVector(0, h, 0),
       fModLV, false, 101);
 
-  h = fhTot 
+  h = 0.5*fhTot 
       - 0.5*fCoating->GetGeoPar("coating_y");
   G4cout<<"GetModPV coating..." << G4endl; 
   fCoating->GetModPV("SuperCellCoating", 0, 
