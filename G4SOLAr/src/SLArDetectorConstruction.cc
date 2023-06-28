@@ -11,6 +11,7 @@
 
 #include "SLArUserPath.hh"
 #include "SLArAnalysisManager.hh"
+#include "physics/SLArCrossSectionBiasing.hh"
 
 #include "SLArDetectorConstruction.hh"
 
@@ -518,6 +519,17 @@ void SLArDetectorConstruction::ConstructSDandField()
   // sensitive detectors 
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDname;
+
+  auto anaMngr = SLArAnalysisManager::Instance(); 
+  if (anaMngr->GetPhysicsBiasingMap().size() > 0) {
+    for (const auto &biasing : anaMngr->GetPhysicsBiasingMap() ) {
+      auto xsecBias = new SLArCrossSectionBiasing(biasing.first, "biasing_"+biasing.first); 
+      xsecBias->SetBiasingFactor( biasing.second ); 
+      for (const auto &tpc : fTPC) {
+        xsecBias->AttachTo( tpc.second->GetModLV() ); 
+      }
+    }
+  }
 
   //Set ReadoutTile SD
   if (fReadoutTile) {

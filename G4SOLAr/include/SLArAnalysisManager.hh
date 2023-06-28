@@ -59,12 +59,13 @@ class SLArAnalysisManager
       SLArCfgAnode* anodeCfg = nullptr;
       if ( fAnodeCfg.count(id) ) anodeCfg = fAnodeCfg[id];
       return anodeCfg;}
-
+    inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
     // mock fake access
     G4bool FakeAccess();
+    void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 
@@ -80,6 +81,7 @@ class SLArAnalysisManager
     G4bool   fIsMaster;
     G4String fOutputPath;
     G4String fOutputFileName;
+    std::map<G4String, G4double> fBiasing; 
 
     TFile*              fRootFile;
     TTree*              fEventTree;

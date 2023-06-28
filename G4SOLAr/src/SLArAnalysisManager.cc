@@ -300,3 +300,16 @@ void SLArAnalysisManager::SetOutputName(G4String filename)
   if (! G4StrUtil::contains(filename, ".root") ) filename.append(".root");
   fOutputFileName = filename;
 }
+
+void SLArAnalysisManager::RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor) {
+  if (fBiasing.count(particle_name) > 0) {
+    printf("SLArAnalysisManager::RegisterPhyicsBiasing WARNING\n");
+    printf("%s is already biased, updating biasing factor\n", particle_name.data());
+    fBiasing[particle_name] = biasing_factor;
+    return;
+  }
+  else {
+    fBiasing.insert( std::make_pair(particle_name, biasing_factor) ); 
+    return;
+  }
+}
