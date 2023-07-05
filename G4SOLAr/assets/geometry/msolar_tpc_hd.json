@@ -5,7 +5,7 @@
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.01, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 2.60, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" : 2.80, "unit" :  "m"}
       ], 
       "field_cage" : {
         "corner_radius" : {"val" : 100, "unit" : "mm"}, 
@@ -22,7 +22,7 @@
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 1.01, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 1.62, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 2.60, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" : 2.80, "unit" :  "m"}
       ], 
       "field_cage" : {
         "corner_radius" : {"val" : 100, "unit" : "mm"}, 
@@ -40,7 +40,7 @@
      "dimensions" : [
        {"name" : "dim_x", "val" : 1.00, "unit" : "mm"},
        {"name" : "dim_y", "val" : 1.55, "unit" : "m" },
-       {"name" : "dim_z", "val" : 2.50, "unit" : "m" }
+       {"name" : "dim_z", "val" : 2.560, "unit" : "m" }
      ]
     }
   ],
@@ -52,9 +52,9 @@
       "rot" : {"val" : [0, 0, -90], "unit" : "degree"}, 
       "tile_assembly" : "StdReadoutPlane", 
       "dimensions" : [
-        {"name" : "dim_y", "val" : 1.00, "unit" : "cm"},
-        {"name" : "dim_x", "val" : 1.55, "unit" :  "m"},
-        {"name" : "dim_z", "val" : 2.50, "unit" :  "m"}
+        {"name" : "dim_y", "val" : 1.000, "unit" : "cm"},
+        {"name" : "dim_x", "val" : 1.536, "unit" :  "m"},
+        {"name" : "dim_z", "val" : 2.560, "unit" :  "m"}
       ]
     }, 
     {"copyID" : 51, 
