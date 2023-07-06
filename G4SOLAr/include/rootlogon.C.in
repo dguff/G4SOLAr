@@ -12,9 +12,9 @@ void rootlogon()
   gSystem->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
   gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
 }
 
