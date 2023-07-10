@@ -141,3 +141,46 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
 
   return nullptr;
 }
+
+TVector3 SLArCfgAnode::GetPixelCoordinates(const SLArPixIdxCoord& coord) {
+
+#ifdef SLAR_DEBUG
+  auto return_null = [coord](const SLArCfgBaseModule* cfg) {
+    if (!cfg) {
+      printf("SLArCfgAnode::GetPixelCoordinates(%i, %i, %i) ERROR",
+          coord.at(0), coord.at(1), coord.at(2));
+      printf("cfg not found\n");
+    } 
+  };
+#endif
+
+  
+  auto megatile_cfg = fElementsMap.find(coord.at(0))->second;
+
+#ifdef SLAR_DEBUG
+  return_null(megatile_cfg);
+#endif
+
+
+  auto tile_cfg = megatile_cfg->GetMap().find(coord.at(1))->second;
+
+#ifdef SLAR_DEBUG
+  return_null(tile_cfg);
+#endif
+
+  TVector3 xTile( tile_cfg->GetPhysX(), 
+                  tile_cfg->GetPhysY(),
+                  tile_cfg->GetPhysZ() ); 
+
+  auto pixel_bin = (TH2PolyBin*)fAnodeLevelsMap[2]->GetBins()->At(coord.at(2)-1);
+#ifdef SLAR_DEBUG
+  printf("Getting bin %i - %i\n", coord.at(2), pixel_bin->GetBinNumber());
+#endif
+
+  auto gbin = (TGraph*)pixel_bin->GetPolygon(); 
+
+  double x_pix_local = 0.5*(gbin->GetX()[0] + gbin->GetX()[2]);
+  double y_pix_local = 0.5*(gbin->GetY()[0] + gbin->GetY()[2]);
+
+  return xTile + fAxis0*x_pix_local + fAxis1*y_pix_local;
+}
