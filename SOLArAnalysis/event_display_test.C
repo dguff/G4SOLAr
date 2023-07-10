@@ -29,9 +29,7 @@
 #include "SLArQCluster.hh"
 
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode, 
-                         std::array<int, 2> tile_index,
                          const double drift_len);
-THnSparseF* Join(const std::vector<THnSparseF*>& hits_tile);
 
 void event_display_test(const TString file_path, const int iev) 
 {
@@ -65,7 +63,7 @@ void event_display_test(const TString file_path, const int iev)
   //- - - - - - - - - - - - - - - - - - - - - - Construct 3D hit structure
   const double pixel_pitch = 4.0; // pixel pith in mm
   const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
-  const double v_drift = 1.60e-3; 
+  const double v_drift = 1.589e-3; 
 
   std::vector<THnSparseF*> h_hits_3d; 
 
@@ -88,6 +86,7 @@ void event_display_test(const TString file_path, const int iev)
   int tpc_id = 11; // chiave
   auto anode = ev->GetEventAnodeByTPCID(tpc_id); // valore
 
+  auto xyz_hits = BuildXYZHist(AnodeSysCfg[tpc_id], 1000); 
   double z_max = 0; 
 
   for (const auto &mt: anode->GetMegaTilesMap()) {  // loop su gruppi di tile
@@ -96,7 +95,6 @@ void event_display_test(const TString file_path, const int iev)
     for (auto &t : mt.second->GetTileMap()) { // loop sulle tile
       //printf("\t\tTilte %i: %g hits\n", t.first, t.second->GetNPixelHits());
       if (t.second->GetPixelHits() == 0 ) continue;
-      auto xyz_hits = BuildXYZHist(AnodeSysCfg[tpc_id], {mt.first, t.first}, 1000); 
       for (const auto &p : t.second->GetPixelEvents()) {
         auto electron_hits = p.second->GetHits();
         TVector3 pix_coord = AnodeSysCfg[tpc_id]->GetPixelCoordinates(
@@ -106,21 +104,21 @@ void event_display_test(const TString file_path, const int iev)
         pix_coord -= pix_coord.Dot(drift_direction)*drift_direction;
         for (const auto &hit : electron_hits) {
           charged_time->Fill(hit->GetTime()*0.001);
-          TVector3 x_drift = (1000 - (hit->GetTime() * v_drift)) * drift_direction; 
+          TVector3 x_drift = (AnodeSysCfg[tpc_id]->GetPhysX() -
+              (hit->GetTime() * v_drift)) * drift_direction; 
           TVector3 x3d = x_drift + pix_coord; 
           double xyz_[3]; x3d.GetXYZ( xyz_ );
           auto ibin = xyz_hits->Fill( xyz_ ); 
         }
         if (p.second->GetNhits() > z_max) z_max = p.second->GetNhits(); // carica massima per colori
       }
-      h_hits_3d.push_back( xyz_hits ); 
       //getchar(); 
     }
   }
 
-  qev->SourceHits3DHist( Join(h_hits_3d) ); 
+  qev->SourceHits3DHist( xyz_hits ); 
 
-  std::vector<TString> projectionsList = {"y:x", "y:z"};
+  std::vector<TString> projectionsList = {"y:x", "y:z", "z:x"};
 
 
   for (const auto projection : projectionsList) {
@@ -216,98 +214,7 @@ void event_display_test(const TString file_path, const int iev)
 }
 
 
-
-THnSparseF* Join(const std::vector<THnSparseF*>& sparseVector) {
-  // Get the number of dimensions from the first THnSparseF in the vector
-  const Int_t nDim = sparseVector[0]->GetNdimensions();
-
-  // Create a vector to hold the features of the merged axes
-  std::vector<TAxis*> mergedAxes;
-
-  // Loop over each dimension
-  for (Int_t iDim = 0; iDim < nDim; ++iDim) {
-    // Create a temporary vector to hold the bins for this dimension
-    std::vector<Double_t> binEdges;
-
-    // Loop over each THnSparseF in the vector
-    for (const auto& sparse : sparseVector) {
-      // Get the axis for this dimension
-      TAxis* axis = sparse->GetAxis(iDim);
-      // Add the bin edges for this axis to the temporary vector
-      for (Int_t iBin = 0; iBin <= axis->GetNbins(); ++iBin) {
-        binEdges.push_back(axis->GetBinLowEdge(iBin));
-      }
-    }
-
-    // Sort the bin edges in ascending order
-    std::sort(binEdges.begin(), binEdges.end());
-
-    // Remove duplicate bin edges
-    binEdges.erase(std::unique(binEdges.begin(), binEdges.end()), binEdges.end());
-
-    // Create a new axis for this dimension in the merged histogram
-    Int_t nBins = binEdges.size() - 1;
-    Double_t* binArray = binEdges.data();
-    TAxis* mergedAxis = new TAxis(nBins, binArray);
-    mergedAxes.push_back(mergedAxis);
-  }
-  // Create a new THnSparseF object for merging
-  int nbin_temp[nDim];
-  double xmin_temp[nDim]; double xmax_temp[nDim]; 
-  for (int idim=0; idim<nDim; idim++) {
-    xmin_temp[idim] = mergedAxes.at(idim)->GetBinLowEdge(1); 
-    xmax_temp[idim] = mergedAxes.at(idim)->GetXmax();
-    nbin_temp[idim] = mergedAxes.at(idim)->GetNbins();
-  }
-  THnSparseF* mergedSparse = new THnSparseF("mergedSparse", "", nDim, 
-      nbin_temp, xmin_temp, xmax_temp);
-
-  //for (int idim=0; idim<nDim; idim++) {
-    //mergedSparse->GetAxis(idim)->Set(mergedAxes.at(idim)->GetNbins(), 
-        //mergedAxes.at(idim)->GetXbins()->GetArray()); 
-  //}
-  
-
-  //printf("merged sparse:\n");
-  //for (int idim=0; idim<nDim; idim++) {
-    //printf("\t axis[%i]: %i | %g - %g - δ[0] = %g, δ[20] = %g\n", 
-        //idim, mergedSparse->GetAxis(idim)->GetNbins(),
-        //mergedSparse->GetAxis(idim)->GetXmin(), mergedSparse->GetAxis(0)->GetXmax(),
-        //mergedSparse->GetAxis(idim)->GetBinCenter(2) - mergedSparse->GetAxis(idim)->GetBinCenter(1), 
-        //mergedSparse->GetAxis(idim)->GetBinCenter(20) - mergedSparse->GetAxis(idim)->GetBinCenter(19)); 
-  //}
-
-  //// Loop over each THnSparseF in the vector
-  for (const auto& sparse : sparseVector) {
-    // Loop over each bin in the sparse histogram
-    auto itr = sparse->CreateIter(true); 
-    Long64_t ibin = 0; 
-    while ( (ibin = itr->Next()) >= 0) {
-      // Get the bin content and coordinates
-      Double_t binContent = sparse->GetBinContent(ibin); 
-      //if (binContent < 100) continue;
-      int binIdxs[nDim];
-      double binCoord[nDim];
-      
-      for (int idim = 0; idim < nDim; idim++) {
-        binIdxs[idim] = itr->GetCoord(idim); 
-        binCoord[idim] = sparse->GetAxis(idim)->GetBinCenter(binIdxs[idim]);
-      }
-
-      // Fill the corresponding bin in the merged sparse histogram
-      //printf("bin coord [%g, %g, %g] -> %g\n", 
-          //binCoord[0], binCoord[1], binCoord[2], binContent);
-      mergedSparse->Fill(binCoord, binContent);
-      //getchar(); 
-    }
-  }
-
-  // Return the merged THnSparseF
-  return mergedSparse;
-}
-
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
-                         std::array<int, 2> tile_index,
                          const double drift_len) {
 
   double hmin[3] = { 1e8}; 
@@ -315,17 +222,8 @@ THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
   
   double xmin=1e6, xmax=-1e6, ymin=1e6, ymax=-1e6, zmin=1e6, zmax =-1e6; 
 
-  auto cfgMegaTile = cfgAnode->GetBaseElement(tile_index.at(0));
-  auto cfgTile = cfgMegaTile->GetBaseElement(tile_index.at(1)); 
-
-  auto tile_bin = cfgTile->GetBinIdx(); 
-
-  //printf("MT: %i, Tile %i  - binID %i\n", 
-      //cfgMegaTile->GetIdx(), cfgTile->GetIdx(), tile_bin);
-
-  for (const auto &bin_obj : *cfgAnode->GetAnodeMap(1)->GetBins()) {
+  for (const auto &bin_obj : *cfgAnode->GetAnodeMap(0)->GetBins()) {
     TH2PolyBin* bin = (TH2PolyBin*)bin_obj;
-    if (bin->GetBinNumber() != tile_bin) continue;
 
     TGraph* g = (TGraph*)bin->GetPolygon(); 
     ymin = std::min( ymin, *std::min_element(g->GetY(), g->GetY()+4)); 
@@ -334,9 +232,6 @@ THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
     zmin = std::min( zmin, *std::min_element(g->GetX(), g->GetX()+4)); 
     zmax = std::max( zmax, *std::max_element(g->GetX(), g->GetX()+4)); 
   }
-
-  ymin += cfgTile->GetPhysY(); ymax += cfgTile->GetPhysY(); 
-  zmin += cfgTile->GetPhysZ(); zmax += cfgTile->GetPhysZ(); 
 
   const double pixel_pitch = 4.0; 
   const double v_drift = 1.589e-3; // in [mm/ns]
@@ -362,8 +257,12 @@ THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
   //printf("Creating THnSparse in range %i[%g, %g] - %i[%g, %g] - %i[%g, %g]\n", 
       //nbin[0], hmin[0], hmax[0], nbin[1], hmin[1], hmax[1], nbin[2], hmin[2], hmax[2]);
 
-  TString hname = Form("hxyz_mt%i_t%i", cfgMegaTile->GetIdx(), cfgTile->GetIdx());
+  TString hname = "hxyz";
   THnSparseF* h_xyz = new THnSparseF(hname, hname, 3, nbin, hmin, hmax); 
+
+  h_xyz->GetAxis(0)->SetTitle("x [mm]"); 
+  h_xyz->GetAxis(1)->SetTitle("y [mm]"); 
+  h_xyz->GetAxis(2)->SetTitle("z [mm]"); 
 
   return h_xyz;
 }
