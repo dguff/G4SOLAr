@@ -18,6 +18,8 @@
 #include "TDatabasePDG.h"
 #include "THnBase.h"
 #include "THnSparse.h"
+#include "TTimer.h"
+
 
 #include "event/SLArMCEvent.hh"
 #include "config/SLArCfgAnode.hh"
@@ -28,7 +30,7 @@
 #include "SLArQEventReadout.hh"
 #include "SLArQCluster.hh"
 
-using slarq;
+using namespace slarq;
 
 const double pixel_pitch = 4.0; // pixel pith in mm
 const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
@@ -37,8 +39,9 @@ const double v_drift = 1.582e-3;
 
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode, 
                          const double drift_len);
+void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF* xyz_hits, std::map<int,SLArCfgAnode*>& AnodeSysCfg);
 
-void event_display_test(const TString file_path, const int iev) 
+void event_display_test(const TString file_path) 
 {
   gStyle->SetPalette(kBlackBody); 
   TColor::InvertPalette(); 
@@ -69,21 +72,44 @@ void event_display_test(const TString file_path, const int iev)
   
 
 
+  TString input = ""; 
   int iev = 0;
+  const int tpc_id = 11;
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
-  SLArMCEvent* ev = 0; 
-  mc_tree->SetBranchAddress("MCEvent", &ev);
-
-  std::cout << "Enter the event number: ";
-  std::cin >> iev ; 
-  mc_tree->GetEntry(iev);
-
-  SLArQEventReadout* qev = new SLArQEventReadout();
-
   auto xyz_hits = BuildXYZHist(AnodeSysCfg[tpc_id], 1000);
 
-  read_and_display_event(ev, qev, xyz_hits, AnodeSysCfg) ;
+  SLArMCEvent* ev = 0; 
+  SLArQEventReadout* qev = new SLArQEventReadout();
+
+  mc_tree->SetBranchAddress("MCEvent", &ev);
+
+  TTimer* timer = new TTimer("gSystem->ProcessEvents();", 500, false); 
+
+  bool do_exit = false; 
+
+  //while (do_exit == false) {
+    std::cout << "Enter the event number or enter 'quit' to exit: ";
+    std::cin >> input ; 
+
+    //if (input == "quit") {do_exit = true; continue;}
+
+    iev = input.Atoi();
+
+
+    printf("Reading event %i\n", iev);
+    mc_tree->GetEntry(iev);
+
+
+    //timer->TurnOn(); 
+    //timer->Reset(); 
+
+    read_and_display_event(ev, qev, xyz_hits, AnodeSysCfg) ;
+
+    //getchar(); 
+    //timer->TurnOff(); 
+
+  //}
 
   return;
 }
@@ -139,7 +165,6 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
 
   std::vector<TString> projectionsList = {"y:x", "y:z", "z:x"};
 
-
   for (const auto projection : projectionsList) {
 
     auto strArray = projection.Tokenize(":"); 
@@ -149,7 +174,6 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
     for (const auto &obj : *strArray) {
       TObjString* str = (TObjString*)obj;
       TString strAxis = str->GetString(); 
-      std::cout << strAxis.Data() << std::endl;
       
       if      (strAxis == "x") {
         axesList.push_back( TVector3(1, 0, 0) ); 
@@ -170,11 +194,11 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
     TCanvas* cProjection2D = new TCanvas("cProjection2D"+projection, projection, 
         0, 0, 800, 600); 
     cProjection2D->SetTicks(1, 1); 
+    cProjection2D->cd(); 
 
     TH2D* h2 = qev->GetQHistN()->Projection(axesIndexes.at(0), axesIndexes.at(1)); 
+    h2->SetName(Form("h2%s_ev%i", projection.Data(), ev->GetEvNumber())); 
     h2->Draw("colz"); 
-
-
 
     auto pdg = TDatabasePDG::Instance(); 
 
@@ -193,13 +217,13 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
         //t->GetInitKineticEne(), 
         //t->GetTotalNph(), t->GetTotalNel());
         if (t->GetInitKineticEne() < 0.01) continue;
-        TGraph g;
+        TGraph* g = new TGraph();
         Color_t col = kBlack; 
         TString name = ""; 
 
         if (!pdg_particle) {
           col = kBlack; 
-          name = Form("g_%i_trk%i", t->GetPDGID(), t->GetTrackID()); 
+          name = Form("g%s_%i_trk%i", projection.Data(), t->GetPDGID(), t->GetTrackID()); 
         }
         else {
           if      (pdg_particle == pdg->GetParticle(  22)) col = kYellow;    // γ
@@ -211,26 +235,26 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
           else if (pdg_particle == pdg->GetParticle( 211)) col = kViolet-2;  // pi+
           else if (pdg_particle == pdg->GetParticle( 111)) col = kGreen;     // pi0
           else    col = kGray+2;
-          name = Form("g_%s_trk_%i", 
-              pdg_particle->GetName(), t->GetTrackID()); 
+          name = Form("g%s_%s_trk_%i", 
+              projection.Data(), pdg_particle->GetName(), t->GetTrackID()); 
         }
 
         for (const auto &pt : points) {
-          if (pt.fCopy == tpc_id) g.AddPoint( 
+          if (pt.fCopy == tpc_id) g->AddPoint( 
               //TVector3(pt.fX, pt.fY, pt.fZ).Dot( AnodeSysCfg[tpc_id]->GetAxis0()), 
               //TVector3(pt.fX, pt.fY, pt.fZ).Dot( AnodeSysCfg[tpc_id]->GetAxis1()) );
             TVector3(pt.fX, pt.fY, pt.fZ).Dot( axesList.at(1) ), 
               TVector3(pt.fX, pt.fY, pt.fZ).Dot( axesList.at(0) ) );
         }
-        g.SetName(name); 
-        g.SetLineColor(col); 
-        g.SetLineWidth(2);
-        if (g.GetN() > 2) g.DrawClone("l"); 
+        g->SetName(name); 
+        g->SetLineColor(col); 
+        g->SetLineWidth(2);
+        if (g->GetN() > 2) g->Draw("l"); 
       }
     }
+    cProjection2D->Modified();
+    cProjection2D->Update(); 
   }
-
-
   return;
 }
 
