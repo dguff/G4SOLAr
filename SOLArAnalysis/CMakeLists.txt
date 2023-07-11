@@ -17,8 +17,8 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core MathMore)
 include(${ROOT_USE_FILE})
 
 
-find_package(Geant4 REQUIRED)
-include(${Geant4_USE_FILE})
+#find_package(Geant4 REQUIRED)
+#include(${Geant4_USE_FILE})
 
 find_package(G4SOLAr)
 if(G4SOLAr_FOUND)
@@ -52,7 +52,7 @@ ExternalProject_Add("progressbar"
 include_directories(
     ${G4S_ANALYSIS_INC_DIR}
     ${G4SOLAR_INCLUDE_DIR}
-    ${Geant4_INCLUDE_DIR}
+    #${Geant4_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
     )
 if (CLHEP_EXTERNAL) 

@@ -6,19 +6,19 @@
 #                based on the semi-analytical model of light propagation
 ########################################################################
 
-add_library(SLArLightPropagation SHARED
-  ${G4S_ANALYSIS_SRC_DIR}/SLArLightPropagationModel.cpp
-  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationModel.hh
-  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationPars.hpp
-  )
-
-target_link_libraries(SLArLightPropagation PUBLIC ${ROOT_LIBRARIES})
-target_link_libraries(SLArLightPropagation PUBLIC G4SOLAr::SLArReadoutSystemConfig)
-
-ROOT_GENERATE_DICTIONARY(G__SLArLightPropagation
-  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationModel.hh
-  MODULE SLArLightPropagation
-  LINKDEF ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationLinkDef.h)
+#add_library(SLArLightPropagation SHARED
+#  ${G4S_ANALYSIS_SRC_DIR}/SLArLightPropagationModel.cpp
+#  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationModel.hh
+#  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationPars.hpp
+#  )
+#
+#target_link_libraries(SLArLightPropagation PUBLIC ${ROOT_LIBRARIES})
+#target_link_libraries(SLArLightPropagation PUBLIC G4SOLAr::SLArReadoutSystemConfig)
+#
+#ROOT_GENERATE_DICTIONARY(G__SLArLightPropagation
+#  ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationModel.hh
+#  MODULE SLArLightPropagation
+#  LINKDEF ${G4S_ANALYSIS_INC_DIR}/SLArLightPropagationLinkDef.h)
 
 add_library(SLArQEvent SHARED
   ${G4S_ANALYSIS_SRC_DIR}/SLArQCluster.cc
@@ -37,14 +37,14 @@ ROOT_GENERATE_DICTIONARY(G__SLArQEvent
 # Install instructions
 
 set(G4SOLAr_analysis_libs
-  SLArLightPropagation
+  #SLArLightPropagation
   SLArQEvent
   )
 
 set(G4SOLAr_analysis_resources 
-  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArLightPropagation.cxx
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArLightPropagation.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArLightPropagation_rdict.pcm
+  #${CMAKE_CURRENT_BINARY_DIR}/G__SLArLightPropagation.cxx
+  #${CMAKE_CURRENT_BINARY_DIR}/libSLArLightPropagation.rootmap 
+  #${CMAKE_CURRENT_BINARY_DIR}/libSLArLightPropagation_rdict.pcm
 
   ${CMAKE_CURRENT_BINARY_DIR}/G__SLArQEvent.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArQEvent.rootmap 
