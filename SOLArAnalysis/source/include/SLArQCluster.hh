@@ -12,19 +12,16 @@
 #include <vector>
 #include "TObject.h"
 #include "TMath.h"
-#include "Math/DisplacementVector3D.h"
-#include "Math/Vector3D.h"
-#include "Math/Point3D.h"
+#include "TVector3.h"
 #include "Math/RotationZYX.h"
 #include "TH3D.h"
 #include "THnBase.h"
 
 namespace slarq {
-  typedef ROOT::Math::XYZPointF SLArQSpatialPoint;
 
   class cluster_point : public TObject {
     public: 
-      SLArQSpatialPoint fPos; 
+      TVector3 fPos; 
       Long64_t  fBin; 
       float     fCharge; 
 

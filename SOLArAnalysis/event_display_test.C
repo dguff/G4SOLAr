@@ -36,6 +36,8 @@ const double pixel_pitch = 4.0; // pixel pith in mm
 const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
 const double v_drift = 1.582e-3; 
 
+std::vector<Color_t> color_vector = {kOrange+7, kRed, kMagenta+1, kViolet+6, kBlue, kAzure+1, kCyan-3, kGreen+1, kGreen+3, kYellow-6};
+
 
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode, 
                          const double drift_len);
@@ -163,6 +165,8 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
 
   qev->SourceHits3DHist( xyz_hits ); 
 
+  qev->Clustering();
+
   std::vector<TString> projectionsList = {"y:x", "y:z", "z:x"};
 
   for (const auto projection : projectionsList) {
@@ -199,6 +203,23 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
     TH2D* h2 = qev->GetQHistN()->Projection(axesIndexes.at(0), axesIndexes.at(1)); 
     h2->SetName(Form("h2%s_ev%i", projection.Data(), ev->GetEvNumber())); 
     h2->Draw("colz"); 
+
+    auto vector_cluster = qev->GetClusters();
+
+    for (const auto &c : vector_cluster) {
+      TGraph* g_cluster = new TGraph ();
+
+      for (const auto &point : c->get_points()){
+        g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
+      }
+
+      g_cluster->SetName(Form( "g_cluster_%s_%lu", projection.Data(), c->get_id()));
+      g_cluster->SetMarkerColor(color_vector.at(c->get_id()));
+      g_cluster->SetLineWidth(2);
+      g_cluster->SetMarkerStyle(108);
+      g_cluster->Draw("p");
+    }
+
 
     auto pdg = TDatabasePDG::Instance(); 
 

@@ -310,7 +310,7 @@ namespace slarq {
   }
 
   size_t SLArQEventReadout::Clustering() {
-
+    printf("Begin clustering process\n");
     adjust_hn_range();
 
     THnSparseF* maincluster = (THnSparseF*)fHQn->Clone("main_cluster");
@@ -346,7 +346,7 @@ namespace slarq {
             // scan the neighborhood of the current bin along the idim-axis
             idx_[idim] = idx[idim]+delta_; 
             q_ = maincluster->GetBinContent(&idx_[0]); 
-            if (q_ > 10) {
+            if (q_ > 500) {
               cluster_point point; 
               point.fBin = maincluster->GetBin(&idx_[0]); 
               for (int jdim=0; jdim<3; jdim++) {
@@ -357,10 +357,14 @@ namespace slarq {
 
               cluster_id = find_cluster(&point);
 
+              printf("Adding hit to cluster %lu\n", cluster_id);
+
               // set the bin content to zero to prevent double-counting
               maincluster->SetBinContent(point.fBin, 0.); 
 
               bin_found = true;
+            } else {
+              maincluster->SetBinContent(&idx_[0], 0.); 
             }
           }
         }
@@ -386,6 +390,12 @@ namespace slarq {
         //printf("bin_found = %i, n_trial = %i\n", (int)bin_found, n_trial); 
       }
 
+    }
+
+    printf("Clustering: %lu clusters found\n", fClusters.size());
+    
+    for(const auto &cluster: fClusters){
+      printf("Cluster %lu: %g electrons\n", cluster->get_id(), cluster->get_charge());
     }
 
     delete maincluster; 
