@@ -310,7 +310,6 @@ namespace slarq {
   }
 
   size_t SLArQEventReadout::Clustering() {
-    printf("Begin clustering process\n");
     adjust_hn_range();
 
     THnSparseF* maincluster = (THnSparseF*)fHQn->Clone("main_cluster");
@@ -323,7 +322,7 @@ namespace slarq {
       bw[k] = maincluster->GetAxis(k)->GetBinWidth(10); 
     } 
 
-    auto iti = maincluster->CreateIter(false);
+    auto iti = maincluster->CreateIter(true); 
     Long64_t b =0;
     int n_max_trials = 5;
 
@@ -337,7 +336,7 @@ namespace slarq {
       while (bin_found || n_trial < n_max_trials) {
 
         bin_found = false;
-        size_t cluster_id = 0;
+        int cluster_id = -1;
 
         for (int idim=0; idim<3; idim++) {
           idx_ = idx; // set temporary idexes to current bin
@@ -345,8 +344,13 @@ namespace slarq {
           for (int delta_ = -2; delta_ <3; delta_++) {
             // scan the neighborhood of the current bin along the idim-axis
             idx_[idim] = idx[idim]+delta_; 
+            
+            if (idx_[idim] < 1 || 
+                idx_[idim] > fHQn->GetAxis(idim)->GetNbins()-1) continue;
+
             q_ = maincluster->GetBinContent(&idx_[0]); 
-            if (q_ > 500) {
+
+            if (q_ > 1500) {
               cluster_point point; 
               point.fBin = maincluster->GetBin(&idx_[0]); 
               for (int jdim=0; jdim<3; jdim++) {
@@ -357,45 +361,35 @@ namespace slarq {
 
               cluster_id = find_cluster(&point);
 
-              printf("Adding hit to cluster %lu\n", cluster_id);
-
               // set the bin content to zero to prevent double-counting
               maincluster->SetBinContent(point.fBin, 0.); 
 
               bin_found = true;
-            } else {
-              maincluster->SetBinContent(&idx_[0], 0.); 
-            }
+            }  
           }
         }
 
-        //printf("fClusters size = %lu - cluster id = %lu\n", fClusters.size(), cluster_id); 
-        double n_points = fClusters[cluster_id]->get_points().size(); 
-        auto item = fClusters[cluster_id]->get_points().begin();
-        if (gRandom->Rndm() > 0.5) {
-          // look around the HEAD
-          int p_rndm = TMath::Min(5*gRandom->Rndm(), n_points-1); 
-          //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
-          std::advance( item, p_rndm);
-        } else {
-          // look around the TAIL
-          int p_rndm = TMath::Max(0., n_points - 5*gRandom->Rndm()-1);
-          //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
-          std::advance( item, p_rndm ); 
+        if (cluster_id > -1) {
+          double n_points = fClusters[cluster_id]->get_points().size(); 
+          auto item = fClusters[cluster_id]->get_points().begin();
+          if (gRandom->Rndm() > 0.5) {
+            // look around the HEAD
+            int p_rndm = TMath::Min(5*gRandom->Rndm(), n_points-1); 
+            //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
+            std::advance( item, p_rndm);
+          } else {
+            // look around the TAIL
+            int p_rndm = TMath::Max(0., n_points - 5*gRandom->Rndm()-1);
+            //printf("look at cluster element %i [size = %g]\n", p_rndm, n_points); 
+            std::advance( item, p_rndm ); 
+          }
+          //std::cout << "switch to bin " << item->fBin << std::endl;
+          maincluster->GetBinContent(item->fBin, &idx[0]); 
         }
-
-        //std::cout << "switch to bin " << item->fBin << std::endl;
-        maincluster->GetBinContent(item->fBin, &idx[0]); 
         n_trial++;
         //printf("bin_found = %i, n_trial = %i\n", (int)bin_found, n_trial); 
       }
 
-    }
-
-    printf("Clustering: %lu clusters found\n", fClusters.size());
-    
-    for(const auto &cluster: fClusters){
-      printf("Cluster %lu: %g electrons\n", cluster->get_id(), cluster->get_charge());
     }
 
     delete maincluster; 
