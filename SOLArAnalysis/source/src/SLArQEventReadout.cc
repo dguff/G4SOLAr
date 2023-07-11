@@ -205,14 +205,11 @@ namespace slarq {
     }
 
     TString hname = Form("hq_xyz_ev_%i", fIEv); 
-    TString htitl = Form("%s;%s;%s;%s", hname.Data(), 
-        fAxis[kX].fTitle.Data(), fAxis[kY].fTitle.Data(), fAxis[kZ].fTitle.Data());
+    TString htitl = hname;
 
-    printf("cloning THnSparse...\n");
     fHQn = (THnSparseF*)hits3d->Clone(hname);
     fHQn->SetTitle(htitl);
-    printf("fHQn: %s = %s - %p\n", 
-        fHQn->GetName(), fHQn->GetTitle(), static_cast<void*>(fHQn));
+
   }
 
   //void SLArQEventReadout::BuildHistograms() {

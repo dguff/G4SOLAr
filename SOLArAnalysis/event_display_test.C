@@ -28,6 +28,13 @@
 #include "SLArQEventReadout.hh"
 #include "SLArQCluster.hh"
 
+using slarq;
+
+const double pixel_pitch = 4.0; // pixel pith in mm
+const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
+const double v_drift = 1.582e-3; 
+
+
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode, 
                          const double drift_len);
 
@@ -60,25 +67,38 @@ void event_display_test(const TString file_path, const int iev)
   }
   printf("\n");
   
-  //- - - - - - - - - - - - - - - - - - - - - - Construct 3D hit structure
-  const double pixel_pitch = 4.0; // pixel pith in mm
-  const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
-  const double v_drift = 1.589e-3; 
 
-  std::vector<THnSparseF*> h_hits_3d; 
+
+  int iev = 0;
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
-  mc_tree->SetBranchAddress("MCEvent", &ev); 
+  mc_tree->SetBranchAddress("MCEvent", &ev);
+
+  std::cout << "Enter the event number: ";
+  std::cin >> iev ; 
   mc_tree->GetEntry(iev);
-    
-  TH1F* charged_time = new TH1F ("charged_time", "Time of arrival; Time [#mu s]; Counts", 1000, 0, 1000);
-    
+
+  SLArQEventReadout* qev = new SLArQEventReadout();
+
+  auto xyz_hits = BuildXYZHist(AnodeSysCfg[tpc_id], 1000);
+
+  read_and_display_event(ev, qev, xyz_hits, AnodeSysCfg) ;
+
+  return;
+}
+
+
+
+
+void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF* xyz_hits, std::map<int,SLArCfgAnode*> & AnodeSysCfg) {
+
   auto primaries = ev->GetPrimaries(); //vector 
 
   auto andMap = ev->GetEventAnode() ; // mappa con i  2 anodi     
 
-  slarq::SLArQEventReadout* qev = new slarq::SLArQEventReadout(iev, "qev", "charge pixel event");
+  qev->ResetEvent();
+  qev->SetEventNr(ev->GetEvNumber());
 
   TVector3 drift_direction(1, 0, 0); 
 
@@ -86,7 +106,7 @@ void event_display_test(const TString file_path, const int iev)
   int tpc_id = 11; // chiave
   auto anode = ev->GetEventAnodeByTPCID(tpc_id); // valore
 
-  auto xyz_hits = BuildXYZHist(AnodeSysCfg[tpc_id], 1000); 
+ 
   double z_max = 0; 
 
   for (const auto &mt: anode->GetMegaTilesMap()) {  // loop su gruppi di tile
@@ -103,7 +123,6 @@ void event_display_test(const TString file_path, const int iev)
         //pix_coord.x(), pix_coord.y(), pix_coord.z());
         pix_coord -= pix_coord.Dot(drift_direction)*drift_direction;
         for (const auto &hit : electron_hits) {
-          charged_time->Fill(hit->GetTime()*0.001);
           TVector3 x_drift = (AnodeSysCfg[tpc_id]->GetPhysX() -
               (hit->GetTime() * v_drift)) * drift_direction; 
           TVector3 x3d = x_drift + pix_coord; 
@@ -210,8 +229,11 @@ void event_display_test(const TString file_path, const int iev)
       }
     }
   }
+
+
   return;
 }
+
 
 
 THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
@@ -234,7 +256,7 @@ THnSparseF* BuildXYZHist(SLArCfgAnode* cfgAnode,
   }
 
   const double pixel_pitch = 4.0; 
-  const double v_drift = 1.589e-3; // in [mm/ns]
+  const double v_drift = 1.582e-3; // in [mm/ns]
   const double larpix_integration_time = 600.0; 
   const double hit_drift_window = larpix_integration_time * v_drift; 
   int n_bin_drift= (int)(drift_len /  hit_drift_window); 
