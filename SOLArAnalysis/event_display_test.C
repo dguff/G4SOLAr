@@ -204,21 +204,25 @@ void read_and_display_event(SLArMCEvent* ev, SLArQEventReadout* qev, THnSparseF*
     h2->SetName(Form("h2%s_ev%i", projection.Data(), ev->GetEvNumber())); 
     h2->Draw("colz"); 
 
-    auto vector_cluster = qev->GetClusters();
+    TVector3 vertex = (& (primaries.at(0)->GetVertex()).at(0) );
+    TMarker* m_vertex = new TMarker (vertex.Dot(axesList.at(1)), vertex.Dot(axesList.at(0)), 20);
+    //printf("Vertice: %f, %f, %f\n", vertex.at(0), vertex.at(1), vertex.at(2)) ;
+    m_vertex->Draw();
 
-    for (const auto &c : vector_cluster) {
+
+    auto max_cluster = qev->GetMaxCluster();
+
       TGraph* g_cluster = new TGraph ();
 
-      for (const auto &point : c->get_points()){
+      for (const auto &point : max_cluster->get_points()){
         g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
       }
 
-      g_cluster->SetName(Form( "g_cluster_%s_%lu", projection.Data(), c->get_id()));
-      g_cluster->SetMarkerColor(color_vector.at(c->get_id()));
+      g_cluster->SetName(Form( "g_cluster_%s_%lu", projection.Data(), max_cluster->get_id()));
+      g_cluster->SetMarkerColor(kBlack);
       g_cluster->SetLineWidth(2);
       g_cluster->SetMarkerStyle(108);
       g_cluster->Draw("p");
-    }
 
 
     auto pdg = TDatabasePDG::Instance(); 
