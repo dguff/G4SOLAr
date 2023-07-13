@@ -42,6 +42,11 @@ THnSparseF *BuildXYZHist(SLArCfgAnode *cfgAnode,
                          const double drift_len);
 void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg);
 
+double line(double *x, double *par)
+{
+  return par[0] * x[0] + par[1];
+}
+
 void event_display_test(const TString file_path)
 {
   gStyle->SetPalette(kBlackBody);
@@ -243,7 +248,6 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       g_cluster->SetMarkerStyle(108);
       g_cluster->Draw("p");
 
-
       // Create an hist as the projection (on the axis considered on this run of the loop) of the 3D hist created from the max cluster
       TH2D *h2_max_cl = qev->GetMaxClusterHn()->Projection(axesIndexes.at(0), axesIndexes.at(1));
       h2_max_cl->SetName(Form("h2_max_cluster_%s_ev%i", projection.Data(), ev->GetEvNumber()));
@@ -262,8 +266,7 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       int non_void_bin_y_min = 0;
       int non_void_bin_y_maj = 0;
 
-
-      // Loop to obtain information on the bins around the vertex, in order to decide approximately in what direction the particle is going 
+      // Loop to obtain information on the bins around the vertex, in order to decide approximately in what direction the particle is going
       for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
       {
         for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
@@ -302,7 +305,7 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       printf("non_void_bin_y_maj: %i\n", non_void_bin_y_maj);
 
       // Save the number of non void bin along the orizontal axis for this projection
-      N_non_void_bin_oriz_axis.push_back(non_void_bin_x_maj+non_void_bin_x_min);
+      N_non_void_bin_oriz_axis.push_back(non_void_bin_x_maj + non_void_bin_x_min);
 
       int dir_x = 100;
 
@@ -329,8 +332,7 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       printf("Direzione lungo x: %i\n", dir_x);
       printf("Direzione lungo y: %i\n", dir_y);
 
-
-      // Define the graph where each point is the weighted mean of the y bins on the bin content, given the x 
+      // Define the graph where each point is the weighted mean of the y bins on the bin content, given the x
       TGraphErrors *g_max_cl = new TGraphErrors;
 
       double num = 0;
@@ -352,12 +354,12 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
         // printf("Total bin content: %d", total_bin_content_x);
 
         // Define the y error. In a preliminary approximation is chosen constant, considering a uniform distribution of the events on the bin
-        ey =h2_max_cl->GetYaxis()->GetBinWidth(1) / sqrt(12);
+        ey = h2_max_cl->GetYaxis()->GetBinWidth(1) / sqrt(12);
 
         if (total_bin_content_x != 0) //
         {
           g_max_cl->AddPoint(x_bin, (num / total_bin_content_x));
-          g_max_cl->SetPointError(g_max_cl->GetN()-1, 0, ey);
+          g_max_cl->SetPointError(g_max_cl->GetN() - 1, 0, ey);
         }
 
         num = 0;
@@ -372,8 +374,27 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       g_max_cl->SetLineColor(kBlack);
       g_max_cl->SetLineWidth(2);
       g_max_cl->Draw("pl");
-    }
 
+
+      // - - - - - - - - - - - - - - Fit - - - - - - - - - - - - - -
+      int N_point_fit = 2;
+      int N_par = 2;
+
+      // printf("Point 0: %f\n", g_max_cl->GetPointX(0));
+      // printf("Point max: %f\n", g_max_cl->GetPointX(g_max_cl->GetN() - 1));
+
+      if (dir_x > 0)
+      {
+        TF1 *fline = new TF1("fline", line, g_max_cl->GetPointX(0), g_max_cl->GetPointX(0 + N_point_fit), N_par);
+        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", g_max_cl->GetPointX(0), g_max_cl->GetPointX(0 + N_point_fit));
+      }
+      else
+      {
+        TF1 *fline = new TF1("fline", line, g_max_cl->GetPointX(g_max_cl->GetN() - 1 - N_point_fit), g_max_cl->GetPointX(g_max_cl->GetN() - 1), N_par);
+        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", g_max_cl->GetPointX(g_max_cl->GetN() - 1 - N_point_fit), g_max_cl->GetPointX(g_max_cl->GetN() - 1));
+      }
+      // Devo segnarmi i parametri da qualche parte (momentaneamente con dei vector? poi qualcosa di più strutturato)
+    }
 
     // - - - - - - - - - - - - Print the primaries trajectories - - - - - - - - - - - -
     auto pdg = TDatabasePDG::Instance();
@@ -448,6 +469,36 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
     cProjection2D->Modified();
     cProjection2D->Update();
   }
+
+
+// - - - - - - - - - - - - - - Find the two best projections - - - - - - - - - - - - 
+// NB: the best projections are the ones with higher non void bin number on the orizontal axis
+  int index_best_proj_1 = -1;
+  int index_best_proj_2 = -1;
+
+  int N_bin_best_proj_1 = 0;
+  int N_bin_best_proj_2 = 0;
+
+  for (int i = 0; i < N_non_void_bin_oriz_axis.size(); i++)
+  {
+    if (N_non_void_bin_oriz_axis.at(i) > N_bin_best_proj_1)
+    {
+      index_best_proj_2 = index_best_proj_1;
+      N_bin_best_proj_2 = N_bin_best_proj_1;
+      
+      index_best_proj_1 = i;
+      N_bin_best_proj_1 = N_non_void_bin_oriz_axis.at(i);
+    }
+    else if (N_non_void_bin_oriz_axis.at(i) > N_bin_best_proj_2)
+    {
+      index_best_proj_2 = i;
+      N_bin_best_proj_2 = N_non_void_bin_oriz_axis.at(i);
+    }
+  }
+
+  printf("Best projection index: %d\n", index_best_proj_1);
+  printf("Second best projection index: %d\n", index_best_proj_2);
+
   return;
 }
 
