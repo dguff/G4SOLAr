@@ -499,6 +499,9 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
   printf("Best projection index: %d\n", index_best_proj_1);
   printf("Second best projection index: %d\n", index_best_proj_2);
 
+  if (index_best_proj_2 == index_best_proj_1 + 3) 
+    printf("!!! The two best projection are the same (inversion of axis) !!!\n");
+
   return;
 }
 
