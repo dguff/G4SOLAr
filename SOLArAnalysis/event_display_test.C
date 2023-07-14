@@ -176,8 +176,9 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
 
   // Define a vector that will contain the number of non void bin (of the bigger cluster) on the orizontal axis of each projection
   std::vector<int> N_non_void_bin_oriz_axis;
+  std::vector<int> charge_oriz_axis;
 
-  std::vector<TString> projectionsList = {"y:x", "y:z", "z:x", "x:y"};
+  std::vector<TString> projectionsList = {"y:x", "y:z", "z:x", "x:y", "z:y", "x:z"};
 
   for (const auto projection : projectionsList)
   {
@@ -261,48 +262,75 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       int charge_y_min = 0;
       int charge_y_maj = 0;
 
-      int non_void_bin_x_min = 0;
-      int non_void_bin_x_maj = 0;
-      int non_void_bin_y_min = 0;
-      int non_void_bin_y_maj = 0;
+      double non_void_bin_x_min = 0;
+      double non_void_bin_x_maj = 0;
+      double non_void_bin_y_min = 0;
+      double non_void_bin_y_maj = 0;
 
-      // Loop to obtain information on the bins around the vertex, in order to decide approximately in what direction the particle is going
+      // Decide the width of bins interval to consider in the next section
+      int N_x = -1;
+      if (h2_max_cl->GetXaxis()->GetBinWidth(1) / 4 > 0.99)
+        N_x = 1;
+      else
+        N_x = 2;
+
+      // printf("Divisione bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1) / 4);
+      // printf("Ampiezza bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1));
+      // printf("Numero di bin considerati per le x: %i\n", N_x);
+
+      int N_y = -1;
+      if (h2_max_cl->GetYaxis()->GetBinWidth(1) / 4 > 0.99)
+        N_y = 1;
+      else
+        N_y = 2;
+      // printf("Divisione bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1) / 4);
+      // printf("Ampiezza bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1));
+      // printf("Numero di bin considerati per le y: %i\n", N_y);
+
+      // Loop to obtain information on the bins around the vertex, in order to decide approximately the direction of the particle (right/left and up/down)
+      //  We consider\ the bins along the orizontal and along the vertical coordinate of the vertex, plus the bins up/down and right/left (within the interval set in the previous section)
       for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
       {
-        for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
+        for (int iy = id_y_vertex - N_y; iy <= id_y_vertex + N_y; iy++)
         {
           if (ix < id_x_vertex)
           {
             charge_x_min += h2_max_cl->GetBinContent(ix, iy);
             if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_x_min += 1;
+              non_void_bin_x_min += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
           }
           if (ix > id_x_vertex)
           {
-            charge_x_min += h2_max_cl->GetBinContent(ix, iy);
+            charge_x_maj += h2_max_cl->GetBinContent(ix, iy);
             if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_x_maj += 1;
-          }
-
-          if (iy < id_y_vertex)
-          {
-            charge_y_min += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_y_min += 1;
-          }
-          if (iy > id_y_vertex)
-          {
-            charge_y_min += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_y_maj += 1;
+              non_void_bin_x_maj += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
           }
         }
       }
 
-      printf("non_void_bin_x_min: %i\n", non_void_bin_x_min);
-      printf("non_void_bin_x_maj: %i\n", non_void_bin_x_maj);
-      printf("non_void_bin_y_min: %i\n", non_void_bin_y_min);
-      printf("non_void_bin_y_maj: %i\n", non_void_bin_y_maj);
+      for (int ix = id_x_vertex - N_x; ix <= id_x_vertex + N_x; ix++)
+      {
+        for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
+        {
+          if (iy < id_y_vertex)
+          {
+            charge_y_min += h2_max_cl->GetBinContent(ix, iy);
+            if (h2_max_cl->GetBinContent(ix, iy) > 0)
+              non_void_bin_y_min += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
+          }
+          if (iy > id_y_vertex)
+          {
+            charge_y_maj += h2_max_cl->GetBinContent(ix, iy);
+            if (h2_max_cl->GetBinContent(ix, iy) > 0)
+              non_void_bin_y_maj += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
+          }
+        }
+      }
+
+      printf("non_void_bin_x_min: %f\n", non_void_bin_x_min);
+      printf("non_void_bin_x_maj: %f\n", non_void_bin_x_maj);
+      printf("non_void_bin_y_min: %f\n", non_void_bin_y_min);
+      printf("non_void_bin_y_maj: %f\n", non_void_bin_y_maj);
 
       // Save the number of non void bin along the orizontal axis for this projection
       N_non_void_bin_oriz_axis.push_back(non_void_bin_x_maj + non_void_bin_x_min);
@@ -375,7 +403,6 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       g_max_cl->SetLineWidth(2);
       g_max_cl->Draw("pl");
 
-
       // - - - - - - - - - - - - - - Fit - - - - - - - - - - - - - -
       int N_point_fit = 2;
       int N_par = 2;
@@ -383,16 +410,33 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       // printf("Point 0: %f\n", g_max_cl->GetPointX(0));
       // printf("Point max: %f\n", g_max_cl->GetPointX(g_max_cl->GetN() - 1));
 
+      // if (dir_x > 0)
+      // {
+      //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99) , N_par);
+      //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99));
+      // }
+      // else
+      // {
+      //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), N_par);
+      //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex));
+      // }
+
       if (dir_x > 0)
       {
-        TF1 *fline = new TF1("fline", line, g_max_cl->GetPointX(0), g_max_cl->GetPointX(0 + N_point_fit), N_par);
-        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", g_max_cl->GetPointX(0), g_max_cl->GetPointX(0 + N_point_fit));
+        TF1 *fline = new TF1("fline", line, m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
+        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
+      }
+      else if (dir_x < 0)
+      {
+        TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX(), N_par);
+        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX());
       }
       else
       {
-        TF1 *fline = new TF1("fline", line, g_max_cl->GetPointX(g_max_cl->GetN() - 1 - N_point_fit), g_max_cl->GetPointX(g_max_cl->GetN() - 1), N_par);
-        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", g_max_cl->GetPointX(g_max_cl->GetN() - 1 - N_point_fit), g_max_cl->GetPointX(g_max_cl->GetN() - 1));
+        TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
+        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
       }
+
       // Devo segnarmi i parametri da qualche parte (momentaneamente con dei vector? poi qualcosa di più strutturato)
     }
 
@@ -470,9 +514,8 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
     cProjection2D->Update();
   }
 
-
-// - - - - - - - - - - - - - - Find the two best projections - - - - - - - - - - - - 
-// NB: the best projections are the ones with higher non void bin number on the orizontal axis
+  // - - - - - - - - - - - - - - Find the two best projections - - - - - - - - - - - -
+  // NB: the best projections are the ones with higher non void bin number on the orizontal axis
   int index_best_proj_1 = -1;
   int index_best_proj_2 = -1;
 
@@ -485,22 +528,22 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
     {
       index_best_proj_2 = index_best_proj_1;
       N_bin_best_proj_2 = N_bin_best_proj_1;
-      
+
       index_best_proj_1 = i;
       N_bin_best_proj_1 = N_non_void_bin_oriz_axis.at(i);
     }
     else if (N_non_void_bin_oriz_axis.at(i) > N_bin_best_proj_2)
     {
-      index_best_proj_2 = i;
-      N_bin_best_proj_2 = N_non_void_bin_oriz_axis.at(i);
+      if (index_best_proj_2 != index_best_proj_1 + 3)
+      {
+        index_best_proj_2 = i;
+        N_bin_best_proj_2 = N_non_void_bin_oriz_axis.at(i);
+      }
     }
   }
 
   printf("Best projection index: %d\n", index_best_proj_1);
   printf("Second best projection index: %d\n", index_best_proj_2);
-
-  if (index_best_proj_2 == index_best_proj_1 + 3) 
-    printf("!!! The two best projection are the same (inversion of axis) !!!\n");
 
   return;
 }
