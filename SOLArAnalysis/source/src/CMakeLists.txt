@@ -24,12 +24,16 @@ add_library(SLArQEvent SHARED
   ${G4S_ANALYSIS_SRC_DIR}/SLArQCluster.cc
   ${G4S_ANALYSIS_INC_DIR}/SLArQCluster.hh
   ${G4S_ANALYSIS_SRC_DIR}/SLArQEventReadout.cc
-  ${G4S_ANALYSIS_INC_DIR}/SLArQEventReadout.hh)
+  ${G4S_ANALYSIS_INC_DIR}/SLArQEventReadout.hh
+  ${G4S_ANALYSIS_SRC_DIR}/SLArQEventAnalysis.cc
+  ${G4S_ANALYSIS_INC_DIR}/SLArQEventAnalysis.hh
+  )
 target_link_libraries(SLArQEvent PUBLIC ${ROOT_LIBRARIES})
 
 ROOT_GENERATE_DICTIONARY(G__SLArQEvent
   ${G4S_ANALYSIS_INC_DIR}/SLArQCluster.hh
   ${G4S_ANALYSIS_INC_DIR}/SLArQEventReadout.hh
+  ${G4S_ANALYSIS_INC_DIR}/SLArQEventAnalysis.hh
   MODULE SLArQEvent
   LINKDEF ${G4S_ANALYSIS_INC_DIR}/SLArQEventReadoutLinkDef.h)
 

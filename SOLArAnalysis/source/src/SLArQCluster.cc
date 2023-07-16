@@ -64,7 +64,7 @@ namespace slarq {
   }
 
   void  SLArQCluster::set_cluster_hist(THnBase* hn) {
-    double xx[3] = {0.};
+    double xx[3] = {1e10};
     for (const auto &point : fPoints) {
       xx[0] = point.fPos.x(); 
       xx[1] = point.fPos.y(); 

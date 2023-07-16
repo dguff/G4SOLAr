@@ -17,5 +17,6 @@
 #pragma link C++ struct slarq::slarq_axis+; 
 #pragma link C++ class std::vector<slarq::slarq_axis>+; 
 #pragma link C++ class slarq::SLArQEventReadout+;
+#pragma link C++ class slarq::SLArQEventAnalysis+;
 #endif
 

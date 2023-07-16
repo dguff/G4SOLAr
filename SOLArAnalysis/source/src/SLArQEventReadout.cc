@@ -96,6 +96,7 @@ namespace slarq {
     THnSparseF* hn_cluster = (THnSparseF*)fHQn->Clone("hn_cluster"); 
     hn_cluster->Reset(); 
     auto max_cluster = GetMaxCluster(); 
+
     hn_cluster->SetName(Form("ev_%i_cluster_%lu_hn", fIEv, max_cluster->get_id())); 
     max_cluster->set_cluster_hist(hn_cluster); 
     return hn_cluster; 
@@ -188,7 +189,7 @@ namespace slarq {
   }
 
   void SLArQEventReadout::SourceHits3DHist(THnSparseF* hits3d) {
-    printf("SLArQEventReadout::SourceHits3DHist\n");
+    //printf("SLArQEventReadout::SourceHits3DHist\n");
 
     if (fHQn) delete fHQn; 
 
@@ -261,6 +262,8 @@ namespace slarq {
       delete cl; cl = nullptr; 
     }
     fClusters.clear(); 
+
+    fAxis.clear(); 
 
     if (fHQn ) {
       delete fHQn; fHQn = nullptr;
