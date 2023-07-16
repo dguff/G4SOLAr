@@ -151,10 +151,12 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Store Primary information id dst
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+  auto MCEvent = SLArAnaMgr->GetEvent();
 
   if (fDirectionMode == kRandom) {
     fGunDirection = SampleRandomDirection();
   }
+  MCEvent->SetDirection(fGunDirection.getX(), fGunDirection.getY(), fGunDirection.getZ()); 
 
   if (fBulkGenerator->GetBulkLogicalVolume()) {
       fBulkGenerator->ShootVertex( fGunPosition ); 
@@ -267,7 +269,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       tc_primary.PrintParticle(); 
       //getchar();
 #endif
-      SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
+      MCEvent->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
     }
   }
 
