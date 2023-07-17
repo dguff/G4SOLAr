@@ -174,6 +174,12 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
 
   qev->Clustering();
 
+  if (qev->GetTotalCharge() == 0)
+  {
+    printf("There isn't any event in this TPC.\n");
+    return;
+  }
+
   // Define a vector that will contain the number of non void bin (of the bigger cluster) on the orizontal axis of each projection
   std::vector<int> N_non_void_bin_oriz_axis;
   std::vector<int> charge_oriz_axis;
@@ -227,218 +233,218 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
     // printf("Vertice: %f, %f, %f\n", vertex.at(0), vertex.at(1), vertex.at(2)) ;
     m_vertex->Draw();
 
-    // - - - - - - - - - - - - If: only for hist with clusters - - - - - - - - - - - - - - - -
+    //// - - - - - - - - - - - - If: only for hist with clusters - - - - - - - - - - - - - - - -
 
-    // NB: idealmente sarebbe meglio sistemare direttamente la funzione GetMaxCluster in modo che se non ci sono cluster possa comunque funzionare. Ma intanto lo teniamo così.
-    if (qev->GetTotalCharge() > 0)
+    //// NB: idealmente sarebbe meglio sistemare direttamente la funzione GetMaxCluster in modo che se non ci sono cluster possa comunque funzionare. Ma intanto lo teniamo così.
+    // if (qev->GetTotalCharge() > 0)
+    //{
+    //   Obtain the cluster with the higher total charge (tcluster defined in SLArQCluster.hh)
+    auto max_cluster = qev->GetMaxCluster();
+
+    // Define a graph with the points of the max cluster and draw them
+    TGraph *g_cluster = new TGraph();
+
+    for (const auto &point : max_cluster->get_points())
     {
-      //  Obtain the cluster with the higher total charge (tcluster defined in SLArQCluster.hh)
-      auto max_cluster = qev->GetMaxCluster();
-
-      // Define a graph with the points of the max cluster and draw them
-      TGraph *g_cluster = new TGraph();
-
-      for (const auto &point : max_cluster->get_points())
-      {
-        g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
-      }
-
-      g_cluster->SetName(Form("g_cluster_%s_%lu", projection.Data(), max_cluster->get_id()));
-      g_cluster->SetMarkerColor(kBlack);
-      g_cluster->SetLineWidth(2);
-      g_cluster->SetMarkerStyle(108);
-      g_cluster->Draw("p");
-
-      // Create an hist as the projection (on the axis considered on this run of the loop) of the 3D hist created from the max cluster
-      TH2D *h2_max_cl = qev->GetMaxClusterHn()->Projection(axesIndexes.at(0), axesIndexes.at(1));
-      h2_max_cl->SetName(Form("h2_max_cluster_%s_ev%i", projection.Data(), ev->GetEvNumber()));
-
-      // Obtain the indeces of the bin where the vertex is situated
-      int id_x_vertex = h2_max_cl->GetXaxis()->FindBin(m_vertex->GetX()); // Indice bin asse x
-      int id_y_vertex = h2_max_cl->GetYaxis()->FindBin(m_vertex->GetY()); // Indice bin asse x
-
-      int charge_x_min = 0; // Togliere se decido di usare i non_void_bin. Altrimenti viceversa.
-      int charge_x_maj = 0;
-      int charge_y_min = 0;
-      int charge_y_maj = 0;
-
-      double non_void_bin_x_min = 0;
-      double non_void_bin_x_maj = 0;
-      double non_void_bin_y_min = 0;
-      double non_void_bin_y_maj = 0;
-
-      // Decide the width of bins interval to consider in the next section
-      int N_x = -1;
-      if (h2_max_cl->GetXaxis()->GetBinWidth(1) / 4 > 0.99)
-        N_x = 1;
-      else
-        N_x = 2;
-
-      // printf("Divisione bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1) / 4);
-      // printf("Ampiezza bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1));
-      // printf("Numero di bin considerati per le x: %i\n", N_x);
-
-      int N_y = -1;
-      if (h2_max_cl->GetYaxis()->GetBinWidth(1) / 4 > 0.99)
-        N_y = 1;
-      else
-        N_y = 2;
-      // printf("Divisione bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1) / 4);
-      // printf("Ampiezza bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1));
-      // printf("Numero di bin considerati per le y: %i\n", N_y);
-
-      // Loop to obtain information on the bins around the vertex, in order to decide approximately the direction of the particle (right/left and up/down)
-      //  We consider\ the bins along the orizontal and along the vertical coordinate of the vertex, plus the bins up/down and right/left (within the interval set in the previous section)
-      for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
-      {
-        for (int iy = id_y_vertex - N_y; iy <= id_y_vertex + N_y; iy++)
-        {
-          if (ix < id_x_vertex)
-          {
-            charge_x_min += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_x_min += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
-          }
-          if (ix > id_x_vertex)
-          {
-            charge_x_maj += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_x_maj += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
-          }
-        }
-      }
-
-      for (int ix = id_x_vertex - N_x; ix <= id_x_vertex + N_x; ix++)
-      {
-        for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
-        {
-          if (iy < id_y_vertex)
-          {
-            charge_y_min += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_y_min += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
-          }
-          if (iy > id_y_vertex)
-          {
-            charge_y_maj += h2_max_cl->GetBinContent(ix, iy);
-            if (h2_max_cl->GetBinContent(ix, iy) > 0)
-              non_void_bin_y_maj += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
-          }
-        }
-      }
-
-      printf("non_void_bin_x_min: %f\n", non_void_bin_x_min);
-      printf("non_void_bin_x_maj: %f\n", non_void_bin_x_maj);
-      printf("non_void_bin_y_min: %f\n", non_void_bin_y_min);
-      printf("non_void_bin_y_maj: %f\n", non_void_bin_y_maj);
-
-      // Save the number of non void bin along the orizontal axis for this projection
-      N_non_void_bin_oriz_axis.push_back(non_void_bin_x_maj + non_void_bin_x_min);
-
-      int dir_x = 100;
-
-      if (non_void_bin_x_min > non_void_bin_x_maj)
-        dir_x = -1;
-
-      else if (non_void_bin_x_min < non_void_bin_x_maj)
-        dir_x = 1;
-
-      else // Bisognerebbe guardare il caso in cui entrambe sono uguali a 0 --> tracce verticali
-        dir_x = 0;
-
-      int dir_y = 100;
-
-      if (non_void_bin_y_min > non_void_bin_y_maj)
-        dir_y = -1;
-
-      else if (non_void_bin_y_min < non_void_bin_y_maj)
-        dir_y = 1;
-
-      else
-        dir_y = 0;
-
-      printf("Direzione lungo x: %i\n", dir_x);
-      printf("Direzione lungo y: %i\n", dir_y);
-
-      // Define the graph where each point is the weighted mean of the y bins on the bin content, given the x
-      TGraphErrors *g_max_cl = new TGraphErrors;
-
-      double num = 0;
-      int total_bin_content_x = 0;
-      double ey = 0;
-
-      // Loop to calculate the weighted mean
-      for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
-      {
-        float x_bin = h2_max_cl->GetXaxis()->GetBinCenter(ix);
-
-        for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
-        {
-          float y_bin = h2_max_cl->GetYaxis()->GetBinCenter(iy);
-          // printf("num: %f", y_bin);
-          total_bin_content_x += h2_max_cl->GetBinContent(ix, iy);
-          num += h2_max_cl->GetBinContent(ix, iy) * y_bin;
-        }
-        // printf("Total bin content: %d", total_bin_content_x);
-
-        // Define the y error. In a preliminary approximation is chosen constant, considering a uniform distribution of the events on the bin
-        ey = h2_max_cl->GetYaxis()->GetBinWidth(1) / sqrt(12);
-
-        if (total_bin_content_x != 0) //
-        {
-          g_max_cl->AddPoint(x_bin, (num / total_bin_content_x));
-          g_max_cl->SetPointError(g_max_cl->GetN() - 1, 0, ey);
-        }
-
-        num = 0;
-        total_bin_content_x = 0;
-      }
-      printf("Errore sulle y: %f\n", ey);
-
-      // printf("Bins number: %d\n", h2_max_cl->GetNbinsX());
-      // printf("Bins number: %d\n", h2_max_cl->GetNbinsY());
-
-      g_max_cl->SetName("g_max_cl");
-      g_max_cl->SetLineColor(kBlack);
-      g_max_cl->SetLineWidth(2);
-      g_max_cl->Draw("pl");
-
-      // - - - - - - - - - - - - - - Fit - - - - - - - - - - - - - -
-      int N_point_fit = 2;
-      int N_par = 2;
-
-      // printf("Point 0: %f\n", g_max_cl->GetPointX(0));
-      // printf("Point max: %f\n", g_max_cl->GetPointX(g_max_cl->GetN() - 1));
-
-      // if (dir_x > 0)
-      // {
-      //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99) , N_par);
-      //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99));
-      // }
-      // else
-      // {
-      //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), N_par);
-      //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex));
-      // }
-
-      if (dir_x > 0)
-      {
-        TF1 *fline = new TF1("fline", line, m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
-        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
-      }
-      else if (dir_x < 0)
-      {
-        TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX(), N_par);
-        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX());
-      }
-      else
-      {
-        TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
-        TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
-      }
-
-      // Devo segnarmi i parametri da qualche parte (momentaneamente con dei vector? poi qualcosa di più strutturato)
+      g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
     }
+
+    g_cluster->SetName(Form("g_cluster_%s_%lu", projection.Data(), max_cluster->get_id()));
+    g_cluster->SetMarkerColor(kBlack);
+    g_cluster->SetLineWidth(2);
+    g_cluster->SetMarkerStyle(108);
+    g_cluster->Draw("p");
+
+    // Create an hist as the projection (on the axis considered on this run of the loop) of the 3D hist created from the max cluster
+    TH2D *h2_max_cl = qev->GetMaxClusterHn()->Projection(axesIndexes.at(0), axesIndexes.at(1));
+    h2_max_cl->SetName(Form("h2_max_cluster_%s_ev%i", projection.Data(), ev->GetEvNumber()));
+
+    // Obtain the indeces of the bin where the vertex is situated
+    int id_x_vertex = h2_max_cl->GetXaxis()->FindBin(m_vertex->GetX()); // Indice bin asse x
+    int id_y_vertex = h2_max_cl->GetYaxis()->FindBin(m_vertex->GetY()); // Indice bin asse x
+
+    int charge_x_min = 0; // Togliere se decido di usare i non_void_bin. Altrimenti viceversa.
+    int charge_x_maj = 0;
+    int charge_y_min = 0;
+    int charge_y_maj = 0;
+
+    double non_void_bin_x_min = 0;
+    double non_void_bin_x_maj = 0;
+    double non_void_bin_y_min = 0;
+    double non_void_bin_y_maj = 0;
+
+    // Decide the width of bins interval to consider in the next section
+    int N_x = -1;
+    if (h2_max_cl->GetXaxis()->GetBinWidth(1) / 4 > 0.99)
+      N_x = 1;
+    else
+      N_x = 2;
+
+    // printf("Divisione bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1) / 4);
+    // printf("Ampiezza bin delle x: %f\n", h2_max_cl->GetXaxis()->GetBinWidth(1));
+    // printf("Numero di bin considerati per le x: %i\n", N_x);
+
+    int N_y = -1;
+    if (h2_max_cl->GetYaxis()->GetBinWidth(1) / 4 > 0.99)
+      N_y = 1;
+    else
+      N_y = 2;
+    // printf("Divisione bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1) / 4);
+    // printf("Ampiezza bin delle y: %f\n", h2_max_cl->GetYaxis()->GetBinWidth(1));
+    // printf("Numero di bin considerati per le y: %i\n", N_y);
+
+    // Loop to obtain information on the bins around the vertex, in order to decide approximately the direction of the particle (right/left and up/down)
+    //  We consider\ the bins along the orizontal and along the vertical coordinate of the vertex, plus the bins up/down and right/left (within the interval set in the previous section)
+    for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
+    {
+      for (int iy = id_y_vertex - N_y; iy <= id_y_vertex + N_y; iy++)
+      {
+        if (ix < id_x_vertex)
+        {
+          charge_x_min += h2_max_cl->GetBinContent(ix, iy);
+          if (h2_max_cl->GetBinContent(ix, iy) > 0)
+            non_void_bin_x_min += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
+        }
+        if (ix > id_x_vertex)
+        {
+          charge_x_maj += h2_max_cl->GetBinContent(ix, iy);
+          if (h2_max_cl->GetBinContent(ix, iy) > 0)
+            non_void_bin_x_maj += 1 * h2_max_cl->GetXaxis()->GetBinWidth(1);
+        }
+      }
+    }
+
+    for (int ix = id_x_vertex - N_x; ix <= id_x_vertex + N_x; ix++)
+    {
+      for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
+      {
+        if (iy < id_y_vertex)
+        {
+          charge_y_min += h2_max_cl->GetBinContent(ix, iy);
+          if (h2_max_cl->GetBinContent(ix, iy) > 0)
+            non_void_bin_y_min += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
+        }
+        if (iy > id_y_vertex)
+        {
+          charge_y_maj += h2_max_cl->GetBinContent(ix, iy);
+          if (h2_max_cl->GetBinContent(ix, iy) > 0)
+            non_void_bin_y_maj += 1 * h2_max_cl->GetYaxis()->GetBinWidth(1);
+        }
+      }
+    }
+
+    printf("non_void_bin_x_min: %f\n", non_void_bin_x_min);
+    printf("non_void_bin_x_maj: %f\n", non_void_bin_x_maj);
+    printf("non_void_bin_y_min: %f\n", non_void_bin_y_min);
+    printf("non_void_bin_y_maj: %f\n", non_void_bin_y_maj);
+
+    // Save the number of non void bin along the orizontal axis for this projection
+    N_non_void_bin_oriz_axis.push_back(non_void_bin_x_maj + non_void_bin_x_min);
+
+    int dir_x = 100;
+
+    if (non_void_bin_x_min > non_void_bin_x_maj)
+      dir_x = -1;
+
+    else if (non_void_bin_x_min < non_void_bin_x_maj)
+      dir_x = 1;
+
+    else // Bisognerebbe guardare il caso in cui entrambe sono uguali a 0 --> tracce verticali
+      dir_x = 0;
+
+    int dir_y = 100;
+
+    if (non_void_bin_y_min > non_void_bin_y_maj)
+      dir_y = -1;
+
+    else if (non_void_bin_y_min < non_void_bin_y_maj)
+      dir_y = 1;
+
+    else
+      dir_y = 0;
+
+    printf("Direzione lungo x: %i\n", dir_x);
+    printf("Direzione lungo y: %i\n", dir_y);
+
+    // Define the graph where each point is the weighted mean of the y bins on the bin content, given the x
+    TGraphErrors *g_max_cl = new TGraphErrors;
+
+    double num = 0;
+    int total_bin_content_x = 0;
+    double ey = 0;
+
+    // Loop to calculate the weighted mean
+    for (int ix = 1; ix < h2_max_cl->GetNbinsX() + 1; ix++)
+    {
+      float x_bin = h2_max_cl->GetXaxis()->GetBinCenter(ix);
+
+      for (int iy = 1; iy < h2_max_cl->GetNbinsY() + 1; iy++)
+      {
+        float y_bin = h2_max_cl->GetYaxis()->GetBinCenter(iy);
+        // printf("num: %f", y_bin);
+        total_bin_content_x += h2_max_cl->GetBinContent(ix, iy);
+        num += h2_max_cl->GetBinContent(ix, iy) * y_bin;
+      }
+      // printf("Total bin content: %d", total_bin_content_x);
+
+      // Define the y error. In a preliminary approximation is chosen constant, considering a uniform distribution of the events on the bin
+      ey = h2_max_cl->GetYaxis()->GetBinWidth(1) / sqrt(12);
+
+      if (total_bin_content_x != 0) //
+      {
+        g_max_cl->AddPoint(x_bin, (num / total_bin_content_x));
+        g_max_cl->SetPointError(g_max_cl->GetN() - 1, 0, ey);
+      }
+
+      num = 0;
+      total_bin_content_x = 0;
+    }
+    printf("Errore sulle y: %f\n", ey);
+
+    // printf("Bins number: %d\n", h2_max_cl->GetNbinsX());
+    // printf("Bins number: %d\n", h2_max_cl->GetNbinsY());
+
+    g_max_cl->SetName("g_max_cl");
+    g_max_cl->SetLineColor(kBlack);
+    g_max_cl->SetLineWidth(2);
+    g_max_cl->Draw("pl");
+
+    // - - - - - - - - - - - - - - Fit - - - - - - - - - - - - - -
+    int N_point_fit = 2;
+    int N_par = 2;
+
+    // printf("Point 0: %f\n", g_max_cl->GetPointX(0));
+    // printf("Point max: %f\n", g_max_cl->GetPointX(g_max_cl->GetN() - 1));
+
+    // if (dir_x > 0)
+    // {
+    //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99) , N_par);
+    //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99));
+    // }
+    // else
+    // {
+    //   TF1 *fline = new TF1("fline", line, h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex), N_par);
+    //   TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex) - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit +0.99), h2_max_cl->GetXaxis()->GetBinCenter(id_x_vertex));
+    // }
+
+    if (dir_x > 0)
+    {
+      TF1 *fline = new TF1("fline", line, m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
+      TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX(), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
+    }
+    else if (dir_x < 0)
+    {
+      TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX(), N_par);
+      TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX());
+    }
+    else
+    {
+      TF1 *fline = new TF1("fline", line, m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), N_par);
+      TFitResultPtr fit_g_max_cl = g_max_cl->Fit(fline, "S", "", m_vertex->GetX() - h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99), m_vertex->GetX() + h2_max_cl->GetXaxis()->GetBinWidth(1) * (N_point_fit + 0.99));
+    }
+
+    // Devo segnarmi i parametri da qualche parte (momentaneamente con dei vector? poi qualcosa di più strutturato)
+    //}
 
     // - - - - - - - - - - - - Print the primaries trajectories - - - - - - - - - - - -
     auto pdg = TDatabasePDG::Instance();
@@ -526,8 +532,11 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
   {
     if (N_non_void_bin_oriz_axis.at(i) > N_bin_best_proj_1)
     {
+      if (i != index_best_proj_1 + 3)
+      {
       index_best_proj_2 = index_best_proj_1;
       N_bin_best_proj_2 = N_bin_best_proj_1;
+      }
 
       index_best_proj_1 = i;
       N_bin_best_proj_1 = N_non_void_bin_oriz_axis.at(i);
@@ -544,6 +553,71 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
 
   printf("Best projection index: %d\n", index_best_proj_1);
   printf("Second best projection index: %d\n", index_best_proj_2);
+
+  std::vector<TString> best_projections;
+  best_projections.push_back(projectionsList.at(index_best_proj_1));
+  best_projections.push_back(projectionsList.at(index_best_proj_2));
+
+  printf("Migliori proiezioni: %s, %s\n", best_projections.at(0).Data(), best_projections.at(1).Data());
+
+  // - - - - - - - - - - - - - - Reconstruct electron direction - - - - - - - - - - - - - -
+
+  int cx = -1;
+  int cy = -1;
+  int cz = -1;
+
+  TVector3 vElectron_direction;
+  TVector3 vSun_direction(36, 41, 18); // Da modificare con quella corretta del Sole
+
+  for (const auto projection : best_projections)
+  {
+    auto strArray = projection.Tokenize(":");
+    std::vector<TVector3> axesList;
+
+    TVector3 vProj_direction;
+
+    for (const auto &obj : *strArray)
+    {
+      TObjString *str = (TObjString *)obj;
+      TString strAxis = str->GetString();
+
+      if (strAxis == "x" && cx < 0)
+      {
+        axesList.push_back(TVector3(1, 0, 0));
+        cx = 1;
+      }
+      else if (strAxis == "y" && cy < 0)
+      {
+        axesList.push_back(TVector3(0, 1, 0));
+        cy = 1;
+      }
+      else if (strAxis == "z" && cz < 0)
+      {
+        axesList.push_back(TVector3(0, 0, 1));
+        cz = 1;
+      }
+      else
+      {
+        axesList.push_back(TVector3(0, 0, 0));
+      }
+    }
+
+    if (strArray->GetEntries() != 2)
+      return;
+
+    double norm = sqrt(3 * 3 + 1 * 1);       // Normalization                       // sostituire m al posto di 3 --> devo aver memorizzato m nella structure
+    vProj_direction += (axesList.at(1) * (1 / norm) + axesList.at(0) * (3 / norm)); // sostituire m al posto di 3 --> devo aver memorizzato m nella structure
+                                                                                    // Assegno valore 1 alla coordinata orizzontale (che è la seconda della lista), per cui la coordinata dell'asse verticale sarà uguale a m
+
+    printf("Direzione nella proiezione: %f, %f, %f\n", vProj_direction.X(), vProj_direction.Y(), vProj_direction.Z());
+
+    vElectron_direction += vProj_direction; // Volendo si può togliere vProj_direction e salvare tutto direttamente in vElectron_direction, però così per ora mi sembra più comprensibile per la lettura
+  }
+
+  printf("Direzione complessiva per l'elettrone: %f, %f, %f\n", vElectron_direction.X(), vElectron_direction.Y(), vElectron_direction.Z());
+
+  double cosTheta = vElectron_direction.Dot(vSun_direction) / sqrt(vElectron_direction.Dot(vElectron_direction) * vSun_direction.Dot(vSun_direction));
+  printf("Cosine of theta: %f\n", cosTheta);
 
   return;
 }
