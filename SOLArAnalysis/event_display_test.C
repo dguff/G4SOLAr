@@ -40,6 +40,7 @@ std::vector<Color_t> color_vector = {kOrange + 7, kRed, kMagenta + 1, kViolet + 
 
 THnSparseF *BuildXYZHist(SLArCfgAnode *cfgAnode,
                          const double drift_len);
+
 void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg);
 
 double line(double *x, double *par)
@@ -172,6 +173,7 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
 
   qev->SourceHits3DHist(xyz_hits);
 
+  printf("clustering...\n");
   qev->Clustering();
 
   // Define a vector that will contain the number of non void bin (of the bigger cluster) on the orizontal axis of each projection
@@ -235,19 +237,37 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       //  Obtain the cluster with the higher total charge (tcluster defined in SLArQCluster.hh)
       auto max_cluster = qev->GetMaxCluster();
 
-      // Define a graph with the points of the max cluster and draw them
-      TGraph *g_cluster = new TGraph();
+      auto vector_cluster = qev->GetClusters();
 
-      for (const auto &point : max_cluster->get_points())
-      {
-        g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
+      for (const auto &c : vector_cluster) {
+        //if (c != max_cluster) {
+          TGraph* g_cluster = new TGraph ();
+
+          for (const auto &point : c->get_points()){
+            g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
+          }
+
+          g_cluster->SetName(Form( "g_cluster_%s_%lu", projection.Data(), c->get_id()));
+          g_cluster->SetMarkerColor(color_vector.at(c->get_id()));
+          g_cluster->SetLineWidth(2);
+          g_cluster->SetMarkerStyle(90);
+          g_cluster->Draw("p");
+        //}
       }
 
-      g_cluster->SetName(Form("g_cluster_%s_%lu", projection.Data(), max_cluster->get_id()));
-      g_cluster->SetMarkerColor(kBlack);
-      g_cluster->SetLineWidth(2);
-      g_cluster->SetMarkerStyle(108);
-      g_cluster->Draw("p");
+      // Define a graph with the points of the max cluster and draw them
+      //TGraph *g_cluster = new TGraph();
+
+      //for (const auto &point : max_cluster->get_points())
+      //{
+        //g_cluster->AddPoint(point.fPos.Dot(axesList.at(1)), point.fPos.Dot(axesList.at(0)));
+      //}
+
+      //g_cluster->SetName(Form("g_cluster_%s_%lu", projection.Data(), max_cluster->get_id()));
+      //g_cluster->SetMarkerColor(kBlack);
+      //g_cluster->SetLineWidth(2);
+      //g_cluster->SetMarkerStyle(108);
+      //g_cluster->Draw("p");
 
       // Create an hist as the projection (on the axis considered on this run of the loop) of the 3D hist created from the max cluster
       TH2D *h2_max_cl = qev->GetMaxClusterHn()->Projection(axesIndexes.at(0), axesIndexes.at(1));
@@ -454,11 +474,11 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
       {
         auto points = t->GetPoints();
         auto pdg_particle = pdg->GetParticle(t->GetPDGID());
-        // printf("%s [%i]: t = %.2f, K = %.2f - n_scint = %g, n_elec = %g\n",
-        // t->GetParticleName().Data(), t->GetTrackID(),
-        // t->GetTime(),
-        // t->GetInitKineticEne(),
-        // t->GetTotalNph(), t->GetTotalNel());
+         printf("%s [%i]: t = %.2f, K = %.2f - n_scint = %g, n_elec = %g\n",
+         t->GetParticleName().Data(), t->GetTrackID(),
+         t->GetTime(),
+         t->GetInitKineticEne(),
+         t->GetTotalNph(), t->GetTotalNel());
         if (t->GetInitKineticEne() < 0.01)
           continue;
         TGraph *g = new TGraph();
@@ -506,7 +526,7 @@ void read_and_display_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF 
         g->SetName(name);
         g->SetLineColor(col);
         g->SetLineWidth(2);
-        if (g->GetN() > 2)
+        //if (g->GetN() > 2)
           g->Draw("l");
       }
     }

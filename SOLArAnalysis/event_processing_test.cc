@@ -42,16 +42,20 @@ struct solar_cluster_track {
   int fNClusters = 0; 
   float fTotalCharge = 0; 
   float fMaxClusterCharge = 0; 
-  TVector3 fTrueEventDir;
-  TVector3 fRecoEventDir;
+  float fTrueEventDir[3] = {0};
+  float fRecoEventDir[3] = {0};
+  float fCosTheta = 0; 
 
   inline void reset() {
     fEventNumber = 0; 
     fNClusters = 0; 
     fTotalCharge = 0.; 
     fMaxClusterCharge = 0.; 
-    fTrueEventDir = TVector3(0, 0, 0); 
-    fRecoEventDir = TVector3(0, 0, 0); 
+    fCosTheta = 0; 
+    for (int j=0; j<3; j++) {
+      fTrueEventDir[j] = 0;
+      fRecoEventDir[j] = 0;
+    }
   }
 };
 
@@ -60,7 +64,7 @@ std::vector<Color_t> color_vector = {kOrange + 7, kRed, kMagenta + 1, kViolet + 
 THnSparseF *BuildXYZHist(SLArCfgAnode *cfgAnode,
                          const double drift_len);
 
-void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg, bool do_draw = false, solar_cluster_track* track_reco = nullptr);
+int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg, bool do_draw = false, solar_cluster_track* track_reco = nullptr);
 
 
 
@@ -119,7 +123,9 @@ void process_file(const TString file_path, bool single_shot = false)
     printf("Reading event %i\n", iev);
     mc_tree->GetEntry(iev);
 
-    process_event(ev, qev, xyz_hits, AnodeSysCfg, true);
+    int status = process_event(ev, qev, xyz_hits, AnodeSysCfg, true);
+
+    printf("event processed with status %i\n", status);
 
     return;
   }
@@ -136,18 +142,19 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("tot_charge", &track->fTotalCharge);
   output_tree->Branch("n_clusters", &track->fNClusters);
   output_tree->Branch("cluster_charge", &track->fMaxClusterCharge); 
-  output_tree->Branch("true_dir", &track->fTrueEventDir); 
-  output_tree->Branch("reco_dir", &track->fRecoEventDir); 
+  output_tree->Branch("true_dir", &track->fTrueEventDir, "nx/D:ny:nz"); 
+  output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/D:ny:nz"); 
+  output_tree->Branch("cos_theta", &track->fCosTheta); 
 
   for (int iev = 0; iev < 200; /*mc_tree->GetEntries();*/ iev++) {
     ev->Reset(); qev->ResetEvent(); xyz_hits->Reset(); 
     mc_tree->GetEntry(iev); 
 
-    process_event(ev, qev, xyz_hits, AnodeSysCfg, false, track); 
+    int status = process_event(ev, qev, xyz_hits, AnodeSysCfg, false, track); 
 
     //getchar(); 
 
-    if ( !qev->GetClusters().empty() ) {
+    if ( status == 0 ) {
       output_tree->Fill(); 
     }
   }
@@ -161,7 +168,7 @@ void process_file(const TString file_path, bool single_shot = false)
   return;
 }
 
-void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg, bool do_draw, solar_cluster_track* track_reco)
+int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits, std::map<int, SLArCfgAnode *> &AnodeSysCfg, bool do_draw, solar_cluster_track* track_reco)
 {
   const auto primaries = ev->GetPrimaries(); // vector of primary particles 
   const TVector3 true_dir(ev->GetDirection().data()); 
@@ -175,13 +182,16 @@ void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits
   }
   TVector3 vtx(&primary_vtx.at(0)); 
 
-  if (ev->GetEvNumber()%10 == 0) {
+  if (ev->GetEvNumber()%1 == 0) {
     printf("\n---------------------------------------------------------\n");
     printf("processing event %i\n", ev->GetEvNumber());
     printf("vertex: %g, %g, %g\n", vtx.x(), vtx.y(), vtx.z());
   }
 
-  if (fabs(vtx.y()) > 600 || fabs(vtx.z()) > 1000) return;
+  if (fabs(vtx.y()) > 600 || fabs(vtx.z()) > 1000 || vtx.x() > 950 ) {
+    if (do_draw) printf("Vertex out of scope\n");
+    return 2;
+  }
 
   const auto andMap = ev->GetEventAnode(); // mappa con i  2 anodi
 
@@ -235,7 +245,10 @@ void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits
 
   qev->Clustering();
 
-  if (qev->GetClusters().empty()) return;
+  if (qev->GetClusters().empty()) {
+    if (do_draw) printf("No clusters found\n");
+    return 3;
+  }
 
 
   SLArQEventAnalysis q_ev_analysis; 
@@ -317,24 +330,54 @@ void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits
         coord[proj_info.fAxisIdx[1]] *= -1; 
         coord[proj_info.fAxisIdx[0]] *= -1; 
       }
-      TVector3 vec(coord); 
 
-      float rescaling = 1.0; 
-      if (axis_set[proj_info.fAxisIdx[0]]) {
-        rescaling = fabs(reco_dir[proj_info.fAxisIdx[0]]); 
-      }
-      else if (axis_set[proj_info.fAxisIdx[1]]) {
-        rescaling = fabs(reco_dir[proj_info.fAxisIdx[1]]); 
-      }
+      if (axis_set[proj_info.fAxisIdx[0]] == false && 
+          axis_set[proj_info.fAxisIdx[1]] == false )
+      {
+        reco_dir[proj_info.fAxisIdx[0]] = coord[proj_info.fAxisIdx[0]];
+        reco_dir[proj_info.fAxisIdx[1]] = coord[proj_info.fAxisIdx[1]];
 
-      for (int j=0; j<2; j++) {
-        int iaxis = proj_info.fAxisIdx[j]; 
-        if (axis_set[iaxis] == false) {
-          reco_dir[iaxis] = vec[iaxis] * rescaling; 
-          axis_set[iaxis] = true; 
-          //printf("setting coordinate [%i] to %g\n", iaxis, coord[iaxis]);
+        axis_set[proj_info.fAxisIdx[0]] = true;
+        axis_set[proj_info.fAxisIdx[1]] = true;
+      }
+      else {
+        float rescaling = 1.0; 
+        if (axis_set[proj_info.fAxisIdx[0]]) {
+          rescaling = fabs(reco_dir[proj_info.fAxisIdx[0]]); 
+
+          float y_local_tmp = coord[proj_info.fAxisIdx[0]] * rescaling; 
+          float x_local_tmp = y_local_tmp / coord[proj_info.fAxisIdx[0]]; 
+
+          reco_dir[proj_info.fAxisIdx[1]] = x_local_tmp;
+          reco_dir[proj_info.fAxisIdx[0]] = y_local_tmp;
+
+          axis_set[proj_info.fAxisIdx[1]] = true; 
         }
-      }      
+        else if (axis_set[proj_info.fAxisIdx[1]]) {
+          rescaling = fabs(reco_dir[proj_info.fAxisIdx[1]]); 
+
+          float x_local_tmp = coord[proj_info.fAxisIdx[1]] * rescaling;
+          float y_local_tmp = coord[proj_info.fAxisIdx[0]] * x_local_tmp;
+
+          reco_dir[proj_info.fAxisIdx[1]] = x_local_tmp;
+          reco_dir[proj_info.fAxisIdx[0]] = y_local_tmp;
+
+          axis_set[proj_info.fAxisIdx[0]] = true;  
+        }
+
+        //printf("rescaling factor: %g\n", rescaling);
+      }
+
+      //printf("axis set: [%i, %i, %i]\n", axis_set[0], axis_set[1], axis_set[2]);
+
+      //for (int j=0; j<2; j++) {
+        //int iaxis = proj_info.fAxisIdx[j]; 
+        //if (axis_set[iaxis] == false) {
+          //reco_dir[iaxis] = coord[iaxis] * rescaling; 
+          //axis_set[iaxis] = true; 
+          //printf("setting coordinate [%i] to %g\n", iaxis, reco_dir[iaxis]);
+        //}
+      //}      
 
 
       if (do_draw) {
@@ -344,36 +387,38 @@ void process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits
       //printf("\t- lenX0: %g - lenX1: %g\n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
       //printf("\t- hitsX0: %g - hitsX1: %g\n", proj_info.fNHitsX[0], proj_info.fNHitsX[1]);
       //printf("\t- fit: %.2f + (%g)*x\n", proj_info.fPar0, proj_info.fPar1);
-        printf("\t- vec: (%g, %g, %g)\n", vec.x(), vec.y(), vec.z());
+        printf("\t- coord: (%g, %g, %g)\n", coord[0], coord[1], coord[2]); 
       }
     }
 
     iproj++; 
   }
 
-  //printf("reco_dir: %g, %g, %g\n", 
-      //reco_dir.x(), reco_dir.y(), reco_dir.z());
-  //reco_dir = reco_dir.Unit(); 
-  //printf("cos θ = %g\n", true_dir.Dot(reco_dir));
+  reco_dir = reco_dir.Unit(); 
+  printf("reco_dir: %g, %g, %g\n", 
+      reco_dir.x(), reco_dir.y(), reco_dir.z());
+  float cos_theta = true_dir.Dot(reco_dir); 
+  printf("cos θ = %g\n", true_dir.Dot(reco_dir));
   
-  //getchar(); 
 
   if (track_reco) {
     track_reco->fEventNumber = ev->GetEvNumber(); 
     track_reco->fNClusters = qev->GetClusters().size(); 
     track_reco->fTotalCharge = qev->GetTotalCharge(); 
     track_reco->fMaxClusterCharge = qev->GetMaxCluster()->get_charge(); 
-    track_reco->fRecoEventDir = reco_dir.Unit(); 
-    track_reco->fTrueEventDir = true_dir; 
+    reco_dir.GetXYZ(track_reco->fRecoEventDir); 
+    true_dir.GetXYZ(track_reco->fTrueEventDir); 
+    track_reco->fCosTheta = cos_theta;
   }
 
-  //getchar();
 
   if (do_draw == false) {
     for (auto &c : canvas) {c->Close();}
   }
 
-  return;
+  //getchar(); 
+
+  return 0;
 }
 
 THnSparseF *BuildXYZHist(SLArCfgAnode *cfgAnode,
