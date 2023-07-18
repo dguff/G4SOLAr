@@ -89,5 +89,18 @@ namespace slarq {
     }
     return;
   }
+
+  void SLArQCluster::merge(const SLArQCluster& cluster) {
+    fCharge += cluster.fCharge; 
+    fPoints.insert( fPoints.end(), cluster.fPoints.begin(), cluster.fPoints.end()); 
+  }
+
+  void SLArQCluster::sort_points(const int iaxis) {
+    std::sort(fPoints.begin(), fPoints.end(), 
+        [iaxis](const cluster_point& lhs, const cluster_point& rhs){
+          return lhs.fPos[iaxis] < rhs.fPos[iaxis];
+        });
+    return;
+  }
 }
 
