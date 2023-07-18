@@ -56,6 +56,10 @@ namespace slarq {
       void register_point(double* x, int ibin, double q);
       void register_point(cluster_point point);
 
+      void merge(const SLArQCluster& cluster); 
+
+      void sort_points(const int iaxis); 
+
     protected:
       size_t fID; 
       double fCharge;

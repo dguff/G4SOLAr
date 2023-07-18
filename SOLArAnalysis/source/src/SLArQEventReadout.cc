@@ -327,7 +327,7 @@ namespace slarq {
 
     auto iti = maincluster->CreateIter(true); 
     Long64_t b =0;
-    int n_max_trials = 5;
+    const int n_max_trials = 5;
 
     while((b=iti->Next()) >=0 ){
       double q = maincluster->GetBinContent(b, &idx[0]); 
@@ -344,7 +344,7 @@ namespace slarq {
         for (int idim=0; idim<3; idim++) {
           idx_ = idx; // set temporary idexes to current bin
 
-          for (int delta_ = -2; delta_ <3; delta_++) {
+          for (int delta_ = -3; delta_ <4; delta_++) {
             // scan the neighborhood of the current bin along the idim-axis
             idx_[idim] = idx[idim]+delta_; 
             
@@ -352,10 +352,10 @@ namespace slarq {
                 idx_[idim] > fHQn->GetAxis(idim)->GetNbins()-1) continue;
 
             q_ = maincluster->GetBinContent(&idx_[0]); 
-
+            
             if (q_ > 1500) {
               cluster_point point; 
-              point.fBin = maincluster->GetBin(&idx_[0]); 
+              point.fBin = maincluster->GetBin( &idx_[0] ); 
               for (int jdim=0; jdim<3; jdim++) {
                 xbin[jdim] = maincluster->GetAxis(jdim)->GetBinCenter(idx_[jdim]);
               }
@@ -364,10 +364,10 @@ namespace slarq {
 
               cluster_id = find_cluster(&point);
 
+              bin_found = true;
+
               // set the bin content to zero to prevent double-counting
               maincluster->SetBinContent(point.fBin, 0.); 
-
-              bin_found = true;
             }  
           }
         }
@@ -394,6 +394,52 @@ namespace slarq {
       }
 
     }
+
+    if (fClusters.size() == 0) {
+      delete maincluster; 
+      return fClusters.size(); 
+    }
+
+    // check for adjacent clusters and merge
+    for (size_t ic = 0; ic<fClusters.size(); ic++) {
+      SLArQCluster* cluster = fClusters.at(ic); 
+
+      if (!cluster) continue;
+
+      //printf("checking cluster %lu [%lu points]\n", 
+          //cluster->get_id(), cluster->get_points().size());
+
+      for (const auto &pt : cluster->get_points()) {
+        maincluster->GetBinContent(pt.fBin, &idx[0]); 
+
+        for (int idim=0; idim<3; idim++) {
+          idx_ = idx; 
+
+          for (int delta_ = -2; delta_ <=2; delta_++ ) {
+            idx_[idim] = idx[idim] + delta_; 
+            int ibin = maincluster->GetBin(&idx_[0]); 
+
+            for (size_t jc = 0; jc<fClusters.size(); jc++) {
+
+              if (jc == ic) continue;
+
+              SLArQCluster* target_cluster = fClusters.at(jc); 
+              if (!target_cluster) continue;
+              //printf("target_cluster[%lu]\n", target_cluster->get_id());
+              if (target_cluster->is_registered(ibin) == false) continue;
+
+              printf("MERGING CLUSTER %lu into CLUSTER %lu\n", 
+                  target_cluster->get_id(), cluster->get_id());
+              cluster->merge( *target_cluster ); 
+              delete target_cluster; fClusters.at(jc) = nullptr;
+            }
+          }
+        }
+      } 
+    } 
+
+    // remove null cluster pointers from fClusters collection
+    fClusters.erase(std::remove(fClusters.begin(), fClusters.end(), nullptr), fClusters.end());
 
     delete maincluster; 
     return fClusters.size(); 
@@ -441,8 +487,8 @@ namespace slarq {
     int xmin[3]; int xmax[3]; 
     for (int ik=0; ik<3; ik++) {
       TH1D* h_tmp = fHQn->Projection(ik);
-      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(10));
-      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove(10));
+      xmin[ik] = h_tmp->GetXaxis()->GetBinLowEdge(h_tmp->FindFirstBinAbove(1000));
+      xmax[ik] = h_tmp->GetXaxis()->GetBinUpEdge (h_tmp->FindLastBinAbove(1000));
 
       fHQn->GetAxis(ik)->SetRangeUser(xmin[ik]-1,xmax[ik]+1);
       delete h_tmp;
