@@ -146,8 +146,8 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("tot_charge", &track->fTotalCharge);
   output_tree->Branch("n_clusters", &track->fNClusters);
   output_tree->Branch("cluster_charge", &track->fMaxClusterCharge);
-  output_tree->Branch("true_dir", &track->fTrueEventDir, "nx/D:ny:nz");
-  output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/D:ny:nz");
+  output_tree->Branch("true_dir", &track->fTrueEventDir, "nx/F:ny:nz");
+  output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
 
   for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
@@ -462,12 +462,8 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
     track_reco->fNClusters = qev->GetClusters().size();
     track_reco->fTotalCharge = qev->GetTotalCharge();
     track_reco->fMaxClusterCharge = qev->GetMaxCluster()->get_charge();
-    track_reco->fRecoEventDir[0] = reco_dir.X();
-    track_reco->fRecoEventDir[1] = reco_dir.Y();
-    track_reco->fRecoEventDir[2] = reco_dir.Z();
-    track_reco->fTrueEventDir[0] = true_dir.X();
-    track_reco->fTrueEventDir[1] = true_dir.Y();
-    track_reco->fTrueEventDir[2] = true_dir.Z();
+    reco_dir.GetXYZ( track_reco->fRecoEventDir ); 
+    true_dir.GetXYZ( track_reco->fTrueEventDir ); 
     track_reco->fCosTheta = cos_theta;
   }
 
