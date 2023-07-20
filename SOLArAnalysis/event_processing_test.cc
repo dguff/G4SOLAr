@@ -37,7 +37,7 @@ const double pixel_pitch = 4.0;               // pixel pith in mm
 const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
 const double v_drift = 1.582e-3;
 
-const double noise_rms = 900;
+const double noise_rms = 0;
 
 struct solar_cluster_track
 {
@@ -138,7 +138,7 @@ void process_file(const TString file_path, bool single_shot = false)
   // where to store the result of the analysis
   TString output_file_name = file_path;
   output_file_name.Resize(output_file_name.Index(".root"));
-  output_file_name += Form("_noise_%f_processed.root", noise_rms);
+  output_file_name += Form("_noise_%d_processed.root", static_cast<int>(noise_rms));
   TFile *file_output = new TFile(output_file_name, "recreate");
 
   TTree *output_tree = new TTree("processed_events", "SoLAr processed events");
@@ -150,7 +150,7 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
 
-  for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
+  for (int iev = 0; /*iev < 100*/ iev<mc_tree->GetEntries(); iev++)
   {
     ev->Reset();
     qev->ResetEvent();
