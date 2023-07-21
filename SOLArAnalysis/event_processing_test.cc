@@ -151,6 +151,7 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("cos_theta", &track->fCosTheta);
 
   for (int iev = 0; /*iev < 100*/ iev<mc_tree->GetEntries(); iev++)
+  //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
   {
     ev->Reset();
     qev->ResetEvent();
@@ -455,6 +456,17 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
          reco_dir.x(), reco_dir.y(), reco_dir.z());
   float cos_theta = true_dir.Dot(reco_dir);
   printf("cos θ = %g\n", true_dir.Dot(reco_dir));
+
+  float theta = 1000;
+  
+  if (cos_theta < -1 || cos_theta > 1) {
+        printf("cos_theta is outside the interval [-1,1]\n");
+  }
+  else
+  {
+    float theta_rad = std::acos(cos_theta);
+    theta = theta_rad * 180 / M_PI;
+  }
 
   if (track_reco)
   {
