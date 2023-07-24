@@ -63,11 +63,11 @@ void SLArQEventAnalysis::DrawProjection(SLArQEventReadout* qevent, const TVector
   g_dir_rec.SetLineColor(fLine->GetLineColor()); 
   g_dir_rec.SetLineStyle(fLine->GetLineStyle()); 
 
-  //printf("reconstructed direction: %g + (%g) x \n", 
-      //fLine->GetParameter(0), fLine->GetParameter(1)); 
-  //printf("reconstructed direction: (%g, %g) -- (%g, %g)\n", 
-      //g_dir_rec.GetX()[0], g_dir_rec.GetY()[0], 
-      //g_dir_rec.GetX()[1], g_dir_rec.GetY()[1]);
+  printf("reconstructed direction: %g + (%g) x \n", 
+      fLine->GetParameter(0), fLine->GetParameter(1)); 
+  printf("reconstructed direction: (%g, %g) -- (%g, %g)\n", 
+      g_dir_rec.GetX()[0], g_dir_rec.GetY()[0], 
+      g_dir_rec.GetX()[1], g_dir_rec.GetY()[1]);
 
   g_dir_rec.DrawClone("l");
 }
@@ -77,8 +77,9 @@ cluster_projection_info_t SLArQEventAnalysis::ProcessProjection(const TString& p
   // read axes from the projection string 
   std::vector<TVector3> axesList;
   std::vector<int> axesIndexes;
+  std::vector<TString> axesLabels; 
 
-  read_and_fill_axis(projection, &axesList, &axesIndexes); 
+  read_and_fill_axis(projection, &axesList, &axesIndexes, &axesLabels); 
 
   auto  hn = qevent->GetMaxClusterHn(); 
   
@@ -96,6 +97,8 @@ cluster_projection_info_t SLArQEventAnalysis::ProcessProjection(const TString& p
   proj_info.fAxis[0] = axesList.at(0); 
   proj_info.fAxisIdx[1] = axesIndexes.at(1); 
   proj_info.fAxisIdx[0] = axesIndexes.at(0); 
+  proj_info.fAxisLabel[0] = axesLabels.at(0); 
+  proj_info.fAxisLabel[1] = axesLabels.at(1); 
   
   // scan cluster projection to estimate the event direction 
   scan_cluster_proj(h2, vtx_bin_x, vtx_bin_y, proj_info); 
@@ -139,11 +142,11 @@ cluster_projection_info_t SLArQEventAnalysis::ProcessProjection(const TString& p
   float fit_range[2] = {0}; 
   if (proj_info.fDirX == 1) {
     fit_range[0] = local_vtx_x; 
-    fit_range[1] = fit_range[0] + 15;
+    fit_range[1] = fit_range[0] + 10;
   }
   else if (proj_info.fDirX == -1) {
     fit_range[1] = local_vtx_x; 
-    fit_range[0] = fit_range[1] - 15; 
+    fit_range[0] = fit_range[1] - 10; 
   } 
   else {
     printf("WARNING: fDirX not set properly\n");
@@ -172,7 +175,7 @@ cluster_projection_info_t SLArQEventAnalysis::ProcessProjection(const TString& p
   return proj_info; 
 }
 
-void SLArQEventAnalysis::read_and_fill_axis(const TString& projection, std::vector<TVector3>* axis_vec, std::vector<int>* axis_idx) 
+void SLArQEventAnalysis::read_and_fill_axis(const TString& projection, std::vector<TVector3>* axis_vec, std::vector<int>* axis_idx, std::vector<TString>* axis_lbl) 
 {
   auto strArray = projection.Tokenize(":");
   if (strArray->GetEntries() != 2) {
@@ -203,6 +206,8 @@ void SLArQEventAnalysis::read_and_fill_axis(const TString& projection, std::vect
       axis_vec->push_back(TVector3(0, 0, 1));
       axis_idx->push_back(2);
     }
+
+    axis_lbl->push_back( axis_str ); 
   }
 
   return;

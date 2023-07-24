@@ -150,7 +150,7 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
 
-  for (int iev = 0; /*iev < 100*/ iev<mc_tree->GetEntries(); iev++)
+  for (int iev = 0; iev < 200 /*iev<mc_tree->GetEntries()*/; iev++)
   //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
   {
     ev->Reset();
@@ -305,6 +305,7 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
 
   std::vector<TString> projectionsList = {"y:x", "y:z", "z:x", "x:y", "z:y", "x:z"};
   std::vector<slarq::cluster_projection_info_t> projectionInfo;
+  std::vector<slarq::cluster_projection_info_t> projectionGold; 
   std::vector<TCanvas *> canvas;
 
   int iproj = 0;
@@ -393,33 +394,50 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
 
         axis_set[proj_info.fAxisIdx[0]] = true;
         axis_set[proj_info.fAxisIdx[1]] = true;
+
+        projectionGold.push_back( proj_info ); 
       }
       else
       {
         float rescaling = 1.0;
         if (axis_set[proj_info.fAxisIdx[0]])
         {
-          rescaling = fabs(reco_dir[proj_info.fAxisIdx[0]]);
+          const auto proj_first = projectionGold.front(); 
+          if (proj_info.fAxisIdx[0] == proj_first.fAxisIdx[0]) 
+          {
+            printf("second set: case 0\n");
+            float tmp = reco_dir[ proj_first.fAxisIdx[0] ] / coord[proj_info.fAxisIdx[0]];
 
-          float y_local_tmp = coord[proj_info.fAxisIdx[0]] * rescaling;
-          float x_local_tmp = y_local_tmp / coord[proj_info.fAxisIdx[0]];
+            reco_dir[proj_info.fAxisIdx[1]] = fabs(tmp) * proj_info.fDirX;
+          }
+          else if (proj_info.fAxisIdx[0] == proj_first.fAxisIdx[1])
+          {
+            printf("second set: case 1\n");
+            float tmp = 1.0 / coord[proj_info.fAxisIdx[0]];
 
-          reco_dir[proj_info.fAxisIdx[1]] = x_local_tmp;
-          reco_dir[proj_info.fAxisIdx[0]] = y_local_tmp;
-
+            reco_dir[proj_info.fAxisIdx[1]] = fabs(tmp) * proj_info.fDirX;
+          }
           axis_set[proj_info.fAxisIdx[1]] = true;
+
+          projectionGold.push_back( proj_info ); 
         }
         else if (axis_set[proj_info.fAxisIdx[1]])
         {
-          rescaling = fabs(reco_dir[proj_info.fAxisIdx[1]]);
+          const auto proj_first = projectionGold.front(); 
+          if (proj_info.fAxisIdx[1] == proj_first.fAxisIdx[1]) {
+            printf("second set: case 2\n");
+            rescaling = 1.0;
 
-          float x_local_tmp = coord[proj_info.fAxisIdx[1]] * rescaling;
-          float y_local_tmp = coord[proj_info.fAxisIdx[0]] * x_local_tmp;
-
-          reco_dir[proj_info.fAxisIdx[1]] = x_local_tmp;
-          reco_dir[proj_info.fAxisIdx[0]] = y_local_tmp;
-
+            reco_dir[proj_info.fAxisIdx[0]] = coord[proj_info.fAxisIdx[0]];
+          } 
+          else if (proj_info.fAxisIdx[1] == proj_first.fAxisIdx[0]) 
+          { 
+            printf("second set: case 3\n");
+            reco_dir[proj_info.fAxisIdx[0]] = reco_dir[proj_first.fAxisIdx[0]] * coord[proj_info.fAxisIdx[0]];
+          }
           axis_set[proj_info.fAxisIdx[0]] = true;
+
+          projectionGold.push_back( proj_info ); 
         }
 
         // printf("rescaling factor: %g\n", rescaling);
@@ -438,13 +456,17 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
 
       if (do_draw)
       {
-        printf("projection %i : %i\n", proj_info.fAxisIdx[0], proj_info.fAxisIdx[1]);
+        printf("projection %s : %s (%i : %i)\n", 
+            proj_info.fAxisLabel[0].Data(), proj_info.fAxisLabel[1].Data(),
+            proj_info.fAxisIdx[0], proj_info.fAxisIdx[1]);
         printf("\t- dirX: %i - dirY: %i\n", proj_info.fDirX, proj_info.fDirY);
         printf("\t- chgX0: %g - chgX1: %g\n", proj_info.fChargeX[0], proj_info.fChargeX[1]);
-        // printf("\t- lenX0: %g - lenX1: %g\n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
-        // printf("\t- hitsX0: %g - hitsX1: %g\n", proj_info.fNHitsX[0], proj_info.fNHitsX[1]);
-        // printf("\t- fit: %.2f + (%g)*x\n", proj_info.fPar0, proj_info.fPar1);
+        printf("\t- lenX0: %g - lenX1: %g\n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
+        printf("\t- hitsX0: %g - hitsX1: %g\n", proj_info.fNHitsX[0], proj_info.fNHitsX[1]);
+        printf("\t- fit: %.2f + (%g)*x\n", proj_info.fPar0, proj_info.fPar1);
         printf("\t- coord: (%g, %g, %g)\n", coord[0], coord[1], coord[2]);
+        printf("\t- reco_dir: %g, %g, %g\n", 
+            reco_dir.x(), reco_dir.y(), reco_dir.z());
       }
     }
 

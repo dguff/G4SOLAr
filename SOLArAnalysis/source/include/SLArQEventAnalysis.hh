@@ -33,6 +33,8 @@ struct cluster_projection_info_t {
   float fNHitsY [2] = {0}; //!< cluster hits below[0] and above[1] of the vertex  
   TVector3 fAxis[2] = {TVector3()}; //!< projection local x[0] and y[1] axes
   int   fAxisIdx[2] = {0}; //!< projection local axes indices 
+  TString fAxisLabel[2] = {"", ""};
+
   inline cluster_projection_info_t() {}
 
   inline void set_dir_xy(EClusterDirMethod kMethod = kNHits) {
@@ -68,7 +70,7 @@ class SLArQEventAnalysis : public TObject {
   protected:
     const SLArCfgAnode* fCfgAnode; 
     TF1* fLine; 
-    void read_and_fill_axis(const TString& axis_str, std::vector<TVector3>* axis_vec, std::vector<int>* axis_idx);
+    void read_and_fill_axis(const TString& axis_str, std::vector<TVector3>* axis_vec, std::vector<int>* axis_idx, std::vector<TString>* axis_lbl);
     int  scan_cluster_proj(const TH2* h2, const int ix_vtx, const int iy_vtx, cluster_projection_info_t& proj_info); 
     void init_line_pars(const TGraphErrors& g, const float* fit_range); 
 
