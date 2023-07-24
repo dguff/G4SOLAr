@@ -37,7 +37,7 @@ const double pixel_pitch = 4.0;               // pixel pith in mm
 const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
 const double v_drift = 1.582e-3;
 
-const double noise_rms = 0;
+const double noise_rms = 900;
 
 struct solar_cluster_track
 {
@@ -458,7 +458,7 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
   printf("cos θ = %g\n", true_dir.Dot(reco_dir));
 
   float theta = 1000;
-  
+
   if (cos_theta < -1 || cos_theta > 1) {
         printf("cos_theta is outside the interval [-1,1]\n");
   }

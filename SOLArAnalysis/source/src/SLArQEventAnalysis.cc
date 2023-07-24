@@ -221,14 +221,15 @@ int SLArQEventAnalysis::scan_cluster_proj(
   const float bin_w_x = h2->GetXaxis()->GetBinWidth(1); 
   const float bin_w_y = h2->GetYaxis()->GetBinWidth(1); 
 
-  int N_y = std::floor( 0.5*range_y / bin_w_y ); 
-  int N_x = std::floor( 0.5*range_x / bin_w_x ); 
+  int N_y = std::floor(/*0.5* */range_y / bin_w_y ); 
+  int N_x = std::floor(/*0.5* */range_x / bin_w_x ); 
 
   //printf("N_y = %i; N_x = %i\n", N_y, N_x);
 
   int non_void_bin_hzt_axis = 0; 
   for (int ix = 1; ix < h2->GetNbinsX() + 1; ix++)
   {
+    bool same_ix = false;
     for (int iy = std::max(1, iy_vtx-N_y); 
          iy <= std::min(iy_vtx + N_y, h2->GetNbinsY()); iy++)
     {
@@ -237,7 +238,10 @@ int SLArQEventAnalysis::scan_cluster_proj(
         if (h2->GetBinContent(ix, iy) > 0) {
           proj_info.fChargeX[0] += h2->GetBinContent(ix, iy);
           proj_info.fNHitsX[0] += 1;
-          proj_info.fLengthX[0] += bin_w_x;
+          if (same_ix == false){
+            proj_info.fLengthX[0] += bin_w_x;
+            same_ix = true;
+          }
           //printf("adding bin %i,%i to LEFT\n", ix, iy);
         }
       }
@@ -246,12 +250,16 @@ int SLArQEventAnalysis::scan_cluster_proj(
         if (h2->GetBinContent(ix, iy) > 0) {
           proj_info.fChargeX[1] += h2->GetBinContent(ix, iy);
           proj_info.fNHitsX [1] += 1;
-          proj_info.fLengthX[1] += bin_w_x;
+          if (same_ix == false){
+            proj_info.fLengthX[1] += bin_w_x;
+            same_ix = true;
+          }
           //printf("adding bin %i,%i to RIGHT\n", ix, iy);
         }
       }
     }
   }
+  printf("fLengthX: %f, %f \n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
 
   for (int ix = std::max(1, ix_vtx-N_x);
        ix <= std::min(ix_vtx+N_x, h2->GetNbinsX()); ix++)
