@@ -34,7 +34,7 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     fpTrackingManager->SetStoreTrajectory(true);
   }
   else {
-    fpTrackingManager->SetStoreTrajectory(true);
+    fpTrackingManager->SetStoreTrajectory(false);
     //This user track information is only relevant to the photons
     fpTrackingManager->SetUserTrackInformation(
         new SLArUserPhotonTrackInformation);
