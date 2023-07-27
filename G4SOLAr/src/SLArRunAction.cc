@@ -52,6 +52,8 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   fElectronDrift->ComputeProperties(); 
   fElectronDrift->PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+  
+  //G4RunManager::GetRunManager()->SetNumberOfEventsToBeProcessed(96693 /*hardcoded*/);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
