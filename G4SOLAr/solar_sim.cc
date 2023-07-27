@@ -93,7 +93,7 @@ int main(int argc,char** argv)
   static struct option long_opts[12] = 
   {
     {"macro", required_argument, 0, 'm'}, 
-    {"output", required_argument, 0, 'u'}, 
+    {"output", required_argument, 0, 'o'}, 
     {"output_dir", required_argument, 0, 'd'}, 
     {"session", required_argument, 0, 'u'}, 
     {"threads", required_argument, 0, 't'}, 
