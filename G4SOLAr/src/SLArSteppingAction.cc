@@ -174,7 +174,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
         // nuclear channel
         const G4int kMax = 16;  
-        const G4String convert[] = {"0","","2 ","3 ","4 ","5 ","6 ","7 ","8 ","9 ",
+        const G4String convert[] = {"0","1","2 ","3 ","4 ","5 ","6 ","7 ","8 ","9 ",
           "10 ","11 ","12 ","13 ","14 ","15 ","16 "};
         std::map<G4ParticleDefinition*,G4int>::iterator ip;               
         for (ip = particle_counter.begin(); ip != particle_counter.end(); ip++) {

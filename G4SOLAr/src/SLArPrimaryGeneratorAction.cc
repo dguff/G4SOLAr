@@ -40,6 +40,7 @@
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
+#include "SLArGenieGeneratorAction.hh"
 
 #include "Randomize.hh"
 
@@ -72,7 +73,8 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
   fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
-  fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
+  fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction();
+  fGeneratorActions[kGenie] = new SLArGenieGeneratorAction();
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
@@ -205,6 +207,14 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         gen = ext_gen;
       }        
       break;
+    
+    case kGenie: 
+      {
+        SLArGenieGeneratorAction* genie_gen = 
+          (SLArGenieGeneratorAction*)fGeneratorActions[kGenie];
+        gen = genie_gen; 
+      }
+      break;
 
     default:
       {
@@ -292,6 +302,15 @@ void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
     (SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
   gen->SetVertexGenerator(fBoxGenerator);
   gen->SourceExternalConfig(external_cfg); 
+  return; 
+}
+
+void SLArPrimaryGeneratorAction::SetGenieInput(G4String genie_input) {
+  fGenieCfg = genie_input;
+
+  SLArGenieGeneratorAction* genie_gen = 
+      (SLArGenieGeneratorAction*)fGeneratorActions[kGenie];
+  genie_gen->load_tree(genie_input.data());
   return; 
 }
 

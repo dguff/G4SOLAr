@@ -44,6 +44,7 @@ class SLArPrimaryGeneratorMessenger;
 class SLArPGunGeneratorAction; 
 class SLArBackgroundGeneratorAction;
 class SLArExternalGeneratorAction;
+class SLArNuInteractionGeneratorAction;
 
 namespace bxdecay0_g4 {
   class SLArDecay0GeneratorAction;
@@ -54,7 +55,7 @@ namespace marley {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4};
+enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4, kGenie=5};
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
@@ -81,7 +82,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetBoxName(G4String vol); 
     void SetBackgroundConf(G4String background_conf); 
     void SetExternalConf(G4String externals_conf); 
-    void SetMarleyConf(G4String marley_conf); 
+    void SetMarleyConf(G4String marley_conf);
+    void SetGenieInput(G4String genie_input);
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
 
@@ -100,6 +102,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     EDirectionMode fDirectionMode; 
     G4String       fVolumeName;
     G4String       fMarleyCfg; 
+    G4String       fGenieCfg;
 
     EGenerator     fGeneratorEnum;
     G4ThreeVector  fGunPosition;

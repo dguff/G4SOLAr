@@ -44,7 +44,8 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithADouble*                 fCmdBulkVolFraction;
     G4UIcmdWithAString*                 fCmdMarley;
     G4UIcmdWithAString*                 fCmdBackgoundConf; 
-    G4UIcmdWithAString*                 fCmdExternalConf; 
+    G4UIcmdWithAString*                 fCmdExternalConf;
+    G4UIcmdWithAString*                 fCmdGenieInput;
 
     G4UIcmdWithABool*                   fCmdTracePhotons;
     G4UIcmdWithABool*                   fCmdDriftElectrons;

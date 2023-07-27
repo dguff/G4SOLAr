@@ -34,7 +34,7 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen");
+  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen Genie");
 
   fCmdParticle= 
     new G4UIcmdWithAString("/SLAr/gen/particle", this);
@@ -73,7 +73,13 @@ SLArPrimaryGeneratorMessenger::
     new G4UIcmdWithAString("/SLAr/gen/externalconf", this); 
   fCmdExternalConf->SetGuidance("Set external backgound configuration file"); 
   fCmdExternalConf->SetGuidance("(configuration file path)"); 
-  fCmdExternalConf->SetParameterName("external_background_config", true, false); 
+  fCmdExternalConf->SetParameterName("external_background_config", true, false);
+  
+  fCmdGenieInput= 
+    new G4UIcmdWithAString("/SLAr/gen/genieinput", this); 
+  fCmdGenieInput->SetGuidance("Set GENIE input file"); 
+  fCmdGenieInput->SetGuidance("(input file path)"); 
+  fCmdGenieInput->SetParameterName("genie_input", true, false);
 
 
   fCmdDirectionMode = 
@@ -124,6 +130,7 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdBulkVolFraction;
   delete fCmdMarley;
   delete fCmdBackgoundConf;
+  delete fCmdGenieInput;
   delete fCmdGunPosition;
   delete fCmdGunDirection;
   delete fCmdGunDir;
@@ -145,6 +152,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
     else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
+    else if (G4StrUtil::contains(strMode, "Genie")) gen = kGenie;
 
     fSLArAction->SetGenerator(gen);
   } 
@@ -168,6 +176,9 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   }
   else if (command == fCmdExternalConf) {
     fSLArAction->SetExternalConf(newValue); 
+  }
+  else if (command == fCmdGenieInput) {
+    fSLArAction->SetGenieInput(newValue); 
   }
   else if (command == fCmdDirectionMode) {
     if (G4StrUtil::contains(newValue, "fixed")) {

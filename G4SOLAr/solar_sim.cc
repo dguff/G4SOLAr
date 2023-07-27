@@ -70,6 +70,7 @@ namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
     fprintf(stderr, " solar_sim\t[-m/--macro macro_file]]\n");
+    fprintf(stderr, " \t\t[-i/--input input_file_name]\n");
     fprintf(stderr, " \t\t[-o/--output output_file_name]\n");
     fprintf(stderr, " \t\t[-d/--output_dir output_dir]\n");
     fprintf(stderr, " \t\t[-u/--session session]\n");
@@ -87,6 +88,7 @@ int main(int argc,char** argv)
 
   G4String macro;
   G4String session;
+  G4String input = "";
   G4String output = ""; 
   G4String output_dir = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
@@ -97,11 +99,12 @@ int main(int argc,char** argv)
 #endif
 
   G4long myseed = 345354;
-  const char* short_opts = "m:o:d:u:t:r:g:p:h";
-  static struct option long_opts[10] = 
+  const char* short_opts = "m:i:o:d:u:t:r:g:p:h";
+  static struct option long_opts[11] = 
   {
-    {"macro", required_argument, 0, 'm'}, 
-    {"output", required_argument, 0, 'u'}, 
+    {"macro", required_argument, 0, 'm'},
+    {"input", required_argument, 0, 'i'},
+    {"output", required_argument, 0, 'o'}, 
     {"output_dir", required_argument, 0, 'd'}, 
     {"session", required_argument, 0, 'u'}, 
     {"threads", required_argument, 0, 't'}, 
@@ -112,7 +115,7 @@ int main(int argc,char** argv)
     {nullptr, no_argument, nullptr, 0}
   };
 
-  int c, option_index; 
+  int c, option_index;
 
   while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
     switch(c) {
@@ -120,6 +123,11 @@ int main(int argc,char** argv)
       {
         macro = optarg;
         printf("solar_sim config macro: %s\n", macro.c_str());
+        break;
+      };
+      case 'i' : {
+        input = optarg;
+        printf("solar_sim output file: %s\n", input.c_str());
         break;
       };
       case 'o' : {
@@ -211,7 +219,7 @@ int main(int argc,char** argv)
   // Detector construction
   printf("Creating Detector Construction...\n");
   auto detector = new SLArDetectorConstruction(geometry_file, material_file);
-  runManager-> SetUserInitialization(detector);
+  runManager->SetUserInitialization(detector);
 #ifdef SLAR_EXTERNAL
 #ifndef SLAR_EXTERNAL_PARTICLE
   printf("solar-sim WARNING: target built with SLAR_EXTERNAL flag but external particle is not specified"); 
@@ -257,6 +265,10 @@ int main(int argc,char** argv)
 
   if ( macro.size() ) {
     // Batch mode
+    if (!input.empty()) {
+      G4String command = "/SLAr/manager/SetInputName "; 
+      UImanager->ApplyCommand(command+input); 
+    }
     if (!output.empty()) {
       G4String command = "/SLAr/manager/SetOutputName "; 
       UImanager->ApplyCommand(command+output); 
