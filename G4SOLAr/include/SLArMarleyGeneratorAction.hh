@@ -43,6 +43,7 @@ class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
     virtual void GeneratePrimaries(G4Event*) override;
     void SetNuDirection(G4ThreeVector dir) {marley_nu_direction = dir;} 
     G4ThreeVector GetNuDirection() {return marley_nu_direction;}
+    inline G4double GetFluxAveragedTotalXSec() const {return marley_generator_.flux_averaged_total_xs();}
 
   protected:
     // MARLEY event generator object
