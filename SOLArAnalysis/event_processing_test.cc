@@ -36,8 +36,10 @@ using namespace slarq;
 const double pixel_pitch = 4.0;               // pixel pith in mm
 const double larpix_integration_time = 600.0; // lartpix integration time (in ns)
 const double v_drift = 1.582e-3;
+const double el_lifetime = 1e7;
 
 const double noise_rms = 900;
+const bool is_lifetime_corrected = true;
 
 struct solar_cluster_track
 {
@@ -138,7 +140,7 @@ void process_file(const TString file_path, bool single_shot = false)
   // where to store the result of the analysis
   TString output_file_name = file_path;
   output_file_name.Resize(output_file_name.Index(".root"));
-  output_file_name += Form("_noise_%d_processed.root", static_cast<int>(noise_rms));
+  output_file_name += Form("_noise_%d_ltcorr_%i_processed.root", static_cast<int>(noise_rms), is_lifetime_corrected);
   TFile *file_output = new TFile(output_file_name, "recreate");
 
   TTree *output_tree = new TTree("processed_events", "SoLAr processed events");
@@ -150,7 +152,7 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
 
-  for (int iev = 0; iev < 200 /*iev<mc_tree->GetEntries()*/; iev++)
+  for (int iev = 0; /*iev < 200*/ iev<mc_tree->GetEntries(); iev++)
   //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
   {
     ev->Reset();
@@ -263,9 +265,10 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
 
     while ((ibin = itr->Next()) >= 0)
     {
-      float content = xyz_hits->GetBinContent(ibin);
+      int id_bin[3] = {0};
+      float content = xyz_hits->GetBinContent(ibin, id_bin);
       content += gRandom->Gaus(0, noise_rms);
-      xyz_hits->SetBinContent(ibin, content);
+      xyz_hits->SetBinContent(ibin, content * corr);
     }
   }
 

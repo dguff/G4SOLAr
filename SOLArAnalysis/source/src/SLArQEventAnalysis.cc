@@ -264,7 +264,7 @@ int SLArQEventAnalysis::scan_cluster_proj(
       }
     }
   }
-  printf("fLengthX: %f, %f \n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
+  //printf("fLengthX: %f, %f \n", proj_info.fLengthX[0], proj_info.fLengthX[1]);
 
   for (int ix = std::max(1, ix_vtx-N_x);
        ix <= std::min(ix_vtx+N_x, h2->GetNbinsX()); ix++)
