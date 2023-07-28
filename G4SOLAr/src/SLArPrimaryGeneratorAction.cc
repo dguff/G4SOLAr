@@ -40,6 +40,7 @@
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
+#include "SLArGENIEGeneratorAction.hh"//--JM
 
 #include "Randomize.hh"
 
@@ -58,7 +59,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(5, nullptr),
+   fGeneratorActions(6, nullptr),//--JM Change 5->6
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -73,6 +74,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
   fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
+  fGeneratorActions[kGENIE] = new SLArGENIEGeneratorAction();//--JM
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
@@ -205,6 +207,14 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         gen = ext_gen;
       }        
       break;
+
+    case kGENIE:
+      {
+	SLArGENIEGeneratorAction* genie_gen = 
+	  (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
+	gen = genie_gen;
+      }        
+      break;//--JM
 
     default:
       {

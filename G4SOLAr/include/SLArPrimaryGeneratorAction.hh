@@ -44,6 +44,7 @@ class SLArPrimaryGeneratorMessenger;
 class SLArPGunGeneratorAction; 
 class SLArBackgroundGeneratorAction;
 class SLArExternalGeneratorAction;
+class SLArGENIEGeneratorAction;//--JM
 
 namespace bxdecay0_g4 {
   class SLArDecay0GeneratorAction;
@@ -54,7 +55,8 @@ namespace marley {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4};
+enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4,
+		  kGENIE=5};//--JM Add GENIE
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction

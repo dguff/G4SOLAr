@@ -34,7 +34,7 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen");
+  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen GENIE");//--JM Add GENIE
 
   fCmdParticle= 
     new G4UIcmdWithAString("/SLAr/gen/particle", this);
@@ -145,6 +145,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
     else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
+    else if (G4StrUtil::contains(strMode, "GENIE")) gen = kGENIE; //--JM
 
     fSLArAction->SetGenerator(gen);
   } 
