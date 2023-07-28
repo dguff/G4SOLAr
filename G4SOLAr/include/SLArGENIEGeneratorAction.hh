@@ -2,6 +2,7 @@
 #define SLARGENIEGENERATORACTION_HH
 
 #include <iostream>
+#include <string>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -13,7 +14,7 @@
 #include "SLArPGunGeneratorAction.hh"
 
 struct GenieEvent{
-  long int EvtNum;
+  Long64_t EvtNum;
   int nPart;
   int pdg[100];
   double p4[100][4];
@@ -25,6 +26,10 @@ struct GenieEvent{
 
 class SLArGENIEGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+protected:
+  TFile m_gfile {};
+  TTree *m_gtree {};
+  GenieEvent gVar;
 
 public:
   SLArGENIEGeneratorAction();
@@ -33,10 +38,6 @@ public:
 
   virtual void GeneratePrimaries(G4Event* evnt);
 
-
-protected:
-  const G4String m_gfile;
-  //  TTree *m_gTree =0;
 
 };
 
