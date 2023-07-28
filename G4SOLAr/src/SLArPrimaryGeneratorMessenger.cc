@@ -17,6 +17,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -117,6 +118,12 @@ SLArPrimaryGeneratorMessenger::
   fCmdDriftElectrons->SetGuidance("Set/unset drift and collection of ionization electrons"); 
   fCmdDriftElectrons->SetParameterName("do_trace", false, true); 
   fCmdDriftElectrons->SetDefaultValue(true);
+  
+  fCmdGenieSetEventSeed= 
+    new G4UIcmdWithAnInteger("/SLAr/gen/SetGenieEventSeed", this); 
+  fCmdGenieSetEventSeed->SetGuidance("Set a given EventID as the seed one"); 
+  fCmdGenieSetEventSeed->SetParameterName("event_seed", false);
+  fCmdGenieSetEventSeed->SetDefaultValue(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -136,6 +143,7 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdGunDir;
   delete fCmdTracePhotons; 
   delete fCmdDriftElectrons;
+  delete fCmdGenieSetEventSeed;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -213,6 +221,10 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdDriftElectrons) {
     bool do_drift = fCmdDriftElectrons->GetNewBoolValue(newValue); 
     fSLArAction->SetDriftElectrons(do_drift); 
+  }
+  else if (command == fCmdGenieSetEventSeed) {
+  	G4int Seed = fCmdGenieSetEventSeed->GetNewIntValue(newValue);
+    fSLArAction->SetGenieEventSeed(Seed); 
   }
 
 

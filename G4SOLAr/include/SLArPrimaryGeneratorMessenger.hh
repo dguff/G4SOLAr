@@ -49,6 +49,7 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
 
     G4UIcmdWithABool*                   fCmdTracePhotons;
     G4UIcmdWithABool*                   fCmdDriftElectrons;
+    G4UIcmdWithAnInteger*               fCmdGenieSetEventSeed;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

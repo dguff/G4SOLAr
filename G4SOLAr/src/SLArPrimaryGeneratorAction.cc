@@ -59,7 +59,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(5, nullptr),
+   fGeneratorActions(6, nullptr),
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -212,7 +212,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       {
         SLArGenieGeneratorAction* genie_gen = 
           (SLArGenieGeneratorAction*)fGeneratorActions[kGenie];
-        gen = genie_gen; 
+        gen = genie_gen;
+        // set event seed
+        SetFirstEventID(anEvent, fGenieEventSeed);
       }
       break;
 
@@ -310,10 +312,28 @@ void SLArPrimaryGeneratorAction::SetGenieInput(G4String genie_input) {
 
   SLArGenieGeneratorAction* genie_gen = 
       (SLArGenieGeneratorAction*)fGeneratorActions[kGenie];
+      
+  
   genie_gen->load_tree(genie_input.data());
   return; 
 }
 
+void SLArPrimaryGeneratorAction::SetFirstEventID(G4Event* anEvent, G4int event_id) {
+  
+  if (anEvent->GetEventID() == 0 ) {
+  	anEvent->SetEventID(fGenieEventSeed);
+  	std::cout << "1st event has ID =" << anEvent->GetEventID() << std::endl;
+  } else {
+  	std::cout << "1st event has ID = 0" << std::endl; 
+  }
+  
+  return; 
+}
+
+void SLArPrimaryGeneratorAction::SetGenieEventSeed(G4int event_id) {
+  fGenieEventSeed = event_id; 
+  return; 
+}
 
 
 void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)

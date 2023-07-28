@@ -84,6 +84,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetExternalConf(G4String externals_conf); 
     void SetMarleyConf(G4String marley_conf);
     void SetGenieInput(G4String genie_input);
+    void SetGenieEventSeed(G4int event_id);
+    void SetFirstEventID(G4Event* anEvent, G4int event_id);
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
 
@@ -103,6 +105,7 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4String       fVolumeName;
     G4String       fMarleyCfg; 
     G4String       fGenieCfg;
+    G4int          fGenieEventSeed;
 
     EGenerator     fGeneratorEnum;
     G4ThreeVector  fGunPosition;
