@@ -7,6 +7,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArDetectorConstruction.hh"
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArMarleyGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"
 
@@ -128,6 +129,10 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   auto SLArGen = (SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
   if (!SLArGen->GetMarleyConf().empty()) {
     SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+
+    auto marley_gen = static_cast<marley::SLArMarleyGeneratorAction*>( SLArGen->GetGenerator(kMarley) );
+    SLArAnaMgr->WriteVariable("avg_x_sec", marley_gen->GetFluxAveragedTotalXSec()); 
+
   }
 
   SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 

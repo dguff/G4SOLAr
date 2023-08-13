@@ -71,6 +71,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     inline void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
     inline void SetDriftElectrons(bool do_drift) {fDoDriftElectrons = do_drift;}
 
+    inline G4VUserPrimaryGeneratorAction* GetGenerator(const EGenerator kGen) 
+      const {return fGeneratorActions[kGen];}; 
     G4String GetMarleyConf() {return fMarleyCfg;}
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
