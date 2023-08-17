@@ -3,20 +3,24 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "TFile.h"
 #include "TTree.h"
 
 #include "G4Event.hh"
+#include "G4ThreeVector.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
 
-#include "SLArPGunGeneratorAction.hh"
+
 
 struct GenieEvent{
   Long64_t EvtNum;
   int nPart;
   int pdg[100];
+  int status[100];
   double p4[100][4];
   double x4[100][4];
   double vtx[4];
