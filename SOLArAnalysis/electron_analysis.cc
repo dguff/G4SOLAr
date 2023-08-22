@@ -35,8 +35,8 @@ Double_t Line(Double_t *x, Double_t *par)
 
 Double_t Calib_Line(Double_t *x)
 {
-  double m = 27296.6;
-  double q = -309.885;
+  double m = 3.66331e-05;
+  double q = 0.011406;
   return m * x[0] + q;
 }
 
@@ -143,7 +143,7 @@ void electron_analysis()
 
   TCanvas *C_max_tot_charge = new TCanvas("C_max_tot_charge", "Max tot charge", 0, 0, 1000, 600);
   TGraph *g_max_charge = new TGraph();
-  TGraph *g_charge_calib = new TGraph(); DA FINIRE
+  TGraph *g_charge_calib = new TGraph();
   TGraph *g_en_res = new TGraph();
   TF1 *fGauss = new TF1("fGauss", "gaus", 0, 500e3);
   TF1 *FCrystalBall = new TF1("FCrystalBall", CrystalBall, 0, 500e3, 5);
@@ -157,6 +157,7 @@ void electron_analysis()
     FCrystalBall->SetParameters(1, 1, h->GetRMS(), h->GetMean(), 300);
     h->Fit(FCrystalBall, "Q");
     g_max_charge->AddPoint(std::atof(energy_file[i]), FCrystalBall->GetParameter(3));
+    g_charge_calib->AddPoint(FCrystalBall->GetParameter(3), std::atof(energy_file[i]));
 
     // g_en_res->AddPoint(std::atof(energy_file[i]), FCrystalBall->GetParameter(2)/FCrystalBall->GetParameter(3));
     double x_min_fwhm = FCrystalBall->GetX(0.5 * FCrystalBall->Eval(FCrystalBall->GetParameter(3)), 0, FCrystalBall->GetParameter(3));
@@ -167,7 +168,7 @@ void electron_analysis()
     // g_max_charge->AddPoint(std::atof(energy_file[i]),fGauss->GetParameter(1));
     // g_en_res->AddPoint(std::atof(energy_file[i]), fGauss->GetParameter(2)/fGauss->GetParameter(1));
     // auto I = fGauss->GetParameter(0);
-    //  Opzioni grafiche
+    // Opzioni grafiche
 
     // Cambiare colore fit
     FCrystalBall->SetLineColor(color_vector.at(i));
@@ -183,6 +184,9 @@ void electron_analysis()
   g_en_res->SetTitle("Energy resolution");
   g_en_res->SetMarkerStyle(20);
   g_en_res->Draw("AWPL"); // A disegna gli assi, PL come rappresenta i punti
+
+  printf("Fit energy vs mean tot charge\n");
+  g_charge_calib->Fit(fLine);
 
   TCanvas *C_max_charge_maxcl = new TCanvas("C_max_charge_maxcl", "Max cluster charge", 0, 0, 1000, 600);
   TGraph *g_max_charge_maxcl = new TGraph();
@@ -220,21 +224,157 @@ void electron_analysis()
   g_en_res_maxcl->Draw("AWPL"); // A disegna gli assi, PL come rappresenta i punti
 }
 
+
+
 void neutrino_analysis()
 {
+  // Create vectors for hist with different energy range
+  std::vector<TH1D *> cos_theta;
+  std::vector<TH1D *> theta;
+  std::vector<TH2D *> en_vs_cos_theta;
+
+
+  // Read data processed file
   TString file_path = "/Users/giulia/Tesi/Eventi/neutrini/b8_nue_es_iso_total_noise_900_processed.root";
 
   TFile *mc_file = new TFile(file_path.Data());
   TTree *mc_tree = (TTree *)mc_file->Get("processed_events");
 
+
+  // Create and define hist (without energy range)
   TH1D *h_qtot = new TH1D("h_qtot", "tot charge", 200, 0, 500e3);
-  TH1D *h_en = new TH1D("h_en", "energy", 200, 0, 500e3);
-  TH1D *h_cos_th = new TH1D("h_cos_th", "cos theta", 200, -1, 1);
-  TH1D *h_theta = new TH1D("h_theta", "theta", 200, 0, 180);
+  TH1D *h_en_reco = new TH1D("h_en_reco", "reconstructed energy", 200, 0, 30);
+  // TH2D *h_cos_vs_en = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
 
   mc_tree->Draw("tot_charge>>h_qtot", "", "goff");
-  // Aggiungere h_en
-  mc_tree->Draw("cos_theta>>h_cos_th", "", "goff");
-  mc_tree->Draw("acos(cos_theta)*180/3.14>>h_theta", "", "goff");
 
+  double m = 3.66331e-05;
+  double q0 = 0.011406;
+  TString draw_en_calib = Form("%f * tot_charge + %f", m, q0);
+
+  mc_tree->Draw(draw_en_calib + ">>h_en_reco", "", "goff");
+  // mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en", "", "goff");
+
+  
+  // Create and define hist (with threshold)
+  TH1D *h_qtot_th = new TH1D("h_qtot_th", "tot charge th", 200, 0, 500e3);
+  TH1D *h_en_reco_th = new TH1D("h_en_reco_th", "reconstructed energy th", 200, 0, 30);
+  //TH2D *h_cos_vs_en_th = new TH2D("h_cos_vs_en_th", "Energy vs cos theta th", 100, -1, 1, 100, 0, 30);
+
+  mc_tree->Draw("tot_charge>>h_qtot_th", draw_en_calib + ">5", "goff");
+  mc_tree->Draw(draw_en_calib + ">>h_en_reco_th", draw_en_calib + ">5", "goff");
+  mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en_th", draw_en_calib + ">5", "goff");
+
+
+  double q_en[5] = {0.2, 0.4, 0.6, 0.8, 1};
+  double prob_en[5] = {0,0,0,0,0};
+  h_en_reco_th->GetQuantiles(5, prob_en, q_en);
+  printf("Energie quantili: %f, %f, %f, %f, %f\n", prob_en[0],prob_en[1],prob_en[2],prob_en[3],prob_en[4]);
+
+
+  for (int i = 0; i < 5; i++)
+  {
+    // Define and create hist with energy range
+    TH1D *h_cos_th = new TH1D("h_cos_th", "cos theta", 200, -1, 1);
+    TH1D *h_theta = new TH1D("h_theta", "theta", 200, 0, 180);
+    TH2D *h_en_vs_cos_theta = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
+    
+    TString draw_en_quant_min = Form("%f", prob_en[i-1]);
+    TString draw_en_quant_max = Form("%f", prob_en[i]);
+
+    TString draw_en_section = "";
+
+    if (i==0) draw_en_section = draw_en_calib + " >5 && " + draw_en_calib + " < " + draw_en_quant_max;
+    else draw_en_section = draw_en_calib + " > " + draw_en_quant_min + " && " + draw_en_calib + " < " + draw_en_quant_max;
+    printf("%s\n", draw_en_section.Data());
+
+    mc_tree->Draw("cos_theta>>h_cos_th", draw_en_section, "goff");
+    mc_tree->Draw("acos(cos_theta)*180/3.14>>h_theta", draw_en_section, "goff");
+    mc_tree->Draw(draw_en_calib + ":cos_theta>>h_en_vs_cos_theta", draw_en_section, "goff");
+
+    // Push these hists in their vectors
+    cos_theta.push_back(h_cos_th);
+    theta.push_back(h_theta);
+    en_vs_cos_theta.push_back(h_en_vs_cos_theta);
+  }
+
+
+  // Canva without threshold 
+  TCanvas *C_tot_charge = new TCanvas("C_tot_charge", "Total charge", 0, 0, 1000, 600);
+  TH1D *h1 = h_qtot;
+  h1->SetLineColor(kBlue);
+  h1->Draw();
+
+  TCanvas *C_en_reco = new TCanvas("C_en_reco", "Reconstructed energy", 0, 0, 1000, 600);
+  TH1D *h0 = h_en_reco;
+  h0->SetLineColor(kBlue);
+  h0->Draw();
+
+  // TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
+  // TH2D *h2 = h_cos_vs_en;
+  // // h2->SetFillColor(kBlue);
+  // h2->Draw("colz");
+
+  // Canva with threshold
+  TCanvas *C_tot_charge_th = new TCanvas("C_tot_charge_th", "Total charge th", 0, 0, 1000, 600);
+  TH1D *h1_th = h_qtot_th;
+  h1_th->SetLineColor(kBlue);
+  h1_th->Draw();
+
+  TCanvas *C_en_reco_th = new TCanvas("C_en_reco_th", "Reconstructed energy th", 0, 0, 1000, 600);
+  TH1D *h0_th = h_en_reco_th;
+  h0_th->SetLineColor(kBlue);
+  h0_th->Draw();
+
+  // TCanvas *C_cos_vs_en_th = new TCanvas("C_cos_vs_en_th", "Energy vs cos theta th", 0, 0, 1000, 600);
+  // TH2D *h2_th = h_cos_vs_en_th;
+  // h2_th->Draw("colz");
+
+
+  TCanvas *C_cos_theta = new TCanvas("C_cos_theta", "Cos theta", 0, 0, 1000, 600);
+  for (int i = 0; i < 5; i++)
+  {
+    TH1D *h = cos_theta.at(i);
+    // Opzioni grafiche
+    h->SetFillColor(color_vector.at(i));
+    h->GetYaxis()->SetRangeUser(0, 400);
+    h->Draw("same");
+  }
+
+  TCanvas *C_theta = new TCanvas("C_theta", "Theta", 0, 0, 1000, 600);
+  for (int i = 0; i < 5; i++)
+  {
+    TH1D *h = theta.at(i);
+    // Opzioni grafiche
+    h->SetFillColor(color_vector.at(i));
+    h->GetYaxis()->SetRangeUser(0, 150);
+    h->Draw("same");
+  }
+
+  
+  for (int i = 0; i < 5; i++)
+  {
+    TString canva_name = Form("C_en_vs_cos_theta_%d", i);
+    TCanvas *C_en_vs_cos_theta = new TCanvas(canva_name, "Energy vs cos theta", 0, 0, 1000, 600);  
+    TH2D *h = en_vs_cos_theta.at(i);
+    // Opzioni grafiche
+    h->Draw("colz");
+  }
+
+  // TCanvas *C_cos_th = new TCanvas("C_cos_th", "Cos theta", 0, 0, 1000, 600);
+  // TH1D *h3 = h_cos_th;
+  // h3->SetFillColor(kBlue);
+  // h3->Draw();
+
+  //TCanvas *C_theta = new TCanvas("C_theta", "Theta", 0, 0, 1000, 600);
+  // TH1D *h4 = h_theta;
+  // h4->SetFillColor(kBlue);
+  // h4->Draw();
+
+  // double q[1] = {0.68};
+  // double prob[1] = {0};
+  // h4->GetQuantiles(1, prob, q);
+  // printf("Theta resolution: %f\n", prob[0]);
+
+  // track_reco->fEventNumber = ev->GetEvNumber();
 }
