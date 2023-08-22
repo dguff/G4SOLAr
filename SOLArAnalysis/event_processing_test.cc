@@ -50,6 +50,7 @@ struct solar_cluster_track
   float fTrueEventDir[3] = {0};
   float fRecoEventDir[3] = {0};
   float fCosTheta = 0;
+  float fTrueEnergy = 0;
 
   inline void reset()
   {
@@ -58,6 +59,7 @@ struct solar_cluster_track
     fTotalCharge = 0.;
     fMaxClusterCharge = 0.;
     fCosTheta = 0;
+    fTrueEnergy = 0;
     for (int j = 0; j < 3; j++)
     {
       fTrueEventDir[j] = 0;
@@ -151,6 +153,7 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("true_dir", &track->fTrueEventDir, "nx/F:ny:nz");
   output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
+  output_tree->Branch("true_energy", &track->fTrueEnergy);
 
   for (int iev = 0; /*iev < 200*/ iev<mc_tree->GetEntries(); iev++)
   //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
@@ -185,11 +188,14 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
   const TVector3 true_dir(ev->GetDirection().data());
   std::vector<double> primary_vtx;
   // Get primary e- vertex
+  float true_energy = 0;
+  // Prendo l'energia dell'elettrone. Devo prendere quella del muone stesso per avere maggiore precisione?
   for (const auto &primary : primaries)
   {
     if (primary->GetParticleName() == "e-")
     {
       primary_vtx = primary->GetVertex();
+      true_energy = primary->GetEnergy();
       break;
     }
   }
@@ -265,10 +271,9 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
 
     while ((ibin = itr->Next()) >= 0)
     {
-      int id_bin[3] = {0};
-      float content = xyz_hits->GetBinContent(ibin, id_bin);
+      float content = xyz_hits->GetBinContent(ibin);
       content += gRandom->Gaus(0, noise_rms);
-      xyz_hits->SetBinContent(ibin, content * corr);
+      xyz_hits->SetBinContent(ibin, content);
     }
   }
 
@@ -502,6 +507,7 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
     reco_dir.GetXYZ( track_reco->fRecoEventDir ); 
     true_dir.GetXYZ( track_reco->fTrueEventDir ); 
     track_reco->fCosTheta = cos_theta;
+    track_reco->fTrueEnergy = true_energy;
   }
 
   if (do_draw == false)
