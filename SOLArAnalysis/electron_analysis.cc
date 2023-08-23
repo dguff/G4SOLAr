@@ -244,22 +244,25 @@ void neutrino_analysis()
   // Create and define hist (without energy range)
   TH1D *h_qtot = new TH1D("h_qtot", "tot charge", 200, 0, 500e3);
   TH1D *h_en_reco = new TH1D("h_en_reco", "reconstructed energy", 200, 0, 30);
-  // TH2D *h_cos_vs_en = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
+  TH2D *h_cos_vs_en = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
+  // --> TH2D *h_en_true_vs_reco = new TH2D("h_en_true_vs_reco", "Energy true vs reconstructed", 100, 0, 35, 100, 0, 35);
 
-  mc_tree->Draw("tot_charge>>h_qtot", "", "goff");
 
   double m = 3.66331e-05;
   double q0 = 0.011406;
   TString draw_en_calib = Form("%f * tot_charge + %f", m, q0);
 
-  mc_tree->Draw(draw_en_calib + ">>h_en_reco", "", "goff");
-  // mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en", "", "goff");
 
+  mc_tree->Draw("tot_charge>>h_qtot", "", "goff");
+  mc_tree->Draw(draw_en_calib + ">>h_en_reco", "", "goff");
+  mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en", "", "goff");
+  // --> mc_tree->Draw("true_energy:draw_en_calib>>h_en_true_vs_reco", "", "goff");
+    // --> Metto la soglia?
   
   // Create and define hist (with threshold)
   TH1D *h_qtot_th = new TH1D("h_qtot_th", "tot charge th", 200, 0, 500e3);
   TH1D *h_en_reco_th = new TH1D("h_en_reco_th", "reconstructed energy th", 200, 0, 30);
-  //TH2D *h_cos_vs_en_th = new TH2D("h_cos_vs_en_th", "Energy vs cos theta th", 100, -1, 1, 100, 0, 30);
+  TH2D *h_cos_vs_en_th = new TH2D("h_cos_vs_en_th", "Energy vs cos theta th", 100, -1, 1, 100, 0, 30);
 
   mc_tree->Draw("tot_charge>>h_qtot_th", draw_en_calib + ">5", "goff");
   mc_tree->Draw(draw_en_calib + ">>h_en_reco_th", draw_en_calib + ">5", "goff");
@@ -277,7 +280,7 @@ void neutrino_analysis()
     // Define and create hist with energy range
     TH1D *h_cos_th = new TH1D("h_cos_th", "cos theta", 200, -1, 1);
     TH1D *h_theta = new TH1D("h_theta", "theta", 200, 0, 180);
-    TH2D *h_en_vs_cos_theta = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
+    TH2D *h_en_vs_cos_theta = new TH2D("h_en_vs_cos_theta", "Energy vs cos theta", 100, -1, 1, 100, 0, 18);
     
     TString draw_en_quant_min = Form("%f", prob_en[i-1]);
     TString draw_en_quant_max = Form("%f", prob_en[i]);
@@ -286,7 +289,7 @@ void neutrino_analysis()
 
     if (i==0) draw_en_section = draw_en_calib + " >5 && " + draw_en_calib + " < " + draw_en_quant_max;
     else draw_en_section = draw_en_calib + " > " + draw_en_quant_min + " && " + draw_en_calib + " < " + draw_en_quant_max;
-    printf("%s\n", draw_en_section.Data());
+    // printf("%s\n", draw_en_section.Data());
 
     mc_tree->Draw("cos_theta>>h_cos_th", draw_en_section, "goff");
     mc_tree->Draw("acos(cos_theta)*180/3.14>>h_theta", draw_en_section, "goff");
@@ -310,10 +313,19 @@ void neutrino_analysis()
   h0->SetLineColor(kBlue);
   h0->Draw();
 
+  TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
+  TH2D *h2 = h_cos_vs_en;
+  // h2->SetFillColor(kBlue);
+  h2->Draw("colz");
+
   // TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
-  // TH2D *h2 = h_cos_vs_en;
-  // // h2->SetFillColor(kBlue);
+  // TH2D *h2 = en_vs_cos_theta.at(0);
   // h2->Draw("colz");
+
+  // --> TCanvas *C_en_true_vs_reco = new TCanvas("C_en_true_vs_reco", "Energy true vs reco", 0, 0, 1000, 600);
+  // TH2D *h2 = h_en_true_vs_reco;
+  // h2->Draw("colz");
+
 
   // Canva with threshold
   TCanvas *C_tot_charge_th = new TCanvas("C_tot_charge_th", "Total charge th", 0, 0, 1000, 600);
@@ -326,9 +338,9 @@ void neutrino_analysis()
   h0_th->SetLineColor(kBlue);
   h0_th->Draw();
 
-  // TCanvas *C_cos_vs_en_th = new TCanvas("C_cos_vs_en_th", "Energy vs cos theta th", 0, 0, 1000, 600);
-  // TH2D *h2_th = h_cos_vs_en_th;
-  // h2_th->Draw("colz");
+  TCanvas *C_cos_vs_en_th = new TCanvas("C_cos_vs_en_th", "Energy vs cos theta th", 0, 0, 1000, 600);
+  TH2D *h2_th = h_cos_vs_en_th;
+  h2_th->Draw("colz");
 
 
   TCanvas *C_cos_theta = new TCanvas("C_cos_theta", "Cos theta", 0, 0, 1000, 600);
@@ -354,27 +366,20 @@ void neutrino_analysis()
   
   for (int i = 0; i < 5; i++)
   {
-    TString canva_name = Form("C_en_vs_cos_theta_%d", i);
-    TCanvas *C_en_vs_cos_theta = new TCanvas(canva_name, "Energy vs cos theta", 0, 0, 1000, 600);  
+    TString title_en_quant_min = Form("%f", prob_en[i-1]);
+    TString title_en_quant_max = Form("%f", prob_en[i]);
+
+    TString title_en_section = "";
+
+    if (i==0) title_en_section = "[5,"+title_en_quant_max+"]";
+    else title_en_section = "[" + title_en_quant_min + "," + title_en_quant_max + "]";
+
+    TString canva_name = "C_en_vs_cos_theta_en"+title_en_section;
+    TCanvas *C_en_vs_cos_theta = new TCanvas(canva_name, canva_name, 0, 0, 1000, 600);  
     TH2D *h = en_vs_cos_theta.at(i);
     // Opzioni grafiche
+    h->SetTitle(canva_name);
     h->Draw("colz");
   }
 
-  // TCanvas *C_cos_th = new TCanvas("C_cos_th", "Cos theta", 0, 0, 1000, 600);
-  // TH1D *h3 = h_cos_th;
-  // h3->SetFillColor(kBlue);
-  // h3->Draw();
-
-  //TCanvas *C_theta = new TCanvas("C_theta", "Theta", 0, 0, 1000, 600);
-  // TH1D *h4 = h_theta;
-  // h4->SetFillColor(kBlue);
-  // h4->Draw();
-
-  // double q[1] = {0.68};
-  // double prob[1] = {0};
-  // h4->GetQuantiles(1, prob, q);
-  // printf("Theta resolution: %f\n", prob[0]);
-
-  // track_reco->fEventNumber = ev->GetEvNumber();
 }
