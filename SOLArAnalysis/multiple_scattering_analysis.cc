@@ -67,24 +67,21 @@ void multiple_scattering_analysis(const TString file_path)
         for (const auto &t : trajectories)
         {
 
-          auto pdg_particle = pdg->GetParticle(t->GetPDGID());
+          if (t->GetPDGID() != 11) continue;
 
-          if (pdg_particle == pdg->GetParticle(11))
+          auto points = t->GetPoints();
+
+          for (const auto &point : points)
           {
-            auto points = t->GetPoints();
+            float z = point.fZ;
+            TVector3 point_tmp (point.fX, point.fY, point.fZ);
+            TVector3 dir_point = vtx + (z * true_dir); 
+            double dist = (point_tmp - dir_point).Mag();
 
-            for (const auto &point : points)
-            {
-              float z = point.fZ;
-              TVector3 point_tmp (point.fX, point.fY, point.fZ);
-              TVector3 dir_point = vtx + (z * true_dir); 
-              double dist = (point_tmp - dir_point).Mag();
-
-              h2_dist->Fill(z - vtx.Z(), dist);
-            }
+            h2_dist->Fill(z - vtx.Z(), dist);
           }
-          
         }
+          
       }
     }
   }
