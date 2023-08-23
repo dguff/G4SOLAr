@@ -51,6 +51,9 @@ struct solar_cluster_track
   float fRecoEventDir[3] = {0};
   float fCosTheta = 0;
   float fTrueEnergy = 0;
+  float fVisbEnergy = 0;
+  size_t fPrimaryPDG[10] = {0}; 
+  float  fPrimaryEnergy[10] = {0};
 
   inline void reset()
   {
@@ -60,10 +63,16 @@ struct solar_cluster_track
     fMaxClusterCharge = 0.;
     fCosTheta = 0;
     fTrueEnergy = 0;
+    fVisbEnergy = 0;
     for (int j = 0; j < 3; j++)
     {
       fTrueEventDir[j] = 0;
       fRecoEventDir[j] = 0;
+    }
+    for (int j=0; j<10; j++)
+    {
+      fPrimaryEnergy[j] = 0; 
+      fPrimaryPDG[j] = 0;
     }
   }
 };
@@ -154,6 +163,9 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("reco_dir", &track->fRecoEventDir, "nx/F:ny:nz");
   output_tree->Branch("cos_theta", &track->fCosTheta);
   output_tree->Branch("true_energy", &track->fTrueEnergy);
+  output_tree->Branch("visb_energy", &track->fVisbEnergy); 
+  output_tree->Branch("primary_pdg", &track->fPrimaryPDG, "primary_pdg/i[10]");
+  output_tree->Branch("primary_energy", &track->fPrimaryEnergy, "primary_energy/F[10]");
 
   for (int iev = 0; /*iev < 200*/ iev<mc_tree->GetEntries(); iev++)
   //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
@@ -189,15 +201,33 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
   std::vector<double> primary_vtx;
   // Get primary e- vertex
   float true_energy = 0;
+  float visb_energy = 0; 
   // Prendo l'energia dell'elettrone. Devo prendere quella del muone stesso per avere maggiore precisione?
+  size_t iprimary = 0; 
   for (const auto &primary : primaries)
   {
+    true_energy += primary->GetEnergy(); 
+
+    if ( fabs(primary->GetCode()) != 12 && 
+         fabs(primary->GetCode()) != 14 && 
+         fabs(primary->GetCode()) != 16 ) 
+    {
+      visb_energy += primary->GetTotalLArEdep();
+    }
+
+    if (iprimary < 10) {
+      track_reco->fPrimaryPDG[iprimary] = primary->GetCode(); 
+      track_reco->fPrimaryEnergy[iprimary] = primary->GetEnergy();
+    }
+
     if (primary->GetParticleName() == "e-")
     {
       primary_vtx = primary->GetVertex();
-      true_energy = primary->GetEnergy();
-      break;
+      //true_energy = primary->GetEnergy();
+      //break;
     }
+
+    iprimary++;
   }
   TVector3 vtx(&primary_vtx.at(0));
 
@@ -508,6 +538,7 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
     true_dir.GetXYZ( track_reco->fTrueEventDir ); 
     track_reco->fCosTheta = cos_theta;
     track_reco->fTrueEnergy = true_energy;
+    track_reco->fVisbEnergy = visb_energy;
   }
 
   if (do_draw == false)
