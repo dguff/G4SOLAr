@@ -52,7 +52,7 @@ struct solar_cluster_track
   float fCosTheta = 0;
   float fTrueEnergy = 0;
   float fVisbEnergy = 0;
-  size_t fPrimaryPDG[10] = {0}; 
+  int fPrimaryPDG[10] = {0}; 
   float  fPrimaryEnergy[10] = {0};
 
   inline void reset()
@@ -151,7 +151,7 @@ void process_file(const TString file_path, bool single_shot = false)
   // where to store the result of the analysis
   TString output_file_name = file_path;
   output_file_name.Resize(output_file_name.Index(".root"));
-  output_file_name += Form("_noise_%d_ltcorr_%i_processed.root", static_cast<int>(noise_rms), is_lifetime_corrected);
+  output_file_name += Form("_noise_%d_processed.root", static_cast<int>(noise_rms));
   TFile *file_output = new TFile(output_file_name, "recreate");
 
   TTree *output_tree = new TTree("processed_events", "SoLAr processed events");
@@ -164,8 +164,8 @@ void process_file(const TString file_path, bool single_shot = false)
   output_tree->Branch("cos_theta", &track->fCosTheta);
   output_tree->Branch("true_energy", &track->fTrueEnergy);
   output_tree->Branch("visb_energy", &track->fVisbEnergy); 
-  output_tree->Branch("primary_pdg", &track->fPrimaryPDG, "primary_pdg/i[10]");
-  output_tree->Branch("primary_energy", &track->fPrimaryEnergy, "primary_energy/F[10]");
+  output_tree->Branch("primary_pdg", &track->fPrimaryPDG, "primary_pdg[10]/I");
+  output_tree->Branch("primary_energy", &track->fPrimaryEnergy, "primary_energy[10]/F");
 
   for (int iev = 0; /*iev < 200*/ iev<mc_tree->GetEntries(); iev++)
   //for (int iev = 0; iev < 100 /*iev<mc_tree->GetEntries()*/; iev++)
@@ -204,6 +204,9 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
   float visb_energy = 0; 
   // Prendo l'energia dell'elettrone. Devo prendere quella del muone stesso per avere maggiore precisione?
   size_t iprimary = 0; 
+  float energy_tmp[10]={0};
+  int pdg_tmp[10]={0};
+
   for (const auto &primary : primaries)
   {
     true_energy += primary->GetEnergy(); 
@@ -216,8 +219,8 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
     }
 
     if (iprimary < 10) {
-      track_reco->fPrimaryPDG[iprimary] = primary->GetCode(); 
-      track_reco->fPrimaryEnergy[iprimary] = primary->GetEnergy();
+      pdg_tmp[iprimary] = primary->GetCode(); 
+      energy_tmp[iprimary] = primary->GetEnergy();
     }
 
     if (primary->GetParticleName() == "e-")
@@ -539,6 +542,11 @@ int process_event(SLArMCEvent *ev, SLArQEventReadout *qev, THnSparseF *xyz_hits,
     track_reco->fCosTheta = cos_theta;
     track_reco->fTrueEnergy = true_energy;
     track_reco->fVisbEnergy = visb_energy;
+    for (int i=0; i<10; i++)
+    {
+      track_reco->fPrimaryPDG[i] = pdg_tmp[i];
+      track_reco->fPrimaryEnergy[i] = energy_tmp[i];
+    }
   }
 
   if (do_draw == false)
