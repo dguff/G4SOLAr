@@ -71,8 +71,8 @@ void electron_analysis()
 
     TH1D *h_qtot = new TH1D(h_tot_charge_name, "tot charge " + energy_file[i] + " MeV", 200, 0, 500e3);
     TH1D *h_q_maxcl = new TH1D(h_maxcl_charge_name, "max cluster charge " + energy_file[i] + " MeV", 200, 0, 500e3);
-    TH1D *h_cos_th = new TH1D(h_cos_theta_name, "cos theta " + energy_file[i] + " MeV", 200, -1, 1);
-    TH1D *h_theta = new TH1D(h_theta_name, "theta " + energy_file[i] + " MeV", 200, 0, 180);
+    TH1D *h_cos_th = new TH1D(h_cos_theta_name, "cos theta " + energy_file[i] + " MeV", 100, -1, 1);
+    TH1D *h_theta = new TH1D(h_theta_name, "theta " + energy_file[i] + " MeV", 100, 0, 180);
 
     mc_tree->Draw("tot_charge>>" + h_tot_charge_name, "", "goff");
     mc_tree->Draw("cluster_charge>>" + h_maxcl_charge_name, "", "goff");
@@ -86,50 +86,87 @@ void electron_analysis()
   }
 
   TCanvas *C_tot_charge = new TCanvas("C_tot_charge", "Total charge", 0, 0, 1000, 600);
-
+  TLegend* legend_tot_charge = new TLegend(0.7, 0.7, 0.9, 0.9); 
+  
   for (int i = 0; i < 5; i++)
   {
     TH1D *h = h_tot_charge.at(i);
     // Opzioni grafiche
     h->SetLineColor(color_vector.at(i));
+    h->SetTitle("Total reconstructed charge of the event");
+    h->GetXaxis()->SetTitle("Number of hits");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
     h->Draw("same");
+    legend_tot_charge->AddEntry(h, energy_file[i]+" MeV", "l"); 
   }
+  legend_tot_charge->Draw();
 
   TCanvas *C_maxcl_charge = new TCanvas("C_maxcl_charge", "Max cluster charge", 0, 0, 1000, 600);
+  TLegend* legend_maxcl_charge = new TLegend(0.7, 0.7, 0.9, 0.9); 
 
   for (int i = 0; i < 5; i++)
   {
     TH1D *h = h_maxcl_charge.at(i);
     // Opzioni grafiche
     h->SetLineColor(color_vector.at(i));
+    h->SetTitle("Total reconstructed charge for primary cluster of the event");
+    h->GetXaxis()->SetTitle("Number of hits");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
     h->Draw("same");
+    legend_maxcl_charge->AddEntry(h, energy_file[i]+" MeV", "l"); 
   }
+  legend_maxcl_charge->Draw();
+
 
   TCanvas *C_cos_theta = new TCanvas("C_cos_theta", "Cos theta", 0, 0, 1000, 600);
+  TLegend* legend_cos_theta = new TLegend(0.4, 0.7, 0.6, 0.9); 
 
   for (int i = 0; i < 5; i++)
   {
     TH1D *h = cos_theta.at(i);
     // Opzioni grafiche
-    h->SetFillColor(color_vector.at(i));
-    h->GetYaxis()->SetRangeUser(0, 725);
+    // h->SetFillColor(color_vector.at(i));
+    h->SetFillColorAlpha(color_vector.at(i), 0.5);
+    h->SetLineWidth(1);
+    h->SetLineColor(color_vector.at(i));
+    h->GetYaxis()->SetRangeUser(0, 1550);
+    h->SetTitle("Cos of mismatch angle");
+    h->GetXaxis()->SetTitle("Cos#theta");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
     h->Draw("same");
+    legend_cos_theta->AddEntry(h, energy_file[i]+" MeV", "f"); 
   }
+  legend_cos_theta->Draw();
+
 
   TCanvas *C_theta = new TCanvas("C_theta", "Theta", 0, 0, 1000, 600);
+  TLegend* legend_theta = new TLegend(0.7, 0.7, 0.9, 0.9); 
 
   for (int i = 0; i < 5; i++)
   {
     TH1D *h = theta.at(i);
     // Opzioni grafiche
-    h->SetFillColor(color_vector.at(i));
-    h->GetYaxis()->SetRangeUser(0, 175);
+    // h->SetFillColor(color_vector.at(i));
+    h->SetFillColorAlpha(color_vector.at(i), 0.5);
+    h->SetLineWidth(1);
+    h->SetLineColor(color_vector.at(i));
+    h->GetYaxis()->SetRangeUser(0, 350);
+    h->SetTitle("Mismatch angle");
+    h->GetXaxis()->SetTitle("Mismatch angle #theta [#circ]");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
     h->Draw("same");
+    legend_theta->AddEntry(h, energy_file[i]+" MeV", "f"); 
   }
+  legend_theta->Draw();
+
 
   TCanvas *C_theta_res = new TCanvas("C_theta_res", "Theta resolution", 0, 0, 1000, 600);
   TGraph *g_theta_res = new TGraph();
-
+  printf("theta resolution:\n");
   for (int i = 0; i < 5; i++)
   {
     TH1D *h = theta.at(i);
@@ -138,12 +175,17 @@ void electron_analysis()
     h->GetQuantiles(1, prob, q);
     // Opzioni grafiche
     g_theta_res->AddPoint(std::atof(energy_file[i]), prob[0]);
+    printf("%f\n", prob[0]);
   }
-  g_theta_res->SetTitle("Theta resolution");
+  g_theta_res->SetTitle("Angular resolution based on energy");
   g_theta_res->SetMarkerStyle(20);
+  g_theta_res->GetXaxis()->SetTitle("Energy [MeV]");
+  g_theta_res->GetYaxis()->SetTitle("Angular resolution [#circ]");
+  g_theta_res->SetStats(false);
   g_theta_res->Draw("AWPL");
 
   TCanvas *C_max_tot_charge = new TCanvas("C_max_tot_charge", "Max tot charge", 0, 0, 1000, 600);
+  //gStyle->SetOptFit(0012);
   TGraph *g_max_charge = new TGraph();
   TGraph *g_charge_calib = new TGraph();
   TGraph *g_en_res = new TGraph();
@@ -156,6 +198,10 @@ void electron_analysis()
   {
     TH1D *h = h_tot_charge.at(i);
     // h->Fit(fGauss, "", "", h->GetBinCenter(h->GetMaximumBin())-20e3, h->GetBinCenter(h->GetMaximumBin())+200e3);
+    FCrystalBall->SetLineStyle(7);
+    FCrystalBall->SetLineWidth(1);
+    // FCrystalBall->SetLineColor(color_vector.at(i));
+    FCrystalBall->SetLineColorAlpha(color_vector.at(i), 0.5);
     FCrystalBall->SetParameters(1, 1, h->GetRMS(), h->GetMean(), 300);
     h->Fit(FCrystalBall, "Q");
     g_max_charge->AddPoint(std::atof(energy_file[i]), FCrystalBall->GetParameter(3));
@@ -173,18 +219,23 @@ void electron_analysis()
     // Opzioni grafiche
 
     // Cambiare colore fit
-    FCrystalBall->SetLineColor(color_vector.at(i));
-    FCrystalBall->SetLineStyle(7);
     FCrystalBall->DrawClone("same");
   }
-  g_max_charge->SetTitle("Mean tot charge");
+  g_max_charge->SetTitle("Number of hits based on energy");
+  g_max_charge->GetXaxis()->SetTitle("Energy [MeV]");
+  g_max_charge->GetYaxis()->SetTitle("Number of hits");
   g_max_charge->SetMarkerStyle(20);
-  g_max_charge->Draw("AWPL"); // A disegna gli assi, PL come rappresenta i punti
+  g_max_charge->SetStats(false);
+  fLine->SetLineColorAlpha(kRed, 0.5);
   g_max_charge->Fit(fLine);
+  g_max_charge->Draw("AWPL"); // A disegna gli assi, PL come rappresenta i punti
 
   TCanvas *C_tot_charge_en_res = new TCanvas("C_tot_charge_en_res", "Energy resolution total charge", 0, 0, 1000, 600);
-  g_en_res->SetTitle("Energy resolution");
+  g_en_res->SetTitle("Energy resolution based on energy");
+  g_en_res->GetXaxis()->SetTitle("Energy [MeV]");
+  g_en_res->GetYaxis()->SetTitle("Energy resolution");
   g_en_res->SetMarkerStyle(20);
+  g_en_res->SetStats(false);
   g_en_res->Draw("AWPL"); // A disegna gli assi, PL come rappresenta i punti
 
   printf("Fit energy vs mean tot charge\n");
@@ -201,6 +252,10 @@ void electron_analysis()
   {
     TH1D *h = h_maxcl_charge.at(i);
     // h->Fit(fGauss, "", "", h->GetBinCenter(h->GetMaximumBin())-20e3, h->GetBinCenter(h->GetMaximumBin())+200e3);
+    // FCrystalBall->SetLineColor(color_vector.at(i));
+    FCrystalBall->SetLineColorAlpha(color_vector.at(i), 0.5);
+    FCrystalBall->SetLineStyle(7);
+    FCrystalBall->SetLineWidth(1);
     FCrystalBall->SetParameters(1, 1, h->GetRMS(), h->GetMean(), 300);
     h->Fit(FCrystalBall, "Q");
     g_max_charge_maxcl->AddPoint(std::atof(energy_file[i]), FCrystalBall->GetParameter(3));
@@ -215,6 +270,8 @@ void electron_analysis()
     // g_en_res->AddPoint(std::atof(energy_file[i]), fGauss->GetParameter(2)/fGauss->GetParameter(1));
     // auto I = fGauss->GetParameter(0);
     //  Opzioni grafiche
+
+    FCrystalBall->DrawClone("same");
   }
   g_max_charge_maxcl->SetTitle("Cluster mean tot charge");
   g_max_charge_maxcl->SetMarkerStyle(20);
@@ -238,7 +295,9 @@ void neutrino_analysis()
 
 
   // Read data processed file
-  TString file_path = "/Users/giulia/Tesi/Eventi/neutrini/b8_nue_es_iso_total_noise_900_processed.root";
+  TString file_path = "/Users/giulia/Tesi/Eventi/neutrini_e/b8_nue_es_iso_all_noise_900_processed.root";
+  // TString file_path = "/Users/giulia/Tesi/Eventi/neutrini_mu/b8_numu_es_iso_all_noise_900_processed.root";
+
 
   TFile *mc_file = new TFile(file_path.Data());
   TTree *mc_tree = (TTree *)mc_file->Get("processed_events");
@@ -246,10 +305,11 @@ void neutrino_analysis()
 
   // Create and define hist (without energy range)
   TH1D *h_qtot = new TH1D("h_qtot", "tot charge", 200, 0, 500e3);
-  TH1D *h_en_reco = new TH1D("h_en_reco", "reconstructed energy", 200, 0, 30);
+  TH1D *h_en_reco = new TH1D("h_en_reco", "reconstructed energy", 200, 0, 20);
   TH2D *h_cos_vs_en = new TH2D("h_cos_vs_en", "Energy vs cos theta", 100, -1, 1, 100, 0, 30);
-  // --> TH2D *h_en_true_vs_reco = new TH2D("h_en_true_vs_reco", "Energy true vs reconstructed", 100, 0, 35, 100, 0, 35);
-  // --> TH2D *h_en_visb_vs_reco = new TH2D("h_en_visb_vs_reco", "Energy visible vs reconstructed", 100, 0, 35, 100, 0, 35);
+  // --> 
+  TH2D *h_en_reco_vs_true = new TH2D("h_en_reco_vs_true", "Energy reconstructed vs true", 100, 0, 17, 100, 0, 17);
+  TH2D *h_en_reco_vs_visb = new TH2D("h_en_reco_vs_visb", "Energy reconstructed vs visible", 100, 0, 17, 100, 0, 17);
 
   double m = 3.66331e-05;
   double q0 = 0.011406;
@@ -259,18 +319,25 @@ void neutrino_analysis()
   mc_tree->Draw("tot_charge>>h_qtot", "", "goff");
   mc_tree->Draw(draw_en_calib + ">>h_en_reco", "", "goff");
   mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en", "", "goff");
-  // --> mc_tree->Draw("true_energy:draw_en_calib>>h_en_true_vs_reco", "", "goff");
-  // --> mc_tree->Draw("visb_energy:draw_en_calib>>h_en_visb_vs_reco", "", "goff");
-    // --> Metto la soglia?
+  // --> 
+  mc_tree->Draw(draw_en_calib+":true_energy>>h_en_reco_vs_true", "", "goff");
+  mc_tree->Draw(draw_en_calib+":visb_energy>>h_en_reco_vs_visb", "", "goff");
   
   // Create and define hist (with threshold)
   TH1D *h_qtot_th = new TH1D("h_qtot_th", "tot charge th", 200, 0, 500e3);
-  TH1D *h_en_reco_th = new TH1D("h_en_reco_th", "reconstructed energy th", 200, 0, 30);
+  TH1D *h_en_reco_th = new TH1D("h_en_reco_th", "reconstructed energy th", 200, 0, 20);
   TH2D *h_cos_vs_en_th = new TH2D("h_cos_vs_en_th", "Energy vs cos theta th", 100, -1, 1, 100, 0, 30);
 
   mc_tree->Draw("tot_charge>>h_qtot_th", draw_en_calib + ">5", "goff");
   mc_tree->Draw(draw_en_calib + ">>h_en_reco_th", draw_en_calib + ">5", "goff");
   mc_tree->Draw(draw_en_calib + ":cos_theta>>h_cos_vs_en_th", draw_en_calib + ">5", "goff");
+
+  // TH2D *h_en_true_vs_reco_th = new TH2D("h_en_true_vs_reco_th", "Energy true vs reconstructed th", 100, 0, 35, 100, 0, 35);
+  // TH2D *h_en_visb_vs_reco_th = new TH2D("h_en_visb_vs_reco_th", "Energy visible vs reconstructed th", 100, 0, 35, 100, 0, 35);
+
+  // mc_tree->Draw("true_energy:"+draw_en_calib+">>h_en_true_vs_reco_th", draw_en_calib + ">5", "goff");
+  // mc_tree->Draw("visb_energy:"+draw_en_calib+">>h_en_visb_vs_reco_th", draw_en_calib + ">5", "goff");
+  //   // --> Metto la soglia?
 
 
   double q_en[5] = {0.2, 0.4, 0.6, 0.8, 1};
@@ -329,51 +396,81 @@ void neutrino_analysis()
   printf("theta resolution: %f, %f, %f, %f, %f\n", theta_res[0], theta_res[1], theta_res[2], theta_res[3], theta_res[4]);
 
   // Canva without threshold 
-  TCanvas *C_tot_charge = new TCanvas("C_tot_charge", "Total charge", 0, 0, 1000, 600);
-  TH1D *h1 = h_qtot;
-  h1->SetLineColor(kBlue);
-  h1->Draw();
+  // TCanvas *C_tot_charge = new TCanvas("C_tot_charge", "Total charge", 0, 0, 1000, 600);
+  // TH1D *h1 = h_qtot;
+  // h1->SetLineColor(kBlue);
+  // h1->Draw();
 
-  TCanvas *C_en_reco = new TCanvas("C_en_reco", "Reconstructed energy", 0, 0, 1000, 600);
-  TH1D *h0 = h_en_reco;
-  h0->SetLineColor(kBlue);
-  h0->Draw();
+  // TCanvas *C_en_reco = new TCanvas("C_en_reco", "Reconstructed energy", 0, 0, 1000, 600);
+  // TH1D *h0 = h_en_reco;
+  // h0->SetLineColor(kBlue);
+  // h0->Draw();
 
-  TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
-  TH2D *h2 = h_cos_vs_en;
-  h2->Draw("colz");
+  // TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
+  // TH2D *h2 = h_cos_vs_en;
+  // h2->Draw("colz");
 
   // TCanvas *C_cos_vs_en = new TCanvas("C_cos_vs_en", "Energy vs cos theta", 0, 0, 1000, 600);
   // TH2D *h2 = en_vs_cos_theta.at(0);
   // h2->Draw("colz");
 
-  // --> TCanvas *C_en_true_vs_reco = new TCanvas("C_en_true_vs_reco", "Energy true vs reco", 0, 0, 1000, 600);
-  // TH2D *h3 = h_en_true_vs_reco;
-  // h3->Draw("colz");
+  // --> 
+  TCanvas *C_en_reco_vs_true = new TCanvas("C_en_reco_vs_true", "Energy reco vs true", 0, 0, 1000, 600);
+  TH2D *h3 = h_en_reco_vs_true;
+  h3->SetTitle("Reconstructed vs. true energy");
+  h3->GetXaxis()->SetTitle("True energy [MeV]");
+  h3->GetYaxis()->SetTitle("Reconstructed energy [MeV]");
+  h3->SetStats(false);
+  h3->Draw("colz");
 
-  // --> TCanvas *C_en_visb_vs_reco = new TCanvas("C_en_visb_vs_reco", "Energy visible vs reco", 0, 0, 1000, 600);
-  // TH2D *h4 = h_en_visb_vs_reco;
-  // h4->Draw("colz");
+  // --> 
+  TCanvas *C_en_reco_vs_visb = new TCanvas("C_en_reco_vs_visb", "Energy reco vs visible", 0, 0, 1000, 600);
+  TH2D *h4 = h_en_reco_vs_visb;
+  h4->SetTitle("Reconstructed vs. visible energy");
+  h4->GetXaxis()->SetTitle("Visible energy [MeV]");
+  h4->GetYaxis()->SetTitle("Reconstructed energy [MeV]");
+  h4->SetStats(false);
+  h4->Draw("colz");
 
 
   // Canva with threshold
   TCanvas *C_tot_charge_th = new TCanvas("C_tot_charge_th", "Total charge th", 0, 0, 1000, 600);
   TH1D *h1_th = h_qtot_th;
   h1_th->SetLineColor(kBlue);
+  h1_th->SetTitle("Number of hits for event");
+  h1_th->GetXaxis()->SetTitle("Number of hits");
+  h1_th->GetYaxis()->SetTitle("Number of events");
+  h1_th->SetStats(false);
   h1_th->Draw();
 
   TCanvas *C_en_reco_th = new TCanvas("C_en_reco_th", "Reconstructed energy th", 0, 0, 1000, 600);
   TH1D *h0_th = h_en_reco_th;
   h0_th->SetLineColor(kBlue);
+  h0_th->SetTitle("Reconstructed energy");
+  h0_th->GetXaxis()->SetTitle("Reconstructed energy [MeV]");
+  h0_th->GetYaxis()->SetTitle("Number of events");
+  h0_th->SetStats(false);
   h0_th->Draw();
 
-  TCanvas *C_cos_vs_en_th = new TCanvas("C_cos_vs_en_th", "Energy vs cos theta th", 0, 0, 1000, 600);
-  TH2D *h2_th = h_cos_vs_en_th;
-  h2_th->Draw("colz");
+  // TCanvas *C_cos_vs_en_th = new TCanvas("C_cos_vs_en_th", "Energy vs cos theta th", 0, 0, 1000, 600);
+  // TH2D *h2_th = h_cos_vs_en_th;
+  // h2_th->Draw("colz");
+
+  // // --> 
+  // TCanvas *C_en_true_vs_reco_th = new TCanvas("C_en_true_vs_reco_th", "Energy true vs reco th", 0, 0, 1000, 600);
+  // TH2D *h3_th = h_en_true_vs_reco_th;
+  // h3_th->Draw("colz");
+
+  // // --> 
+  // TCanvas *C_en_visb_vs_reco_th = new TCanvas("C_en_visb_vs_reco_th", "Energy visible vs reco th", 0, 0, 1000, 600);
+  // TH2D *h4_th = h_en_visb_vs_reco_th;
+  // h4_th->Draw("colz");
+
+  
 
 
   TCanvas *C_cos_theta = new TCanvas("C_cos_theta", "Cos theta", 0, 0, 1000, 600);
-  TLegend *legend1 = new TLegend(0.7, 0.7, 0.9, 0.9);
+  TLegend *legend1 = new TLegend(0.4, 0.7, 0.6, 0.9);
   legend1->SetHeader("Energy");
   for (int i = 0; i < 5; i++)
   {
@@ -381,16 +478,22 @@ void neutrino_analysis()
     // Opzioni grafiche
     //h->SetFillStyle(3005);
     //h->SetFillColor(color_vector_nu.at(i));
-    h->SetFillColorAlpha(color_vector_nu.at(i), 0.4);
-    h->GetYaxis()->SetRangeUser(0, 550);
-    h->SetTitle("cos#theta");
+    h->SetFillColorAlpha(color_vector_nu.at(i), 0.25);
+    h->SetLineWidth(1);
+    h->SetLineColor(color_vector_nu.at(i));
+    h->GetYaxis()->SetRangeUser(0, 1500);
+    h->SetTitle("Cos of mismatch angle");
+    h->GetXaxis()->SetTitle("Cos#theta");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
+    // h->SetTitle("cos#theta");
     h->Draw("same");
 
     float E0 = 0;
     float E1 = prob_en[i]; 
     if (i == 0) E0 = 5;
     else E0 = prob_en[i-1];
-    legend1->AddEntry(h, Form("[%f, %f]", E0, E1), "f"); // "f" indica un oggetto con riempimento
+    legend1->AddEntry(h, Form("[%0.1f, %0.1f] MeV", E0, E1), "f"); // "f" indica un oggetto con riempimento
   }
     legend1->Draw();
 
@@ -404,36 +507,41 @@ void neutrino_analysis()
     // Opzioni grafiche
     // h->SetFillStyle(4090);
     // h->SetFillColor(color_vector_nu.at(i));
-    h->SetFillColorAlpha(color_vector_nu.at(i), 0.4);
-    h->GetYaxis()->SetRangeUser(0, 220);
-    h->SetTitle("#theta");
+    h->SetFillColorAlpha(color_vector_nu.at(i), 0.25);
+    h->SetLineWidth(1);
+    h->SetLineColor(color_vector_nu.at(i));
+    h->GetYaxis()->SetRangeUser(0, 450);
+    h->SetTitle("Mismatch angle");
+    h->GetXaxis()->SetTitle("Mismatch angle #theta [#circ]");
+    h->GetYaxis()->SetTitle("Number of events");
+    h->SetStats(false);
     h->Draw("same");
 
     float E0 = 0;
     float E1 = prob_en[i]; 
     if (i == 0) E0 = 5;
     else E0 = prob_en[i-1];
-    legend2->AddEntry(h, Form("[%f, %f]", E0, E1), "f"); // "f" indica un oggetto con riempimento
+    legend2->AddEntry(h, Form("[%0.1f, %0.1f] MeV", E0, E1), "f"); // "f" indica un oggetto con riempimento
   }
   legend2->Draw();
 
   
-  for (int i = 0; i < 5; i++)
-  {
-    TString title_en_quant_min = Form("%f", prob_en[i-1]);
-    TString title_en_quant_max = Form("%f", prob_en[i]);
+  // for (int i = 0; i < 5; i++)
+  // {
+  //   TString title_en_quant_min = Form("%f", prob_en[i-1]);
+  //   TString title_en_quant_max = Form("%f", prob_en[i]);
 
-    TString title_en_section = "";
+  //   TString title_en_section = "";
 
-    if (i==0) title_en_section = "[5,"+title_en_quant_max+"]";
-    else title_en_section = "[" + title_en_quant_min + "," + title_en_quant_max + "]";
+  //   if (i==0) title_en_section = "[5,"+title_en_quant_max+"]";
+  //   else title_en_section = "[" + title_en_quant_min + "," + title_en_quant_max + "]";
 
-    TString canva_name = "C_en_vs_cos_theta_en"+title_en_section;
-    TCanvas *C_en_vs_cos_theta = new TCanvas(canva_name, canva_name, 0, 0, 1000, 600);  
-    TH2D *h = en_vs_cos_theta.at(i);
-    // Opzioni grafiche
-    h->SetTitle(canva_name);
-    h->Draw("colz");
-  }
+  //   TString canva_name = "C_en_vs_cos_theta_en"+title_en_section;
+  //   TCanvas *C_en_vs_cos_theta = new TCanvas(canva_name, canva_name, 0, 0, 1000, 600);  
+  //   TH2D *h = en_vs_cos_theta.at(i);
+  //   // Opzioni grafiche
+  //   h->SetTitle(canva_name);
+  //   h->Draw("colz");
+  // }
 
 }
