@@ -43,6 +43,7 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdOutputFileName;
     G4UIcmdWithAString*         fCmdOutputPath    ;
     G4UIcmdWithAString*         fCmdWriteCfgFile  ; 
+    G4UIcmdWithAString*         fCmdPlotXSec      ; 
 #ifdef SLAR_GDML
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 
     G4UIcmdWithAString*         fCmdGDMLExport    ;

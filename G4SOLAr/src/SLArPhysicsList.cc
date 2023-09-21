@@ -44,6 +44,7 @@
 //#include "G4PhysListFactory.hh"
 #include "FTFP_BERT_HP.hh"
 #include "QGSP_BERT_HP.hh"
+#include "QGSP_BIC_AllHP.hh"
 #include "G4EmLivermorePhysics.hh"
 #include "G4EmStandardPhysics_option4.hh"
 
@@ -83,7 +84,11 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   G4VModularPhysicsList* phys = NULL;
   if (physName == "QGSP_BERT_HP") {
     phys = new QGSP_BERT_HP;
-  } else {
+  } 
+  else if (physName == "QGSP_BIC_AllHP") {
+    phys = new QGSP_BIC_AllHP; 
+  }
+  else {
     phys = new FTFP_BERT_HP;
   }
   //    if (factory.IsReferencePhysList(physName)) {
