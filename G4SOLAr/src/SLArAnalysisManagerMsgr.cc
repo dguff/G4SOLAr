@@ -3,6 +3,7 @@
  * @file        : SLArAnalysisManagerMsgr
  * @created     : martedì mar 03, 2020 17:15:44 CET
  */
+#include <sstream>
 #include "SLArAnalysisManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -26,7 +27,7 @@
 SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
-  fCmdWriteCfgFile(nullptr)
+  fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr)
 #ifdef SLAR_GDML
   ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
@@ -57,6 +58,13 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
     new G4UIcmdWithAString(UIManagerPath+"WriteCfgFile", this);
   fCmdOutputPath->SetGuidance("Write cfg file to output");
   fCmdOutputPath->SetParameterName("name path", false); 
+
+  fCmdPlotXSec = 
+    new G4UIcmdWithAString(UIManagerPath+"WriteXSection", this);
+  fCmdPlotXSec->SetGuidance("Write a cross-section to  output");
+  fCmdPlotXSec->SetParameterName("xsec_spec", false);
+  fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
+  
   
 #ifdef SLAR_GDML
   fCmdGDMLFileName = 
@@ -80,6 +88,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdOutputPath    ) delete fCmdOutputPath    ;
   if (fCmdOutputFileName) delete fCmdOutputFileName;
   if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
+  if (fCmdPlotXSec      ) delete fCmdPlotXSec      ; 
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -105,6 +114,32 @@ void SLArAnalysisManagerMsgr::SetNewValue
     strm >> name >> file_path; 
 
     SLArAnaMgr->WriteCfgFile(name, file_path.c_str()); 
+  }
+  else if (cmd == fCmdPlotXSec) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _particle; 
+    G4String _process; 
+    G4String _material;
+    G4String _log = "0";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _particle = temp;
+      else if (ifield == 1) _process = temp;
+      else if (ifield == 2) _material = temp;
+      else if (ifield == 3) _log = temp;
+
+      ifield++;
+    }
+    
+    SLArAnaMgr->RegisterXSecDump( 
+        SLArAnalysisManager::SLArXSecDumpSpec(
+          _particle, _process, _material, std::atoi(_log)
+        )
+    ); 
+    
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

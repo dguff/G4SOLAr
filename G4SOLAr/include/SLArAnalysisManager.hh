@@ -30,6 +30,16 @@
 class SLArAnalysisManager 
 {
   public:
+    struct SLArXSecDumpSpec {
+      G4String particle_name; 
+      G4String process_name; 
+      G4String material_name;
+      G4bool   log_span;
+
+      SLArXSecDumpSpec(); 
+      SLArXSecDumpSpec(const G4String& par, const G4String& proc, const G4String& mat, const bool& do_log = false);
+    };
+
     SLArAnalysisManager(G4bool isMaster);
     ~SLArAnalysisManager();
 
@@ -49,6 +59,7 @@ class SLArAnalysisManager
     int    WriteArray         (G4String name, G4int size, G4double* val); 
     int    WriteCfgFile       (G4String name, const char* path); 
     int    WriteCfg           (G4String name, const char* cfg); 
+    int    WriteCrossSection  (SLArXSecDumpSpec xsec_spec); 
 
     // Access and I/O methods
     TTree* GetTree() const {return  fEventTree;}
@@ -60,12 +71,14 @@ class SLArAnalysisManager
       if ( fAnodeCfg.count(id) ) anodeCfg = fAnodeCfg[id];
       return anodeCfg;}
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
+    inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
     // mock fake access
     G4bool FakeAccess();
     void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
+    void RegisterXSecDump(const SLArXSecDumpSpec xsec_dump); 
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 
@@ -82,6 +95,7 @@ class SLArAnalysisManager
     G4String fOutputPath;
     G4String fOutputFileName;
     std::map<G4String, G4double> fBiasing; 
+    std::vector<SLArXSecDumpSpec> fXSecDump;
 
     TFile*              fRootFile;
     TTree*              fEventTree;
