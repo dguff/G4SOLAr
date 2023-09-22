@@ -36,12 +36,14 @@
 #include "SLArBulkVertexGenerator.hh"
 #include "SLArBoxSurfaceVertexGenerator.hh"
 #include "SLArPGunGeneratorAction.hh"
+#include "SLArPBombGeneratorAction.hh"
 #include "SLArMarleyGeneratorAction.hh"
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
 
 #include "Randomize.hh"
+#include "SLArRandomExtra.hh"
 
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
@@ -69,6 +71,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 {
   G4int n_particle = 1;
   fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
+  fGeneratorActions[kParticleBomb]= new SLArPBombGeneratorAction(n_particle); 
   fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
   fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
@@ -85,20 +88,20 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
-  printf("Deleting SLArPrimaryGeneratorAction...\n");
-  int igen = 0; 
-  for (auto &gen : fGeneratorActions) {
-    if (gen) {
-      printf("Deleting gen %i\n", igen);
-      delete gen; 
-      gen = nullptr;
-    }
-    igen++;
-  }
-  if (fBulkGenerator) delete fBulkGenerator;
-  if (fBoxGenerator) delete fBoxGenerator;
-  if (fGunMessenger) delete fGunMessenger;
-  printf("DONE\n");
+  //printf("Deleting SLArPrimaryGeneratorAction...\n");
+  //int igen = 0; 
+  //for (auto &gen : fGeneratorActions) {
+    //if (gen) {
+      //printf("Deleting gen %i\n", igen);
+      //delete gen; 
+      //gen = nullptr;
+    //}
+    //igen++;
+  //}
+  //if (fBulkGenerator) delete fBulkGenerator;
+  //if (fBoxGenerator) delete fBoxGenerator;
+  //if (fGunMessenger) delete fGunMessenger;
+  //printf("DONE\n");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -132,19 +135,39 @@ void SLArPrimaryGeneratorAction::SetBoxName(G4String vol) {
 }
 
 
-void SLArPrimaryGeneratorAction::SetPGunParticle(G4String particle_name) 
+void SLArPrimaryGeneratorAction::SetGunParticle(const G4String particle_name) 
 {
   SLArPGunGeneratorAction* particle_gun = 
     (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
   particle_gun->SetParticle(particle_name); 
+
+  SLArPBombGeneratorAction* particle_bomb = 
+    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  particle_bomb->SetParticle(particle_name); 
 }
 
-void SLArPrimaryGeneratorAction::SetPGunEnergy(G4double ekin) 
+void SLArPrimaryGeneratorAction::SetGunEnergy(const G4double ekin) 
 {
   SLArPGunGeneratorAction* particle_gun = 
     (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
   particle_gun->SetParticleKineticEnergy(ekin); 
+
+  SLArPBombGeneratorAction* particle_bomb = 
+    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  particle_bomb->SetParticleKineticEnergy(ekin); 
 }
+
+void SLArPrimaryGeneratorAction::SetGunNumberOfParticles(const G4int n) 
+{
+  //SLArPGunGeneratorAction* particle_gun = 
+    //(SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  //particle_gun->SetNumberOfParticles(n); 
+
+  SLArPBombGeneratorAction* particle_bomb = 
+    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  particle_bomb->SetNumberOfParticles(n); 
+}
+
 
 void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
@@ -196,6 +219,22 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         gen = pgun_gen; 
       }
       break;
+
+    case kParticleBomb: 
+      {
+        SLArPBombGeneratorAction* pbomb_gen = 
+          (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+        pbomb_gen->SetParticlePosition(fGunPosition); 
+        if (fDirectionMode == kFixed) {
+          pbomb_gen->SetParticleMomentumDirection(fGunDirection); 
+        }
+        else {
+          pbomb_gen->SetParticleMomentumDirection( G4ThreeVector(0, 0, 0) );
+        }
+        gen = pbomb_gen; 
+      }
+      break;
+
 
     case kExternalGen:
       {
@@ -305,19 +344,6 @@ void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
     (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground];
    bkgGen->BuildBackgroundTable(fBackgoundModelCfg);
    return;
-}
-
-G4ThreeVector SLArPrimaryGeneratorAction::SampleRandomDirection() {
-  double cosTheta = 2*G4UniformRand() - 1.;
-  double phi = TMath::TwoPi()*G4UniformRand();
-  double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
-  double ux = sinTheta*std::cos(phi),
-         uy = sinTheta*std::sin(phi),
-         uz = cosTheta;
-
-  G4ThreeVector dir(ux, uy, uz);
-  
-  return dir; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

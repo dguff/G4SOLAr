@@ -1,0 +1,28 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : electrons.mac
+# @created     : venerdì lug 01, 2022 11:47:12 CEST
+#
+# @description : Produce monoenergetic electrons in the detector center
+######################################################################
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 0.5 mm
+/SLAr/phys/positronCut 0.5 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/phys/DoTracePhotons true
+
+# Set particle energy and source position 
+/SLAr/gen/type ParticleBomb
+/SLAr/gen/particle opticalphoton
+/SLAr/gen/energy 9.686 eV
+/SLAr/gen/gunPosition 50 0 0 cm
+/SLAr/gen/SetDirectionMode isotropic
+/SLAr/gen/numberOfParticles 100
+
+# Set output file name
+/SLAr/manager/SetOutputName photon_bomb.root
+
+# Fire!
+/run/beamOn 1

@@ -41,6 +41,7 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithADoubleAndUnit*          fCmdEnergy; 
     G4UIcmdWithAString*                 fCmdBulkVol;
     G4UIcmdWithAString*                 fCmdParticle;
+    G4UIcmdWithAnInteger*               fCmdNumberOfParticles; 
     G4UIcmdWithADouble*                 fCmdBulkVolFraction;
     G4UIcmdWithAString*                 fCmdMarley;
     G4UIcmdWithAString*                 fCmdBackgoundConf; 
