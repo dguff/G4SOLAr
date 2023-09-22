@@ -40,8 +40,6 @@ class SLArExternalGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4String fParticleName; 
     TRandom3* fRandomEngine; 
 
-    G4ThreeVector SampleRandomDirection(); 
-
 }; 
 
 #endif /* end of include guard SLAREXTERNALGENERATORACTION_HH */
