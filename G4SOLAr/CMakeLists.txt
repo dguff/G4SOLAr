@@ -39,7 +39,7 @@ message(STATUS "Geant4 GDML SUPPORT: ${Geant4_gdml_FOUND}")
 set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
 if (NOT G4SOLAR_EXT_DIR)
-  set(G4SOLAR_EXT_DIR   "${PROJECT_SOURCE_DIR}/extern" )
+  set(G4SOLAR_EXT_DIR   "${PROJECT_SOURCE_DIR}/extern/install" )
 endif()
 set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
 set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
@@ -52,6 +52,7 @@ set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 # cmakelists in there
 #
 # 1. RapidJSON
+message(STATUS "G4SOLAR_EXT_DIR set to ${G4SOLAR_EXT_DIR}")
 include(ExternalProject)
 if(NOT RAPIDJSON_DIR)
   set(RAPIDJSON_DIR "${G4SOLAR_EXT_DIR}/rapidjson")
@@ -66,6 +67,9 @@ find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG PATHS ${BXDECAY0_DIR} NO
 if(BxDecay0_FOUND)
   message(STATUS "BxDecay0 found: include at ${BxDecay0_INCLUDE_DIR}")
   list(APPEND CMAKE_PREFIX_PATH ${BXDECAY0_DIR})
+endif()
+if (RapidJSON_FOUND)
+  message(STATUS "RapidJSON found: include at ${RapidJSON_INCLUDE_DIR}")
 endif()
 
 if(NOT MARLEY_DIR)
@@ -99,7 +103,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/physics
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
-                    ${RapidJSON_INCLUDE_DIR}
+                    ${RapidJSON_INCLUDE_DIR}/..
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 )
