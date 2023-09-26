@@ -86,6 +86,9 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetMarleyConf(G4String marley_conf); 
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
+    void SetGENIEEvntID(G4Event *ev, G4int evntID); //--JM
+    void SetGENIEEvntExt(G4int evntID); //--JM
+    void SetGENIEFile(G4String filename); //--JM
 
   private:
     std::vector<G4VUserPrimaryGeneratorAction*> fGeneratorActions; 
@@ -112,6 +115,9 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     G4bool fDoDriftElectrons;
     G4bool fDoTraceOptPhotons;
+
+    G4int fGENIEEvntNum; //--JM
+    G4String fGENIEFile;
 
     G4ThreeVector  SampleRandomDirection(); 
 

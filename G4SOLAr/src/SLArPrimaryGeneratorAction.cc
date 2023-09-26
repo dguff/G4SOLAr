@@ -212,6 +212,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       {
 	SLArGENIEGeneratorAction* genie_gen = 
 	  (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
+	genie_gen->SetGENIEEvntExt(fGENIEEvntNum);
+	genie_gen->Initialize(fGENIEFile);
 	gen = genie_gen;
       }        
       break;//--JM
@@ -328,6 +330,17 @@ G4ThreeVector SLArPrimaryGeneratorAction::SampleRandomDirection() {
   G4ThreeVector dir(ux, uy, uz);
   
   return dir; 
+}
+
+void SLArPrimaryGeneratorAction::SetGENIEEvntExt(G4int evntID) { // --JM
+  // Set event ID to start simulation at
+  printf("Setting GENIE starting event ID to %i.",evntID);
+  fGENIEEvntNum = evntID;
+}
+
+void SLArPrimaryGeneratorAction::SetGENIEFile(G4String filename) { // --JM
+  printf("Setting GENIE file as:\n\t %s.",filename);
+  fGENIEFile = filename;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

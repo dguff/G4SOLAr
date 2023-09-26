@@ -30,15 +30,22 @@ struct GenieEvent{
 
 class SLArGENIEGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+private:
+  
 protected:
-  TFile m_gfile {};
   TTree *m_gtree {};
   GenieEvent gVar;
 
+  G4int m_GENIEInitEvnt {};
+
 public:
   SLArGENIEGeneratorAction();
-  //  SLArGENIEGeneratorAction(const G4String genie_file);
+  SLArGENIEGeneratorAction(const G4String genie_file);
   ~SLArGENIEGeneratorAction();
+
+  void SetGENIEEvntExt(G4int evntID);  
+  void Initialize(G4String inGENIE);
+
 
   virtual void GeneratePrimaries(G4Event* evnt);
 

@@ -4,12 +4,11 @@
 //***********************************************************************
 //************************** CONSTRUCTORS *******************************
 
-SLArGENIEGeneratorAction::SLArGENIEGeneratorAction() 
-  : m_gfile("/pbs/home/j/jmcelwee/data/enubet_genie_seed.root"), m_gtree(0)
+void SLArGENIEGeneratorAction::Initialize(G4String inGENIE)
 {
+  TFile *GENIEInput = TFile::Open(inGENIE.c_str());
 
-  //  TFile infile(m_gfile.c_str(),"READ");
-  m_gfile.GetObject("enubetG",m_gtree);
+  m_gtree = (TTree*) GENIEInput->Get("enubetG");
 
   m_gtree->SetBranchAddress("EvtNum",&gVar.EvtNum);
   m_gtree->SetBranchAddress("StdHepN",&gVar.nPart);
@@ -18,11 +17,17 @@ SLArGENIEGeneratorAction::SLArGENIEGeneratorAction()
   m_gtree->SetBranchAddress("StdHepP4",&gVar.p4);
   m_gtree->SetBranchAddress("StdHepX4",&gVar.x4);
   m_gtree->SetBranchAddress("EvtVtx",&gVar.vtx);
+}
 
-  m_gtree->Show(0);
+SLArGENIEGeneratorAction::SLArGENIEGeneratorAction() 
+  : m_gtree(0)
+{}
 
 
-
+SLArGENIEGeneratorAction::SLArGENIEGeneratorAction(const G4String genie_file)
+  : m_gtree(0)
+{
+  Initialize(genie_file);
 }
 
 
@@ -37,9 +42,10 @@ SLArGENIEGeneratorAction::~SLArGENIEGeneratorAction()
 void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 {
   // No idea about the units, need to think about what we need
-
-  int evtNum = ev->GetEventID();
+  
+  int evtNum = ev->GetEventID() + m_GENIEInitEvnt;
   m_gtree->GetEntry(evtNum);
+  std::cout << "   GENIE TTree event selection: " << evtNum << std::endl;
 
   size_t particle_idx = 0; // Think this can be done in a better way
 
@@ -48,7 +54,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   std::vector<G4PrimaryVertex*> primary_vertices;
 
   for (int i=0; i<gVar.nPart; i++){
-    //    std::cout << gVar.pdg[i] << std::endl;
+
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
     G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
 							gVar.p4[i][0]*1E3,
@@ -73,19 +79,14 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 //***********************************************************************
 
 
+//***********************************************************************
+//***********************************************************************
 
-
-
-
-/*
-SLArGENIEGeneratorAction::SLArGENIEGeneratorAction(const G4String genie_file)
-  : m_gfile(genie_file)
+void SLArGENIEGeneratorAction::SetGENIEEvntExt(G4int evntID)
 {
-  TFile infile(m_gfile,"READ");
-  infile.GetObject("enubetG",m_gtree);
+  m_GENIEInitEvnt = evntID;
 }
 
-void SLArGENIEGeneratorAction::TestFunction()
-{
-  m_gtree->Show(0);
-  }*/
+
+
+//***********************************************************************
