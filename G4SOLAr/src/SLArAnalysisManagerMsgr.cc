@@ -6,6 +6,7 @@
 #include <sstream>
 #include "SLArAnalysisManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
+#include "SLArDetectorConstruction.hh"
 
 #include "G4RunManager.hh"
 
@@ -27,13 +28,15 @@
 SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
-  fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr)
+  fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
+  fCmdGeoAnodeDepth(nullptr)
 #ifdef SLAR_GDML
   ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
 #endif
 {
   TString UIManagerPath = "/SLAr/manager/";
+  TString UIGeometryPath = "/SLAr/geometry/";
   TString UIExportPath = "/SLAr/export/"; 
 
   fMsgrDir = new G4UIdirectory(UIManagerPath);
@@ -65,6 +68,10 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdPlotXSec->SetParameterName("xsec_spec", false);
   fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
   
+  fCmdGeoAnodeDepth = 
+    new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
+  fCmdGeoAnodeDepth->SetGuidance("Set visualization depth for SoLAr anode");
+  fCmdGeoAnodeDepth->SetParameterName("depth", false);
   
 #ifdef SLAR_GDML
   fCmdGDMLFileName = 
@@ -89,6 +96,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdOutputFileName) delete fCmdOutputFileName;
   if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
   if (fCmdPlotXSec      ) delete fCmdPlotXSec      ; 
+  if (fCmdGeoAnodeDepth ) delete fCmdGeoAnodeDepth ; 
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -139,7 +147,9 @@ void SLArAnalysisManagerMsgr::SetNewValue
           _particle, _process, _material, std::atoi(_log)
         )
     ); 
-    
+  }
+  else if (cmd == fCmdGeoAnodeDepth) {
+    fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

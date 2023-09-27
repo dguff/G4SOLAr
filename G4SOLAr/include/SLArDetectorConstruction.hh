@@ -86,6 +86,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void                            DumpSuperCellMap(G4String path = "");
     //! Construct scorers in the cryostat layers for neutron shielding studies
     void                            ConstructCryostatScorer(); 
+    //! Set anode visualization attributes 
+    void                            SetAnodeVisAttributes(const int depth = 0); 
 
   private:
 

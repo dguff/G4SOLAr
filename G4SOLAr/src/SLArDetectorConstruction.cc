@@ -666,7 +666,6 @@ void SLArDetectorConstruction::BuildAndPlaceAnode() {
   printf("SLArDetectorConstruction::BuildAndPlaceAnode()...\n");
   printf("-- Building readout tile\n");
   fReadoutTile->BuildReadoutTile(); 
-  fReadoutTile->SetVisAttributes();
   fReadoutTile->BuildLogicalSkinSurface(); 
 
   printf("-- Building readout tile assemblies\n");
@@ -704,6 +703,15 @@ void SLArDetectorConstruction::BuildAndPlaceAnode() {
   ConstructAnodeMap(); 
 }
 
+void SLArDetectorConstruction::SetAnodeVisAttributes(const int depth) {
+  fReadoutTile->SetVisAttributes(depth); 
+  for (auto& mt : fReadoutMegaTile) {
+    mt.second->SetVisAttributes(depth);
+  }
+
+  return;
+}
+
 void SLArDetectorConstruction::ConstructAnodeMap() {
   printf("SLArDetectorConstruction::ConstructAnodeMap()\n");
   auto ana_mgr = SLArAnalysisManager::Instance(); 
@@ -714,9 +722,11 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
     // (which is replicated for all the megatiles in the anode). 
     int megatile_nr = anodeCfg->GetMap().size(); 
     printf("%s has %i elements registered\n", anodeCfg->GetName(), megatile_nr); 
+#ifdef SLAR_DEBUG
     for (const auto& mt : anodeCfg->GetMap()) {
       printf("%s\n", mt.second->GetName()); 
     }
+#endif
 
     auto mtileCfg = anodeCfg->GetMap().begin()->second; 
 

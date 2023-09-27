@@ -24,6 +24,7 @@ class SLArDetReadoutTileAssembly : public SLArBaseDetModule
     void BuildReadoutPlane(SLArDetReadoutTile*); 
     SLArBaseDetModule* GetTileRow() {return fTileRow;}
     virtual void Init(const rapidjson::Value&) override {}
+    void SetVisAttributes(const int depth = 0);
   protected:
 
   private: 

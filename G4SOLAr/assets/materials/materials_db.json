@@ -325,6 +325,9 @@
     },
     {"name" : "SiliconPassive",
       "NIST": "G4_Si"
+    }, 
+    {"name" : "CopperPassive", 
+      "NIST" : "G4_Cu"
     }
   ]
 }

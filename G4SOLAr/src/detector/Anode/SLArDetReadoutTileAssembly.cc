@@ -108,7 +108,6 @@ void SLArDetReadoutTileAssembly::BuildReadoutPlane(SLArDetReadoutTile* tile)
   fModLV = new G4LogicalVolume(fModSV, 
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
 
-  fModLV->SetVisAttributes( G4VisAttributes( G4Colour(0.82, 0.82, 0.82) ) ); 
   
   SLArPlaneParameterisation* planeParametrization = 
     new SLArPlaneParameterisation(
@@ -121,6 +120,17 @@ void SLArDetReadoutTileAssembly::BuildReadoutPlane(SLArDetReadoutTile* tile)
         kXAxis, n_x, planeParametrization, true) 
   );
 }
+
+void SLArDetReadoutTileAssembly::SetVisAttributes(const int depth) {
+  if (depth == 0) {
+    fModLV->SetVisAttributes( G4VisAttributes( G4Colour(0.82, 0.82, 0.82) ) ); 
+  }
+  else {
+    fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  }
+  return;
+}
+
 
 
 
