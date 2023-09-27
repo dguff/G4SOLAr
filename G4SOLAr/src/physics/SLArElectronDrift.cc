@@ -153,19 +153,23 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
           getchar(); 
           continue;
         }
-        SLArEventMegatile* evMT=anodeEv->GetMegaTilesMap().find(mtile->GetIdx())->second;
-        if (!evMT) {
-          printf("SLArElectronDrift::WARNING No MT event registered at idx %i\n", 
-              mtile->GetIdx());
-          getchar(); 
-          continue;
+
+        SLArEventMegatile* evMT=nullptr;
+        auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
+        if (mt_itr == anodeEv->GetMegaTilesMap().end()) {
+          evMT = anodeEv->CreateEventMegatile(mtile->GetIdx()); 
         }
-        SLArEventTile* evT=evMT->GetTileMap().find(tile->GetIdx())->second;
-        if (!evT) {
-          printf("SLArElectronDrift::WARNING No Tile event registered at idx %i\n", 
-              tile->GetIdx());
-          getchar(); 
-          continue;
+        else {
+          evMT = mt_itr->second;
+        }
+
+        SLArEventTile* evT=nullptr;
+        auto t_itr = evMT->GetTileMap().find(tile->GetIdx()); 
+        if (t_itr == evMT->GetTileMap().end()) {
+          evT = evMT->CreateEventTile(tile->GetIdx()); 
+        }
+        else {
+          evT = t_itr->second;
         }
         evT->RegisterChargeHit(pixID[2], new SLArEventChargeHit(t_[i], trkId, 0)); 
 //#ifdef SLAR_DEBUG

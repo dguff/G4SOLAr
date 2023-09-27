@@ -5,6 +5,7 @@
  */
 
 #include "event/SLArEventAnode.hh"
+#include "config/SLArCfgMegaTile.hh"
 
 ClassImp(SLArEventAnode)
 
@@ -26,7 +27,7 @@ SLArEventAnode::SLArEventAnode(const SLArEventAnode& right)
 
 SLArEventAnode::SLArEventAnode(SLArCfgAnode* cfg) {
   SetName(cfg->GetName()); 
-  ConfigSystem(cfg); 
+  //ConfigSystem(cfg); 
   return;
 }
 
@@ -53,24 +54,45 @@ int SLArEventAnode::ConfigSystem(SLArCfgAnode* cfg) {
   return imegatile;
 }
 
+SLArEventMegatile* SLArEventAnode::CreateEventMegatile(const int mtIdx) {
+  if (fMegaTilesMap.count(mtIdx)) {
+    printf("SLArEventAnode::CreateEventMegatile(%i) WARNING: Megatile nr %i already present in anode %i register\n", mtIdx, mtIdx, fID);
+    return fMegaTilesMap.find(mtIdx)->second;
+  }
+
+  auto mt_event = new SLArEventMegatile(); 
+  mt_event->SetIdx(mtIdx); 
+  fMegaTilesMap.insert( std::make_pair(mtIdx, mt_event) );  
+
+  return mt_event;
+}
+
 int SLArEventAnode::RegisterHit(SLArEventPhotonHit* hit) {
   int mgtile_idx = hit->GetMegaTileIdx(); 
-  if (fMegaTilesMap.count(mgtile_idx)) {
-    fMegaTilesMap.find(mgtile_idx)->second->RegisterHit(hit);
-    fNhits++;
-    return 1; 
-  } else {
-    printf("SLArEventAnode::RegisterHit WARNING\n"); 
-    printf("Megatile with ID %i is not in store\n", mgtile_idx); 
-    return 0; 
-  }
+  SLArEventMegatile* mt_event = nullptr;
+  if (fMegaTilesMap.count(mgtile_idx) == 0) mt_event = CreateEventMegatile(mgtile_idx);
+  else mt_event = fMegaTilesMap.find(mgtile_idx)->second;
+
+  mt_event->RegisterHit(hit);
+  fNhits++;
+  return 1; 
+  //} else {
+    //printf("SLArEventAnode::RegisterHit WARNING\n"); 
+    //printf("Megatile with ID %i is not in store\n", mgtile_idx); 
+    //CreateEventMegatile(hit->GetMegaTileIdx());
+    //return 0; 
+  //}
 }
 
 int SLArEventAnode::ResetHits() {
+  printf("SLArEventAnode::ResetHits() clear event on anode %i\n", fID);
   int nn = 0; 
   for (auto &mgtile : fMegaTilesMap) {
     nn += mgtile.second->ResetHits(); 
+    delete mgtile.second; mgtile.second = nullptr;
   }
+
+  fMegaTilesMap.clear();
   return nn; 
 }
 

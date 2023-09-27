@@ -19,12 +19,14 @@ class SLArEventMegatile : public TNamed {
     SLArEventMegatile(const SLArEventMegatile& right);
     ~SLArEventMegatile(); 
 
-    int ConfigModule(SLArCfgMegaTile* cfg);
+    SLArEventTile* CreateEventTile(const int tileIdx); 
+    int ConfigModule(const SLArCfgMegaTile* cfg);
 
-    std::map<int, SLArEventTile*>& GetTileMap() {return fTilesMap;}
-    int GetNPhotonHits();
-    int GetNChargeHits(); 
-    int GetIdx() {return fIdx;}
+    inline const std::map<int, SLArEventTile*>& GetConstTileMap() const {return fTilesMap;}
+    inline std::map<int, SLArEventTile*>& GetTileMap() {return fTilesMap;}
+    int GetNPhotonHits() const;
+    int GetNChargeHits() const; 
+    inline int GetIdx() const {return fIdx;}
 
     int RegisterHit(SLArEventPhotonHit* hit); 
     int ResetHits(); 

@@ -36,7 +36,8 @@ int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
     SLArEventAnode* evAnode = new SLArEventAnode(anode.second); 
-    evAnode->ConfigSystem(anode.second); 
+    evAnode->SetID(anode.second->GetIdx()); 
+    //evAnode->ConfigSystem(anode.second); 
     fEvAnode.insert(std::make_pair(anode.first, evAnode)); 
   }
   

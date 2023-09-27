@@ -223,8 +223,9 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       dstHit->SetRowCellNr(hit->GetRowCellNr()); 
       dstHit->SetCellNr(hit->GetCellNr()); 
 
-      SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx)->RegisterHit(
-                            (SLArEventPhotonHit*)dstHit->Clone());
+
+      auto ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
+      ev_anode->RegisterHit((SLArEventPhotonHit*)dstHit->Clone());
       
       delete dstHit;
     }
