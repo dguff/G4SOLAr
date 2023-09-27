@@ -230,7 +230,7 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
           G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg->GetIdx(), 
               mtCfg->GetIdx(), tileCfg->GetIdx()); 
           tileCfg->SetName( tileName.data() ); 
-          printf("tile name: %s\n", tileCfg->GetName()); 
+          //printf("tile name: %s\n", tileCfg->GetName()); 
 
           tileCfg->SetPhi( anodeCfg->GetPhi() ); 
           tileCfg->SetTheta( anodeCfg->GetTheta() ); 

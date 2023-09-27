@@ -34,18 +34,18 @@ class SLArEventPhotonHit : public SLArEventGenericHit
     void  SetRowCellNr(int n) {fRowCellNr = n; }
     void  SetTileInfo(int mtrow, int mg, int row, int tile); 
 
-    int   GetMegaTileNr() {return fMegaTileNr;}
-    int   GetRowTileNr() {return fRowTileNr;}
-    int   GetTileNr() {return fTileNr;}
-    inline int GetTileIdx() {return (fRowTileNr+1)*100 + fTileNr;}
-    inline int GetMegaTileIdx() {return (fMegaTileRowNr+1)*1000 + fMegaTileNr;}
-    int   GetCellNr() {return fCellNr;}
-    int   GetRowCellNr() {return fRowCellNr;}
-    float GetWavelength() {return fWavelength;}
-    int   GetProcess() {return fProcess;}
+    int   GetMegaTileNr() const {return fMegaTileNr;}
+    int   GetRowTileNr() const {return fRowTileNr;}
+    int   GetTileNr() const {return fTileNr;}
+    inline int GetTileIdx() const {return (fRowTileNr+1)*100 + fTileNr;}
+    inline int GetMegaTileIdx() const {return (fMegaTileRowNr+1)*1000 + fMegaTileNr;}
+    int   GetCellNr() const {return fCellNr;}
+    int   GetRowCellNr() const {return fRowCellNr;}
+    float GetWavelength() const {return fWavelength;}
+    int   GetProcess() const {return fProcess;}
     float* GetLocalPos() {return fLocPos ;}
 
-    void  DumpInfo  ();
+    void DumpInfo() const;
 
   private:
     int          fMegaTileRowNr; 

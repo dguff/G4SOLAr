@@ -17,7 +17,9 @@ SLArCfgMegaTile::SLArCfgMegaTile()
 SLArCfgMegaTile::SLArCfgMegaTile(TString name, int serie) 
   : SLArCfgAssembly<SLArCfgReadoutTile>(name, serie) 
 {
+#ifdef SLAR_DEBUG
   printf("SLArCfgMegaTile created with name %s\n", fName.Data());
+#endif
 }
 
 SLArCfgMegaTile::SLArCfgMegaTile(const SLArCfgMegaTile &cfg)
