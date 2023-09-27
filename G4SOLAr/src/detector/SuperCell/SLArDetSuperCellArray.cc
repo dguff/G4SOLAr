@@ -194,11 +194,11 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
   //printf("vol name: %s (%lu daughters)\n", vol->GetName().data(), fModLV->GetNoDaughters());
   vol->SetCopyNo(800+fID); 
 
-  //for (auto &subModules : fSubModules) {
-    //subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
-  //}
+  for (auto &subModules : fSubModules) {
+    subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
+  }
 
-  //fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 }
 
 std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(
