@@ -44,6 +44,7 @@ class SLArPrimaryGeneratorMessenger;
 class SLArPGunGeneratorAction; 
 class SLArBackgroundGeneratorAction;
 class SLArExternalGeneratorAction;
+class SLArGENIEGeneratorAction;//--JM
 
 namespace bxdecay0_g4 {
   class SLArDecay0GeneratorAction;
@@ -54,7 +55,8 @@ namespace marley {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4};
+enum  EGenerator {kParticleGun=0, kDecay0=1, kMarley=2, kBackground=3, kExternalGen=4,
+		  kGENIE=5};//--JM Add GENIE
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
 class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
@@ -84,6 +86,9 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetMarleyConf(G4String marley_conf); 
     void SetPGunEnergy(G4double ekin); 
     void SetPGunParticle(G4String particle_name); 
+    void SetGENIEEvntID(G4Event *ev, G4int evntID); //--JM
+    void SetGENIEEvntExt(G4int evntID); //--JM
+    void SetGENIEFile(G4String filename); //--JM
 
   private:
     std::vector<G4VUserPrimaryGeneratorAction*> fGeneratorActions; 
@@ -110,6 +115,9 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     G4bool fDoDriftElectrons;
     G4bool fDoTraceOptPhotons;
+
+    G4int fGENIEEvntNum; //--JM
+    G4String fGENIEFile;
 
     G4ThreeVector  SampleRandomDirection(); 
 
