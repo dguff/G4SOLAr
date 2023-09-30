@@ -27,11 +27,15 @@ class SLArEventAnode : public TNamed {
     inline int GetNhits() {return fNhits;}
     inline bool IsActive() {return fIsActive;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
-    bool SortHits(); 
+    inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
+    inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    //bool SortHits(); 
 
     inline void SetID(const int anode_id) {fID = anode_id;}
     inline int  GetID() const {return fID;}
@@ -40,6 +44,8 @@ class SLArEventAnode : public TNamed {
     int fID; 
     int fNhits; 
     bool fIsActive;
+    UShort_t fLightBacktrackerRecordSize;
+    UShort_t fChargeBacktrackerRecordSize;
     std::map<int, SLArEventMegatile*> fMegaTilesMap;
 
   public:

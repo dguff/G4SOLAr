@@ -69,5 +69,7 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 }
 
 SLArPBombGeneratorAction::~SLArPBombGeneratorAction()
-{}
+{
+  printf("deleting PBomb generator action... DONE\n");
+}
 

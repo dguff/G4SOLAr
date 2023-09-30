@@ -10,7 +10,9 @@
 ClassImp(SLArEventAnode)
 
 SLArEventAnode::SLArEventAnode()
-  : fID(0), fNhits(0), fIsActive(true) {}
+  : fID(0), fNhits(0), fIsActive(true), 
+    fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0) 
+{}
 
 SLArEventAnode::SLArEventAnode(const SLArEventAnode& right) 
   : TNamed(right) 
@@ -18,6 +20,8 @@ SLArEventAnode::SLArEventAnode(const SLArEventAnode& right)
   fID = right.fID; 
   fNhits = right.fNhits;
   fIsActive = right.fIsActive; 
+  fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
+  fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
   for (const auto &mgev : right.fMegaTilesMap) {
     fMegaTilesMap.insert(
         std::make_pair(mgev.first, (SLArEventMegatile*)mgev.second->Clone())
@@ -62,20 +66,22 @@ SLArEventMegatile* SLArEventAnode::CreateEventMegatile(const int mtIdx) {
 
   auto mt_event = new SLArEventMegatile(); 
   mt_event->SetIdx(mtIdx); 
+  mt_event->SetLightBacktrackerRecordSize( fLightBacktrackerRecordSize); 
+  mt_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize); 
   fMegaTilesMap.insert( std::make_pair(mtIdx, mt_event) );  
 
   return mt_event;
 }
 
-int SLArEventAnode::RegisterHit(SLArEventPhotonHit* hit) {
+SLArEventTile* SLArEventAnode::RegisterHit(SLArEventPhotonHit* hit) {
   int mgtile_idx = hit->GetMegaTileIdx(); 
   SLArEventMegatile* mt_event = nullptr;
   if (fMegaTilesMap.count(mgtile_idx) == 0) mt_event = CreateEventMegatile(mgtile_idx);
   else mt_event = fMegaTilesMap.find(mgtile_idx)->second;
 
-  mt_event->RegisterHit(hit);
+  auto t_event = mt_event->RegisterHit(hit);
   fNhits++;
-  return 1; 
+  return t_event; 
   //} else {
     //printf("SLArEventAnode::RegisterHit WARNING\n"); 
     //printf("Megatile with ID %i is not in store\n", mgtile_idx); 
@@ -103,10 +109,10 @@ void SLArEventAnode::SetActive(bool is_active) {
   }
 }
 
-bool SLArEventAnode::SortHits() {
-  int isort = true;
-  for (auto &mgtile : fMegaTilesMap) {
-    isort *= mgtile.second->SortHits(); 
-  }
-  return isort;
-}
+//bool SLArEventAnode::SortHits() {
+  //int isort = true;
+  //for (auto &mgtile : fMegaTilesMap) {
+    //isort *= mgtile.second->SortHits(); 
+  //}
+  //return isort;
+//}

@@ -38,6 +38,8 @@ add_library(SLArMCEventReadout
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargeHit.hh
   ${G4SOLAR_SRC_DIR}/event/SLArEventPhotonHit.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventPhotonHit.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventBacktrackerRecord.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventBacktrackerRecord.hh
   ${G4SOLAR_SRC_DIR}/event/SLArEventHitsCollection.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventHitsCollection.hh
   ${G4SOLAR_SRC_DIR}/event/SLArEventChargePixel.cc
@@ -64,6 +66,7 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventGenericHit.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventPhotonHit.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargeHit.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventBacktrackerRecord.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventHitsCollection.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventChargePixel.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTile.hh

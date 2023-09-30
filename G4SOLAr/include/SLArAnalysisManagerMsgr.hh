@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArAnalysisManagerMsgr
- * @created     : martedì mar 03, 2020 17:15:22 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArAnalysisManagerMsgr.hh
+ * @created     : Tue Mar 03, 2020 17:15:22 CET
  */
 
 #ifndef SLArANALYSISMANAGERMSGR_HH
@@ -45,6 +45,8 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdWriteCfgFile  ; 
     G4UIcmdWithAString*         fCmdPlotXSec      ; 
     G4UIcmdWithAnInteger*       fCmdGeoAnodeDepth ; 
+    G4UIcmdWithAString*         fCmdEnableBacktracker;
+    G4UIcmdWithAString*         fCmdRegisterBacktracker;
 #ifdef SLAR_GDML
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 
     G4UIcmdWithAString*         fCmdGDMLExport    ;

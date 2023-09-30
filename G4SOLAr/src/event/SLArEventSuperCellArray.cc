@@ -59,12 +59,13 @@ SLArEventSuperCell* SLArEventSuperCellArray::CreateEventSuperCell(const int scId
   }
 
   auto sc_event = new SLArEventSuperCell(scIdx); 
+  sc_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
   fSuperCellMap.insert( std::make_pair(scIdx, sc_event));
 
   return sc_event;
 }
 
-int SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
+SLArEventSuperCell* SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
   int sc_idx = hit->GetTileIdx(); 
   SLArEventSuperCell* sc_event = nullptr;
   if (fSuperCellMap.count( sc_idx) == 0) sc_event = CreateEventSuperCell(sc_idx); 
@@ -72,7 +73,7 @@ int SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
 
   sc_event->RegisterHit(hit);
   fNhits++;
-  return 1; 
+  return sc_event; 
   //} else {
     //printf("SLArEventSuperCellArray::RegisterHit WARNING\n"); 
     //printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
@@ -97,13 +98,13 @@ void SLArEventSuperCellArray::SetActive(bool is_active) {
   }
 }
 
-bool SLArEventSuperCellArray::SortHits() {
-  int isort = true;
-  for (auto &sc : fSuperCellMap) {
-    isort *= sc.second->SortHits(); 
-  }
-  return isort;
-}
+//bool SLArEventSuperCellArray::SortHits() {
+  //int isort = true;
+  //for (auto &sc : fSuperCellMap) {
+    //isort *= sc.second->SortHits(); 
+  //}
+  //return isort;
+//}
 
 
 

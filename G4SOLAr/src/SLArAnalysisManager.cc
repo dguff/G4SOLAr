@@ -11,6 +11,7 @@
 #include "G4HadronicProcessStore.hh"
 
 #include "SLArAnalysisManager.hh"
+#include "SLArBacktrackerManager.hh"
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
@@ -53,6 +54,9 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent  (nullptr), 
+    fSuperCellBacktrackerManager(nullptr), 
+    fVUVSiPMBacktrackerManager(nullptr), 
+    fChargeBacktrackerManager(nullptr), 
     fPDSysCfg(nullptr)
 {
   if ( ( isMaster && fgMasterInstance ) || ( fgInstance ) ) {
@@ -84,6 +88,9 @@ SLArAnalysisManager::~SLArAnalysisManager()
       fRootFile->Close(); 
     }
   }
+  if (fChargeBacktrackerManager) delete fChargeBacktrackerManager;
+  if (fVUVSiPMBacktrackerManager) delete fVUVSiPMBacktrackerManager;
+  if (fSuperCellBacktrackerManager) delete fSuperCellBacktrackerManager;
   if ( this->fIsMaster ) fgMasterInstance = nullptr;
   if ( fAnaMsgr        ) delete  fAnaMsgr  ; 
   fgInstance = nullptr;
@@ -419,4 +426,104 @@ int SLArAnalysisManager::WriteCrossSection(const SLArXSecDumpSpec xsec_dump) {
   delete gxsec;
 
   return 0; 
+}
+
+
+void SLArAnalysisManager::ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys) {
+
+  switch (isys) {
+    case backtracker::kSuperCell:
+      {
+        fSuperCellBacktrackerManager = new backtracker::SLArBacktrackerManager(); 
+        break;
+      }
+    case backtracker::kVUVSiPM:
+      {
+        fVUVSiPMBacktrackerManager = new backtracker::SLArBacktrackerManager();
+        break;
+      }
+    case backtracker::kCharge:
+      {
+        fChargeBacktrackerManager = new backtracker::SLArBacktrackerManager();
+        break;
+      }
+    default :
+      {
+        printf("SLArAnalysisManager::ConstructBacktracker() WARNING case %i is not implemented\n", isys);
+        break;
+      }
+  }
+  return;
+}
+
+void SLArAnalysisManager::ConstructBacktracker(const G4String sys) {
+
+  backtracker::EBkTrkReadoutSystem isys = backtracker::GetBacktrackerReadoutSystem( sys );
+  ConstructBacktracker( isys );
+
+  return;
+}
+
+backtracker::SLArBacktrackerManager* SLArAnalysisManager::GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys) 
+{
+  backtracker::SLArBacktrackerManager* bktMngr = nullptr;
+
+  switch (isys) {
+    case backtracker::kCharge:
+      bktMngr = fChargeBacktrackerManager;
+      break;
+
+    case backtracker::kVUVSiPM:
+      bktMngr = fVUVSiPMBacktrackerManager;
+      break;
+
+    case backtracker::kSuperCell:
+       bktMngr = fSuperCellBacktrackerManager; 
+       break;
+
+    default:
+       break;
+  }
+  return bktMngr;
+}
+
+backtracker::SLArBacktrackerManager* SLArAnalysisManager::GetBacktrackerManager(const G4String sys) {
+
+  backtracker::EBkTrkReadoutSystem isys = backtracker::GetBacktrackerReadoutSystem( sys );
+
+  auto bktMngr = GetBacktrackerManager( isys );
+
+  return bktMngr;
+}
+
+void SLArAnalysisManager::SetupBacktrackerRecords() {
+
+  // charge backtrackers 
+  if (fChargeBacktrackerManager) {
+    if (fChargeBacktrackerManager->IsNull() == false) {
+
+      for (auto evAnode : fMCEvent->GetEventAnode()) {
+        evAnode.second->SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
+      }
+    }
+  }
+
+  // vuv sipm backtrackers
+  if (fVUVSiPMBacktrackerManager) {
+    if (fVUVSiPMBacktrackerManager->IsNull() == false) {
+      for (auto evAnode : fMCEvent->GetEventAnode()) {
+        evAnode.second->SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
+      }
+    }
+  }
+
+  // supercell backtrakers
+  if (fSuperCellBacktrackerManager) {
+    if (fSuperCellBacktrackerManager->IsNull() == false) {
+      for (auto evSCA : fMCEvent->GetEventSuperCellArray() ) {
+        evSCA.second->SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
+      }
+    }
+
+  }
 }

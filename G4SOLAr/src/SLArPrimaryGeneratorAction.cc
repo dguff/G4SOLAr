@@ -88,20 +88,40 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
 
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
-  //printf("Deleting SLArPrimaryGeneratorAction...\n");
+  printf("Deleting SLArPrimaryGeneratorAction...\n");
   //int igen = 0; 
   //for (auto &gen : fGeneratorActions) {
+    //printf("igen = %i\n", igen);
     //if (gen) {
       //printf("Deleting gen %i\n", igen);
-      //delete gen; 
-      //gen = nullptr;
+      //if (igen == 0) {
+        //SLArPGunGeneratorAction* local = (SLArPGunGeneratorAction*)gen;
+        //delete local;
+      //}
+      //else if (igen == 1) {
+        //SLArPBombGeneratorAction* local = (SLArPBombGeneratorAction*)gen;
+        //delete local;
+      //}
+      //else if (igen == 2) {
+        //auto local = (bxdecay0_g4::SLArDecay0GeneratorAction*)gen;
+        //delete local;
+      //}
+      //else if (igen == 3) {
+        //auto local = (marley::SLArMarleyGeneratorAction*)gen;
+        //delete local;
+      //}
+      //else if (igen == 4) {
+        //auto local = (SLArBackgroundGeneratorAction*)gen;
+        //delete local;
+      //}
+      ////gen = nullptr;
     //}
     //igen++;
   //}
   //if (fBulkGenerator) delete fBulkGenerator;
   //if (fBoxGenerator) delete fBoxGenerator;
   //if (fGunMessenger) delete fGunMessenger;
-  //printf("DONE\n");
+  printf("DONE\n");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

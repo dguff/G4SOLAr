@@ -49,7 +49,7 @@ G4ThreadLocal G4Allocator<SLArSuperCellHit>* SLArSuperCellHitAllocator;
 
 SLArSuperCellHit::SLArSuperCellHit()
 : G4VHit(), fSuperCellNo(0), fSuperCellRowNo(0), fSuperCellArrayNo(0), 
-  fEnergy(-1), fWavelength(-1), fTime(0.), fPhType(-1),
+  fEnergy(-1), fWavelength(-1), fTime(0.), fPhType(-1), fPhProducerID(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
 
@@ -57,7 +57,7 @@ SLArSuperCellHit::SLArSuperCellHit()
 
 SLArSuperCellHit::SLArSuperCellHit(G4double z)
 : G4VHit(), fSuperCellNo(0), fSuperCellRowNo(0), fSuperCellArrayNo(0), 
-  fEnergy(z), fWavelength(-1), fTime(0.), fPhType(-1),
+  fEnergy(z), fWavelength(-1), fTime(0.), fPhType(-1), fPhProducerID(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
 
@@ -78,6 +78,7 @@ SLArSuperCellHit::SLArSuperCellHit(const SLArSuperCellHit &right)
     fSuperCellRowNo = right.fSuperCellRowNo;
     fSuperCellArrayNo = right.fSuperCellArrayNo;
     fPhType       = right.fPhType;
+    fPhProducerID = right.fPhProducerID;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -89,10 +90,11 @@ const SLArSuperCellHit& SLArSuperCellHit::operator=(const SLArSuperCellHit &righ
     fWorldPos     = right.fWorldPos;
     fLocalPos     = right.fLocalPos;
     fTime         = right.fTime;
-    fSuperCellNo = right.fSuperCellNo;
+    fSuperCellNo  = right.fSuperCellNo;
     fSuperCellRowNo = right.fSuperCellRowNo;
     fSuperCellArrayNo = right.fSuperCellArrayNo;
     fPhType       = right.fPhType;
+    fPhProducerID = right.fPhProducerID;
     return *this;
 }
 
@@ -153,6 +155,9 @@ const std::map<G4String,G4AttDef>* SLArSuperCellHit::GetAttDefs() const
 
         (*store)["PhType"] 
           = G4AttDef("PhType","Ph process","Physics","","G4int");
+
+        (*store)["PhProducerID"] 
+          = G4AttDef("PhProducerID","Ph producer trk id","Physics","","G4int");
     }
     return store;
 }
@@ -164,7 +169,7 @@ std::vector<G4AttValue>* SLArSuperCellHit::CreateAttValues() const
     std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
     
     values
-      ->push_back(G4AttValue("HitType","PMTHit",""));
+      ->push_back(G4AttValue("HitType","SuperCellHit",""));
     values
       ->push_back(G4AttValue("Energy",G4BestUnit(fEnergy,"Energy"), ""));
     values
@@ -181,7 +186,8 @@ std::vector<G4AttValue>* SLArSuperCellHit::CreateAttValues() const
       ->push_back(G4AttValue("ArrayNo", G4UIcommand::ConvertToString(fSuperCellArrayNo), ""));
     values
       ->push_back(G4AttValue("PhType", G4UIcommand::ConvertToString(fPhType), ""));
-    
+    values
+      ->push_back(G4AttValue("PhProducerID", G4UIcommand::ConvertToString(fPhProducerID), ""));    
     return values;
 }
 
@@ -209,12 +215,12 @@ void SLArSuperCellHit::SetPhotonProcess(G4String prname)
   else     fPhType = 4;
 }
 
-G4int SLArSuperCellHit::GetPhotonProcessId()
+G4int SLArSuperCellHit::GetPhotonProcessId() const
 {
   return fPhType;
 }
 
-G4String SLArSuperCellHit::GetPhotonProcessName()
+G4String SLArSuperCellHit::GetPhotonProcessName() const
 {
   G4String prname;
   if      (fPhType == 1) prname = "Cerenkov";

@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArAnalysisManagerMsgr
- * @created     : martedì mar 03, 2020 17:15:44 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArAnalysisManagerMsgr.cc
+ * @created     : Tue Mar 03, 2020 17:15:44 CET
  */
 #include <sstream>
 #include "SLArAnalysisManager.hh"
@@ -29,7 +29,9 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
   fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
-  fCmdGeoAnodeDepth(nullptr)
+  fCmdGeoAnodeDepth(nullptr), 
+  fCmdEnableBacktracker(nullptr),
+  fCmdRegisterBacktracker(nullptr)
 #ifdef SLAR_GDML
   ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
@@ -67,6 +69,19 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdPlotXSec->SetGuidance("Write a cross-section to  output");
   fCmdPlotXSec->SetParameterName("xsec_spec", false);
   fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
+
+  fCmdEnableBacktracker = 
+    new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
+  fCmdEnableBacktracker->SetGuidance("Enable backtracker on readout system");
+  fCmdEnableBacktracker->SetParameterName("backtraker_system", false);
+  fCmdEnableBacktracker->SetGuidance("Specfiy readout system");
+  fCmdEnableBacktracker->SetCandidates("charge vuv_sipm supercell");
+
+  fCmdRegisterBacktracker = 
+    new G4UIcmdWithAString(UIManagerPath+"registerBacktracker", this);
+  fCmdRegisterBacktracker->SetGuidance("rnable backtracker on readout system");
+  fCmdRegisterBacktracker->SetParameterName("backtraker_system", false);
+  fCmdRegisterBacktracker->SetGuidance("Specfiy readout system and backtracker [readout_system]:[backtraker]");
   
   fCmdGeoAnodeDepth = 
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
@@ -91,12 +106,14 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
 SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
 {
   G4cerr << "Deleting SLArAnalysisManagerMsgr..." << G4endl;
-  if (fMsgrDir          ) delete fMsgrDir          ;
-  if (fCmdOutputPath    ) delete fCmdOutputPath    ;
-  if (fCmdOutputFileName) delete fCmdOutputFileName;
-  if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
-  if (fCmdPlotXSec      ) delete fCmdPlotXSec      ; 
-  if (fCmdGeoAnodeDepth ) delete fCmdGeoAnodeDepth ; 
+  if (fMsgrDir               ) delete fMsgrDir               ;
+  if (fCmdOutputPath         ) delete fCmdOutputPath         ;
+  if (fCmdOutputFileName     ) delete fCmdOutputFileName     ;
+  if (fCmdWriteCfgFile       ) delete fCmdWriteCfgFile       ; 
+  if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
+  if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
+  if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
+  if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -150,6 +167,28 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdGeoAnodeDepth) {
     fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
+  }
+  else if (cmd == fCmdEnableBacktracker) {
+    SLArAnaMgr->ConstructBacktracker( newVal );
+  }
+  else if (cmd == fCmdRegisterBacktracker) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _system; 
+    G4String _backtracker; 
+    G4String _name = "";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _system = temp;
+      else if (ifield == 1) _backtracker = temp;
+      else if (ifield == 2) _name = temp;
+      ifield++;
+    }
+
+    auto bkt_mngr = SLArAnaMgr->GetBacktrackerManager(_system);
+    bkt_mngr->RegisterBacktracker(backtracker::GetBacktrackerEnum(_backtracker), _name);
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

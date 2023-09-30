@@ -10,7 +10,9 @@
 ClassImp(SLArEventMegatile)
 
 SLArEventMegatile::SLArEventMegatile() 
-  : fIdx(0), fIsActive(true), fNhits(0) {}
+  : fIdx(0), fIsActive(true), fNhits(0), 
+    fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0)
+{}
 
 SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right) 
   : TNamed(right) 
@@ -18,6 +20,8 @@ SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right)
   fIdx = right.fIdx; 
   fNhits = right.fNhits; 
   fIsActive = right.fIsActive; 
+  fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
+  fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
   for (const auto &evtile : right.fTilesMap) {
     fTilesMap.insert(
         std::make_pair(evtile.first, new SLArEventTile(*evtile.second))
@@ -63,12 +67,14 @@ SLArEventTile* SLArEventMegatile::CreateEventTile(const int tileIdx)
 
   auto t_event = new SLArEventTile(); 
   t_event->SetIdx(tileIdx); 
+  t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+  t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
   fTilesMap.insert( std::make_pair(tileIdx, t_event) );  
 
   return t_event;
 }
 
-int SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
+SLArEventTile* SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
   int tile_idx = hit->GetTileIdx(); 
   SLArEventTile* tile_ev = nullptr;
   auto t_itr = fTilesMap.find(tile_idx); 
@@ -77,7 +83,7 @@ int SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
 
   tile_ev->RegisterHit(hit); 
   fNhits++; 
-  return 1;
+  return tile_ev;
 }
 
 int SLArEventMegatile::GetNPhotonHits() const {
@@ -118,10 +124,10 @@ void SLArEventMegatile::SetActive(bool is_active) {
   return;
 }
 
-bool SLArEventMegatile::SortHits() {
-  for (auto &tile : fTilesMap) {
-    tile.second->SortHits(); 
-  }
+//bool SLArEventMegatile::SortHits() {
+  //for (auto &tile : fTilesMap) {
+    //tile.second->SortHits(); 
+  //}
 
-  return true;
-}
+  //return true;
+//}

@@ -59,26 +59,28 @@ public:
     G4ThreeVector GetWorldPos() const { return fWorldPos; }
 
     void      SetPhotonProcess(G4String prname);
-    G4int     GetPhotonProcessId();
-    G4String  GetPhotonProcessName();
+    G4int     GetPhotonProcessId() const;
+    G4String  GetPhotonProcessName() const;
 
-    void SetAnodeIdx(G4int idx) { fAnodeIdx= idx; }
-    G4int GetAnodeIdx() const { return fAnodeIdx; }
-    void SetRowMegaTileIdx(G4int idx) { fRowMegaTileIdx= idx; }
-    G4int GetRowMegaTileIdx() const { return fRowMegaTileIdx; }
-    void SetMegaTileIdx(G4int idx) { fMegaTileIdx= idx; }
-    G4int GetMegaTileIdx() const { return fMegaTileIdx; }
-    void SetRowTileIdx(G4int idx) { fRowTileIdx= idx; }
-    G4int GetRowTileIdx() const { return fRowTileIdx; }
-    void SetTileIdx(G4int idx) { fTileIdx= idx; }
-    G4int GetTileIdx() const { return fTileIdx; }
-    void SetCellNr(G4int n) {fCellNr = n;}
-    G4int GetCellNr() {return fCellNr;}
+    inline void SetAnodeIdx(G4int idx) { fAnodeIdx= idx; }
+    inline G4int GetAnodeIdx() const { return fAnodeIdx; }
+    inline void SetRowMegaTileIdx(G4int idx) { fRowMegaTileIdx= idx; }
+    inline G4int GetRowMegaTileIdx() const { return fRowMegaTileIdx; }
+    inline void SetMegaTileIdx(G4int idx) { fMegaTileIdx= idx; }
+    inline G4int GetMegaTileIdx() const { return fMegaTileIdx; }
+    inline void SetRowTileIdx(G4int idx) { fRowTileIdx= idx; }
+    inline G4int GetRowTileIdx() const { return fRowTileIdx; }
+    inline void SetTileIdx(G4int idx) { fTileIdx= idx; }
+    inline G4int GetTileIdx() const { return fTileIdx; }
+    inline void SetCellNr(G4int n) {fCellNr = n;}
+    inline G4int GetCellNr() const {return fCellNr;}
+    inline void SetProducerID(const int trk_id) {fPhProducerID = trk_id;}
+    inline G4int GetProducerID() const {return fPhProducerID;}
     void SetRowCellNr(G4int n) {fRowCellNr = n;}
     G4int GetRowCellNr() {return fRowCellNr;}
 
+    G4String GetProcessName(int kType) const;
 
-    G4String GetProcessName(int kType);
 private:
     G4int         fAnodeIdx; 
     G4int         fRowMegaTileIdx;
@@ -90,6 +92,7 @@ private:
     G4double      fWavelength;
     G4double      fTime;
     G4int         fPhType;
+    G4int         fPhProducerID;
     G4ThreeVector fLocalPos;
     G4ThreeVector fWorldPos;
 };

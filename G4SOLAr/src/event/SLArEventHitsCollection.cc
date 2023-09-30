@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventHitsCollection
- * @created     : Fir Nov 11, 2022 14:28:03 CET
+ * @file        : SLArEventHitsCollection.cc
+ * @created     : Fri Nov 11, 2022 14:28:03 CET
  */
 
 #include "event/SLArEventHitsCollection.hh"
@@ -12,11 +12,18 @@ templateClassImp(SLArEventHitsCollection)
 
 template<class T>
 SLArEventHitsCollection<T>::SLArEventHitsCollection() 
-  : TNamed(), fIdx(0), fIsActive(true), fNhits(0) {}
+  : TNamed(), fIdx(0), fIsActive(true), fNhits(0), fClockUnit(1), fBacktrackerRecordSize(0)
+{}
 
 template<class T>
-SLArEventHitsCollection<T>::SLArEventHitsCollection(int idx) 
-  : TNamed(), fIdx(idx), fIsActive(true), fNhits(0) {}
+SLArEventHitsCollection<T>::SLArEventHitsCollection(const int idx) 
+  : TNamed(), fIdx(idx), fIsActive(true), fNhits(0), fClockUnit(1), fBacktrackerRecordSize(0) {}
+
+
+template<class T>
+SLArEventHitsCollection<T>::SLArEventHitsCollection(const int idx, const UShort_t clock) 
+  : TNamed(), fIdx(idx), fIsActive(true), fNhits(0), fClockUnit(clock), 
+    fBacktrackerRecordSize(0){}
 
 template<class T>
 SLArEventHitsCollection<T>::SLArEventHitsCollection(const SLArEventHitsCollection<T>& other)
@@ -25,40 +32,41 @@ SLArEventHitsCollection<T>::SLArEventHitsCollection(const SLArEventHitsCollectio
   fIdx = other.fIdx; 
   fIsActive = other.fIsActive; 
   fNhits = other.fNhits; 
+  fClockUnit = other.fClockUnit;
+  fBacktrackerRecordSize = other.fBacktrackerRecordSize;
 
   if (!other.fHits.empty()) {
-    fHits.reserve(other.fHits.size()); 
-    for (const auto &hit : other.fHits) {
-      fHits.push_back((T*)hit->Clone());
-    }
+    fHits = HitsCollection_t(other.fHits); 
+    fBacktrackerCollections = BacktrackerVectorCollection_t(other.fBacktrackerCollections);
   }
 }
 
 template<class T>
 SLArEventHitsCollection<T>::~SLArEventHitsCollection() {
-  for (auto &hit : fHits) delete hit; 
-  fHits.clear(); 
-  fNhits = 0; 
+  ResetHits();
 }
 
 template<class T>
-int SLArEventHitsCollection<T>::RegisterHit(T* hit) {
+int SLArEventHitsCollection<T>::RegisterHit(const T* hit) {
   if (!hit) return -1; 
-  fHits.push_back(hit); 
+  fHits[ConvertToClock<float>(hit->GetTime())]++; 
   fNhits++; 
   return fNhits;
 }
 
-template<class T>
-bool SLArEventHitsCollection<T>::SortHits() {
-  std::sort(fHits.begin(), fHits.end(), T::CompareHitPtrs); 
-  return true; 
-}
+//template<class T>
+//bool SLArEventHitsCollection<T>::SortHits() {
+  //std::sort(fHits.begin(), fHits.end(), T::CompareHitPtrs); 
+  //return true; 
+//}
 
 template<class T>
 int SLArEventHitsCollection<T>::ResetHits() {
-  for (auto &hit : fHits) delete hit; 
   fHits.clear(); 
+  for (auto &b : fBacktrackerCollections) {
+    b.second.Reset();
+  }
+  fBacktrackerCollections.clear();
   fNhits = 0; 
   return fHits.size(); 
 }
@@ -68,10 +76,30 @@ void SLArEventHitsCollection<T>::PrintHits() {
   printf("Hit container ID: %i [%s]\n", fIdx, fName.Data());
   printf("- - - - - - - - - - - - - - - - - - - - - - -\n");
   for (auto &hit : fHits) {
-    hit->DumpInfo(); 
+    printf("[%u] : %i\n", hit.first*fClockUnit, hit.second);
   }
   printf("\n");
 }
+
+template<class T>
+SLArEventBacktrackerVector* SLArEventHitsCollection<T>::GetBacktrackerVector(UShort_t key) {
+  
+  auto bkt_vector = &(fBacktrackerCollections[key]);
+  if (bkt_vector->IsEmpty() == false) return bkt_vector;
+  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize <= 0) {
+    printf("BacktrackerRecordSize is %u. I should not be here...\n", 
+        fBacktrackerRecordSize);
+    return nullptr;
+  }
+  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize > 0) {
+    //printf("initializing backtracker records vector to size %u\n", 
+        //fBacktrackerRecordSize);
+    bkt_vector->InitRecords(fBacktrackerRecordSize);
+  }
+
+  return bkt_vector;
+}
+
 
 template class SLArEventHitsCollection<SLArEventPhotonHit>; 
 template class SLArEventHitsCollection<SLArEventChargeHit>; 

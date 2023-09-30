@@ -158,6 +158,7 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
     hit->SetSuperCellArrayNo( touchable->GetCopyNumber(3) ); 
 
     hit->SetPhotonProcess(procName);
+    hit->SetProducerID( track->GetParentID() );
     
     fHitsCollection->insert(hit);
   }

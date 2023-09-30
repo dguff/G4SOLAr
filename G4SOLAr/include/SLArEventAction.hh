@@ -70,7 +70,7 @@ public:
     G4int GetBoundaryAbsorptionCount()const {return fBoundaryAbsorptionCount;}
 
     void  RegisterNewTrackPID(int, int); 
-    int   FindTopParentID(int); 
+    int   FindAncestorID(int); 
     
 private:
     G4int fTileHCollID;

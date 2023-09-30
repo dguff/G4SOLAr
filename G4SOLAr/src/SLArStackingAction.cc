@@ -108,7 +108,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetInitMomentum( TVector3(
             vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() ) );
 
-      G4int ancestor_id = fEventAction->FindTopParentID( parentID ); 
+      G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
       for (auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
@@ -138,7 +138,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       SLArMCPrimaryInfo* primary = nullptr; 
       auto primaries = anaMngr->GetEvent()->GetPrimaries();
 
-      int primary_parent_id = fEventAction->FindTopParentID(aTrack->GetParentID()); 
+      int primary_parent_id = fEventAction->FindAncestorID(aTrack->GetParentID()); 
 //#ifdef SLAR_DEBUG
       //printf("Primary parent ID %i\n", primary_parent_id);
 //#endif

@@ -28,17 +28,23 @@ class SLArEventMegatile : public TNamed {
     int GetNChargeHits() const; 
     inline int GetIdx() const {return fIdx;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
     void SetIdx(int idx) {fIdx = idx;}
-    bool SortHits(); 
+    inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
+    inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    //bool SortHits(); 
 
   private:
     int fIdx; 
     bool fIsActive; 
     int fNhits; 
+    UShort_t fLightBacktrackerRecordSize;
+    UShort_t fChargeBacktrackerRecordSize;
     std::map<int, SLArEventTile*> fTilesMap; 
 
   public:

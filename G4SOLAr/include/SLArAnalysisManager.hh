@@ -21,6 +21,7 @@
 #include "config/SLArCfgSuperCellArray.hh"
 #include "event/SLArMCEvent.hh"
 
+#include "SLArBacktrackerManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
 
 #include "G4ToolsAnalysisManager.hh"
@@ -47,6 +48,8 @@ class SLArAnalysisManager
     static SLArAnalysisManager* Instance();
     static G4bool IsInstance();
 
+    void   ConstructBacktracker(const G4String readout_system); 
+    void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
     G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
@@ -62,6 +65,9 @@ class SLArAnalysisManager
     int    WriteCrossSection  (SLArXSecDumpSpec xsec_spec); 
 
     // Access and I/O methods
+    backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
+    backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
+    void SetupBacktrackerRecords(); 
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
     SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
@@ -100,6 +106,10 @@ class SLArAnalysisManager
     TFile*              fRootFile;
     TTree*              fEventTree;
     SLArMCEvent*        fMCEvent;
+
+    backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
+    backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;
+    backtracker::SLArBacktrackerManager* fChargeBacktrackerManager;
 
     SLArCfgSystemSuperCell* fPDSysCfg;
     std::map<int, SLArCfgAnode*> fAnodeCfg;

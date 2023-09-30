@@ -18,7 +18,7 @@
 class SLArEventChargePixel : public SLArEventHitsCollection<SLArEventChargeHit> {
   public: 
     SLArEventChargePixel(); 
-    SLArEventChargePixel(const int, SLArEventChargeHit*); 
+    SLArEventChargePixel(const int, const SLArEventChargeHit*); 
     SLArEventChargePixel(const SLArEventChargePixel&); 
     ~SLArEventChargePixel() {}
 
