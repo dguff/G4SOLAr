@@ -1,8 +1,8 @@
 "ReadoutTile" : {
   "dimensions" : [
-    {"name" : "tile_x", "val" :30.0, "unit" : "cm" },
+    {"name" : "tile_x", "val" :256.0, "unit" : "cm" },
     {"name" : "tile_y", "val" : 2.5, "unit" : "mm" },
-    {"name" : "tile_z", "val" :30.0, "unit" : "cm" }
+    {"name" : "tile_z", "val" :256.0, "unit" : "cm" }
   ], 
   "components" : [
     {

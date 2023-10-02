@@ -18,6 +18,7 @@
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -35,7 +36,8 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun ParticleBomb Decay0 Marley ExternalGen");
+  fCmdGenerator->SetCandidates("ParticleGun ParticleBomb Decay0 Marley ExternalGen GENIE");//--JM Add GENIE
+
 
   fCmdParticle= 
     new G4UIcmdWithAString("/SLAr/gen/particle", this);
@@ -118,6 +120,19 @@ SLArPrimaryGeneratorMessenger::
   fCmdDriftElectrons->SetGuidance("Set/unset drift and collection of ionization electrons"); 
   fCmdDriftElectrons->SetParameterName("do_trace", false, true); 
   fCmdDriftElectrons->SetDefaultValue(true);
+
+  fCmdGENIEEvtSeed = 
+    new G4UIcmdWithAnInteger("/SLAr/gen/SetGENIENum",this);
+  fCmdGENIEEvtSeed->SetGuidance("Set starting GENIE event number");
+  fCmdGENIEEvtSeed->SetParameterName("GENIE_evt_num",true);
+  fCmdGENIEEvtSeed->SetDefaultValue(0);
+
+  fCmdGENIEFile = 
+    new G4UIcmdWithAString("/SLAr/gen/SetGENIEFile",this);
+  fCmdGENIEFile->SetGuidance("Set file name and path");
+  fCmdGENIEFile->SetParameterName("GENIE_file",false);
+  fCmdGENIEFile->SetDefaultValue("enubet_genie_seed.root");
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -137,6 +152,8 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdGunDir;
   delete fCmdTracePhotons; 
   delete fCmdDriftElectrons;
+  delete fCmdGENIEEvtSeed;
+  delete fCmdGENIEFile;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -154,6 +171,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
     else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
+    else if (G4StrUtil::contains(strMode, "GENIE")) gen = kGENIE; //--JM
 
     fSLArAction->SetGenerator(gen);
   } 
@@ -216,7 +234,14 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     bool do_drift = fCmdDriftElectrons->GetNewBoolValue(newValue); 
     fSLArAction->SetDriftElectrons(do_drift); 
   }
-
+  else if (command == fCmdGENIEEvtSeed) {
+    G4int evnt = fCmdGENIEEvtSeed->GetNewIntValue(newValue); 
+    fSLArAction->SetGENIEEvntExt(evnt); 
+  } //--JM
+  else if (command == fCmdGENIEFile) {
+    G4String filename = newValue; 
+    fSLArAction->SetGENIEFile(filename); 
+  } //--JM
 
 
 }
