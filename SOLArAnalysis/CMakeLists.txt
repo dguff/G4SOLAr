@@ -20,7 +20,7 @@ include(${ROOT_USE_FILE})
 find_package(Geant4 REQUIRED)
 include(${Geant4_USE_FILE})
 
-find_package(G4SOLAr REQUIRED)
+find_package(G4SOLAr)
 if(G4SOLAr_FOUND)
   message(STATUS "G4SOLAR found: include at ${G4SOLAR_INCLUDE_DIR}")
   list(APPEND CMAKE_PREFIX_PATH ${G4SOLAR_BIN_DIR})

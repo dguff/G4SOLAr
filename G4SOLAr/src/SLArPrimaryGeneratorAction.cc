@@ -41,6 +41,7 @@
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
+#include "SLArGENIEGeneratorAction.hh"//--JM
 
 #include "Randomize.hh"
 #include "SLArRandomExtra.hh"
@@ -60,7 +61,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(5, nullptr),
+   fGeneratorActions(6, nullptr),//--JM Change 5->6
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -76,6 +77,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
   fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
+  fGeneratorActions[kGENIE] = new SLArGENIEGeneratorAction();//--JM
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
@@ -265,6 +267,16 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }        
       break;
 
+    case kGENIE:
+      {
+	SLArGENIEGeneratorAction* genie_gen = 
+	  (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
+	genie_gen->SetGENIEEvntExt(fGENIEEvntNum);
+	genie_gen->Initialize(fGENIEFile);
+	gen = genie_gen;
+      }        
+      break;//--JM
+
     default:
       {
         printf("SLArPGunGeneratorAction::GeneratePrimaries() ERROR ");
@@ -355,7 +367,6 @@ void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
 }
 
 
-
 void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
 {
   fIncludeBackground = true; 
@@ -364,6 +375,17 @@ void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
     (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground];
    bkgGen->BuildBackgroundTable(fBackgoundModelCfg);
    return;
+}
+
+void SLArPrimaryGeneratorAction::SetGENIEEvntExt(G4int evntID) { // --JM
+  // Set event ID to start simulation at
+  printf("Setting GENIE starting event ID to %i.",evntID);
+  fGENIEEvntNum = evntID;
+}
+
+void SLArPrimaryGeneratorAction::SetGENIEFile(G4String filename) { // --JM
+  printf("Setting GENIE file as:\n\t %s.",filename);
+  fGENIEFile = filename;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
