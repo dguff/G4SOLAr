@@ -25,10 +25,10 @@ void refactor_test_sc()
 {
   gStyle->SetPalette(kBlackBody); 
   TColor::InvertPalette(); 
-  TFile* mc_file = new TFile("../install/electrons.root"); 
+  TFile* mc_file = new TFile("../install/slar_b8_cc_nue.root"); 
   TTree* mc_tree = (TTree*)mc_file->Get("EventTree"); 
 
-  //- - - - - - - - - - - - - - - - - - - - - - Access readout configuration
+  //- - - - - - - - - - - - - - - - - - - - - - configuration
   auto PDSSysConfig = (SLArCfgBaseSystem<SLArCfgSuperCellArray>*)mc_file->Get("PDSSysConfig"); 
   std::map<int, SLArCfgAnode*>  AnodeSysCfg;
   AnodeSysCfg.insert( std::make_pair(10, (SLArCfgAnode*)mc_file->Get("AnodeCfg50") ) );
@@ -74,12 +74,14 @@ void refactor_test_sc()
  *  h2_30->Draw("axis");
  *  h2SCArray.find(30)->second->Draw("col same"); 
  */
-  TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 200, 0, 5e3); 
+  TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 1000, 0, 5e3); 
+
+  TH1D* hBacktracker = new TH1D("hBacktracker", "backtracker: trkID", 1000, 0, 1000 );
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
   mc_tree->SetBranchAddress("MCEvent", &ev); 
-  mc_tree->GetEntry(1); 
+  mc_tree->GetEntry(7); 
 
   auto primaries = ev->GetPrimaries(); 
 
@@ -106,6 +108,7 @@ void refactor_test_sc()
         for (const auto &p : t.second->GetPixelEvents()) {
           //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second->GetNhits());
           h2t_->SetBinContent( p.first, p.second->GetNhits() );
+          p.second->PrintHits();
           if (p.second->GetNhits() > z_max) z_max = p.second->GetNhits(); 
         }
         h2pix.push_back( h2t_ ); 
@@ -117,7 +120,17 @@ void refactor_test_sc()
       for (auto &t : mt.second->GetTileMap()) {
         if (t.second->GetHits().empty()) continue;
         for (const auto &p : t.second->GetHits()) {
-          hTime->Fill( p->GetTime() );  
+          hTime->Fill( p.first, p.second );  
+        }
+
+        if (t.second->GetBacktrackerRecordSize() > 0) {
+          for (const auto &backtracker : t.second->GetBacktrackerRecordCollection()) {
+            auto records = backtracker.second.GetConstRecords();
+            auto recordTrkID = records.at(0);
+            for (const auto &trkID : recordTrkID.GetConstCounter()) {
+              hBacktracker->Fill( trkID.first, trkID.second );
+            }
+          }
         }
       }
     }
@@ -147,7 +160,7 @@ void refactor_test_sc()
             t->GetParticleName().Data(), t->GetTrackID(), 
             t->GetTime(),
             t->GetInitKineticEne(), 
-            t->GetTotalNph(), t->GetTotalNph());
+            t->GetTotalNph(), t->GetTotalNel());
         //if (t->GetInitKineticEne() < 1) continue;
         TGraph g; 
         Color_t col = kBlack; 
@@ -195,7 +208,7 @@ void refactor_test_sc()
       n_sc += n;
 
       for (const auto &h : sc.second->GetHits()) {
-        hTime->Fill( h->GetTime() ); 
+        hTime->Fill( h.first, h.second ); 
       }
     }
 
