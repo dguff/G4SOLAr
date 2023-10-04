@@ -88,37 +88,38 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
       ->GetTopTransform().TransformPoint(worldPos);
  
   SLArReadoutTileHit* hit = nullptr;
-  if (track->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) 
+  // Get the creation process of optical photon
+  G4String procName = "";
+  
+  if (track->GetTrackID() != 1) // make sure consider only secondaries
   {
-    // Get the creation process of optical photon
-    G4String procName = "";
-    if (track->GetTrackID() != 1) // make sure consider only secondaries
-    {
-      procName = track->GetCreatorProcess()->GetProcessName();
-    }
-    phEne = track->GetTotalEnergy();
-
-    hit = new SLArReadoutTileHit(); //so create new hit
-    hit->SetPhotonWavelength( CLHEP::h_Planck * CLHEP::c_light / phEne * 1e6);
-    hit->SetWorldPos(worldPos);
-    hit->SetLocalPos(localPos);
-    hit->SetTime(postStepPoint->GetGlobalTime());
-    hit->SetAnodeIdx(touchable->GetCopyNumber(9));
-    hit->SetRowMegaTileIdx(touchable->GetCopyNumber(8)); 
-    hit->SetMegaTileIdx(touchable->GetCopyNumber(7));
-    hit->SetRowTileIdx(touchable->GetCopyNumber(6));
-    hit->SetTileIdx(touchable->GetCopyNumber(5));
-    hit->SetRowCellNr(touchable->GetCopyNumber(4)); 
-    hit->SetCellNr(touchable->GetCopyNumber(3)); 
-    hit->SetPhotonProcess(procName);
-    
-    #ifdef SLAR_DEBUG
-      printf("SLArReadoutTileSD::ProcessHits_constStep\n");
-      printf("%s photon hit at t = %g ns\n", procName.c_str(), hit->GetTime());
-      if (hit->GetTime() < 1*CLHEP::ns) getchar(); 
-    #endif
-    fHitsCollection->insert(hit);
+    auto creator = track->GetCreatorProcess(); 
+    if (creator) procName = creator->GetProcessName();
   }
+  phEne = track->GetTotalEnergy();
+
+  hit = new SLArReadoutTileHit(); //so create new hit
+  hit->SetPhotonWavelength( CLHEP::h_Planck * CLHEP::c_light / phEne * 1e6);
+  hit->SetWorldPos(worldPos);
+  hit->SetLocalPos(localPos);
+  hit->SetTime(postStepPoint->GetGlobalTime());
+  hit->SetAnodeIdx(touchable->GetCopyNumber(9));
+  hit->SetRowMegaTileIdx(touchable->GetCopyNumber(8)); 
+  hit->SetMegaTileIdx(touchable->GetCopyNumber(7));
+  hit->SetRowTileIdx(touchable->GetCopyNumber(6));
+  hit->SetTileIdx(touchable->GetCopyNumber(5));
+  hit->SetRowCellNr(touchable->GetCopyNumber(4)); 
+  hit->SetCellNr(touchable->GetCopyNumber(3)); 
+  hit->SetPhotonProcess(procName);
+  hit->SetProducerID( track->GetParentID() ); 
+
+#ifdef SLAR_DEBUG
+  printf("SLArReadoutTileSD::ProcessHits_constStep\n");
+  printf("%s photon hit at t = %g ns\n", procName.c_str(), hit->GetTime());
+  if (hit->GetTime() < 1*CLHEP::ns) getchar(); 
+#endif
+  fHitsCollection->insert(hit);
+
   return true;
 }
 

@@ -5,6 +5,7 @@
  */
 
 #include "SLArExternalGeneratorAction.hh"
+#include "SLArRandomExtra.hh"
 
 #include <stdio.h>
 
@@ -143,16 +144,4 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   return;
 }
 
-G4ThreeVector SLArExternalGeneratorAction::SampleRandomDirection() {
-  double cosTheta = 2*G4UniformRand() - 1.;
-  double phi = CLHEP::twopi*G4UniformRand();
-  double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
-  double ux = sinTheta*std::cos(phi),
-         uy = sinTheta*std::sin(phi),
-         uz = cosTheta;
-
-  G4ThreeVector dir(ux, uy, uz);
-  
-  return dir; 
-}
 

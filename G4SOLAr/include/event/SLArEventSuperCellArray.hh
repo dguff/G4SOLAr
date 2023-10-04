@@ -19,19 +19,24 @@ class SLArEventSuperCellArray : public TNamed {
     ~SLArEventSuperCellArray();
 
     int ConfigSystem(SLArCfgSuperCellArray* cfg); 
-    std::map<int, SLArEventSuperCell*>& GetSuperCellMap() {return fSuperCellMap;}
-    int GetNhits() {return fNhits;}
-    bool IsActive() {return fIsActive;}
+    inline std::map<int, SLArEventSuperCell*>& GetSuperCellMap() {return fSuperCellMap;}
+    inline const std::map<int, SLArEventSuperCell*>& GetConstSuperCellMap() {return fSuperCellMap;}
+    inline int GetNhits() const {return fNhits;}
+    inline bool IsActive() const {return fIsActive;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    SLArEventSuperCell* CreateEventSuperCell(const int scIdx); 
+    SLArEventSuperCell* RegisterHit(SLArEventPhotonHit* hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
-    bool SortHits(); 
+    //bool SortHits(); 
 
   private: 
     int fNhits; 
     bool fIsActive; 
+    UShort_t fLightBacktrackerRecordSize;
     std::map<int, SLArEventSuperCell*> fSuperCellMap;
 
   public:

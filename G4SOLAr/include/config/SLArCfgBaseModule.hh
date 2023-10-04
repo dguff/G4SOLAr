@@ -25,41 +25,41 @@ class SLArCfgBaseModule : public TNamed {
     virtual ~SLArCfgBaseModule(); 
 
     inline virtual void DumpInfo() {}; 
-    inline int GetIdx() {return fIdx;}
+    inline int GetIdx() const {return fIdx;}
     inline void SetIdx(int idx) {fIdx = idx;}
-    inline float GetX() {return fX;}
+    inline float GetX() const {return fX;}
     inline void SetX(float x) {fX = x;}
-    inline float GetY() {return fY;}
+    inline float GetY() const {return fY;}
     inline void SetY(float y) {fY = y;}
-    inline float GetZ() {return fZ;}
+    inline float GetZ() const {return fZ;}
     inline void SetZ(float z) {fZ =  z;}
-    inline float GetPhi() {return fPhi;}
+    inline float GetPhi() const {return fPhi;}
     inline void SetPhi(float phi) {fPhi = phi;}
-    inline float GetTheta() {return fTheta;}
+    inline float GetTheta() const {return fTheta;}
     inline void SetTheta(float theta) {fTheta = theta;}
-    inline float GetPsi() {return fPsi;}
+    inline float GetPsi() const {return fPsi;}
     inline void SetPsi(float psi) {fPsi = psi;}
-    inline float GetPhysX() {return fPhysX;}
+    inline float GetPhysX() const {return fPhysX;}
     inline void SetPhysX(float x) {fPhysX = x;}
-    inline float GetPhysY() {return fPhysY;}
+    inline float GetPhysY() const {return fPhysY;}
     inline void SetPhysY(float y) {fPhysY = y;}
-    inline float GetPhysZ() {return fPhysZ;}
+    inline float GetPhysZ() const {return fPhysZ;}
     inline void SetPhysZ(float z) {fPhysZ =  z;}
-    inline int GetBinIdx() {return  fBin;}
+    inline int GetBinIdx() const {return  fBin;}
     inline void SetBinIdx(int bin) {fBin =  bin;}
     //inline TGraph* GetGraphShape() {return fGShape;}
     inline void SetNormal(double x, double y, double z) {fNormal = TVector3(x, y, z);};
     inline void SetNormal(TVector3 vN) {fNormal = vN;}
-    inline double GetSizeX() {return fSize.x();}
-    inline double GetSizeY() {return fSize.y();}
-    inline double GetSizeZ() {return fSize.z();}
-    inline TVector3 GetSize() {return fSize;}
+    inline double GetSizeX() const {return fSize.x();}
+    inline double GetSizeY() const {return fSize.y();}
+    inline double GetSizeZ() const {return fSize.z();}
+    inline TVector3 GetSize() const {return fSize;}
     inline void   SetSizeX(const float _x) {fSize.SetX(_x);}
     inline void   SetSizeY(const float _y) {fSize.SetY(_y);}
     inline void   SetSizeZ(const float _z) {fSize.SetZ(_z);}
     inline void   SetSize (const float x, const float y, const float z) { fSize = TVector3(x, y, z); }
 
-    inline TVector3 GetNormal() {return fNormal;}
+    inline TVector3 GetNormal() const {return fNormal;}
     virtual TGraph* BuildGShape() {return nullptr;} 
     inline void SetupAxis0( const TVector3 v) {fAxis0 = v;} 
     inline void SetupAxis1( const TVector3 v) {fAxis1 = v;}

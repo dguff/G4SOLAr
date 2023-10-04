@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArEventAnode.hh
- * @created     : mercoledì ago 10, 2022 14:29:23 CEST
+ * @created     : Wed Aug 10, 2022 14:29:23 CEST
  */
 
 #ifndef SLAREVENTANODE_HH
@@ -21,22 +21,31 @@ class SLArEventAnode : public TNamed {
     ~SLArEventAnode(); 
 
     int ConfigSystem(SLArCfgAnode* cfg);
-    std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
-    int GetNhits() {return fNhits;}
-    bool IsActive() {return fIsActive;}
+    SLArEventMegatile* CreateEventMegatile(const int mtIdx); 
+    inline std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
+    inline const std::map<int, SLArEventMegatile*>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
+    inline int GetNhits() {return fNhits;}
+    inline bool IsActive() {return fIsActive;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
-    bool SortHits(); 
+    inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
+    inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    //bool SortHits(); 
 
-    int  GetID() const {return fID;}
+    inline void SetID(const int anode_id) {fID = anode_id;}
+    inline int  GetID() const {return fID;}
 
   private:
     int fID; 
     int fNhits; 
     bool fIsActive;
+    UShort_t fLightBacktrackerRecordSize;
+    UShort_t fChargeBacktrackerRecordSize;
     std::map<int, SLArEventMegatile*> fMegaTilesMap;
 
   public:

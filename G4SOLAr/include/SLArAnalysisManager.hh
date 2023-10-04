@@ -21,6 +21,7 @@
 #include "config/SLArCfgSuperCellArray.hh"
 #include "event/SLArMCEvent.hh"
 
+#include "SLArBacktrackerManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
 
 #include "G4ToolsAnalysisManager.hh"
@@ -30,6 +31,16 @@
 class SLArAnalysisManager 
 {
   public:
+    struct SLArXSecDumpSpec {
+      G4String particle_name; 
+      G4String process_name; 
+      G4String material_name;
+      G4bool   log_span;
+
+      SLArXSecDumpSpec(); 
+      SLArXSecDumpSpec(const G4String& par, const G4String& proc, const G4String& mat, const bool& do_log = false);
+    };
+
     SLArAnalysisManager(G4bool isMaster);
     ~SLArAnalysisManager();
 
@@ -37,6 +48,8 @@ class SLArAnalysisManager
     static SLArAnalysisManager* Instance();
     static G4bool IsInstance();
 
+    void   ConstructBacktracker(const G4String readout_system); 
+    void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
     G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
@@ -49,8 +62,12 @@ class SLArAnalysisManager
     int    WriteArray         (G4String name, G4int size, G4double* val); 
     int    WriteCfgFile       (G4String name, const char* path); 
     int    WriteCfg           (G4String name, const char* cfg); 
+    int    WriteCrossSection  (SLArXSecDumpSpec xsec_spec); 
 
     // Access and I/O methods
+    backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
+    backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
+    void SetupBacktrackerRecords(); 
     TTree* GetTree() const {return  fEventTree;}
     TFile* GetFile() const {return   fRootFile;}
     SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
@@ -59,12 +76,15 @@ class SLArAnalysisManager
       SLArCfgAnode* anodeCfg = nullptr;
       if ( fAnodeCfg.count(id) ) anodeCfg = fAnodeCfg[id];
       return anodeCfg;}
-
+    inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
+    inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
     SLArMCEvent* GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
     // mock fake access
     G4bool FakeAccess();
+    void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
+    void RegisterXSecDump(const SLArXSecDumpSpec xsec_dump); 
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 
@@ -80,10 +100,16 @@ class SLArAnalysisManager
     G4bool   fIsMaster;
     G4String fOutputPath;
     G4String fOutputFileName;
+    std::map<G4String, G4double> fBiasing; 
+    std::vector<SLArXSecDumpSpec> fXSecDump;
 
     TFile*              fRootFile;
     TTree*              fEventTree;
     SLArMCEvent*        fMCEvent;
+
+    backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
+    backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;
+    backtracker::SLArBacktrackerManager* fChargeBacktrackerManager;
 
     SLArCfgSystemSuperCell* fPDSysCfg;
     std::map<int, SLArCfgAnode*> fAnodeCfg;

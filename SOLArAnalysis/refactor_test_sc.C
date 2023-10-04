@@ -28,11 +28,55 @@ void refactor_test_sc(const TString file_path, const int iev)
   TFile* mc_file = new TFile(file_path); 
   TTree* mc_tree = (TTree*)mc_file->Get("EventTree"); 
 
-  //- - - - - - - - - - - - - - - - - - - - - - Access readout configuration
+  //- - - - - - - - - - - - - - - - - - - - - - configuration
   auto PDSSysConfig = (SLArCfgBaseSystem<SLArCfgSuperCellArray>*)mc_file->Get("PDSSysConfig"); 
   std::map<int, SLArCfgAnode*>  AnodeSysCfg;
   AnodeSysCfg.insert( std::make_pair(10, (SLArCfgAnode*)mc_file->Get("AnodeCfg50") ) );
   AnodeSysCfg.insert( std::make_pair(11, (SLArCfgAnode*)mc_file->Get("AnodeCfg51") ) );
+
+/*
+ *  std::map<int, TH2Poly*> h2SCArray; 
+ *
+ *  for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
+ *    const auto cfgSCArray = cfgSCArray_.second;
+ *    printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
+ *        cfgSCArray->GetMap().size());
+ *    printf("\tposition: [%g, %g, %g] mm\n", 
+ *        cfgSCArray->GetPhysX(), cfgSCArray->GetPhysY(), cfgSCArray->GetPhysZ()); 
+ *    printf("\tnormal: [%g, %g, %g]\n", 
+ *        cfgSCArray->GetNormal().x(), cfgSCArray->GetNormal().y(), cfgSCArray->GetNormal().z() );
+ *    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
+ *        cfgSCArray->GetPhi()*TMath::RadToDeg(), 
+ *        cfgSCArray->GetTheta()*TMath::RadToDeg(), 
+ *        cfgSCArray->GetPsi()*TMath::RadToDeg());
+ *    cfgSCArray->BuildGShape(); 
+ *    auto h2 = cfgSCArray->BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
+ *    h2SCArray.insert( std::make_pair(cfgSCArray->GetIdx(), h2) ); 
+ *  }
+ *  printf("\n");
+ *
+ *  for (const auto& anodeCfg_ : AnodeSysCfg) {
+ *    const auto cfgAnode = anodeCfg_.second;
+ *    printf("Anode config: %i - %lu mega-tiles\n", cfgAnode->GetIdx(), 
+ *        cfgAnode->GetMap().size());
+ *    printf("\tposition: [%g, %g, %g] mm\n", 
+ *        cfgAnode->GetPhysX(), cfgAnode->GetPhysY(), cfgAnode->GetPhysZ()); 
+ *    printf("\tnormal: [%g, %g, %g]\n", 
+ *        cfgAnode->GetNormal().x(), cfgAnode->GetNormal().y(), cfgAnode->GetNormal().z() );
+ *    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
+ *        cfgAnode->GetPhi()*TMath::RadToDeg(), 
+ *        cfgAnode->GetTheta()*TMath::RadToDeg(), 
+ *        cfgAnode->GetPsi()*TMath::RadToDeg());
+ *  }
+ *  printf("\n");
+ *  
+ *  TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
+ *  h2_30->Draw("axis");
+ *  h2SCArray.find(30)->second->Draw("col same"); 
+ */
+  TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 1000, 0, 5e3); 
+
+  TH1D* hBacktracker = new TH1D("hBacktracker", "backtracker: trkID", 1000, 0, 1000 );
 
   std::map<int, TH2Poly*> h2SCArray; 
 
@@ -72,7 +116,6 @@ void refactor_test_sc(const TString file_path, const int iev)
   TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
   h2_30->Draw("axis");
   h2SCArray.find(30)->second->Draw("col same"); 
-  TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 200, 0, 5e3); 
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
@@ -104,6 +147,7 @@ void refactor_test_sc(const TString file_path, const int iev)
         for (const auto &p : t.second->GetPixelEvents()) {
           //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second->GetNhits());
           h2t_->SetBinContent( p.first, p.second->GetNhits() );
+          p.second->PrintHits();
           if (p.second->GetNhits() > z_max) z_max = p.second->GetNhits(); 
         }
         h2pix.push_back( h2t_ ); 
@@ -115,7 +159,17 @@ void refactor_test_sc(const TString file_path, const int iev)
       for (auto &t : mt.second->GetTileMap()) {
         if (t.second->GetHits().empty()) continue;
         for (const auto &p : t.second->GetHits()) {
-          hTime->Fill( p->GetTime() );  
+          hTime->Fill( p.first, p.second );  
+        }
+
+        if (t.second->GetBacktrackerRecordSize() > 0) {
+          for (const auto &backtracker : t.second->GetBacktrackerRecordCollection()) {
+            auto records = backtracker.second.GetConstRecords();
+            auto recordTrkID = records.at(0);
+            for (const auto &trkID : recordTrkID.GetConstCounter()) {
+              hBacktracker->Fill( trkID.first, trkID.second );
+            }
+          }
         }
       }
     }
@@ -193,7 +247,7 @@ void refactor_test_sc(const TString file_path, const int iev)
       n_sc += n;
 
       for (const auto &h : sc.second->GetHits()) {
-        hTime->Fill( h->GetTime() ); 
+        hTime->Fill( h.first, h.second ); 
       }
     }
 

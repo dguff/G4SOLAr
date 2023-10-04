@@ -27,7 +27,9 @@ SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie)
   : SLArCfgBaseModule(serie)/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName(name);
+#ifdef SLAR_DEBUG
   printf("SLArCfgAssembly created with name %s\n", fName.Data());
+#endif
 }
 
 template<class TBAseModule>

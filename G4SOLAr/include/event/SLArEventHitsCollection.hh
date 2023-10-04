@@ -1,6 +1,6 @@
 /**
  * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        SLArEventHitsCollection.cc
+ * @file        SLArEventHitsCollection.hh
  * @created     Fri Nov 11, 2022 14:21:29 CET
  */
 
@@ -9,44 +9,61 @@
 #define SLAREVENTHITSCOLLECTION_HH
 
 #include <iostream>
-#include <vector>
+#include <map>
 
 #include "TNamed.h"
 #include "event/SLArEventGenericHit.hh"
+#include "event/SLArEventBacktrackerRecord.hh"
+
+typedef std::map<UShort_t, UShort_t> HitsCollection_t; 
+typedef std::map<UShort_t, SLArEventBacktrackerVector> BacktrackerVectorCollection_t;
 
 template<class T>
 class SLArEventHitsCollection : public TNamed {
   public: 
     SLArEventHitsCollection(); 
-    SLArEventHitsCollection(int); 
+    SLArEventHitsCollection(const int); 
+    SLArEventHitsCollection(const int, const UShort_t);
     SLArEventHitsCollection(const SLArEventHitsCollection&); 
     virtual ~SLArEventHitsCollection(); 
 
-    int GetIdx() {return fIdx;}
-    int GetNhits() {return fNhits;}
-    virtual double GetTime() {return -1.;} 
-    std::vector<T*>& GetHits() {return fHits;}
+    template<typename TT>
+    UShort_t ConvertToClock(const TT& val) {return static_cast<UShort_t>(val / fClockUnit);}
+    inline UShort_t GetClockUnit() const {return fClockUnit;}
+    inline int GetIdx() {return fIdx;}
+    inline int GetNhits() {return fNhits;}
+    inline virtual double GetTime() {return -1.;} 
+    inline HitsCollection_t& GetHits() {return fHits;}
+    inline const HitsCollection_t& GetConstHits() const {return fHits;}
+    inline BacktrackerVectorCollection_t& GetBacktrackerRecordCollection() {return fBacktrackerCollections;}
+    inline const BacktrackerVectorCollection_t& GetBacktrackerRecordCollection() const {return fBacktrackerCollections;}
 
-    bool IsActive() {return fIsActive;}
+    inline UShort_t GetBacktrackerRecordSize() const {return fBacktrackerRecordSize;}
+    SLArEventBacktrackerVector* GetBacktrackerVector(UShort_t key); 
+    inline bool IsActive() {return fIsActive;}
 
     virtual void PrintHits(); 
 
-    virtual int RegisterHit(T* hit); 
+    virtual int RegisterHit(const T* hit); 
     virtual int ResetHits(); 
 
-    virtual bool SortHits(); 
-    void SetActive(bool is_active) {fIsActive = is_active;}
-    void SetIdx(int idx) {fIdx = idx;}
-
+    //virtual bool SortHits(); 
+    inline void SetActive(bool is_active) {fIsActive = is_active;}
+    inline void SetIdx(int idx) {fIdx = idx;}
+    inline void SetClockUnit(const UShort_t unit) {fClockUnit = unit;}
+    inline void SetBacktrackerRecordSize(const UShort_t size) {fBacktrackerRecordSize = size;}
 
   protected:
     int fIdx; 
     bool fIsActive; 
-    int fNhits; 
-    std::vector<T*> fHits; 
+    UShort_t fNhits; 
+    UShort_t fBacktrackerRecordSize;
+    HitsCollection_t fHits; 
+    BacktrackerVectorCollection_t fBacktrackerCollections;
+    UShort_t fClockUnit; 
 
   public: 
-    ClassDefOverride(SLArEventHitsCollection, 1);
+    ClassDefOverride(SLArEventHitsCollection, 2);
 }; 
 
 

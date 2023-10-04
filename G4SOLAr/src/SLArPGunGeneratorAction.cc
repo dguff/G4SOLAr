@@ -46,6 +46,8 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 SLArPGunGeneratorAction::~SLArPGunGeneratorAction()
 {
-  delete fParticleGun; 
+  printf("deleting PGun generator action...\n");
+  if (fParticleGun) {delete fParticleGun; fParticleGun = nullptr;} 
+  printf("DONE\n");
 }
 

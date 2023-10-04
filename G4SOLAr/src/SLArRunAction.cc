@@ -46,12 +46,20 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
+
+  // setup backtracker size
+  SLArAnaMgr->SetupBacktrackerRecords(); 
+
   SLArAnaMgr->CreateFileStructure();
 
   fElectronDrift = new SLArElectronDrift(); 
   fElectronDrift->ComputeProperties(); 
   fElectronDrift->PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+
+  for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {
+    SLArAnaMgr->WriteCrossSection(xsec); 
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -16,6 +16,7 @@
 #include "G4UIcmdWith3Vector.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAnInteger.hh"
 
@@ -35,13 +36,20 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun Decay0 Marley ExternalGen GENIE");//--JM Add GENIE
+  fCmdGenerator->SetCandidates("ParticleGun ParticleBomb Decay0 Marley ExternalGen GENIE");//--JM Add GENIE
+
 
   fCmdParticle= 
     new G4UIcmdWithAString("/SLAr/gen/particle", this);
   fCmdParticle->SetGuidance("Set particle gun particle");
   fCmdParticle->SetParameterName("particle_name", false);
   fCmdParticle->SetDefaultValue("electron");
+
+  fCmdNumberOfParticles= 
+    new G4UIcmdWithAnInteger("/SLAr/gen/numberOfParticles", this);
+  fCmdNumberOfParticles->SetGuidance("Set number of particles for pgun and pbomb");
+  fCmdNumberOfParticles->SetParameterName("n_particles", false);
+  fCmdNumberOfParticles->SetDefaultValue(1);
 
   fCmdBulkVol= 
     new G4UIcmdWithAString("/SLAr/gen/volume", this); 
@@ -135,6 +143,7 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdParticle;
   delete fCmdBulkVol;
   delete fCmdEnergy;
+  delete fCmdNumberOfParticles;
   delete fCmdBulkVolFraction;
   delete fCmdMarley;
   delete fCmdBackgoundConf;
@@ -158,6 +167,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     EGenerator gen = kParticleGun;
     G4String strMode = newValue;
     if      (G4StrUtil::contains(strMode, "Gun"   )) gen = kParticleGun;
+    else if (G4StrUtil::contains(strMode, "Bomb"  )) gen = kParticleBomb;
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
     else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
@@ -171,7 +181,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   }
   else if (command == fCmdParticle) {
     G4String particle = newValue; 
-    fSLArAction->SetPGunParticle(particle);
+    fSLArAction->SetGunParticle(particle);
   }
   else if (command == fCmdBulkVolFraction) {
     G4double frac = fCmdBulkVolFraction->GetNewDoubleValue(newValue); 
@@ -206,11 +216,15 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   }
   else if (command == fCmdEnergy) {
     G4double ekin = fCmdEnergy->GetNewDoubleValue(newValue); 
-    fSLArAction->SetPGunEnergy(ekin);  
+    fSLArAction->SetGunEnergy(ekin);  
   }
   else if (command == fCmdGunDirection) {
     G4ThreeVector dir = fCmdGunDirection->GetNew3VectorValue(newValue); 
     fSLArAction->SetEventDirection(dir); 
+  }
+  else if (command == fCmdNumberOfParticles) {
+    G4int n = fCmdNumberOfParticles->GetNewIntValue(newValue); 
+    fSLArAction->SetGunNumberOfParticles(n);  
   }
   else if (command == fCmdTracePhotons) {
     bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 

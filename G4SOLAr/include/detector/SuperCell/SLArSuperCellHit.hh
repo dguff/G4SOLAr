@@ -54,6 +54,9 @@ public:
     void SetTime(G4double t) { fTime = t; }
     G4double GetTime() const { return fTime / CLHEP::ns; }
 
+    inline void SetProducerID(const int trk_id) {fPhProducerID = trk_id;}
+    inline G4int GetProducerID() const {return fPhProducerID;}
+
     void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
     G4ThreeVector GetLocalPos() const { return fLocalPos; }
 
@@ -61,15 +64,15 @@ public:
     G4ThreeVector GetWorldPos() const { return fWorldPos; }
 
     void      SetPhotonProcess(G4String prname);
-    G4int     GetPhotonProcessId();
-    G4String  GetPhotonProcessName();
+    G4int     GetPhotonProcessId() const;
+    G4String  GetPhotonProcessName() const;
 
-    void SetSuperCellNo(G4int idx) { fSuperCellNo= idx; }
-    G4int GetSuperCellNo() const { return fSuperCellNo; }
-    void SetSuperCellRowNo(G4int n) {fSuperCellRowNo = n; }
-    G4int GetSuperCellRowNo() const {return fSuperCellRowNo;}
-    void SetSuperCellArrayNo(G4int n) {fSuperCellArrayNo = n; }
-    G4int GetSuperCellArrayNo() const {return fSuperCellArrayNo;}
+    inline void SetSuperCellNo(G4int idx) { fSuperCellNo= idx; }
+    inline G4int GetSuperCellNo() const { return fSuperCellNo; }
+    inline void SetSuperCellRowNo(G4int n) {fSuperCellRowNo = n; }
+    inline G4int GetSuperCellRowNo() const {return fSuperCellRowNo;}
+    inline void SetSuperCellArrayNo(G4int n) {fSuperCellArrayNo = n; }
+    inline G4int GetSuperCellArrayNo() const {return fSuperCellArrayNo;}
     G4String GetProcessName(int kType);
 
 private:
@@ -80,6 +83,7 @@ private:
     G4double      fWavelength; 
     G4double      fTime;
     G4int         fPhType;
+    G4int         fPhProducerID;
     G4ThreeVector fLocalPos;
     G4ThreeVector fWorldPos;
 };

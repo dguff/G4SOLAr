@@ -4,6 +4,7 @@
  * @created     : mercoledì ago 10, 2022 11:52:40 CEST
  */
 
+#include "SLArAnalysisManager.hh"
 #include "event/SLArMCEvent.hh"
 #include "TRandom3.h"
 ClassImp(SLArMCEvent)
@@ -36,7 +37,8 @@ int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
     SLArEventAnode* evAnode = new SLArEventAnode(anode.second); 
-    evAnode->ConfigSystem(anode.second); 
+    evAnode->SetID(anode.second->GetIdx()); 
+    //evAnode->ConfigSystem(anode.second); 
     fEvAnode.insert(std::make_pair(anode.first, evAnode)); 
   }
   

@@ -9,42 +9,30 @@
 #define SLAREVENTSUPERCELL_HH
 
 #include <iostream>
-#include <vector>
-#include "TObject.h"
+#include <map>
+#include "event/SLArEventHitsCollection.hh"
 #include "event/SLArEventPhotonHit.hh"
 
-class SLArEventSuperCell : public TObject {
+class SLArEventSuperCell : public SLArEventHitsCollection<SLArEventPhotonHit> {
   public: 
     SLArEventSuperCell(); 
     SLArEventSuperCell(int idx); 
     SLArEventSuperCell(const SLArEventSuperCell& ev); 
     ~SLArEventSuperCell(); 
 
-    int GetIdx() {return fIdx;}
-    int GetNhits() {return fNhits;}
-    double GetTime(); 
-    double GetTime(EPhProcess proc); 
-    std::vector<SLArEventPhotonHit*>& GetHits() {return fHits;}
+    inline int GetIdx() const {return fIdx;}
+    inline int GetNhits() const {return fNhits;}
+    double GetTime() const; 
+    double GetTime(EPhProcess proc) const; 
 
     bool IsActive() {return fIsActive;}
 
     void PrintHits(); 
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
-    int ResetHits(); 
-
-    bool SortHits(); 
-    void SetActive(bool is_active) {fIsActive = is_active;}
-    void SetIdx(int idx) {fIdx = idx;}
-
   protected:
-    int fIdx; 
-    bool fIsActive; 
-    int fNhits; 
-    std::vector<SLArEventPhotonHit*> fHits;
 
   public:
-    ClassDef(SLArEventSuperCell, 1); 
+    ClassDef(SLArEventSuperCell, 2); 
 }; 
 
 

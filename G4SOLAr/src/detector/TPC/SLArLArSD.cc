@@ -151,7 +151,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Add edep in LAr to the primary 
     const auto eventAction = (SLArEventAction*)
       G4RunManager::GetRunManager()->GetUserEventAction(); 
-    auto ancestor_id = eventAction->FindTopParentID(step->GetTrack()->GetTrackID()); 
+    auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
 
     SLArMCPrimaryInfo* ancestor = nullptr; 
     for (auto &p : anaMngr->GetEvent()->GetPrimaries()) {

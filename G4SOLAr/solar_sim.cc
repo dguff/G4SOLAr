@@ -1,48 +1,11 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file solar_sim.cc
-/// \brief Main program of the solar_sim framework
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//
-// Description: Test of Continuous Process G4Cerenkov
-//              and RestDiscrete Process G4Scintillation
-//              -- Generation Cerenkov Photons --
-//              -- Generation Scintillation Photons --
-//              -- Transport of optical Photons --
-// Version:     5.0
-// Created:     1996-04-30
-// Author:      Juliet Armstrong
-// mail:        gum@triumf.ca
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/**
+ * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        solar_sim.cc
+ * @created     Mon Jun 19, 2023 18:11:25 CEST
+ */
 
+#include <sstream>
+#include <regex>
 #include <getopt.h>
 #include "G4Types.hh"
 
@@ -61,6 +24,7 @@
 #include "SLArActionInitialization.hh"
 #include "SLArRunAction.hh"
 
+#include "G4GenericBiasingPhysics.hh"
 #include "G4ImportanceBiasing.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -76,12 +40,36 @@ namespace {
     fprintf(stderr, " \t\t[-r/--seed user_seed]\n");
     fprintf(stderr, " \t\t[-g/--geometry geometry_cfg_file]\n");
     fprintf(stderr, " \t\t[-p/--materials material_db_file]\n");
+    fprintf(stderr, " \t\t[-b/--bias particle <process_list> bias_factor]\n");
     fprintf(stderr, " \t\t[-h/--help print usage]\n");
+  }
+  //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+  void setup_bias(const std::string val, G4String& particle_name, G4double& bias_factor, std::vector<G4String>& process_name) {
+    printf("solar_sim::setup_bias(%s)\n", val.c_str());
+    std::stringstream sstream; 
+    sstream << val; 
+    G4String process_tmp; 
+    std::regex pattern("\\d+(\\.\\d+)?([eE]\\d+)?"); 
+
+    sstream >> particle_name;
+
+    auto is_numeric = [pattern](G4String str) {
+      return std::regex_match(str, pattern);  
+    }; 
+
+    while (sstream >> process_tmp) {
+      if (is_numeric(process_tmp)) {
+        bias_factor = std::atof(process_tmp.data()); 
+      } 
+      else process_name.push_back(process_tmp); 
+    }
+
+    return;
   }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 int main(int argc,char** argv)
 {
 
@@ -91,23 +79,28 @@ int main(int argc,char** argv)
   G4String output_dir = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
   G4String material_file = "./assets/materials/materials_db.json"; 
+  G4bool   do_bias = false; 
+  G4String bias_particle = ""; 
+  G4double bias_factor = 1; 
+  std::vector<G4String> bias_process;
 
 #ifdef G4MULTITHREADED
   G4int nThreads = 0;
 #endif
 
   G4long myseed = 345354;
-  const char* short_opts = "m:o:d:u:t:r:g:p:h";
-  static struct option long_opts[10] = 
+  const char* short_opts = "m:o:d:u:t:r:g:p:b:h";
+  static struct option long_opts[12] = 
   {
     {"macro", required_argument, 0, 'm'}, 
-    {"output", required_argument, 0, 'u'}, 
+    {"output", required_argument, 0, 'o'}, 
     {"output_dir", required_argument, 0, 'd'}, 
     {"session", required_argument, 0, 'u'}, 
     {"threads", required_argument, 0, 't'}, 
     {"seed", required_argument, 0, 'r'}, 
     {"geometry", required_argument, 0, 'g'}, 
     {"materials", required_argument, 0, 'p'},
+    {"bias", required_argument, 0, 'b'},
     {"help", no_argument, 0, 'h'}, 
     {nullptr, no_argument, nullptr, 0}
   };
@@ -154,6 +147,17 @@ int main(int argc,char** argv)
       {
         material_file = optarg; 
         printf("solar_sim material database: %s\n", material_file.c_str());
+        break;
+      };
+      case 'b' : 
+      {
+        do_bias = true; 
+        setup_bias(optarg, bias_particle, bias_factor, bias_process); 
+        printf("solar_sim cross-section biasing\n");
+        printf("%s: biasing process(es) x%g\n", bias_particle.data(), bias_factor); 
+        for (const auto &proc : bias_process) {
+          printf("\t- %s\n", proc.data()); 
+        }
         break;
       };
       case 'h' : 
@@ -204,7 +208,8 @@ int main(int argc,char** argv)
   // Seed the random number generator manually
   G4Random::setTheSeed(myseed);
 
-  G4String physName = "FTFP_BERT_HP";
+  //G4String physName = "FTFP_BERT_HP";
+  G4String physName = "QGSP_BIC_AllHP";
 
   // Set mandatory initialization classes
   //
@@ -212,6 +217,10 @@ int main(int argc,char** argv)
   printf("Creating Detector Construction...\n");
   auto detector = new SLArDetectorConstruction(geometry_file, material_file);
   runManager-> SetUserInitialization(detector);
+
+  auto analysisManager = SLArAnalysisManager::Instance(); 
+
+  // External background biasing option
 #ifdef SLAR_EXTERNAL
 #ifndef SLAR_EXTERNAL_PARTICLE
   printf("solar-sim WARNING: target built with SLAR_EXTERNAL flag but external particle is not specified"); 
@@ -221,12 +230,25 @@ int main(int argc,char** argv)
   printf("Built with SLAR_EXTERNAL flag for particle %s\n", ext_particle);
 #endif
 #endif
+
+
+
   // Physics list
   printf("Creating Phiscs Lists...\n");
   auto physicsList = new SLArPhysicsList(physName);
 #if (defined SLAR_EXTERNAL &&  defined SLAR_EXTERNAL_PARTICLE)
   physicsList->RegisterPhysics(new G4ImportanceBiasing(&mgs));
 #endif
+  if ( do_bias ) {
+    auto biasingPhysics = new G4GenericBiasingPhysics("biasing_"+bias_particle);  
+    if (bias_process.size() > 0) biasingPhysics->Bias(bias_particle, bias_process); 
+    else biasingPhysics->Bias(bias_particle); 
+
+    analysisManager->RegisterPhyicsBiasing(bias_particle, bias_factor); 
+
+    physicsList->RegisterPhysics( biasingPhysics ); 
+  }
+
   runManager-> SetUserInitialization(physicsList);
 
   // User action initialization

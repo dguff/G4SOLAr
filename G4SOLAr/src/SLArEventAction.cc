@@ -5,6 +5,7 @@
  */
 
 #include "SLArAnalysisManager.hh"
+#include "SLArBacktrackerManager.hh"
 #include "SLArEventAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArReadoutTileHit.hh"
@@ -180,6 +181,7 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
     }   
 
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    auto bktManager = SLArAnaMgr->GetBacktrackerManager( backtracker::kVUVSiPM ); 
 
     // Fill histograms
     G4int n_hit = hHC1->entries();
@@ -222,17 +224,30 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       dstHit->SetTileInfo(mtrow_nr, mgtile_nr, rowtile_nr, tile_nr); 
       dstHit->SetRowCellNr(hit->GetRowCellNr()); 
       dstHit->SetCellNr(hit->GetCellNr()); 
+      dstHit->SetProducerTrkID( hit->GetProducerID() ); 
 
-      SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx)->RegisterHit(
-                            (SLArEventPhotonHit*)dstHit->Clone());
+      auto ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
+      auto ev_tile = ev_anode->RegisterHit(dstHit);
+
+      if (bktManager) {
+        if (bktManager->IsNull() == false) {
+          SLArEventBacktrackerVector* records = 
+            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock<float>(dstHit->GetTime()) );
+
+          for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
+            bktManager->GetBacktrackers().at(ib)->Eval(dstHit, 
+                &records->GetRecords().at(ib));
+          }
+        }
+      }
       
       delete dstHit;
     }
 
     // Sort hits on PMTs
-    for (auto &evAnode : SLArAnaMgr->GetEvent()->GetEventAnode()) {
-      evAnode.second->SortHits();
-    }
+    //for (auto &evAnode : SLArAnaMgr->GetEvent()->GetEventAnode()) {
+      //evAnode.second->SortHits();
+    //}
     
 
     // Print diagnostics
@@ -264,6 +279,8 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
       return;
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    auto bktManager = SLArAnaMgr->GetBacktrackerManager( backtracker::kSuperCell ); 
+
     G4int n_hit = hHC1->entries();
     for (G4int i=0;i<n_hit;i++) {
       SLArSuperCellHit* hit = (*hHC1)[i];
@@ -295,24 +312,36 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
              << "time = " << G4BestUnit(time, "Time") << G4endl;
 #endif
       
-      SLArEventPhotonHit* dstHit = new SLArEventPhotonHit(
+      SLArEventPhotonHit dstHit(
           time, 
           hit->GetPhotonProcessId(), 
           wavelen);
-      dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
-      dstHit->SetTileInfo(0, array_nr, cellrow_nr, cell_nr); 
+      dstHit.SetLocalPos(localPos.x(), localPos.y(), localPos.z());
+      dstHit.SetTileInfo(0, array_nr, cellrow_nr, cell_nr); 
+      dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(
-                            (SLArEventPhotonHit*)dstHit->Clone());
+      auto ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(&dstHit);
+
+      if (bktManager) {
+        if (bktManager->IsNull() == false) {
+          SLArEventBacktrackerVector* records = 
+            ev_sc->GetBacktrackerVector( ev_sc->ConvertToClock<float>(dstHit.GetTime()) );
+
+          for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
+            bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
+                &records->GetRecords().at(ib));
+          }
+        }
+      }
       
-      delete dstHit;
+      //delete dstHit;
     }
 
     // Sort hits on PMTs
-    printf("Sorting hits...\n"); 
-    for (auto &evSCArray : SLArAnaMgr->GetEvent()->GetEventSuperCellArray()) {
-      evSCArray.second->SortHits(); 
-    }
+    //printf("Sorting hits...\n"); 
+    //for (auto &evSCArray : SLArAnaMgr->GetEvent()->GetEventSuperCellArray()) {
+      //evSCArray.second->SortHits(); 
+    //}
 
     // Print diagnostics
     G4int printModulo = 
@@ -357,7 +386,7 @@ void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
   return;
 }
 
-int SLArEventAction::FindTopParentID(int trkid) {
+int SLArEventAction::FindAncestorID(int trkid) {
   int primary = -1; 
   int pid = trkid; 
 

@@ -27,7 +27,7 @@ SLArEventSuperCellArray::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg)
   : SLArEventSuperCellArray()
 {
   SetName(cfg->GetName());
-  ConfigSystem(cfg); 
+  //ConfigSystem(cfg); 
   return;
 }
 
@@ -52,19 +52,34 @@ int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
   return nsc; 
 }
 
-
-int SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
-  int sc_idx = hit->GetTileIdx(); 
-  if (fSuperCellMap.count(sc_idx)) {
-    fSuperCellMap.find(sc_idx)->second->RegisterHit(hit);
-    fNhits++;
-    return 1; 
-  } else {
-    printf("SLArEventSuperCellArray::RegisterHit WARNING\n"); 
-    printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
-        sc_idx, hit->GetMegaTileIdx(), hit->GetRowTileNr(), hit->GetTileNr()); 
-    return 0; 
+SLArEventSuperCell* SLArEventSuperCellArray::CreateEventSuperCell(const int scIdx) {
+  if (fSuperCellMap.count(scIdx)) {
+    printf("SLArEventAnode::CreateEventMegatile(%i) WARNING: Megatile nr %i already present in SuperCell Array %s register\n", scIdx, scIdx, fName.Data());
+    return fSuperCellMap.find(scIdx)->second;
   }
+
+  auto sc_event = new SLArEventSuperCell(scIdx); 
+  sc_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+  fSuperCellMap.insert( std::make_pair(scIdx, sc_event));
+
+  return sc_event;
+}
+
+SLArEventSuperCell* SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
+  int sc_idx = hit->GetTileIdx(); 
+  SLArEventSuperCell* sc_event = nullptr;
+  if (fSuperCellMap.count( sc_idx) == 0) sc_event = CreateEventSuperCell(sc_idx); 
+  else sc_event = fSuperCellMap.find(sc_idx)->second;
+
+  sc_event->RegisterHit(hit);
+  fNhits++;
+  return sc_event; 
+  //} else {
+    //printf("SLArEventSuperCellArray::RegisterHit WARNING\n"); 
+    //printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
+        //sc_idx, hit->GetMegaTileIdx(), hit->GetRowTileNr(), hit->GetTileNr()); 
+    //return 0; 
+  //}
 }
 
 int SLArEventSuperCellArray::ResetHits() {
@@ -83,13 +98,13 @@ void SLArEventSuperCellArray::SetActive(bool is_active) {
   }
 }
 
-bool SLArEventSuperCellArray::SortHits() {
-  int isort = true;
-  for (auto &sc : fSuperCellMap) {
-    isort *= sc.second->SortHits(); 
-  }
-  return isort;
-}
+//bool SLArEventSuperCellArray::SortHits() {
+  //int isort = true;
+  //for (auto &sc : fSuperCellMap) {
+    //isort *= sc.second->SortHits(); 
+  //}
+  //return isort;
+//}
 
 
 

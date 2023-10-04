@@ -19,12 +19,6 @@ class SLArEventChargeHit : public SLArEventGenericHit {
 
     void   DumpInfo(); 
 
-    int    GetTrkID() {return fTrkID;}
-    int    GetPrimaryID() {return fPrimaryID;}
-
-    void   SetTrkID(int id) {fTrkID = id;}
-    void   SetPrimaryID(int id) {fPrimaryID = id;}
-
   private:
     int    fTrkID;
     int    fPrimaryID; 

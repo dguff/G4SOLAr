@@ -1,15 +1,18 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArEventMegatile
- * @created     : mercoledì ago 10, 2022 13:47:24 CEST
+ * @created     : Wed Aug 10, 2022 13:47:24 CEST
  */
 
 #include "event/SLArEventMegatile.hh"
+#include <SLArAnalysisManager.hh>
 
 ClassImp(SLArEventMegatile)
 
 SLArEventMegatile::SLArEventMegatile() 
-  : fIdx(0), fIsActive(true), fNhits(0) {}
+  : fIdx(0), fIsActive(true), fNhits(0), 
+    fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0)
+{}
 
 SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right) 
   : TNamed(right) 
@@ -17,6 +20,8 @@ SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right)
   fIdx = right.fIdx; 
   fNhits = right.fNhits; 
   fIsActive = right.fIsActive; 
+  fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
+  fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
   for (const auto &evtile : right.fTilesMap) {
     fTilesMap.insert(
         std::make_pair(evtile.first, new SLArEventTile(*evtile.second))
@@ -40,9 +45,9 @@ SLArEventMegatile::~SLArEventMegatile()
   fTilesMap.clear(); 
 }
 
-int SLArEventMegatile::ConfigModule(SLArCfgMegaTile* cfg) {
+int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
   int ntiles = 0; 
-  for (const auto &cfgTile : cfg->GetMap()) {
+  for (auto &cfgTile : cfg->GetConstMap()) {
     int idx_tile = cfgTile.second->GetIdx(); 
     fTilesMap.insert(
           std::make_pair(idx_tile, new SLArEventTile(idx_tile))
@@ -53,18 +58,35 @@ int SLArEventMegatile::ConfigModule(SLArCfgMegaTile* cfg) {
   return ntiles; 
 }
 
-int SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
-  int tile_idx = hit->GetTileIdx(); 
-  if (fTilesMap.count(tile_idx)) {
-    fTilesMap.find(tile_idx)->second->RegisterHit(hit); 
-    fNhits++; 
-    return 1; 
-  } else {
-    return 0; 
+SLArEventTile* SLArEventMegatile::CreateEventTile(const int tileIdx) 
+{
+  if (fTilesMap.count(tileIdx)) {
+    printf("SLArEventMegatile::CreateEventTile(%i) WARNING: Tile nr %i already present in MegatTile %i register\n", tileIdx, tileIdx, fIdx);
+    return fTilesMap.find(tileIdx)->second;
   }
+
+  auto t_event = new SLArEventTile(); 
+  t_event->SetIdx(tileIdx); 
+  t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+  t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+  fTilesMap.insert( std::make_pair(tileIdx, t_event) );  
+
+  return t_event;
 }
 
-int SLArEventMegatile::GetNPhotonHits() {
+SLArEventTile* SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
+  int tile_idx = hit->GetTileIdx(); 
+  SLArEventTile* tile_ev = nullptr;
+  auto t_itr = fTilesMap.find(tile_idx); 
+  if (t_itr == fTilesMap.end()) tile_ev = CreateEventTile(tile_idx);
+  else tile_ev = t_itr->second;
+
+  tile_ev->RegisterHit(hit); 
+  fNhits++; 
+  return tile_ev;
+}
+
+int SLArEventMegatile::GetNPhotonHits() const {
   int nhits = 0;
   for (auto &tile : fTilesMap) {
     nhits += tile.second->GetNhits(); 
@@ -73,7 +95,7 @@ int SLArEventMegatile::GetNPhotonHits() {
   return nhits; 
 }
 
-int SLArEventMegatile::GetNChargeHits() {
+int SLArEventMegatile::GetNChargeHits() const {
   int nhits = 0;
   for (auto &tile : fTilesMap) {
     nhits += tile.second->GetPixelHits(); 
@@ -90,6 +112,7 @@ int SLArEventMegatile::ResetHits() {
     nhits += tile.second->GetNhits(); 
     tile.second->ResetHits(); 
   }
+  
 
   return nhits; 
 }
@@ -101,10 +124,10 @@ void SLArEventMegatile::SetActive(bool is_active) {
   return;
 }
 
-bool SLArEventMegatile::SortHits() {
-  for (auto &tile : fTilesMap) {
-    tile.second->SortHits(); 
-  }
+//bool SLArEventMegatile::SortHits() {
+  //for (auto &tile : fTilesMap) {
+    //tile.second->SortHits(); 
+  //}
 
-  return true;
-}
+  //return true;
+//}

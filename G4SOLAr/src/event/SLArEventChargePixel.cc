@@ -10,12 +10,15 @@ ClassImp(SLArEventChargePixel)
 
 SLArEventChargePixel::SLArEventChargePixel() 
   : SLArEventHitsCollection<SLArEventChargeHit>()
-{}
+{
+  fClockUnit = 10;
+}
 
-SLArEventChargePixel::SLArEventChargePixel(const int idx, SLArEventChargeHit* hit)
+SLArEventChargePixel::SLArEventChargePixel(const int idx, const SLArEventChargeHit* hit)
   : SLArEventHitsCollection<SLArEventChargeHit>(idx) 
 {
   fName = Form("EvPix%i", fIdx); 
+  fClockUnit = 10; 
   RegisterHit(hit); 
 }
 
