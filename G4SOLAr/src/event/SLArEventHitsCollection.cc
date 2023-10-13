@@ -47,6 +47,26 @@ SLArEventHitsCollection<T>::~SLArEventHitsCollection() {
 }
 
 template<class T>
+void SLArEventHitsCollection<T>::Copy(SLArEventHitsCollection& record) const 
+{
+  record.SetBacktrackerRecordSize( fBacktrackerRecordSize ); 
+  record.SetIdx( fIdx ); 
+  record.SetActive( fIsActive ); 
+  record.SetClockUnit( fClockUnit ); 
+  record.SetNhits( fNhits ); 
+
+  for (const auto &hit : fHits) {
+    record.GetHits()[hit.first] = hit.second;
+  }   
+
+  for (const auto &bktv : fBacktrackerCollections) {
+    record.GetBacktrackerRecordCollection()[bktv.first] = bktv.second;
+  }
+
+  return;
+}
+
+template<class T>
 int SLArEventHitsCollection<T>::RegisterHit(const T hit) {
   fHits[ConvertToClock<float>(hit.GetTime())]++; 
   fNhits++; 

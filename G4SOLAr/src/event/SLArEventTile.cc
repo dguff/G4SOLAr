@@ -77,6 +77,19 @@ int SLArEventTilePtr::ResetHits()
   return fHits.size();
 }
 
+template<class P> 
+int SLArEventTile<P>::SoftResetHits() 
+{
+  SLArEventHitsCollection::ResetHits();
+
+  for (auto &pix : fPixelHits) {
+      pix.second->ResetHits(); 
+  }
+  fPixelHits.clear(); 
+
+  return fHits.size();
+}
+
 template<class P>
 SLArEventTile<P>::~SLArEventTile() {
   ResetHits();

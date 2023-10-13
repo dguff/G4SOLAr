@@ -63,6 +63,27 @@ SLArMCPrimaryInfoPtr::~SLArMCPrimaryInfo() {
   fTrajectories.clear();
 }
 
+template<>
+template<>
+void SLArMCPrimaryInfoUniquePtr::SoftCopy(SLArMCPrimaryInfoPtr& record) const {
+  record.SoftResetParticle();
+  record.SetName(fName);
+  record.SetID(fID);
+  record.SetTrackID(fTrkID);
+  record.SetMomentum(fMomentum[0], fMomentum[1], fMomentum[2], fEnergy);
+  record.SetTotalEdep(fTotalEdep);
+  record.SetTotalLArEdep(fTotalLArEdep);
+  record.SetTotalCerenkovPhotons(fTotalCerenkovPhotons);
+  record.SetPosition(fVertex[0], fVertex[1], fVertex[2], fTime);
+
+  record.GetTrajectories().reserve( fTrajectories.size() ); 
+  for (const auto& t : fTrajectories) {
+    record.GetTrajectories().push_back(t.get());
+  }
+
+  return;
+}
+
 template<class T>
 void SLArMCPrimaryInfo<T>::SetPosition(const double& x, const double& y,
                                     const double& z, const double& t)
@@ -105,6 +126,24 @@ void SLArMCPrimaryInfoUniquePtr::ResetParticle()
   std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
 }
 
+
+template<class T>
+void SLArMCPrimaryInfo<T>::SoftResetParticle()
+{
+  fID           = 0;
+  fTrkID        = 0; 
+  fName         = "noName";
+  fEnergy       = 0.;
+  fTime         = 0.;
+  fTotalEdep    = 0.;
+  fTotalLArEdep = 0.;
+  fTotalScintPhotons = 0; 
+  fTotalCerenkovPhotons = 0; 
+
+  fTrajectories.clear();
+  std::fill(fVertex.begin(), fVertex.end(), 0.); 
+  std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
+}
 
 template<>
 void SLArMCPrimaryInfoPtr::ResetParticle()

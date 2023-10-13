@@ -24,6 +24,8 @@ class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit>
     SLArEventTile(const int idx); 
     SLArEventTile(const SLArEventTile& ev); 
     ~SLArEventTile(); 
+    template<class T>
+    void SoftCopy(SLArEventTile<T>& record) const; 
 
     double GetTime() const;
     double GetTime(EPhProcess proc) const;
@@ -36,6 +38,7 @@ class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit>
     void PrintHits() const; 
     P& RegisterChargeHit(const int&, const SLArEventChargeHit& ); 
     int ResetHits(); 
+    int SoftResetHits();
 
     //bool SortHits(); 
     //bool SortPixelHits();

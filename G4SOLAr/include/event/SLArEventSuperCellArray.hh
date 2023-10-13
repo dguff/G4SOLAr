@@ -30,6 +30,7 @@ class SLArEventSuperCellArray : public TNamed {
     S& GetOrCreateEventSuperCell(const int scIdx); 
     S& RegisterHit(const SLArEventPhotonHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
     //bool SortHits(); 

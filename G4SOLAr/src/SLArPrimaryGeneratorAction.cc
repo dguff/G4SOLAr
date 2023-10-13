@@ -306,8 +306,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   printf("Primary Generator Action produced %i vertex(ices)\n", n); 
   for (int i=0; i<n; i++) {
-    //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
-    SLArMCPrimaryInfoPtr* tc_primary = new SLArMCPrimaryInfoPtr();
+    std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
+    //SLArMCPrimaryInfoPtr* tc_primary = new SLArMCPrimaryInfoPtr();
     G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
     //printf("vertex %i has %i particles at t = %g\n", n, np, 
         //anEvent->GetPrimaryVertex(i)->GetT0()); 

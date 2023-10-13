@@ -71,8 +71,9 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent         = new SLArMCEventPtr();
-    fAnaMsgr         = new SLArAnalysisManagerMsgr();
+    fMCEvent = new SLArMCEventUniquePtr();
+    fMCEventRecord = new SLArMCEventPtr();               
+    fAnaMsgr = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
 }
@@ -121,7 +122,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 
   //SLArMCEventPtr* evPtr = fMCEvent.get();
 
-  fEventTree->Branch("MCEvent", "SLArMCEventPtr", &fMCEvent);
+  fEventTree->Branch("MCEvent", "SLArMCEventUniquePtr", &fMCEvent);
   getchar();
 
   return true;

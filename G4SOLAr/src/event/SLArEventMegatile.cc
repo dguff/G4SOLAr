@@ -57,6 +57,27 @@ SLArEventMegatile<T>::SLArEventMegatile(SLArCfgMegaTile* cfg)
   //ConfigModule(cfg); 
 }
 
+
+template<>
+template<>
+void SLArEventMegatileUniquePtr::SoftCopy(SLArEventMegatilePtr& record) const
+{
+  record.SoftResetHits(); 
+  record.SetName( fName ); 
+  record.SetActive( fIsActive ); 
+  record.SetIdx( fIdx ); 
+  record.SetLightBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+  record.SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+  
+  for (const auto &tile : fTilesMap) {
+    record.GetTileMap()[tile.first] = new SLArEventTilePtr();
+    tile.second->SoftCopy( *record.GetTileMap()[tile.first] );
+  }
+
+  return;
+}
+
+
 template<>
 int SLArEventMegatilePtr::ResetHits() {
   int nhits = 0;
@@ -76,6 +97,19 @@ int SLArEventMegatileUniquePtr::ResetHits() {
   for (auto &tile : fTilesMap) {
     nhits += tile.second->GetNhits(); 
     tile.second->ResetHits(); 
+  }
+
+  fTilesMap.clear();
+  
+  return nhits; 
+}
+
+template<class T>
+int SLArEventMegatile<T>::SoftResetHits() {
+  int nhits = 0;
+  for (auto &tile : fTilesMap) {
+    nhits += tile.second->GetNhits(); 
+    tile.second->SoftResetHits(); 
   }
 
   fTilesMap.clear();

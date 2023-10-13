@@ -22,6 +22,9 @@ class SLArEventMegatile : public TNamed {
     SLArEventMegatile(const SLArEventMegatile& right);
     ~SLArEventMegatile(); 
 
+    template<class R>
+    void SoftCopy(SLArEventMegatile<R>& record) const; 
+
     T& GetOrCreateEventTile(const int& tileIdx); 
     int ConfigModule(const SLArCfgMegaTile* cfg);
 
@@ -33,6 +36,7 @@ class SLArEventMegatile : public TNamed {
 
     T& RegisterHit(const SLArEventPhotonHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
     void SetIdx(int idx) {fIdx = idx;}

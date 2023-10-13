@@ -21,6 +21,9 @@ class SLArEventAnode : public TNamed {
     SLArEventAnode(const SLArEventAnode&);
     ~SLArEventAnode(); 
 
+    template<class N, class U, class Q>
+    void SoftCopy(SLArEventAnode<N, U, Q>& record) const;
+
     int ConfigSystem(SLArCfgAnode* cfg);
     M& GetOrCreateEventMegatile(const int mtIdx); 
     inline std::map<int, M>& GetMegaTilesMap() {return fMegaTilesMap;}
@@ -31,6 +34,7 @@ class SLArEventAnode : public TNamed {
     T& RegisterHit(const SLArEventPhotonHit& hit); 
     P& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
     inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}

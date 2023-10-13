@@ -72,6 +72,24 @@ SLArEventAnodePtr::~SLArEventAnode() {
 }
 
 template<>
+template<>
+void SLArEventAnodeUniquePtr::SoftCopy(SLArEventAnodePtr& record) const 
+{
+  record.SoftResetHits();
+  record.SetName(fName); 
+  record.SetID( fID ); 
+  record.SetNhits( fNhits ); 
+  record.SetActive( fIsActive ); 
+  record.SetLightBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+  record.SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+
+  for (const auto& mt : fMegaTilesMap) {
+    record.GetMegaTilesMap()[mt.first] = new SLArEventMegatilePtr(); 
+
+  }
+}
+
+template<>
 int SLArEventAnodeUniquePtr::ConfigSystem(SLArCfgAnode* cfg) {
   int imegatile = 0; 
   fID = cfg->GetIdx(); 
@@ -189,6 +207,19 @@ int SLArEventAnodePtr::ResetHits() {
   for (auto &mgtile : fMegaTilesMap) {
     nn += mgtile.second->ResetHits(); 
     delete mgtile.second;
+  }
+
+  fMegaTilesMap.clear();
+  return nn; 
+}
+
+
+template<class M, class T, class P>
+int SLArEventAnode<M,T,P>::SoftResetHits() {
+  printf("SLArEventAnode::ResetHits() clear event on anode %i\n", fID);
+  int nn = 0; 
+  for (auto &mgtile : fMegaTilesMap) {
+    nn += mgtile.second->SoftResetHits(); 
   }
 
   fMegaTilesMap.clear();

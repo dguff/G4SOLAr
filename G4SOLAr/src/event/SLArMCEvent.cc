@@ -103,6 +103,17 @@ SLArMCEventUniquePtr::~SLArMCEvent()
 }
 
 template<>
+template<>
+void SLArEventTileUniquePtr::SoftCopy(SLArEventTilePtr& record) const
+{
+  record.SoftResetHits(); 
+  Copy(record); 
+  for (const auto &pix : fPixelHits) {
+    record.GetPixelEvents()[pix.first] = pix.second.get();
+  }
+}
+
+template<>
 int SLArMCEventUniquePtr::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {

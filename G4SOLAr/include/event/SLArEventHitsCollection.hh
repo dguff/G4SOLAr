@@ -27,6 +27,8 @@ class SLArEventHitsCollection : public TNamed {
     SLArEventHitsCollection(const SLArEventHitsCollection&); 
     virtual ~SLArEventHitsCollection(); 
 
+    void Copy(SLArEventHitsCollection& record) const;
+
     template<typename TT>
     UShort_t ConvertToClock(const TT& val) {return static_cast<UShort_t>(val / fClockUnit);}
     inline UShort_t GetClockUnit() const {return fClockUnit;}
@@ -52,6 +54,7 @@ class SLArEventHitsCollection : public TNamed {
     inline void SetIdx(int idx) {fIdx = idx;}
     inline void SetClockUnit(const UShort_t unit) {fClockUnit = unit;}
     inline void SetBacktrackerRecordSize(const UShort_t size) {fBacktrackerRecordSize = size;}
+    inline void SetNhits(const int& n) {fNhits = n;}
 
   protected:
     int fIdx; 

@@ -172,6 +172,18 @@ int SLArEventSuperCellArrayUniquePtr::ResetHits() {
 }
 
 template<class S>
+int SLArEventSuperCellArray<S>::SoftResetHits() {
+  int nn = 0; 
+  for (auto &sc : fSuperCellMap) {
+    nn += sc.second->ResetHits(); 
+  }
+  fSuperCellMap.clear();
+  fNhits = 0; 
+  return nn; 
+}
+
+
+template<class S>
 void SLArEventSuperCellArray<S>::SetActive(bool is_active) {
   fIsActive = is_active; 
   for (auto &sc : fSuperCellMap) {
