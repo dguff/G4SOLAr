@@ -18,13 +18,7 @@ template<class P, class A, class X>
 SLArMCEvent<P,A,X>::SLArMCEvent() : 
   fEvNumber(0), fDirection{0, 0, 0}
 {
-  printf("SLArMCEvent constructor:\n");
-
-  printf("MCPrymary type: %s\n", typeid(P).name());
-  printf("EvAnode type: %s\n", typeid(A).name());
-  printf("EvSuperCell type: %s\n", typeid(X).name());
-  getchar();
-  fSLArPrimary.reserve(50);
+   fSLArPrimary.reserve(50);
 }
 
 template<>
@@ -126,14 +120,10 @@ int SLArMCEventPtr::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
     fEvAnode.insert(std::make_pair(anode.first, new SLArEventAnodePtr(anode.second)));
-    fEvAnode[anode.first]->SetID(anode.first);
+    fEvAnode[anode.first]->SetID(anode.second->GetIdx());
     //evAnode->ConfigSystem(anode.second); 
   }
 
-  std::cout << "fEvAnode type is " << typeid(fEvAnode).name() << std::endl;
-
-  getchar();
-  
   return fEvAnode.size();
 }
 

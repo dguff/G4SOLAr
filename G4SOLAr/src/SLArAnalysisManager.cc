@@ -71,7 +71,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent         = std::make_unique<SLArMCEventPtr>();
+    fMCEvent         = new SLArMCEventPtr();
     fAnaMsgr         = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
@@ -119,9 +119,9 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 
   printf("SLArAnalysisManager: setting up output tree\n");
 
-  SLArMCEventPtr* evPtr = fMCEvent.get();
+  //SLArMCEventPtr* evPtr = fMCEvent.get();
 
-  fEventTree->Branch("MCEvent", "SLArMCEventPtr", &evPtr);
+  fEventTree->Branch("MCEvent", "SLArMCEventPtr", &fMCEvent);
   getchar();
 
   return true;

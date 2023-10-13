@@ -196,7 +196,6 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
 
     // Fill histograms
     G4int n_hit = hHC1->entries();
-    printf("SLArEventAction::RecordEventReadoutTile() Recording %i hits\n\n", n_hit);
 
     for (G4int i=0;i<n_hit;i++) {
       SLArReadoutTileHit* hit = (*hHC1)[i];
@@ -212,13 +211,13 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
 
       G4ThreeVector localPos = hit->GetLocalPos();
       G4ThreeVector worldPos = hit->GetWorldPos();
-      G4double      time     = hit->GetTime();
-      G4double      wavelen  = hit->GetPhotonWavelength(); 
-      G4int         anode_idx = hit->GetAnodeIdx();
-      G4int         mtrow_nr  = hit->GetRowMegaTileIdx(); 
-      G4int         mgtile_nr = hit->GetMegaTileIdx(); 
-      G4int         rowtile_nr = hit->GetRowTileIdx(); 
-      G4int         tile_nr    = hit->GetTileIdx(); 
+      G4double time = hit->GetTime();
+      G4double wavelen = hit->GetPhotonWavelength(); 
+      G4int anode_idx = hit->GetAnodeIdx();
+      G4int mtrow_nr = hit->GetRowMegaTileIdx(); 
+      G4int mgtile_nr = hit->GetMegaTileIdx(); 
+      G4int rowtile_nr = hit->GetRowTileIdx(); 
+      G4int tile_nr = hit->GetTileIdx(); 
 
 #ifdef SLAR_DEBUG
       G4cout << "SLArEventAction::RecordEventReadoutTile() hit nr " << i << G4endl;
