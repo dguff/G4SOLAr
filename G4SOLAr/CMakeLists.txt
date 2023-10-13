@@ -13,6 +13,12 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  message(STATUS "DEBUG: Adding '-g' option for gdb debugging")
+endif()
+
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
