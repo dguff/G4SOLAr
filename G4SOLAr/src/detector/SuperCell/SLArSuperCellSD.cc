@@ -78,6 +78,15 @@ G4bool SLArSuperCellSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
+
+
+#ifdef SLAR_DEBUG
+  printf("SLArSuperCellSD::ProcessHits(): processing %s [%i] TPC hit\n", 
+      step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+      step->GetTrack()->GetTrackID());
+  //getchar(); 
+#endif
+
   //if (step->GetTrack()->GetDynamicParticle()
       //->GetDefinition()->GetParticleName() != "opticalphoton") {
 
@@ -110,6 +119,13 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   //need to know if this is an optical photon
   if(track->GetDefinition()
      != G4OpticalPhoton::OpticalPhotonDefinition()) return false;
+#ifdef SLAR_DEBUG
+  printf("SLArSuperCellSD::ProcessHits_constStep(): processing %s [%i] TPC hit\n", 
+      step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+      step->GetTrack()->GetTrackID());
+  //getchar(); 
+#endif
+
 
   G4double phEne = 0*CLHEP::eV;
 
@@ -133,7 +149,7 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   {
     // Get the creation process of optical photon
     G4String procName = "";
-    if (track->GetTrackID() != 1) // make sure consider only secondaries
+    if (track->GetCreatorProcess()) // make sure consider only secondaries
     {
       procName = track->GetCreatorProcess()->GetProcessName();
     }

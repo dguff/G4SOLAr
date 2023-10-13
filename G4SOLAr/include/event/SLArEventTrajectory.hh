@@ -25,6 +25,7 @@ struct trj_point {
   bool  fLAr;
 
   trj_point() : fX(0.), fY(0.), fZ(0.), fKEnergy(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0), fLAr(false) {}
+
   trj_point(double x, double y, double z, double energy, double edep, int n_ph = 0, int n_el = 0, int copy = 0, bool in_lar = false) {
     fX = x; 
     fY = y; 
@@ -36,6 +37,7 @@ struct trj_point {
     fCopy = copy;
     fLAr = in_lar;
   }
+
 };
 
 
@@ -44,7 +46,7 @@ class SLArEventTrajectory : public TObject
 {
   public:
     SLArEventTrajectory();
-    SLArEventTrajectory(SLArEventTrajectory* trj);
+    SLArEventTrajectory(const SLArEventTrajectory& trj);
     ~SLArEventTrajectory();
 
     TString GetParticleName() const {return fParticleName;}
@@ -62,22 +64,23 @@ class SLArEventTrajectory : public TObject
     float GetTotalNph () const {return fTotalNph;} 
     float GetTotalNel () const {return fTotalNel;} 
 
-    inline void SetParticleName(const TString name) {fParticleName = name;}
-    inline void SetCreatorProcess(const TString proc) {fCreatorProcess = proc;}
-    inline void SetEndProcess(const TString proc) {fEndProcess = proc;}
-    inline void SetPDGID(const int pdgID) {fPDGID = pdgID;}
-    inline void SetTrackID(const int trkID) {fTrackID = trkID;}
-    inline void SetParentID(const int prtID) {fParentID = prtID;}
-    inline void SetInitKineticEne(const float k) {fInitKineticEnergy=k;}
-    inline void SetTrackLength(const float l) {fTrackLength = l;}
-    inline void SetInitMomentum(const TVector3 p) {fInitMomentum = p;}
-    inline void SetTime(const float t) {fTime = t;}
-    inline void SetWeight(const float w) {fWeight = w;}
-    inline void IncrementEdep(const double edep) {fTotalEdep += edep;}
-    inline void IncrementNion(const int nion) {fTotalNel += nion;}
-    inline void IncrementNph(const int nph) {fTotalNph += nph;}
+    inline void SetParticleName(const TString& name) {fParticleName = name;}
+    inline void SetCreatorProcess(const TString& proc) {fCreatorProcess = proc;}
+    inline void SetEndProcess(const TString& proc) {fEndProcess = proc;}
+    inline void SetPDGID(const int& pdgID) {fPDGID = pdgID;}
+    inline void SetTrackID(const int& trkID) {fTrackID = trkID;}
+    inline void SetParentID(const int& prtID) {fParentID = prtID;}
+    inline void SetInitKineticEne(const float& k) {fInitKineticEnergy=k;}
+    inline void SetTrackLength(const float& l) {fTrackLength = l;}
+    inline void SetInitMomentum(const TVector3& p) {fInitMomentum = p;}
+    inline void SetTime(const float& t) {fTime = t;}
+    inline void SetWeight(const float& w) {fWeight = w;}
+    inline void IncrementEdep(const double& edep) {fTotalEdep += edep;}
+    inline void IncrementNion(const int& nion) {fTotalNel += nion;}
+    inline void IncrementNph(const int& nph) {fTotalNph += nph;}
 
-    std::vector<trj_point>& GetPoints()      {return fTrjPoints   ;}
+    std::vector<trj_point>& GetPoints()      {return fTrjPoints;}
+    const std::vector<trj_point>& GetConstPoints()  const {return fTrjPoints;}
     void    RegisterPoint(double x, double y, double z, double ene, double edep, int n_ph, int n_el, int copy);
     void    RegisterPoint(const trj_point& point); 
 

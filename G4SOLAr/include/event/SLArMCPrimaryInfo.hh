@@ -9,49 +9,53 @@
 #define SLArMCPRIMARYINFO_HH
 
 #include <iostream>
+#include <vector>
+#include <memory>
 #include "TNamed.h"
 #include "TH3F.h"
 #include "event/SLArEventTrajectory.hh"
 
+template<class T>
 class SLArMCPrimaryInfo : public TNamed 
 {
   public:
     SLArMCPrimaryInfo();
+    SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p);
     ~SLArMCPrimaryInfo();
 
-    void SetPosition(double  x, double  y, double  z, double t = 0);
-    void SetMomentum(double px, double py, double pz, double   ene);
-    void SetID      (const int id) {fID    =   id;}
-    void SetTrackID (const int id) {fTrkID =   id;}
-    void SetName    (const char* name) {fName = name;}
-    void SetTime    (const double time) {fTime = time;}
+    void SetPosition(const double&  x, const double&  y, const double&  z, const double& t = 0);
+    void SetMomentum(const double& px, const double& py, const double& pz, const double&   ene);
+    void SetID(const int& id) {fID = id;}
+    void SetTrackID(const int& id) {fTrkID = id;}
+    void SetName(const char* name) {fName = name;}
+    void SetTime(const double& time) {fTime = time;}
 
-    void SetTotalEdep   (float edep)   {fTotalEdep    = edep;}
+    void SetTotalEdep (float& edep) {fTotalEdep = edep;}
 
-    inline TString   GetParticleName() {return fName     ;}
-    inline std::vector<double>   GetMomentum    () {return fMomentum ;}
-    inline std::vector<double>   GetVertex      () {return fVertex   ;}
-    inline double    GetEnergy      () {return fEnergy   ;}
-    inline int       GetCode        () {return fID       ;}
-    inline double    GetTime        () {return fTime     ;}
-    inline double    GetTotalEdep   () {return fTotalEdep;}
-    inline double    GetTotalLArEdep() {return fTotalLArEdep;}
-    inline int       GetID          () {return fID       ;}
-    inline int       GetTrackID     () {return fTrkID    ;}
-    std::vector<SLArEventTrajectory*>&
-              GetTrajectories() {return fTrajectories;}
-    int       GetTotalScintPhotons() {return fTotalScintPhotons;}
-    int       GetTotalCerenkovPhotons() {return fTotalCerenkovPhotons;}
+    inline TString GetParticleName() const {return fName     ;}
+    inline std::vector<double> GetMomentum() const {return fMomentum ;}
+    inline std::vector<double> GetVertex() const {return fVertex   ;}
+    inline double GetEnergy() const {return fEnergy   ;}
+    inline int GetCode() const {return fID       ;}
+    inline double GetTime() const {return fTime     ;}
+    inline double GetTotalEdep() const {return fTotalEdep;}
+    inline double GetTotalLArEdep() const {return fTotalLArEdep;}
+    inline int GetID() const {return fID       ;}
+    inline int GetTrackID() const {return fTrkID    ;}
+    inline std::vector<T>& GetTrajectories() {return fTrajectories;}
+    inline const std::vector<T>& GetConstTrajectories() const {return fTrajectories;}
+    inline int GetTotalScintPhotons() const {return fTotalScintPhotons;}
+    inline int GetTotalCerenkovPhotons() const {return fTotalCerenkovPhotons;}
 
-    void      IncrementLArEdep(const double edep) {fTotalLArEdep += edep;}
-    void      IncrementScintPhotons() {fTotalScintPhotons++;}
-    void      IncrementCherPhotons() {fTotalCerenkovPhotons++;}
+    inline void IncrementLArEdep(const double edep) {fTotalLArEdep += edep;}
+    inline void IncrementScintPhotons() {fTotalScintPhotons++;}
+    inline void IncrementCherPhotons() {fTotalCerenkovPhotons++;}
 
-    void PrintParticle();
+    void PrintParticle() const;
 
     void ResetParticle();
     
-    int RegisterTrajectory(SLArEventTrajectory* trj);
+    int RegisterTrajectory(T trj);
 
   private:
     Int_t    fID      ; 
@@ -65,13 +69,14 @@ class SLArMCPrimaryInfo : public TNamed
     double   fTotalLArEdep; 
     std::vector<double>   fVertex  ;
     std::vector<double>   fMomentum;
-    std::vector<SLArEventTrajectory*> fTrajectories;
+    std::vector<T> fTrajectories;
   
   public:
-    ClassDef(SLArMCPrimaryInfo, 2);
+    ClassDef(SLArMCPrimaryInfo, 3);
 };
 
-
+typedef SLArMCPrimaryInfo<SLArEventTrajectory*> SLArMCPrimaryInfoPtr;
+typedef SLArMCPrimaryInfo<std::unique_ptr<SLArEventTrajectory>> SLArMCPrimaryInfoUniquePtr;
 
 #endif /* end of include guard SLArMCTRACKINFO_HH */
 

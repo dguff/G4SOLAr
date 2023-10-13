@@ -6,24 +6,43 @@
 
 #include "event/SLArEventSuperCellArray.hh"
 
-ClassImp(SLArEventSuperCellArray)
+templateClassImp(SLArEventSuperCellArray)
 
-SLArEventSuperCellArray::SLArEventSuperCellArray()
+template class SLArEventSuperCellArray<SLArEventSuperCell*>;
+template class SLArEventSuperCellArray<std::unique_ptr<SLArEventSuperCell>>;
+
+template<class S>
+SLArEventSuperCellArray<S>::SLArEventSuperCellArray()
   : TNamed(), fNhits(0), fIsActive(true) {}
 
-SLArEventSuperCellArray::SLArEventSuperCellArray(const SLArEventSuperCellArray& ev)
+template<>
+SLArEventSuperCellArrayPtr::SLArEventSuperCellArray(const SLArEventSuperCellArray& ev)
   : TNamed(ev) 
 {
   fNhits = ev.fNhits; 
   fIsActive = ev.fIsActive; 
   for (const auto &sc : ev.fSuperCellMap) {
     fSuperCellMap.insert(
-        std::make_pair(sc.first, (SLArEventSuperCell*)sc.second->Clone()));
+        std::make_pair(sc.first, new SLArEventSuperCell(*sc.second) ) );
   }
   return;
 }
 
-SLArEventSuperCellArray::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg) 
+template<>
+SLArEventSuperCellArrayUniquePtr::SLArEventSuperCellArray(const SLArEventSuperCellArray& ev)
+  : TNamed(ev) 
+{
+  fNhits = ev.fNhits; 
+  fIsActive = ev.fIsActive; 
+  for (const auto &sc : ev.fSuperCellMap) {
+    fSuperCellMap.insert(
+        std::make_pair(sc.first, std::make_unique<SLArEventSuperCell>(*sc.second) ) );
+  }
+  return;
+}
+
+template<class S>
+SLArEventSuperCellArray<S>::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg) 
   : SLArEventSuperCellArray()
 {
   SetName(cfg->GetName());
@@ -31,14 +50,25 @@ SLArEventSuperCellArray::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg)
   return;
 }
 
-SLArEventSuperCellArray::~SLArEventSuperCellArray() {
+template<>
+SLArEventSuperCellArrayPtr::~SLArEventSuperCellArray() {
   for (auto &scevent : fSuperCellMap) {
-    delete scevent.second; scevent.second = nullptr;
+    scevent.second->ResetHits();
+    delete scevent.second;
   }
   fSuperCellMap.clear(); 
 }
 
-int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
+template<>
+SLArEventSuperCellArrayUniquePtr::~SLArEventSuperCellArray() {
+  for (auto &scevent : fSuperCellMap) {
+    scevent.second->ResetHits();
+  }
+  fSuperCellMap.clear(); 
+}
+
+template<>
+int SLArEventSuperCellArrayPtr::ConfigSystem(SLArCfgSuperCellArray* cfg) {
   int nsc = 0; 
   for (const auto &sc : cfg->GetMap()) {
       if (fSuperCellMap.count(sc.first) == 0) {
@@ -52,28 +82,64 @@ int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
   return nsc; 
 }
 
-SLArEventSuperCell* SLArEventSuperCellArray::CreateEventSuperCell(const int scIdx) {
-  if (fSuperCellMap.count(scIdx)) {
-    printf("SLArEventAnode::CreateEventMegatile(%i) WARNING: Megatile nr %i already present in SuperCell Array %s register\n", scIdx, scIdx, fName.Data());
-    return fSuperCellMap.find(scIdx)->second;
+template<>
+int SLArEventSuperCellArrayUniquePtr::ConfigSystem(SLArCfgSuperCellArray* cfg) {
+  int nsc = 0; 
+  for (const auto &sc : cfg->GetMap()) {
+      if (fSuperCellMap.count(sc.first) == 0) {
+        fSuperCellMap.insert(
+              std::make_pair(sc.first,std::make_unique<SLArEventSuperCell>(sc.first))
+            ); 
+        nsc++;
+    }
   }
 
-  auto sc_event = new SLArEventSuperCell(scIdx); 
-  sc_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
-  fSuperCellMap.insert( std::make_pair(scIdx, sc_event));
-
-  return sc_event;
+  return nsc; 
 }
 
-SLArEventSuperCell* SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit) {
-  int sc_idx = hit->GetTileIdx(); 
-  SLArEventSuperCell* sc_event = nullptr;
-  if (fSuperCellMap.count( sc_idx) == 0) sc_event = CreateEventSuperCell(sc_idx); 
-  else sc_event = fSuperCellMap.find(sc_idx)->second;
+template<>
+SLArEventSuperCell*& SLArEventSuperCellArrayPtr::GetOrCreateEventSuperCell(const int scIdx) {
+  auto it = fSuperCellMap.find(scIdx); 
 
-  sc_event->RegisterHit(hit);
+  if (it != fSuperCellMap.end()) {
+    //printf("SLArEventAnode::CreateEventMegatile(%i) WARNING: Megatile nr %i already present in SuperCell Array %s register\n", scIdx, scIdx, fName.Data());
+    return fSuperCellMap.find(scIdx)->second;
+  }
+  else {
+    SLArEventSuperCell* sc_event = new SLArEventSuperCell(scIdx); 
+    sc_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+    fSuperCellMap.insert( std::make_pair(scIdx, std::move(sc_event)) );
+
+    return fSuperCellMap[scIdx];
+  }
+}
+
+template<>
+std::unique_ptr<SLArEventSuperCell>& SLArEventSuperCellArrayUniquePtr::GetOrCreateEventSuperCell(const int scIdx) {
+  auto it = fSuperCellMap.find(scIdx); 
+
+  if (it != fSuperCellMap.end()) {
+    //printf("SLArEventAnode::CreateEventMegatile(%i) WARNING: Megatile nr %i already present in SuperCell Array %s register\n", scIdx, scIdx, fName.Data());
+    return fSuperCellMap.find(scIdx)->second;
+  }
+  else {
+    std::unique_ptr<SLArEventSuperCell> sc_event = std::make_unique<SLArEventSuperCell>(scIdx); 
+    sc_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+    fSuperCellMap.insert( std::make_pair(scIdx, std::move(sc_event)) );
+
+    return fSuperCellMap[scIdx];
+  }
+}
+
+template<class S>
+S& SLArEventSuperCellArray<S>::RegisterHit(const SLArEventPhotonHit& hit) {
+  int sc_idx = hit.GetTileIdx(); 
+  auto& sc_event = GetOrCreateEventSuperCell(sc_idx);
+  sc_event->RegisterHit(hit); 
+
   fNhits++;
-  return sc_event; 
+  return fSuperCellMap[sc_idx];
+
   //} else {
     //printf("SLArEventSuperCellArray::RegisterHit WARNING\n"); 
     //printf("SuperCell with ID %i is not in store [%i,%i,%i]\n", 
@@ -82,16 +148,31 @@ SLArEventSuperCell* SLArEventSuperCellArray::RegisterHit(SLArEventPhotonHit* hit
   //}
 }
 
-int SLArEventSuperCellArray::ResetHits() {
+template<>
+int SLArEventSuperCellArrayPtr::ResetHits() {
   int nn = 0; 
   for (auto &sc : fSuperCellMap) {
     nn += sc.second->ResetHits(); 
+    delete sc.second;
   }
+  fSuperCellMap.clear();
   fNhits = 0; 
   return nn; 
 }
 
-void SLArEventSuperCellArray::SetActive(bool is_active) {
+template<>
+int SLArEventSuperCellArrayUniquePtr::ResetHits() {
+  int nn = 0; 
+  for (auto &sc : fSuperCellMap) {
+    nn += sc.second->ResetHits(); 
+  }
+  fSuperCellMap.clear();
+  fNhits = 0; 
+  return nn; 
+}
+
+template<class S>
+void SLArEventSuperCellArray<S>::SetActive(bool is_active) {
   fIsActive = is_active; 
   for (auto &sc : fSuperCellMap) {
     sc.second->SetActive(is_active); 

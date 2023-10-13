@@ -26,6 +26,7 @@
 #include "G4Trajectory.hh"
 
 #include "G4ios.hh"
+#include <cstdio>
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -64,20 +65,20 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 #endif
 
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    if (fTileHCollID == -2) 
-      fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
-    if (fSuperCellHCollID == -5) 
-      fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
-    if (fLArHCollID.empty()) {
-      auto detConstruction = (SLArDetectorConstruction*)
-        G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
-      for (const auto &tpc : detConstruction->GetDetTPCs() ) {
-        auto coll_id = 
-          sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
-        fLArHCollID.push_back(coll_id); 
-      }
+  if (fTileHCollID == -2) 
+    fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
+  if (fSuperCellHCollID == -5) 
+    fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
+  if (fLArHCollID.empty()) {
+    auto detConstruction = (SLArDetectorConstruction*)
+      G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+    for (const auto &tpc : detConstruction->GetDetTPCs() ) {
+      auto coll_id = 
+        sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
+      fLArHCollID.push_back(coll_id); 
     }
-     
+  }
+
 
 #ifdef SLAR_DEBUG
     G4cout << "SLArEventAction::BeginOfEventAction():" << G4endl;
@@ -124,7 +125,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-    RecordEventLAr( event );
+    //RecordEventLAr( event );
 
     if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
       RecordEventReadoutTile ( event );
@@ -138,14 +139,24 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 
      
     SLArAnaMgr->GetEvent()->SetEvNumber(event->GetEventID());
+
+    for (const auto &evAnode : SLArAnaMgr->GetEvent()->GetEventAnode()) {
+      printf("ANODE %i\n", evAnode.first);
+      for (const auto &evMT : evAnode.second->GetConstMegaTilesMap()) {
+        printf("\tMEGATILE %i\n", evMT.first);
+      }
+
+    }
     
     SLArAnaMgr->FillEvTree();
+    
 
     printf("SLArEventAction::EndOfEventAction()\n"); 
     printf("OpticalPhoton Monitor:\nCherenkov: %i\nScintillation: %i\n\n", 
         fPhotonCount_Cher, fPhotonCount_Scnt);
     printf("Primary particles:\n");
-    for (const auto &p : SLArAnaMgr->GetEvent()->GetPrimaries()) {
+    auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+    for (const auto &p : primaries ) {
       printf("%s - %g MeV - trk ID %i\n", 
           p->GetParticleName().Data(), p->GetEnergy(), p->GetTrackID());
       printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
@@ -185,6 +196,7 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
 
     // Fill histograms
     G4int n_hit = hHC1->entries();
+    printf("SLArEventAction::RecordEventReadoutTile() Recording %i hits\n\n", n_hit);
 
     for (G4int i=0;i<n_hit;i++) {
       SLArReadoutTileHit* hit = (*hHC1)[i];
@@ -209,39 +221,38 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       G4int         tile_nr    = hit->GetTileIdx(); 
 
 #ifdef SLAR_DEBUG
-      G4cout << "SLArEventAction::RecordEventReadoutTile()" << G4endl;
+      G4cout << "SLArEventAction::RecordEventReadoutTile() hit nr " << i << G4endl;
       printf("Tile idx [%i, %i, %i, %i]\n", mtrow_nr, mgtile_nr, rowtile_nr, tile_nr);
       G4cout << "x    = " << G4BestUnit(worldPos.x(), "Length") << "; "
              << "y    = " << G4BestUnit(worldPos.y(), "Length") << "; "
              << "time = " << G4BestUnit(time, "Time") << G4endl;
 #endif
       
-      SLArEventPhotonHit* dstHit = new SLArEventPhotonHit(
+      SLArEventPhotonHit dstHit(
           time, 
           hit->GetPhotonProcessId(), 
           wavelen);
-      dstHit->SetLocalPos(localPos.x(), localPos.y(), localPos.z());
-      dstHit->SetTileInfo(mtrow_nr, mgtile_nr, rowtile_nr, tile_nr); 
-      dstHit->SetRowCellNr(hit->GetRowCellNr()); 
-      dstHit->SetCellNr(hit->GetCellNr()); 
-      dstHit->SetProducerTrkID( hit->GetProducerID() ); 
+      dstHit.SetLocalPos(localPos.x(), localPos.y(), localPos.z());
+      dstHit.SetTileInfo(mtrow_nr, mgtile_nr, rowtile_nr, tile_nr); 
+      dstHit.SetRowCellNr(hit->GetRowCellNr()); 
+      dstHit.SetCellNr(hit->GetCellNr()); 
+      dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
-      auto ev_tile = ev_anode->RegisterHit(dstHit);
+      auto& ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
+      auto& ev_tile = ev_anode->RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
           SLArEventBacktrackerVector* records = 
-            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock<float>(dstHit->GetTime()) );
+            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock<float>(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
-            bktManager->GetBacktrackers().at(ib)->Eval(dstHit, 
+            bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
                 &records->GetRecords().at(ib));
           }
         }
       }
       
-      delete dstHit;
     }
 
     // Sort hits on PMTs
@@ -320,7 +331,7 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
       dstHit.SetTileInfo(0, array_nr, cellrow_nr, cell_nr); 
       dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(&dstHit);
+      auto& ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
@@ -336,6 +347,7 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
       
       //delete dstHit;
     }
+    
 
     // Sort hits on PMTs
     //printf("Sorting hits...\n"); 
@@ -355,9 +367,9 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
 
 void SLArEventAction::RecordEventLAr(const G4Event* ev)
 {
-#ifdef SLAR_DEBUG
-  printf("  -> RecordEventLAr()\n");
-#endif
+//#ifdef SLAR_DEBUG
+  //printf("  -> RecordEventLAr()\n");
+//#endif
 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
   if (fLArHCollID.empty()) return;
@@ -376,9 +388,9 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev)
   }
 
 
-#ifdef SLAR_DEBUG
-  printf("     DONE\n"); 
-#endif
+//#ifdef SLAR_DEBUG
+  //printf("     DONE\n"); 
+//#endif
 }
 
 void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
@@ -391,28 +403,28 @@ int SLArEventAction::FindAncestorID(int trkid) {
   int pid = trkid; 
 
   SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
-  auto primaries = anaMngr->GetEvent()->GetPrimaries(); 
+  auto& primaries = anaMngr->GetEvent()->GetPrimaries(); 
   bool caught = false; 
-//#ifdef SLAR_DEBUG
-  //printf("Lookging for primary parent of %i among\n", trkid);
-  //for (const auto& _pid : fParentIDMap) {
-    //printf("%i - PID: %i\n", _pid.first, _pid.second); 
-  //}
+#ifdef SLAR_DEBUG
+  printf("SLArEventAction::FindAncestorID() Lookging for primary parent of %i among\n", trkid);
+  for (const auto& _pid : fParentIDMap) {
+    printf("%i - PID: %i\n", _pid.first, _pid.second); 
+  }
 
-  //printf("\nList of primaries: \n");
-  //for (const auto &p : primaries) {
-    //printf("%s - PID: %i\n", p->GetParticleName().Data(), p->GetTrackID());
-  //}
+  printf("\nList of primaries: \n");
+  for (const SLArMCPrimaryInfo& p : primaries) {
+    printf("%s - PID: %i\n", p.GetParticleName().Data(), p.GetTrackID());
+  }
   //getchar(); 
-//#endif
+#endif
 
   while ( !caught ) {
     pid = fParentIDMap[trkid];
-//#ifdef SLAR_DEBUG
-    //printf("local parent id: %i\n", pid);
-//#endif
+#ifdef SLAR_DEBUG
+    printf("local parent id: %i\n", pid);
+#endif
 
-    for (const auto &p : primaries) {
+    for (const auto& p : primaries) {
       if (pid == p->GetTrackID()) {
         primary = pid; 
         caught = true;
@@ -425,10 +437,10 @@ int SLArEventAction::FindAncestorID(int trkid) {
 //#endif
   }
 
-//#ifdef SLAR_DEBUG
-  //printf("Caught! returning %i\n", primary);
+#ifdef SLAR_DEBUG
+  printf("Caught! returning %i\n", primary);
   //getchar(); 
-//#endif
+#endif
 
   return primary; 
 }

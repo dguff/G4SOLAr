@@ -47,9 +47,8 @@ SLArEventHitsCollection<T>::~SLArEventHitsCollection() {
 }
 
 template<class T>
-int SLArEventHitsCollection<T>::RegisterHit(const T* hit) {
-  if (!hit) return -1; 
-  fHits[ConvertToClock<float>(hit->GetTime())]++; 
+int SLArEventHitsCollection<T>::RegisterHit(const T hit) {
+  fHits[ConvertToClock<float>(hit.GetTime())]++; 
   fNhits++; 
   return fNhits;
 }
@@ -72,7 +71,7 @@ int SLArEventHitsCollection<T>::ResetHits() {
 }
 
 template<class T>
-void SLArEventHitsCollection<T>::PrintHits() {
+void SLArEventHitsCollection<T>::PrintHits() const {
   printf("Hit container ID: %i [%s]\n", fIdx, fName.Data());
   printf("- - - - - - - - - - - - - - - - - - - - - - -\n");
   for (auto &hit : fHits) {

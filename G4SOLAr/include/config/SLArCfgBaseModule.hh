@@ -60,7 +60,7 @@ class SLArCfgBaseModule : public TNamed {
     inline void   SetSize (const float x, const float y, const float z) { fSize = TVector3(x, y, z); }
 
     inline TVector3 GetNormal() const {return fNormal;}
-    virtual TGraph* BuildGShape() {return nullptr;} 
+    virtual TGraph BuildGShape()=0; 
     inline void SetupAxis0( const TVector3 v) {fAxis0 = v;} 
     inline void SetupAxis1( const TVector3 v) {fAxis1 = v;}
     inline void SetupAxes ( const TVector3 v0, const TVector3 v1 ) {fAxis0 = v0; fAxis1 = v1;}

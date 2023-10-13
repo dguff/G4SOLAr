@@ -86,7 +86,13 @@ void SLArCfgAssembly<TBAseModule>::RegisterElement(TBAseModule* element)
 template<class TBaseModule>
 TBaseModule* SLArCfgAssembly<TBaseModule>::GetBaseElement(int idx)
 {
-  return fElementsMap.find(idx)->second;
+  auto it = fElementsMap.find(idx);
+  if (it != fElementsMap.end()) {
+    return it->second;
+  }
+  else {
+    return nullptr;
+  }
 }
 
 template<class TBaseModule>
@@ -105,22 +111,20 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
   {
     //printf("el position (global): %g, %g, %g \n", 
         //el.second->GetPhysX(), el.second->GetPhysY(), el.second->GetPhysZ());
-    TGraph* g = el.second->BuildGShape(); 
+    TGraph g = el.second->BuildGShape(); 
     if (kFrame == kRelative) {
-      for (int i=0; i<g->GetN(); i++) {
+      for (int i=0; i<g.GetN(); i++) {
         //printf("(%g, %g) -> ", g->GetX()[i], g->GetY()[i]);
-        g->GetX()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis0 ); 
-        g->GetY()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis1 ); 
+        g.GetX()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis0 ); 
+        g.GetY()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis1 ); 
         //printf("(%g, %g)\n", g->GetX()[i], g->GetY()[i]);
       }
       //getchar(); 
     }
     TString gBinName = Form("gBin%i", iBin);
-    int bin_idx = h2Bins->AddBin(
-        g->Clone(gBinName));
+    int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
     el.second->SetBinIdx(bin_idx);
     iBin ++;
-    delete g; 
   }
 
   h2Bins->ChangePartition(n, m); 
@@ -152,7 +156,7 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
  */
 
 template<class TBaseModule>
-TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
+TGraph SLArCfgAssembly<TBaseModule>::BuildGShape() {
 
   double x_min =  1e10;
   double x_max = -1e10; 
@@ -160,10 +164,10 @@ TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
   double y_max = -1e10; 
 
   for (const auto &el : fElementsMap) {
-    TGraph* gbin = el.second->BuildGShape(); 
-    double* x = gbin->GetX(); 
-    double* y = gbin->GetY(); 
-    int n = gbin->GetN(); 
+    TGraph gbin = el.second->BuildGShape(); 
+    double* x = gbin.GetX(); 
+    double* y = gbin.GetY(); 
+    int n = gbin.GetN(); 
     double x_min_bin = *std::min_element(x, x+n);
     double x_max_bin = *std::max_element(x, x+n); 
     double y_min_bin = *std::min_element(y, y+n); 
@@ -173,18 +177,16 @@ TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
     if (x_max_bin > x_max) x_max = x_max_bin; 
     if (y_min_bin < y_min) y_min = y_min_bin; 
     if (y_max_bin > y_max) y_max = y_max_bin;
-
-    delete gbin; 
   }
 
-  TGraph* g = new TGraph(5); 
-  g->SetPoint(0, x_min, y_min); 
-  g->SetPoint(1, x_min, y_max); 
-  g->SetPoint(2, x_max, y_max); 
-  g->SetPoint(3, x_max, y_min); 
-  g->SetPoint(4, x_min, y_min); 
+  TGraph g(5); 
+  g.SetPoint(0, x_min, y_min); 
+  g.SetPoint(1, x_min, y_max); 
+  g.SetPoint(2, x_max, y_max); 
+  g.SetPoint(3, x_max, y_min); 
+  g.SetPoint(4, x_min, y_min); 
 
-  g->SetName(Form("g%s", fName.Data())); 
+  g.SetName(Form("g%s", fName.Data())); 
   return g;
 }
 

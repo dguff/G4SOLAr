@@ -78,7 +78,7 @@ class SLArAnalysisManager
       return anodeCfg;}
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEvent* GetEvent()  {return    fMCEvent;}
+    std::unique_ptr<SLArMCEventPtr>& GetEvent()  {return    fMCEvent;}
     G4bool Save ();
 
     // mock fake access
@@ -103,9 +103,9 @@ class SLArAnalysisManager
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 
-    TFile*              fRootFile;
-    TTree*              fEventTree;
-    SLArMCEvent*        fMCEvent;
+    TFile* fRootFile;
+    TTree* fEventTree;
+    std::unique_ptr<SLArMCEventPtr> fMCEvent;
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
     backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;

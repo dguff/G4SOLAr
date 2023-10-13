@@ -43,7 +43,7 @@ EBacktracker GetBacktrackerEnum(const G4String bkt) {
     id = kTrkID;
   }
   else if (bkt == "ancestorID") {
-    id = kAnchestorID;
+    id = kAncestorID;
   }
   else if (bkt == "opticalProc") {
     id = kOpticalProc;

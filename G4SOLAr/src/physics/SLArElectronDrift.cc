@@ -94,11 +94,12 @@ void SLArElectronDrift::PrintProperties() {
   return;
 }
 
+template<class A>
 void SLArElectronDrift::Drift(const int& n, const int& trkId,
     const G4ThreeVector& pos, 
     const double time, 
     SLArCfgAnode* anodeCfg, 
-    SLArEventAnode* anodeEv) 
+    A anodeEv) 
 {
   auto ana_mngr = SLArAnalysisManager::Instance();
   auto bkt_mngr = ana_mngr->GetBacktrackerManager( backtracker:: kCharge );
@@ -113,12 +114,12 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
   G4ThreeVector anodePos = 
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
-  auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
+  //auto pixID_tmp = anodeCfg->GetPixelCoord( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
   //#ifdef SLAR_DEBUG
   //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
   //n, pos.x(), pos.y(), pos.z(), time);
   //printf("axis projection: [%.0f, %.0f]\n", pos.dot(anodeXaxis), pos.dot(anodeYaxis)); 
-  //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
+  //printf("pixID[%i, %i, %i]\n", pixID_tmp[0], pixID_tmp[1], pixID_tmp[2]);
   //#endif
 
   // Get anode position and compute drift time
@@ -147,11 +148,12 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
   G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
   G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
 
+  SLArCfgAnode::SLArPixIdxCoord pixID;
   for (G4int i=0; i<n_elec_anode; i++) {
-    pixID = anodeCfg->FindPixel(x_[i], y_[i]); 
+    pixID = anodeCfg->GetPixelCoord(x_[i], y_[i]); 
     if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-      SLArCfgMegaTile* mtile = (SLArCfgMegaTile*)anodeCfg->FindBaseElementInMap(pixID[0]); 
-      SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->FindBaseElementInMap(pixID[1]); 
+      SLArCfgMegaTile* mtile = (SLArCfgMegaTile*)anodeCfg->GetBaseElement(pixID[0]); 
+      SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->GetBaseElement(pixID[1]); 
       if (!tile) {
         printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
             pixID[1], pixID[0], pixID[1], pixID[2]);
@@ -159,25 +161,27 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
         continue;
       }
 
-      SLArEventMegatile* evMT=nullptr;
-      auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
-      if (mt_itr == anodeEv->GetMegaTilesMap().end()) {
-        evMT = anodeEv->CreateEventMegatile(mtile->GetIdx()); 
-      }
-      else {
-        evMT = mt_itr->second;
-      }
-
-      SLArEventTile* evT=nullptr;
-      auto t_itr = evMT->GetTileMap().find(tile->GetIdx()); 
-      if (t_itr == evMT->GetTileMap().end()) {
-        evT = evMT->CreateEventTile(tile->GetIdx()); 
-      }
-      else {
-        evT = t_itr->second;
-      }
       SLArEventChargeHit hit(t_[i], trkId, 0); 
-      auto ev_pixel = evT->RegisterChargeHit(pixID[2], &hit); 
+      auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
+
+      //SLArEventMegatile* evMT=nullptr;
+      //auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
+      //if (mt_itr == anodeEv->GetMegaTilesMap().end()) {
+        //evMT = anodeEv->CreateEventMegatile(mtile->GetIdx()); 
+      //}
+      //else {
+        //evMT = mt_itr->second;
+      //}
+
+      //SLArEventTile* evT=nullptr;
+      //auto t_itr = evMT->GetTileMap().find(tile->GetIdx()); 
+      //if (t_itr == evMT->GetTileMap().end()) {
+        //evT = evMT->CreateEventTile(tile->GetIdx()); 
+      //}
+      //else {
+        //evT = t_itr->second;
+      //}
+      //auto ev_pixel = evT->RegisterChargeHit(pixID[2], hit); 
 
       //#ifdef SLAR_DEBUG
       //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
@@ -191,7 +195,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
       if (bkt_mngr->IsNull()) continue;
 
       auto records = 
-        ev_pixel->GetBacktrackerVector( ev_pixel->ConvertToClock<float>(hit.GetTime()));
+        evPixel->GetBacktrackerVector( evPixel->template ConvertToClock<float>(hit.GetTime()));
 
       for (size_t ib = 0; ib < bkt_mngr->GetBacktrackers().size(); ib++) {
         bkt_mngr->GetBacktrackers().at(ib)->Eval(&hit, 
@@ -200,5 +204,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
 
     }
   }
-
 }
+
+template void SLArElectronDrift::Drift<SLArEventAnodePtr*&>(const int& n, const int& trkId, const G4ThreeVector& pos, const double time, SLArCfgAnode* anodeCfg, SLArEventAnodePtr*& anodeEv);
+template void SLArElectronDrift::Drift<std::unique_ptr<SLArEventAnodeUniquePtr>&>(const int& n, const int& trkId, const G4ThreeVector& pos, const double time, SLArCfgAnode* anodeCfg, std::unique_ptr<SLArEventAnodeUniquePtr>& anodeEv);

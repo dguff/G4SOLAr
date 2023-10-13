@@ -37,7 +37,7 @@ G4bool SLArBacktrackerManager::RegisterBacktracker(const EBacktracker id, const 
         status = true;
         break;
       }
-    case kAnchestorID:
+    case kAncestorID:
       {
         if (name.empty()) bkt_name = BacktrackerLabel[id];
         fBacktrackers.push_back( new SLArBacktrackerAncestorID( bkt_name ));

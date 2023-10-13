@@ -14,7 +14,7 @@ SLArEventChargePixel::SLArEventChargePixel()
   fClockUnit = 10;
 }
 
-SLArEventChargePixel::SLArEventChargePixel(const int idx, const SLArEventChargeHit* hit)
+SLArEventChargePixel::SLArEventChargePixel(const int& idx, const SLArEventChargeHit& hit)
   : SLArEventHitsCollection<SLArEventChargeHit>(idx) 
 {
   fName = Form("EvPix%i", fIdx); 
@@ -22,4 +22,6 @@ SLArEventChargePixel::SLArEventChargePixel(const int idx, const SLArEventChargeH
   RegisterHit(hit); 
 }
 
-
+SLArEventChargePixel::SLArEventChargePixel(const SLArEventChargePixel& right) 
+  : SLArEventHitsCollection<SLArEventChargeHit>(right) 
+{}

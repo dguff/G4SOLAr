@@ -7,11 +7,14 @@
 #ifndef SLAREVENTMEGATILE_HH
 
 #define SLAREVENTMEGATILE_HH
+#include <map>
+#include <memory>
 
 #include "event/SLArEventTile.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgReadoutTile.hh"
 
+template<class T>
 class SLArEventMegatile : public TNamed {
   public: 
     SLArEventMegatile(); 
@@ -19,16 +22,16 @@ class SLArEventMegatile : public TNamed {
     SLArEventMegatile(const SLArEventMegatile& right);
     ~SLArEventMegatile(); 
 
-    SLArEventTile* CreateEventTile(const int tileIdx); 
+    T& GetOrCreateEventTile(const int& tileIdx); 
     int ConfigModule(const SLArCfgMegaTile* cfg);
 
-    inline const std::map<int, SLArEventTile*>& GetConstTileMap() const {return fTilesMap;}
-    inline std::map<int, SLArEventTile*>& GetTileMap() {return fTilesMap;}
+    inline const std::map<int, T>& GetConstTileMap() const {return fTilesMap;}
+    inline std::map<int, T>& GetTileMap() {return fTilesMap;}
     int GetNPhotonHits() const;
     int GetNChargeHits() const; 
     inline int GetIdx() const {return fIdx;}
 
-    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
+    T& RegisterHit(const SLArEventPhotonHit& hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
@@ -45,12 +48,14 @@ class SLArEventMegatile : public TNamed {
     int fNhits; 
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, SLArEventTile*> fTilesMap; 
+    std::map<int, T> fTilesMap; 
 
   public:
-    ClassDef(SLArEventMegatile, 1)
+    ClassDef(SLArEventMegatile, 2)
 };
 
+typedef SLArEventMegatile<SLArEventTilePtr*> SLArEventMegatilePtr;
+typedef SLArEventMegatile<std::unique_ptr<SLArEventTileUniquePtr>> SLArEventMegatileUniquePtr;
 
 #endif /* end of include guard SLAREVENTMEGATILE_HH */
 

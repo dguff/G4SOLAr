@@ -33,7 +33,8 @@ class SLArCfgBaseSystem : public SLArCfgBaseModule
     TAssemblyModule* GetBaseElement(const char* name);
     TAssemblyModule* FindBaseElementInMap(int ibin); 
     std::map<int, TAssemblyModule*>& GetMap() {return fElementsMap;}
-    void RegisterElement(TAssemblyModule* mod); 
+    void RegisterElement(TAssemblyModule* mod);
+    TGraph BuildGShape() override;
 
   protected:
     int fNElements; 

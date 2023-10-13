@@ -22,7 +22,7 @@ class SLArCfgSuperCell : public SLArCfgBaseModule
     ~SLArCfgSuperCell();
 
     void   DumpInfo() override;
-    TGraph* BuildGShape() override;
+    TGraph BuildGShape() override;
 
   protected:
 

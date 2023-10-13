@@ -12,10 +12,12 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArBacktrackerManager.hh"
+#include <cstdio>
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 
+#include "SLArEventAnode.hh"
 #include "TObjString.h"
 #include "TVectorD.h"
 #include "TParameter.h"
@@ -53,7 +55,6 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fIsMaster(isMaster), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
-    fMCEvent  (nullptr), 
     fSuperCellBacktrackerManager(nullptr), 
     fVUVSiPMBacktrackerManager(nullptr), 
     fChargeBacktrackerManager(nullptr), 
@@ -70,7 +71,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent         = new SLArMCEvent();
+    fMCEvent         = std::make_unique<SLArMCEventPtr>();
     fAnaMsgr         = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
@@ -116,7 +117,12 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 
   if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
 
-  fEventTree->Branch("MCEvent", &fMCEvent);
+  printf("SLArAnalysisManager: setting up output tree\n");
+
+  SLArMCEventPtr* evPtr = fMCEvent.get();
+
+  fEventTree->Branch("MCEvent", "SLArMCEventPtr", &evPtr);
+  getchar();
 
   return true;
 }
@@ -502,7 +508,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   if (fChargeBacktrackerManager) {
     if (fChargeBacktrackerManager->IsNull() == false) {
 
-      for (auto evAnode : fMCEvent->GetEventAnode()) {
+      for (auto& evAnode : fMCEvent->GetEventAnode()) {
         evAnode.second->SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
@@ -511,7 +517,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // vuv sipm backtrackers
   if (fVUVSiPMBacktrackerManager) {
     if (fVUVSiPMBacktrackerManager->IsNull() == false) {
-      for (auto evAnode : fMCEvent->GetEventAnode()) {
+      for (auto& evAnode : fMCEvent->GetEventAnode()) {
         evAnode.second->SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
       }
     }
@@ -520,7 +526,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // supercell backtrakers
   if (fSuperCellBacktrackerManager) {
     if (fSuperCellBacktrackerManager->IsNull() == false) {
-      for (auto evSCA : fMCEvent->GetEventSuperCellArray() ) {
+      for (auto& evSCA : fMCEvent->GetEventSuperCellArray() ) {
         evSCA.second->SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }

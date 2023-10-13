@@ -120,10 +120,8 @@ TH2Poly* SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
     auto g = mod.second->BuildGShape(); 
     TString gBinName = Form("gBin%i", iBin);
     printf("SLArCfgBaseSystem::BuildPolyBinHist: Adding bin %i\n", iBin);
-    int bin_idx = h2Bins->AddBin(
-        g->Clone(gBinName));
+    int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
     mod.second->SetBinIdx(bin_idx);
-    delete g; 
     iBin ++;
   }
 
@@ -160,6 +158,41 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
     //if (mod.second) mod.second->ResetH2Hits(); 
   //}
 //}
+
+template<class TAssemblyModule> 
+TGraph SLArCfgBaseSystem<TAssemblyModule>::BuildGShape() {
+  double x_min =  1e10;
+  double x_max = -1e10; 
+  double y_min =  1e10; 
+  double y_max = -1e10; 
+
+  for (const auto &el : fElementsMap) {
+    TGraph gbin = el.second->BuildGShape(); 
+    double* x = gbin.GetX(); 
+    double* y = gbin.GetY(); 
+    int n = gbin.GetN(); 
+    double x_min_bin = *std::min_element(x, x+n);
+    double x_max_bin = *std::max_element(x, x+n); 
+    double y_min_bin = *std::min_element(y, y+n); 
+    double y_max_bin = *std::max_element(y, y+n); 
+
+    if (x_min_bin < x_min) x_min = x_min_bin; 
+    if (x_max_bin > x_max) x_max = x_max_bin; 
+    if (y_min_bin < y_min) y_min = y_min_bin; 
+    if (y_max_bin > y_max) y_max = y_max_bin;
+  }
+
+  TGraph g(5); 
+  g.SetPoint(0, x_min, y_min); 
+  g.SetPoint(1, x_min, y_max); 
+  g.SetPoint(2, x_max, y_max); 
+  g.SetPoint(3, x_max, y_min); 
+  g.SetPoint(4, x_min, y_min); 
+
+  g.SetName(Form("g%s", fName.Data())); 
+  return g;
+}
+
 
 template class SLArCfgBaseSystem<SLArCfgSuperCellArray>;
 

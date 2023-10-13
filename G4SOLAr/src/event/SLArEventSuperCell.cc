@@ -46,7 +46,7 @@ double SLArEventSuperCell::GetTime(EPhProcess proc) const {
 
 }
 
-void SLArEventSuperCell::PrintHits()
+void SLArEventSuperCell::PrintHits() const
 {
   std::cout << "SuperCell id: " << fIdx << std::endl;
   std::cout << "-----------------------------------------"

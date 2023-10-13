@@ -7,20 +7,65 @@
 
 #include <iostream>
 #include <string.h>
+#include <memory>
 #include "event/SLArMCPrimaryInfo.hh"
 
-ClassImp(SLArMCPrimaryInfo)
+templateClassImp(SLArMCPrimaryInfo)
 
-SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
+template class SLArMCPrimaryInfo<SLArEventTrajectory*>;
+template class SLArMCPrimaryInfo<std::unique_ptr<SLArEventTrajectory>>;
+
+template<class T>
+SLArMCPrimaryInfo<T>::SLArMCPrimaryInfo() : 
   fID(0), fTrkID(0), fName("noParticle"), fEnergy(0.),
   fTotalEdep(0.), fTotalLArEdep(0), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
   fVertex(3, 0.), fMomentum(3, 0.)
-{}
+{
+  fTrajectories.reserve(100);
+}
 
-SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {}
+template<>
+SLArMCPrimaryInfoUniquePtr::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
+  : TNamed(p), 
+    fID(p.fID), fTrkID(p.fTrkID), fEnergy(p.fEnergy), 
+    fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
+    fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
+    fVertex(p.fVertex), fMomentum(p.fMomentum) 
+{
+  for (const auto& t : p.fTrajectories) {
+    fTrajectories.push_back(std::make_unique<SLArEventTrajectory>(*t)); 
+  }
+}
 
-void SLArMCPrimaryInfo::SetPosition(double x, double y,
-                                  double z, double t)
+template<>
+SLArMCPrimaryInfoPtr::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
+  : TNamed(p), 
+    fID(p.fID), fTrkID(p.fTrkID), fEnergy(p.fEnergy), 
+    fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
+    fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
+    fVertex(p.fVertex), fMomentum(p.fMomentum) 
+{
+  for (const auto& t : p.fTrajectories) {
+    fTrajectories.push_back(new SLArEventTrajectory(*t)); 
+  }
+}
+
+template<>
+SLArMCPrimaryInfoUniquePtr::~SLArMCPrimaryInfo() {
+  fTrajectories.clear();
+}
+
+template<>
+SLArMCPrimaryInfoPtr::~SLArMCPrimaryInfo() {
+  for (auto &t : fTrajectories) {
+    delete t;
+  }
+  fTrajectories.clear();
+}
+
+template<class T>
+void SLArMCPrimaryInfo<T>::SetPosition(const double& x, const double& y,
+                                    const double& z, const double& t)
 {
   fVertex[0] = x;
   fVertex[1] = y;
@@ -30,8 +75,8 @@ void SLArMCPrimaryInfo::SetPosition(double x, double y,
   fTotalScintPhotons = 0; 
 }
 
-void SLArMCPrimaryInfo::SetMomentum(double px, double py, double pz, 
-                                  double ene)
+template<class T>
+void SLArMCPrimaryInfo<T>::SetMomentum(const double& px, const double& py, const double& pz, const double& ene)
 {
   fMomentum[0] = px;
   fMomentum[1] = py;
@@ -39,7 +84,8 @@ void SLArMCPrimaryInfo::SetMomentum(double px, double py, double pz,
   fEnergy   = ene;
 }
 
-void SLArMCPrimaryInfo::ResetParticle()
+template<>
+void SLArMCPrimaryInfoUniquePtr::ResetParticle()
 {
   fID           = 0;
   fTrkID        = 0; 
@@ -51,13 +97,38 @@ void SLArMCPrimaryInfo::ResetParticle()
   fTotalScintPhotons = 0; 
   fTotalCerenkovPhotons = 0; 
 
-  for (auto &tt : fTrajectories) {delete tt;}
+  //for (auto &t :fTrajectories) {
+    //delete t;
+  //}
   fTrajectories.clear();
   std::fill(fVertex.begin(), fVertex.end(), 0.); 
   std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
 }
 
-void SLArMCPrimaryInfo::PrintParticle()
+
+template<>
+void SLArMCPrimaryInfoPtr::ResetParticle()
+{
+  fID           = 0;
+  fTrkID        = 0; 
+  fName         = "noName";
+  fEnergy       = 0.;
+  fTime         = 0.;
+  fTotalEdep    = 0.;
+  fTotalLArEdep = 0.;
+  fTotalScintPhotons = 0; 
+  fTotalCerenkovPhotons = 0; 
+
+  for (auto &t :fTrajectories) {
+    delete t;
+  }
+  fTrajectories.clear();
+  std::fill(fVertex.begin(), fVertex.end(), 0.); 
+  std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
+}
+
+template<class T>
+void SLArMCPrimaryInfo<T>::PrintParticle() const
 {
   std::cout << "SLAr Primary Info: " << std::endl;
   std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
@@ -70,11 +141,24 @@ void SLArMCPrimaryInfo::PrintParticle()
                            << fMomentum[2]<< std::endl;
 }
 
-int SLArMCPrimaryInfo::RegisterTrajectory(SLArEventTrajectory* trj)
+template<class T>
+int SLArMCPrimaryInfo<T>::RegisterTrajectory(T trj)
 {
   fTotalEdep += trj->GetTotalEdep(); 
-  fTrajectories.push_back(trj);
+  //fTrajectories.push_back(trj);
+  fTrajectories.push_back( std::move(trj) );
+  //printf("Added trj %i to primary register\n", trj->GetTrackID());
   return (int)fTrajectories.size();
 }
+
+//template<>
+//int SLArMCPrimaryInfoPtr::RegisterTrajectory(SLArEventTrajectory* trj)
+//{
+  //fTotalEdep += trj->GetTotalEdep(); 
+  //fTrajectories.push_back( std::move(trj) );
+  ////printf("Added trj %i to primary register\n", trj->GetTrackID());
+  //return (int)fTrajectories.size();
+//}
+
 
 

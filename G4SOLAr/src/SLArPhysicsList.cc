@@ -42,6 +42,7 @@
 #include "G4ParticleTable.hh"
 
 //#include "G4PhysListFactory.hh"
+#include "FTFP_BERT.hh"
 #include "FTFP_BERT_HP.hh"
 #include "QGSP_BERT_HP.hh"
 #include "QGSP_BIC_AllHP.hh"
@@ -89,7 +90,7 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
     phys = new QGSP_BIC_AllHP; 
   }
   else {
-    phys = new FTFP_BERT_HP;
+    phys = new FTFP_BERT;
   }
   //    if (factory.IsReferencePhysList(physName)) {
   //       phys = factory.GetReferencePhysList(physName);

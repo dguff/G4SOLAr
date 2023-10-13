@@ -74,6 +74,14 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
   if(track->GetDefinition()
      != G4OpticalPhoton::OpticalPhotonDefinition()) return false;
 
+#ifdef SLAR_DEBUG
+  printf("SLArReadoutTileSD::ProcessHits_constStep(): processing %s [%i] TPC hit\n", 
+      step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+      step->GetTrack()->GetTrackID());
+  //getchar(); 
+#endif
+
+
   G4double phEne = 0*CLHEP::eV;
   //G4StepPoint* preStepPoint  = step->GetPreStepPoint();
   G4StepPoint* postStepPoint = step->GetPostStepPoint();
@@ -116,7 +124,7 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
 #ifdef SLAR_DEBUG
   printf("SLArReadoutTileSD::ProcessHits_constStep\n");
   printf("%s photon hit at t = %g ns\n", procName.c_str(), hit->GetTime());
-  if (hit->GetTime() < 1*CLHEP::ns) getchar(); 
+  //if (hit->GetTime() < 1*CLHEP::ns) getchar(); 
 #endif
   fHitsCollection->insert(hit);
 

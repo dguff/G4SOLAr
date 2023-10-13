@@ -27,7 +27,7 @@ class SLArEventSuperCell : public SLArEventHitsCollection<SLArEventPhotonHit> {
 
     bool IsActive() {return fIsActive;}
 
-    void PrintHits(); 
+    void PrintHits() const ; 
 
   protected:
 

@@ -4,17 +4,23 @@
  * @created     : Wed Aug 10, 2022 13:47:24 CEST
  */
 
+#include <memory>
 #include "event/SLArEventMegatile.hh"
 #include <SLArAnalysisManager.hh>
 
-ClassImp(SLArEventMegatile)
+templateClassImp(SLArEventMegatile)
 
-SLArEventMegatile::SLArEventMegatile() 
+template class SLArEventMegatile<SLArEventTilePtr*>;
+template class SLArEventMegatile<std::unique_ptr<SLArEventTileUniquePtr>>;
+
+template<class T>
+SLArEventMegatile<T>::SLArEventMegatile() 
   : fIdx(0), fIsActive(true), fNhits(0), 
     fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0)
 {}
 
-SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right) 
+template<>
+SLArEventMegatileUniquePtr::SLArEventMegatile(const SLArEventMegatile& right) 
   : TNamed(right) 
 {
   fIdx = right.fIdx; 
@@ -23,81 +29,167 @@ SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right)
   fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
   fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
   for (const auto &evtile : right.fTilesMap) {
-    fTilesMap.insert(
-        std::make_pair(evtile.first, new SLArEventTile(*evtile.second))
-        );
+    fTilesMap[evtile.first] = std::make_unique<SLArEventTileUniquePtr>(*evtile.second);
   }
 }
 
-SLArEventMegatile::SLArEventMegatile(SLArCfgMegaTile* cfg) 
+
+template<>
+SLArEventMegatilePtr::SLArEventMegatile(const SLArEventMegatile& right) 
+  : TNamed(right) 
+{
+  fIdx = right.fIdx; 
+  fNhits = right.fNhits; 
+  fIsActive = right.fIsActive; 
+  fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
+  fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
+  for (const auto &evtile : right.fTilesMap) {
+    fTilesMap[evtile.first] = new SLArEventTilePtr(*evtile.second);
+  }
+}
+
+template<class T>
+SLArEventMegatile<T>::SLArEventMegatile(SLArCfgMegaTile* cfg) 
   : fIdx(0), fIsActive(true), fNhits(0) 
 {
   SetIdx(cfg->GetIdx());
   SetName(cfg->GetName());
-  ConfigModule(cfg); 
+  //ConfigModule(cfg); 
 }
 
-SLArEventMegatile::~SLArEventMegatile()
+template<>
+int SLArEventMegatilePtr::ResetHits() {
+  int nhits = 0;
+  for (auto &tile : fTilesMap) {
+    nhits += tile.second->GetNhits(); 
+    tile.second->ResetHits(); 
+  }
+
+  fTilesMap.clear();
+  
+  return nhits; 
+}
+
+template<>
+int SLArEventMegatileUniquePtr::ResetHits() {
+  int nhits = 0;
+  for (auto &tile : fTilesMap) {
+    nhits += tile.second->GetNhits(); 
+    tile.second->ResetHits(); 
+  }
+
+  fTilesMap.clear();
+  
+  return nhits; 
+}
+
+template<>
+SLArEventMegatileUniquePtr::~SLArEventMegatile()
 {
+  ResetHits();
   for (auto &evtile : fTilesMap) {
-    delete evtile.second; evtile.second = nullptr; 
+    evtile.second->ResetHits();
   }
   fTilesMap.clear(); 
 }
 
-int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
+template<>
+SLArEventMegatilePtr::~SLArEventMegatile()
+{
+  ResetHits();
+  for (auto &evtile : fTilesMap) {
+    evtile.second->ResetHits();
+    delete evtile.second;
+  }
+  fTilesMap.clear(); 
+}
+
+template<>
+int SLArEventMegatileUniquePtr::ConfigModule(const SLArCfgMegaTile* cfg) {
   int ntiles = 0; 
   for (auto &cfgTile : cfg->GetConstMap()) {
     int idx_tile = cfgTile.second->GetIdx(); 
-    fTilesMap.insert(
-          std::make_pair(idx_tile, new SLArEventTile(idx_tile))
-        );
+    std::unique_ptr<SLArEventTileUniquePtr> evtile = std::make_unique<SLArEventTileUniquePtr>(idx_tile);
+    fTilesMap.insert(std::make_pair(idx_tile, std::move(evtile)));
     ++ntiles; 
   }
 
   return ntiles; 
 }
 
-SLArEventTile* SLArEventMegatile::CreateEventTile(const int tileIdx) 
-{
-  if (fTilesMap.count(tileIdx)) {
-    printf("SLArEventMegatile::CreateEventTile(%i) WARNING: Tile nr %i already present in MegatTile %i register\n", tileIdx, tileIdx, fIdx);
-    return fTilesMap.find(tileIdx)->second;
+template<>
+int SLArEventMegatilePtr::ConfigModule(const SLArCfgMegaTile* cfg) {
+  int ntiles = 0; 
+  for (auto &cfgTile : cfg->GetConstMap()) {
+    int idx_tile = cfgTile.second->GetIdx(); 
+    SLArEventTilePtr* evtile = new SLArEventTilePtr(idx_tile);
+    fTilesMap.insert(std::make_pair(idx_tile, std::move(evtile)));
+    ++ntiles; 
   }
 
-  auto t_event = new SLArEventTile(); 
-  t_event->SetIdx(tileIdx); 
-  t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
-  t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
-  fTilesMap.insert( std::make_pair(tileIdx, t_event) );  
-
-  return t_event;
+  return ntiles; 
 }
 
-SLArEventTile* SLArEventMegatile::RegisterHit(SLArEventPhotonHit* hit) {
-  int tile_idx = hit->GetTileIdx(); 
-  SLArEventTile* tile_ev = nullptr;
-  auto t_itr = fTilesMap.find(tile_idx); 
-  if (t_itr == fTilesMap.end()) tile_ev = CreateEventTile(tile_idx);
-  else tile_ev = t_itr->second;
+template<>
+std::unique_ptr<SLArEventTileUniquePtr>& SLArEventMegatileUniquePtr::GetOrCreateEventTile(const int& tileIdx) 
+{
+  auto it  = fTilesMap.find(tileIdx); 
+  if (it != fTilesMap.end()) {
+    //printf("SLArEventMegatile::CreateEventTile(%i) WARNING: Tile nr %i already present in MegatTile %i register\n", tileIdx, tileIdx, fIdx);
+    return fTilesMap.find(tileIdx)->second;
+  }
+  else {
+    std::unique_ptr<SLArEventTileUniquePtr> t_event = std::make_unique<SLArEventTileUniquePtr>();
+    t_event->SetIdx(tileIdx); 
+    t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+    t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    fTilesMap.insert( std::make_pair(tileIdx, std::move(t_event) ) );  
+    return fTilesMap[tileIdx];
+  }
+}
 
-  tile_ev->RegisterHit(hit); 
+template<>
+SLArEventTilePtr*& SLArEventMegatilePtr::GetOrCreateEventTile(const int& tileIdx) 
+{
+  auto it  = fTilesMap.find(tileIdx); 
+  if (it != fTilesMap.end()) {
+    //printf("SLArEventMegatile::CreateEventTile(%i) WARNING: Tile nr %i already present in MegatTile %i register\n", tileIdx, tileIdx, fIdx);
+    return fTilesMap.find(tileIdx)->second;
+  }
+  else {
+    SLArEventTilePtr* t_event = new SLArEventTilePtr();
+    t_event->SetIdx(tileIdx); 
+    t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+    t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    fTilesMap.insert( std::make_pair(tileIdx, std::move(t_event) ) );  
+    return fTilesMap[tileIdx];
+  }
+}
+
+template<class T>
+T& SLArEventMegatile<T>::RegisterHit(const SLArEventPhotonHit& hit) {
+  int tile_idx = hit.GetTileIdx(); 
   fNhits++; 
-  return tile_ev;
+
+  auto& tile_ev = GetOrCreateEventTile(tile_idx);
+  tile_ev->RegisterHit(hit);
+  return fTilesMap[tile_idx];
 }
 
-int SLArEventMegatile::GetNPhotonHits() const {
+template<class T>
+int SLArEventMegatile<T>::GetNPhotonHits() const {
   int nhits = 0;
-  for (auto &tile : fTilesMap) {
+  for (const auto &tile : fTilesMap) {
     nhits += tile.second->GetNhits(); 
   }
 
   return nhits; 
 }
 
-int SLArEventMegatile::GetNChargeHits() const {
+template<class T>
+int SLArEventMegatile<T>::GetNChargeHits() const {
   int nhits = 0;
-  for (auto &tile : fTilesMap) {
+  for (const auto &tile : fTilesMap) {
     nhits += tile.second->GetPixelHits(); 
   }
 
@@ -105,19 +197,8 @@ int SLArEventMegatile::GetNChargeHits() const {
 }
 
 
-
-int SLArEventMegatile::ResetHits() {
-  int nhits = 0;
-  for (auto &tile : fTilesMap) {
-    nhits += tile.second->GetNhits(); 
-    tile.second->ResetHits(); 
-  }
-  
-
-  return nhits; 
-}
-
-void SLArEventMegatile::SetActive(bool is_active) {
+template<class T>
+void SLArEventMegatile<T>::SetActive(bool is_active) {
   for (auto &tile : fTilesMap) {
     tile.second->SetActive(is_active); 
   } 

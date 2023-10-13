@@ -93,9 +93,9 @@ SLArCfgReadoutTile::~SLArCfgReadoutTile()
  *}
  */
 
-TGraph* SLArCfgReadoutTile::BuildGShape() 
+TGraph SLArCfgReadoutTile::BuildGShape() 
 {
-  TGraph* g = new TGraph(5);
+  TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 
   TVector3 size_tmp = fSize; 
   TRotation rot; 
@@ -103,13 +103,13 @@ TGraph* SLArCfgReadoutTile::BuildGShape()
   rot = rot.Inverse(); 
   size_tmp.Transform( rot ); 
   
-  g->SetPoint(0, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
-  g->SetPoint(1, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
-  g->SetPoint(2, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
-  g->SetPoint(3, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
-  g->SetPoint(4, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
+  g.SetPoint(0, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
+  g.SetPoint(1, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
+  g.SetPoint(2, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
+  g.SetPoint(3, fAxis0.Dot(pos+0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
+  g.SetPoint(4, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
 
-  g->SetName(Form("gShape%i", fIdx)); 
+  g.SetName(Form("gShape%i", fIdx)); 
 
   return g;
 }

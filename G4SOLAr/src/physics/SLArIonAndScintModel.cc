@@ -23,12 +23,11 @@ SLArIonAndScintModel::SLArIonAndScintModel(const G4MaterialPropertiesTable* mpt)
   fIonizationDensity = 1.0 / fWion;   
 }
 
-double SLArIonAndScintModel::ComputeIon(const double energy_deposit, const double step_length, const double electric_field) const {
-  const double yield = ComputeIonYield(energy_deposit, step_length, electric_field); 
-  return energy_deposit * yield; 
+Ion_and_Scint_t SLArIonAndScintModel::ComputeIonAndScint(const double& energy_deposit, const double& step_length, const double& electric_field) const {
+  double dEdx = energy_deposit / step_length;
+  Ion_and_Scint_t yield = ComputeIonAndScintYield(dEdx, electric_field); 
+  yield.ion *= energy_deposit;
+  yield.scint *= energy_deposit;
+  return yield; 
 }
 
-double SLArIonAndScintModel::ComputeScint(const double energy_deposit, const double step_length, const double electric_field) const {
-  const double yield = ComputeScintYield(energy_deposit, step_length, electric_field); 
-  return energy_deposit * yield; 
-}

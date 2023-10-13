@@ -13,6 +13,7 @@
 #include "config/SLArCfgMegaTile.hh"
 #include "event/SLArEventMegatile.hh"
 
+template<class M, class T, class P>
 class SLArEventAnode : public TNamed {
   public:
     SLArEventAnode(); 
@@ -21,13 +22,14 @@ class SLArEventAnode : public TNamed {
     ~SLArEventAnode(); 
 
     int ConfigSystem(SLArCfgAnode* cfg);
-    SLArEventMegatile* CreateEventMegatile(const int mtIdx); 
-    inline std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
-    inline const std::map<int, SLArEventMegatile*>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
-    inline int GetNhits() {return fNhits;}
-    inline bool IsActive() {return fIsActive;}
+    M& GetOrCreateEventMegatile(const int mtIdx); 
+    inline std::map<int, M>& GetMegaTilesMap() {return fMegaTilesMap;}
+    inline const std::map<int, M>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
+    inline int GetNhits() const {return fNhits;}
+    inline bool IsActive() const {return fIsActive;}
 
-    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
+    T& RegisterHit(const SLArEventPhotonHit& hit); 
+    P& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
 
     void SetActive(bool is_active); 
@@ -46,12 +48,14 @@ class SLArEventAnode : public TNamed {
     bool fIsActive;
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, SLArEventMegatile*> fMegaTilesMap;
+    std::map<int, M> fMegaTilesMap;
 
   public:
-    ClassDef(SLArEventAnode, 1)
+    ClassDef(SLArEventAnode, 2)
 };
 
+typedef SLArEventAnode<std::unique_ptr<SLArEventMegatileUniquePtr>, std::unique_ptr<SLArEventTileUniquePtr>, std::unique_ptr<SLArEventChargePixel>> SLArEventAnodeUniquePtr;
+typedef SLArEventAnode<SLArEventMegatilePtr*, SLArEventTilePtr*, SLArEventChargePixel*> SLArEventAnodePtr;
 
 #endif /* end of include guard SLArEventAnode_HH */
 
