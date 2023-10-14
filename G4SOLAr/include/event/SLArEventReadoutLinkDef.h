@@ -26,14 +26,14 @@
 #pragma link C++ class SLArEventHitsCollection<SLArEventPhotonHit>++;
 #pragma link C++ class SLArEventHitsCollection<SLArEventChargeHit>++;
 #pragma link C++ class SLArEventChargePixel++; 
-#pragma link C++ class std::map<int, SLArEventChargePixel*>++; 
+#pragma link C++ class std::map<int, SLArEventChargePixel>++; 
 #pragma link C++ class SLArEventTile++;
-#pragma link C++ class std::map<int, SLArEventTile*>++;
+#pragma link C++ class std::map<int, SLArEventTile>++;
 #pragma link C++ class SLArEventMegatile++;
-#pragma link C++ class std::map<int, SLArEventMegatile*>++;
+#pragma link C++ class std::map<int, SLArEventMegatile>++;
 #pragma link C++ class SLArEventAnode++;
 #pragma link C++ class SLArEventSuperCell++;
-#pragma link C++ class std::map<int, SLArEventSuperCell*>++;
+#pragma link C++ class std::map<int, SLArEventSuperCell>++;
 #pragma link C++ class SLArEventSuperCellArray++;
 
 #endif

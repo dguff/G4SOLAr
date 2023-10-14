@@ -39,8 +39,8 @@ int SLArEventTile::ResetHits()
   SLArEventHitsCollection::ResetHits();
 
   for (auto &pix : fPixelHits) {
-      pix.second->ResetHits(); 
-      delete pix.second;
+      pix.second.ResetHits(); 
+      //delete pix.second;
   }
   fPixelHits.clear(); 
 
@@ -101,28 +101,28 @@ void SLArEventTile::PrintHits() const
   }
   if (!fPixelHits.empty()) {
     printf("Pixel readout hits:\n");
-    for (const auto &pix : fPixelHits) pix.second->PrintHits(); 
+    for (const auto &pix : fPixelHits) pix.second.PrintHits(); 
   }
 
   printf("\n"); 
   return;
 }
 
-SLArEventChargePixel* SLArEventTile::RegisterChargeHit(const int& pixID, const SLArEventChargeHit& qhit) {
+SLArEventChargePixel& SLArEventTile::RegisterChargeHit(const int& pixID, const SLArEventChargeHit& qhit) {
   
   auto it = fPixelHits.find(pixID);
 
   if (it != fPixelHits.end()) {
     //printf("SLArEventTile::RegisterChargeHit(%i): pixel %i already hit.\n", pixID, pixID);
-    it->second->RegisterHit(qhit); 
+    it->second.RegisterHit(qhit); 
     return it->second;
   }
   else {
     //printf("SLArEventTile::RegisterChargeHit(%i): creating new pixel hit collection.\n", pixID);
-    fPixelHits.insert(std::make_pair(pixID, new SLArEventChargePixel(pixID, qhit)));
-    //printf("SLArEventTile::RegisterChargeHit(%i): setting backtracker size to %u.\n", pixID, fChargeBacktrackerRecordSize);
-    fPixelHits[pixID]->SetBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
-    return fPixelHits[pixID];
+    fPixelHits.insert(std::make_pair(pixID, SLArEventChargePixel(pixID, qhit)));
+    auto& pixEv = fPixelHits[pixID];
+    pixEv.SetBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    return pixEv;  
   }
 
 }
@@ -130,7 +130,7 @@ SLArEventChargePixel* SLArEventTile::RegisterChargeHit(const int& pixID, const S
 double SLArEventTile::GetPixelHits() const {
   double nhits = 0.;
   for (const auto &pixel : fPixelHits) {
-    nhits += pixel.second->GetNhits(); 
+    nhits += pixel.second.GetNhits(); 
   }
 
   return nhits; 

@@ -55,28 +55,28 @@ class SLArMCEvent : public TObject
     int ConfigAnode (std::map<int, SLArCfgAnode*> anodeCfg);
     int ConfigSuperCellSystem (SLArCfgSystemSuperCell* supercellSysCfg); 
 
-    inline std::map<int, SLArEventAnode*>& GetEventAnode() {return fEvAnode;}
-    inline SLArEventAnode* GetEventAnodeByTPCID(const int& id) {return fEvAnode.find(id)->second;}
-    SLArEventAnode* GetEventAnodeByID(const int& id); 
-    inline std::map<int, SLArEventSuperCellArray*>& GetEventSuperCellArray() {return fEvSuperCellArray;}
-    inline SLArEventSuperCellArray* GetEventSuperCellArray(const int& id) {return fEvSuperCellArray.find(id)->second;}
+    inline std::map<int, SLArEventAnode>& GetEventAnode() {return fEvAnode;}
+    inline SLArEventAnode& GetEventAnodeByTPCID(const int& id) {return fEvAnode.find(id)->second;}
+    SLArEventAnode& GetEventAnodeByID(const int& id); 
+    inline std::map<int, SLArEventSuperCellArray>& GetEventSuperCellArray() {return fEvSuperCellArray;}
+    inline SLArEventSuperCellArray& GetEventSuperCellArray(const int& id) {return fEvSuperCellArray.find(id)->second;}
 
-    inline std::vector<SLArMCPrimaryInfo*>& GetPrimaries() {return fSLArPrimary ;}
-    inline SLArMCPrimaryInfo* GetPrimary(int ip) {return fSLArPrimary.at(ip);}
+    inline std::vector<SLArMCPrimaryInfo>& GetPrimaries() {return fSLArPrimary ;}
+    inline SLArMCPrimaryInfo& GetPrimary(int ip) {return fSLArPrimary.at(ip);}
     bool  CheckIfPrimary(int trkId) const;
 
-    size_t RegisterPrimary(SLArMCPrimaryInfo* p);
+    size_t RegisterPrimary(SLArMCPrimaryInfo& p);
     void  Reset();
 
   private:
     int fEvNumber; //!< Event number
     std::array<double, 3>  fDirection; //!< Event Direction 
     //! Event's primary particles (and associated secondaries)
-    std::vector<SLArMCPrimaryInfo*> fSLArPrimary;  
+    std::vector<SLArMCPrimaryInfo> fSLArPrimary;  
     //! Event data structure of the readout tile system
-    std::map<int, SLArEventAnode*> fEvAnode;
+    std::map<int, SLArEventAnode> fEvAnode;
     //! Event data structure of the super-cell system
-    std::map<int, SLArEventSuperCellArray*> fEvSuperCellArray; 
+    std::map<int, SLArEventSuperCellArray> fEvSuperCellArray; 
 
   public:
     ClassDef(SLArMCEvent, 2);

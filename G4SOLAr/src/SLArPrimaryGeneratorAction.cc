@@ -307,7 +307,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   printf("Primary Generator Action produced %i vertex(ices)\n", n); 
   for (int i=0; i<n; i++) {
     //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
-    SLArMCPrimaryInfo* tc_primary = new SLArMCPrimaryInfo();
+    SLArMCPrimaryInfo tc_primary;
     G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
     //printf("vertex %i has %i particles at t = %g\n", n, np, 
         //anEvent->GetPrimaryVertex(i)->GetT0()); 
@@ -316,21 +316,21 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
 
       if (!particle->GetParticleDefinition()) {
-        tc_primary->SetID  (particle->GetPDGcode()); 
-        tc_primary->SetName("Ion");
+        tc_primary.SetID  (particle->GetPDGcode()); 
+        tc_primary.SetName("Ion");
       } else {
-        tc_primary->SetID  (particle->GetPDGcode());
-        tc_primary->SetName(particle->GetParticleDefinition()->GetParticleName());
+        tc_primary.SetID  (particle->GetPDGcode());
+        tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
       }
 
-      tc_primary->SetTrackID(particle->GetTrackID());
-      tc_primary->SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+      tc_primary.SetTrackID(particle->GetTrackID());
+      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
           anEvent->GetPrimaryVertex(i)->GetY0(), 
           anEvent->GetPrimaryVertex(i)->GetZ0());
-      tc_primary->SetMomentum(
+      tc_primary.SetMomentum(
           particle->GetPx(), particle->GetPy(), particle->GetPz(), 
           particle->GetKineticEnergy());
-      tc_primary->SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
+      tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
       
 
 #ifdef SLAR_DEBUG

@@ -161,7 +161,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
       }
 
       SLArEventChargeHit hit(t_[i], trkId, 0); 
-      auto evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
+      auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
 
       //SLArEventMegatile* evMT=nullptr;
       //auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
@@ -194,7 +194,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
       if (bkt_mngr->IsNull()) continue;
 
       auto& records = 
-        evPixel->GetBacktrackerVector( evPixel->ConvertToClock<float>(hit.GetTime()));
+        evPixel.GetBacktrackerVector( evPixel.ConvertToClock<float>(hit.GetTime()));
 
       for (size_t ib = 0; ib < bkt_mngr->GetBacktrackers().size(); ib++) {
         bkt_mngr->GetBacktrackers().at(ib)->Eval(&hit, 

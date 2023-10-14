@@ -21,14 +21,14 @@ class SLArEventAnode : public TNamed {
     ~SLArEventAnode(); 
 
     int ConfigSystem(SLArCfgAnode* cfg);
-    SLArEventMegatile* GetOrCreateEventMegatile(const int mtIdx); 
-    inline std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
-    inline const std::map<int, SLArEventMegatile*>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
+    SLArEventMegatile& GetOrCreateEventMegatile(const int mtIdx); 
+    inline std::map<int, SLArEventMegatile>& GetMegaTilesMap() {return fMegaTilesMap;}
+    inline const std::map<int, SLArEventMegatile>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
     inline int GetNhits() const {return fNhits;}
     inline bool IsActive() const {return fIsActive;}
 
-    SLArEventTile* RegisterHit(const SLArEventPhotonHit& hit); 
-    SLArEventChargePixel* RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
+    SLArEventTile& RegisterHit(const SLArEventPhotonHit& hit); 
+    SLArEventChargePixel& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
     int SoftResetHits();
 
@@ -48,7 +48,7 @@ class SLArEventAnode : public TNamed {
     bool fIsActive;
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, SLArEventMegatile*> fMegaTilesMap;
+    std::map<int, SLArEventMegatile> fMegaTilesMap;
 
   public:
     ClassDef(SLArEventAnode, 2)

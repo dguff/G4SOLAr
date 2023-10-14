@@ -141,7 +141,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
             postStepPoint->GetGlobalTime(), 
             anodeCfg, 
-            anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
+            &anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
       } else {
         printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
         getchar(); 
@@ -155,11 +155,10 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
 
     SLArMCPrimaryInfo* ancestor = nullptr;
-    //SLArMCPrimaryInfoPtr* ancestor = nullptr;
     auto primaries = anaMngr->GetEvent()->GetPrimaries();
     for (auto &p : primaries) {
-      if (p->GetTrackID() == ancestor_id) {
-        ancestor = p;
+      if (p.GetTrackID() == ancestor_id) {
+        ancestor = &p;
         break;
       }
     }

@@ -26,14 +26,14 @@ class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit>
 
     double GetTime() const;
     double GetTime(EPhProcess proc) const;
-    inline std::map<int, SLArEventChargePixel*>& GetPixelEvents() {return fPixelHits;}
-    inline const std::map<int, SLArEventChargePixel*>& GetConstPixelEvents() const {return fPixelHits;}
+    inline std::map<int, SLArEventChargePixel>& GetPixelEvents() {return fPixelHits;}
+    inline const std::map<int, SLArEventChargePixel>& GetConstPixelEvents() const {return fPixelHits;}
     inline double GetNPixelHits() const {return fPixelHits.size();}
     double GetPixelHits() const; 
     inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
     inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
     void PrintHits() const; 
-    SLArEventChargePixel* RegisterChargeHit(const int&, const SLArEventChargeHit& ); 
+    SLArEventChargePixel& RegisterChargeHit(const int&, const SLArEventChargeHit& ); 
     int ResetHits(); 
     int SoftResetHits();
 
@@ -42,7 +42,7 @@ class SLArEventTile :  public SLArEventHitsCollection<SLArEventPhotonHit>
 
   protected:
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, SLArEventChargePixel*> fPixelHits; 
+    std::map<int, SLArEventChargePixel> fPixelHits; 
 
   public:
      ClassDef(SLArEventTile, 2)

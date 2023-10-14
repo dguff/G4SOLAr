@@ -158,9 +158,9 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     auto& primaries = slar_event->GetPrimaries();
     for (const auto &p : primaries ) {
       printf("%s - %g MeV - trk ID %i\n", 
-          p->GetParticleName().Data(), p->GetEnergy(), p->GetTrackID());
+          p.GetParticleName().Data(), p.GetEnergy(), p.GetTrackID());
       printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
-          p->GetTotalScintPhotons(), p->GetTotalCerenkovPhotons()); 
+          p.GetTotalScintPhotons(), p.GetTotalCerenkovPhotons()); 
       printf("ReadoutTile Hits: %i\nSuperCell Hits: %i\n\n", 
           fReadoutTileHits, fSuperCellHits);
     }
@@ -237,13 +237,13 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       dstHit.SetCellNr(hit->GetCellNr()); 
       dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
-      auto ev_tile = ev_anode->RegisterHit(dstHit);
+      auto& ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
+      auto& ev_tile = ev_anode.RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
           auto records = 
-            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock(dstHit.GetTime()) );
+            ev_tile.GetBacktrackerVector( ev_tile.ConvertToClock(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
             bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
@@ -330,12 +330,12 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
       dstHit.SetTileInfo(0, array_nr, cellrow_nr, cell_nr); 
       dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(dstHit);
+      auto& ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr).RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
           SLArEventBacktrackerVector& records = 
-            ev_sc->GetBacktrackerVector( ev_sc->ConvertToClock<float>(dstHit.GetTime()) );
+            ev_sc.GetBacktrackerVector( ev_sc.ConvertToClock<float>(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
             bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
@@ -424,7 +424,7 @@ int SLArEventAction::FindAncestorID(int trkid) {
 #endif
 
     for (const auto& p : primaries) {
-      if (pid == p->GetTrackID()) {
+      if (pid == p.GetTrackID()) {
         primary = pid; 
         caught = true;
       }

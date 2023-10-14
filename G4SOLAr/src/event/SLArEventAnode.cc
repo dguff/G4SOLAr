@@ -24,7 +24,7 @@ SLArEventAnode::SLArEventAnode(const SLArEventAnode& right)
   fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
   fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
   for (const auto &mgev : right.fMegaTilesMap) {
-    fMegaTilesMap[mgev.first] = new SLArEventMegatile(*mgev.second);
+    fMegaTilesMap[mgev.first] = SLArEventMegatile(mgev.second);
   }
 }
 
@@ -36,8 +36,8 @@ SLArEventAnode::SLArEventAnode(SLArCfgAnode* cfg) : SLArEventAnode() {
 
 SLArEventAnode::~SLArEventAnode() {
   for (auto &mgtile : fMegaTilesMap) {
-    mgtile.second->ResetHits();
-    delete mgtile.second;
+    mgtile.second.ResetHits();
+    //delete mgtile.second;
   }
   fMegaTilesMap.clear(); 
 }
@@ -49,14 +49,14 @@ int SLArEventAnode::ConfigSystem(SLArCfgAnode* cfg) {
   for (const auto &mtcfg : cfg->GetMap()) {
     int megatile_idx = mtcfg.second->GetIdx(); 
     if (fMegaTilesMap.count(megatile_idx) == 0) {
-      fMegaTilesMap.insert( std::make_pair( megatile_idx, new SLArEventMegatile(mtcfg.second) ) );
+      fMegaTilesMap.insert( std::make_pair( megatile_idx, SLArEventMegatile(mtcfg.second) ) );
       imegatile++;
     }
   }
   return imegatile;
 }
 
-SLArEventMegatile* SLArEventAnode::GetOrCreateEventMegatile(const int mtIdx) {
+SLArEventMegatile& SLArEventAnode::GetOrCreateEventMegatile(const int mtIdx) {
   auto it = fMegaTilesMap.find(mtIdx);
   if (it != fMegaTilesMap.end()) {
     //printf("SLArEventAnode::CreateEventMegatile(%i): Megatile nr %i already present in anode %i register\n", mtIdx, mtIdx, fID);
@@ -64,11 +64,11 @@ SLArEventMegatile* SLArEventAnode::GetOrCreateEventMegatile(const int mtIdx) {
     return fMegaTilesMap.find(mtIdx)->second;
   }
   else {
-    fMegaTilesMap.insert( std::make_pair(mtIdx, new SLArEventMegatile()) );  
+    fMegaTilesMap.insert( std::make_pair(mtIdx, SLArEventMegatile()) );  
     auto& mt_event = fMegaTilesMap[mtIdx];
-    mt_event->SetIdx(mtIdx); 
-    mt_event->SetLightBacktrackerRecordSize( fLightBacktrackerRecordSize); 
-    mt_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    mt_event.SetIdx(mtIdx); 
+    mt_event.SetLightBacktrackerRecordSize( fLightBacktrackerRecordSize); 
+    mt_event.SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
     //printf("SLArEventAnode::CreateEventMegatile(%i): Creating new Megatile nr %i in anode %i register with bktracker record size %u[q] - %u[l]\n",
         //mtIdx, mtIdx, fID, fChargeBacktrackerRecordSize, fLightBacktrackerRecordSize);
     //getchar();
@@ -76,10 +76,10 @@ SLArEventMegatile* SLArEventAnode::GetOrCreateEventMegatile(const int mtIdx) {
   }
 }
 
-SLArEventTile* SLArEventAnode::RegisterHit(const SLArEventPhotonHit& hit) {
+SLArEventTile& SLArEventAnode::RegisterHit(const SLArEventPhotonHit& hit) {
   int mgtile_idx = hit.GetMegaTileIdx(); 
-  auto mt_event = GetOrCreateEventMegatile(mgtile_idx);
-  auto t_event = mt_event->RegisterHit(hit);
+  auto& mt_event = GetOrCreateEventMegatile(mgtile_idx);
+  auto& t_event = mt_event.RegisterHit(hit);
   return t_event;
   //} else {
     //printf("SLArEventAnode::RegisterHit WARNING\n"); 
@@ -89,14 +89,14 @@ SLArEventTile* SLArEventAnode::RegisterHit(const SLArEventPhotonHit& hit) {
   //}
 }
 
-SLArEventChargePixel* SLArEventAnode::RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixID, const SLArEventChargeHit& hit) {
+SLArEventChargePixel& SLArEventAnode::RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixID, const SLArEventChargeHit& hit) {
   const int mgtile_idx = pixID.at(0);
   const int tile_idx = pixID.at(1); 
   const int pix_idx = pixID.at(2); 
 
-  auto mt_event = GetOrCreateEventMegatile(mgtile_idx); 
-  auto t_event = mt_event->GetOrCreateEventTile(tile_idx);
-  auto p_event = t_event->RegisterChargeHit(pix_idx, hit); 
+  auto& mt_event = GetOrCreateEventMegatile(mgtile_idx); 
+  auto& t_event = mt_event.GetOrCreateEventTile(tile_idx);
+  auto& p_event = t_event.RegisterChargeHit(pix_idx, hit); 
 
   return p_event;
   //} else {
@@ -111,7 +111,7 @@ int SLArEventAnode::ResetHits() {
   printf("SLArEventAnode::ResetHits() clear event on anode %i\n", fID);
   int nn = 0; 
   for (auto &mgtile : fMegaTilesMap) {
-    nn += mgtile.second->ResetHits(); 
+    nn += mgtile.second.ResetHits(); 
   }
 
   fMegaTilesMap.clear();
@@ -121,7 +121,7 @@ int SLArEventAnode::ResetHits() {
 void SLArEventAnode::SetActive(bool is_active) {
   fIsActive = is_active; 
   for (auto &mgtile : fMegaTilesMap) {
-    mgtile.second->SetActive(is_active); 
+    mgtile.second.SetActive(is_active); 
   }
 }
 

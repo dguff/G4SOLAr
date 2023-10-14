@@ -42,9 +42,9 @@ SLArEventMegatile::SLArEventMegatile(SLArCfgMegaTile* cfg)
 int SLArEventMegatile::ResetHits() {
   int nhits = 0;
   for (auto &tile : fTilesMap) {
-    nhits += tile.second->GetNhits(); 
-    tile.second->ResetHits(); 
-    delete tile.second;
+    nhits += tile.second.GetNhits(); 
+    tile.second.ResetHits(); 
+    //delete tile.second;
   }
 
   fTilesMap.clear();
@@ -56,14 +56,14 @@ int SLArEventMegatile::ResetHits() {
 SLArEventMegatile::~SLArEventMegatile()
 {
   ResetHits();
-  fTilesMap.clear(); 
+  //fTilesMap.clear(); 
 }
 
 int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
   int ntiles = 0; 
   for (auto &cfgTile : cfg->GetConstMap()) {
     int idx_tile = cfgTile.second->GetIdx(); 
-    fTilesMap.insert(std::make_pair(idx_tile, new SLArEventTile(idx_tile) ));
+    fTilesMap.insert(std::make_pair(idx_tile, SLArEventTile(idx_tile) ));
     ++ntiles; 
   }
 
@@ -71,7 +71,7 @@ int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
 }
 
 
-SLArEventTile* SLArEventMegatile::GetOrCreateEventTile(const int& tileIdx) 
+SLArEventTile& SLArEventMegatile::GetOrCreateEventTile(const int& tileIdx) 
 {
   auto it  = fTilesMap.find(tileIdx); 
   if (it != fTilesMap.end()) {
@@ -79,28 +79,28 @@ SLArEventTile* SLArEventMegatile::GetOrCreateEventTile(const int& tileIdx)
     return fTilesMap.find(tileIdx)->second;
   }
   else {
-    fTilesMap.insert( std::make_pair(tileIdx, new SLArEventTile(tileIdx) ) );  
+    fTilesMap.insert( std::make_pair(tileIdx, SLArEventTile(tileIdx) ) );  
     auto& t_event = fTilesMap[tileIdx];
-    t_event->SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
-    t_event->SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    t_event.SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
+    t_event.SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
     return t_event;
   }
 }
 
 
-SLArEventTile* SLArEventMegatile::RegisterHit(const SLArEventPhotonHit& hit) {
+SLArEventTile& SLArEventMegatile::RegisterHit(const SLArEventPhotonHit& hit) {
   int tile_idx = hit.GetTileIdx(); 
   fNhits++; 
 
-  auto tile_ev = GetOrCreateEventTile(tile_idx);
-  tile_ev->RegisterHit(hit);
+  auto& tile_ev = GetOrCreateEventTile(tile_idx);
+  tile_ev.RegisterHit(hit);
   return tile_ev;
 }
 
 int SLArEventMegatile::GetNPhotonHits() const {
   int nhits = 0;
   for (const auto &tile : fTilesMap) {
-    nhits += tile.second->GetNhits(); 
+    nhits += tile.second.GetNhits(); 
   }
 
   return nhits; 
@@ -109,7 +109,7 @@ int SLArEventMegatile::GetNPhotonHits() const {
 int SLArEventMegatile::GetNChargeHits() const {
   int nhits = 0;
   for (const auto &tile : fTilesMap) {
-    nhits += tile.second->GetPixelHits(); 
+    nhits += tile.second.GetPixelHits(); 
   }
 
   return nhits; 
@@ -118,7 +118,7 @@ int SLArEventMegatile::GetNChargeHits() const {
 
 void SLArEventMegatile::SetActive(bool is_active) {
   for (auto &tile : fTilesMap) {
-    tile.second->SetActive(is_active); 
+    tile.second.SetActive(is_active); 
   } 
   return;
 }

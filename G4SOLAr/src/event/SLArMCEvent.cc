@@ -24,15 +24,15 @@ SLArMCEvent::SLArMCEvent(const SLArMCEvent& ev) : TObject(ev)
   fDirection = ev.fDirection;
 
   for (const auto& p : ev.fSLArPrimary) {
-    fSLArPrimary.push_back( new SLArMCPrimaryInfo(*p) );
+    fSLArPrimary.push_back( SLArMCPrimaryInfo(p) );
   }
 
   for (const auto& itr : ev.fEvAnode) {
-    fEvAnode[itr.first] = new SLArEventAnode(*itr.second);
+    fEvAnode[itr.first] = SLArEventAnode(itr.second);
   }
 
   for (const auto & itr : ev.fEvSuperCellArray) {
-    fEvSuperCellArray[itr.first] = new SLArEventSuperCellArray(*itr.second);
+    fEvSuperCellArray[itr.first] = SLArEventSuperCellArray(itr.second);
   }
 }
 
@@ -40,20 +40,20 @@ SLArMCEvent::~SLArMCEvent()
 {
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
   for (auto &evAnode : fEvAnode) {
-    evAnode.second->ResetHits();
-    delete evAnode.second;
+    evAnode.second.ResetHits();
+    //delete evAnode.second;
   }
   fEvAnode.clear(); 
 
   for ( auto &scArray : fEvSuperCellArray ) {
-    scArray.second->ResetHits();
-    delete scArray.second;
+    scArray.second.ResetHits();
+    //delete scArray.second;
   }
   fEvSuperCellArray.clear(); 
 
-  for ( auto &p : fSLArPrimary) {
-    delete p; 
-  }
+  //for ( auto &p : fSLArPrimary) {
+    //delete p; 
+  //}
   fSLArPrimary.clear();
   std::cerr << "~SLArMCEvent DONE" << std::endl;
 }
@@ -62,8 +62,8 @@ SLArMCEvent::~SLArMCEvent()
 int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
-    fEvAnode.insert(std::make_pair(anode.first, new SLArEventAnode(anode.second)));
-    fEvAnode[anode.first]->SetID(anode.second->GetIdx());
+    fEvAnode.insert(std::make_pair(anode.first, SLArEventAnode(anode.second)));
+    fEvAnode[anode.first].SetID(anode.second->GetIdx());
   }
 
   return fEvAnode.size();
@@ -78,16 +78,16 @@ int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
       continue;
     }
 
-    fEvSuperCellArray.insert(std::make_pair(scArray.first, new SLArEventSuperCellArray(scArray.second)));
-    fEvSuperCellArray[scArray.first]->ConfigSystem(scArray.second);
+    fEvSuperCellArray.insert(std::make_pair(scArray.first, SLArEventSuperCellArray(scArray.second)));
+    fEvSuperCellArray[scArray.first].ConfigSystem(scArray.second);
   }
 
   return fEvSuperCellArray.size();
 }
 
-SLArEventAnode* SLArMCEvent::GetEventAnodeByID(const int& id) {
+SLArEventAnode& SLArMCEvent::GetEventAnodeByID(const int& id) {
   for (auto &anode : fEvAnode) {
-    if (anode.second->GetID() == id) {return anode.second;}
+    if (anode.second.GetID() == id) {return anode.second;}
   }
 
   throw 4;
@@ -102,16 +102,16 @@ int SLArMCEvent::SetEvNumber(int nEv)
 void SLArMCEvent::Reset()
 {
   for (auto &anode : fEvAnode) {
-    anode.second->ResetHits();
+    anode.second.ResetHits();
   }
 
   for (auto &scArray : fEvSuperCellArray) {
-    scArray.second->ResetHits(); 
+    scArray.second.ResetHits(); 
   }
 
-  for (auto &p : fSLArPrimary) {
-    delete p;
-  }
+  //for (auto &p : fSLArPrimary) {
+    //delete p;
+  //}
   fSLArPrimary.clear(); 
 
   fDirection = {0, 0, 1};
@@ -135,7 +135,7 @@ void SLArMCEvent::SetDirection(double px, double py, double pz) {
 bool SLArMCEvent::CheckIfPrimary(int trkId) const {
   bool is_primary = false; 
   for (const auto &p : fSLArPrimary) {
-    if (trkId == p->GetTrackID()) {
+    if (trkId == p.GetTrackID()) {
       is_primary = true; 
       break;
     }
@@ -143,7 +143,7 @@ bool SLArMCEvent::CheckIfPrimary(int trkId) const {
   return is_primary; 
 }
 
-size_t SLArMCEvent::RegisterPrimary(SLArMCPrimaryInfo* p) {
+size_t SLArMCEvent::RegisterPrimary(SLArMCPrimaryInfo& p) {
   fSLArPrimary.push_back( std::move(p) );
   return fSLArPrimary.size();
 }

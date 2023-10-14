@@ -79,11 +79,11 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
         // fix track ID in primary output object
         auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
         for (auto &primaryInfo : primaries) {
-          if (fabs(aTrack->GetMomentum().x() - primaryInfo->GetMomentum()[0]) < 1e-6 &&
-              fabs(aTrack->GetMomentum().y() - primaryInfo->GetMomentum()[1]) < 1e-6 &&
-              fabs(aTrack->GetMomentum().z() - primaryInfo->GetMomentum()[2]) < 1e-6) {
+          if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < 1e-6 &&
+              fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < 1e-6 &&
+              fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < 1e-6) {
             //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
-            primaryInfo->SetTrackID(aTrack->GetTrackID()); 
+            primaryInfo.SetTrackID(aTrack->GetTrackID()); 
             break;
           }
         }
@@ -123,8 +123,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       SLArMCPrimaryInfo* ancestor = nullptr; 
       auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
       for (auto &p : primaries) {
-        if (p->GetTrackID() == ancestor_id) {
-          ancestor = p; 
+        if (p.GetTrackID() == ancestor_id) {
+          ancestor = &p; 
           break;
         }
       }
@@ -156,8 +156,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       //printf("Primary parent ID %i\n", primary_parent_id);
 //#endif
       for (auto &p : primaries) {
-        if (p->GetTrackID() == primary_parent_id) {
-          primary = p; 
+        if (p.GetTrackID() == primary_parent_id) {
+          primary = &p; 
 //#ifdef SLAR_DEBUG
           //printf("primary parent found\n");
 //#endif

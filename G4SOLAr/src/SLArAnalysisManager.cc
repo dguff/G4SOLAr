@@ -510,14 +510,9 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // charge backtrackers 
   if (fChargeBacktrackerManager) {
     if (fChargeBacktrackerManager->IsNull() == false) {
-
       for (auto& evAnode : fMCEvent->GetEventAnode()) {
-        printf("SLArAnalysisManager::SetupBacktrackerRecordSize for charge readout system to %lu\n", 
-            fChargeBacktrackerManager->GetConstBacktrackers().size());
-        evAnode.second->SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
+        evAnode.second.SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
       }
-
-      getchar();
     }
   }
 
@@ -525,7 +520,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   if (fVUVSiPMBacktrackerManager) {
     if (fVUVSiPMBacktrackerManager->IsNull() == false) {
       for (auto& evAnode : fMCEvent->GetEventAnode()) {
-        evAnode.second->SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
+        evAnode.second.SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
       }
     }
   }
@@ -534,7 +529,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   if (fSuperCellBacktrackerManager) {
     if (fSuperCellBacktrackerManager->IsNull() == false) {
       for (auto& evSCA : fMCEvent->GetEventSuperCellArray() ) {
-        evSCA.second->SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
+        evSCA.second.SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
   }
