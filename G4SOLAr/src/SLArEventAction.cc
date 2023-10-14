@@ -138,15 +138,15 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }
 
      
-    SLArAnaMgr->GetEvent()->SetEvNumber(event->GetEventID());
+    auto slar_event = SLArAnaMgr->GetEvent();
+    slar_event->SetEvNumber(event->GetEventID());
 
-    for (const auto &evAnode : SLArAnaMgr->GetEvent()->GetEventAnode()) {
-      printf("ANODE %i\n", evAnode.first);
-      for (const auto &evMT : evAnode.second->GetConstMegaTilesMap()) {
-        printf("\tMEGATILE %i\n", evMT.first);
-      }
-
-    }
+    //for (const auto &evAnode : slar_event->GetEventAnode()) {
+      //printf("ANODE %i\n", evAnode.first);
+      //for (const auto &evMT : evAnode.second->GetConstMegaTilesMap()) {
+        //printf("\tMEGATILE %i\n", evMT.first);
+      //}
+    //}
     
     SLArAnaMgr->FillEvTree();
     
@@ -155,7 +155,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     printf("OpticalPhoton Monitor:\nCherenkov: %i\nScintillation: %i\n\n", 
         fPhotonCount_Cher, fPhotonCount_Scnt);
     printf("Primary particles:\n");
-    auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+    auto& primaries = slar_event->GetPrimaries();
     for (const auto &p : primaries ) {
       printf("%s - %g MeV - trk ID %i\n", 
           p->GetParticleName().Data(), p->GetEnergy(), p->GetTrackID());
@@ -237,17 +237,17 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev)
       dstHit.SetCellNr(hit->GetCellNr()); 
       dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto& ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
-      auto& ev_tile = ev_anode->RegisterHit(dstHit);
+      auto ev_anode = SLArAnaMgr->GetEvent()->GetEventAnodeByID(anode_idx);
+      auto ev_tile = ev_anode->RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
-          SLArEventBacktrackerVector* records = 
-            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock<float>(dstHit.GetTime()) );
+          auto records = 
+            ev_tile->GetBacktrackerVector( ev_tile->ConvertToClock(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
             bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
-                &records->GetRecords().at(ib));
+                &records.GetRecords().at(ib));
           }
         }
       }
@@ -330,16 +330,16 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev)
       dstHit.SetTileInfo(0, array_nr, cellrow_nr, cell_nr); 
       dstHit.SetProducerTrkID( hit->GetProducerID() ); 
 
-      auto& ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(dstHit);
+      auto ev_sc = SLArAnaMgr->GetEvent()->GetEventSuperCellArray(array_nr)->RegisterHit(dstHit);
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
-          SLArEventBacktrackerVector* records = 
+          SLArEventBacktrackerVector& records = 
             ev_sc->GetBacktrackerVector( ev_sc->ConvertToClock<float>(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
             bktManager->GetBacktrackers().at(ib)->Eval(&dstHit, 
-                &records->GetRecords().at(ib));
+                &records.GetRecords().at(ib));
           }
         }
       }

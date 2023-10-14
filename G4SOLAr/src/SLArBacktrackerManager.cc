@@ -57,6 +57,10 @@ G4bool SLArBacktrackerManager::RegisterBacktracker(const EBacktracker id, const 
       }
   }
 
+  printf("SLArBacktrackerManager::Registered backtracker %s with status [%i]\n", 
+      BacktrackerLabel[id].data(), status);
+  //getchar();
+
   return status;
 }
 

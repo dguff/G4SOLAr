@@ -121,13 +121,13 @@ void refactor_test_sc(const TString file_path, const int iev)
   h2SCArray.find(30)->second->Draw("col same"); 
 
   //- - - - - - - - - - - - - - - - - - - - - - Access event
-  SLArMCEventPtr* ev = 0; 
+  SLArMCEvent* ev = 0; 
   mc_tree->SetBranchAddress("MCEvent", &ev); 
   mc_tree->GetEntry(iev); 
 
   auto& primaries = ev->GetPrimaries(); 
 
-  const std::map<int, SLArEventAnodePtr*>& andMap = ev->GetEventAnode(); 
+  const std::map<int, SLArEventAnode*>& andMap = ev->GetEventAnode(); 
 
   for (const auto &anode_ : andMap) {
     auto& anode = anode_.second; 
@@ -138,7 +138,7 @@ void refactor_test_sc(const TString file_path, const int iev)
 
     double z_max = 0; 
     printf("ANODE %i:\n", anode->GetID());
-    for (const auto &mt: anode->GetMegaTilesMap()) {
+    for (const auto &mt: anode->GetConstMegaTilesMap()) {
       printf("\tMegatilte %i: %i hits\n", mt.first, mt.second->GetNChargeHits());
       auto h2mt_ = AnodeSysCfg[tpc_id]->ConstructPixHistMap(1, std::vector<int>{mt.first}); 
       h2mt.push_back( h2mt_ ); 
@@ -157,7 +157,7 @@ void refactor_test_sc(const TString file_path, const int iev)
       }
     }
 
-    for (const auto &mt: anode->GetMegaTilesMap()) {
+    for (const auto &mt: anode->GetConstMegaTilesMap()) {
       if (mt.second->GetNPhotonHits() == 0) continue;
       for (auto &t : mt.second->GetConstTileMap()) {
         if (t.second->GetConstHits().empty()) continue;

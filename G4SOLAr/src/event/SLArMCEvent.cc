@@ -9,60 +9,34 @@
 #include "TRandom3.h"
 #include <cstdio>
 #include <typeinfo>
-templateClassImp(SLArMCEvent)
+ClassImp(SLArMCEvent)
 
-template class SLArMCEvent<SLArMCPrimaryInfoPtr*, SLArEventAnodePtr*, SLArEventSuperCellArrayPtr*>;
-template class SLArMCEvent<std::unique_ptr<SLArMCPrimaryInfoUniquePtr>, std::unique_ptr<SLArEventAnodeUniquePtr>, std::unique_ptr<SLArEventSuperCellArrayUniquePtr>>;
 
-template<class P, class A, class X>
-SLArMCEvent<P,A,X>::SLArMCEvent() : 
+SLArMCEvent::SLArMCEvent() : 
   fEvNumber(0), fDirection{0, 0, 0}
 {
    fSLArPrimary.reserve(50);
 }
 
-template<>
-SLArMCEventPtr::SLArMCEvent(const SLArMCEventPtr& ev) : TObject(ev)
+SLArMCEvent::SLArMCEvent(const SLArMCEvent& ev) : TObject(ev)
 {
   fEvNumber = ev.fEvNumber;
   fDirection = ev.fDirection;
 
   for (const auto& p : ev.fSLArPrimary) {
-    fSLArPrimary.push_back( new SLArMCPrimaryInfoPtr(*p) );
+    fSLArPrimary.push_back( new SLArMCPrimaryInfo(*p) );
   }
 
   for (const auto& itr : ev.fEvAnode) {
-    fEvAnode[itr.first] = new SLArEventAnodePtr(*itr.second);
+    fEvAnode[itr.first] = new SLArEventAnode(*itr.second);
   }
 
   for (const auto & itr : ev.fEvSuperCellArray) {
-    fEvSuperCellArray[itr.first] = new SLArEventSuperCellArrayPtr(*itr.second);
+    fEvSuperCellArray[itr.first] = new SLArEventSuperCellArray(*itr.second);
   }
 }
 
-template<>
-SLArMCEventUniquePtr::SLArMCEvent(const SLArMCEventUniquePtr& ev) : TObject(ev)
-{
-  fEvNumber = ev.fEvNumber;
-  fDirection = ev.fDirection;
-
-  for (const auto& p : ev.fSLArPrimary) {
-    fSLArPrimary.push_back( std::make_unique<SLArMCPrimaryInfoUniquePtr>(*p) );
-  }
-
-  for (const auto& itr : ev.fEvAnode) {
-    fEvAnode[itr.first] = std::make_unique<SLArEventAnodeUniquePtr>(*itr.second);
-  }
-
-  for (const auto & itr : ev.fEvSuperCellArray) {
-    fEvSuperCellArray[itr.first] = std::make_unique<SLArEventSuperCellArrayUniquePtr>(*itr.second);
-  }
-}
-
-
-
-template<>
-SLArMCEventPtr::~SLArMCEvent()
+SLArMCEvent::~SLArMCEvent()
 {
   std::cerr << "Deleting SLArMCEvent..." << std::endl;
   for (auto &evAnode : fEvAnode) {
@@ -77,69 +51,25 @@ SLArMCEventPtr::~SLArMCEvent()
   }
   fEvSuperCellArray.clear(); 
 
-  for (auto &primary : fSLArPrimary) {
-    delete primary;
+  for ( auto &p : fSLArPrimary) {
+    delete p; 
   }
   fSLArPrimary.clear();
   std::cerr << "~SLArMCEvent DONE" << std::endl;
 }
 
-template<>
-SLArMCEventUniquePtr::~SLArMCEvent()
-{
-  std::cerr << "Deleting SLArMCEvent..." << std::endl;
-  for (auto &evAnode : fEvAnode) {
-    evAnode.second.get()->ResetHits();
-  }
-  fEvAnode.clear(); 
 
-  for ( auto &scArray : fEvSuperCellArray ) {
-    scArray.second.get()->ResetHits();
-  }
-  fEvSuperCellArray.clear(); 
-
-  fSLArPrimary.clear();
-  std::cerr << "~SLArMCEvent DONE" << std::endl;
-}
-
-template<>
-template<>
-void SLArEventTileUniquePtr::SoftCopy(SLArEventTilePtr& record) const
-{
-  record.SoftResetHits(); 
-  Copy(record); 
-  for (const auto &pix : fPixelHits) {
-    record.GetPixelEvents()[pix.first] = pix.second.get();
-  }
-}
-
-template<>
-int SLArMCEventUniquePtr::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
+int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
-    fEvAnode.insert(std::make_pair(anode.first, std::make_unique<SLArEventAnodeUniquePtr>(anode.second)));
+    fEvAnode.insert(std::make_pair(anode.first, new SLArEventAnode(anode.second)));
     fEvAnode[anode.first]->SetID(anode.second->GetIdx());
-  }
-  std::cout << "fEvAnode type is " << typeid(fEvAnode).name() << std::endl;
-
-  getchar();  
-  return fEvAnode.size();
-}
-
-template<>
-int SLArMCEventPtr::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
-{
-  for (const auto& anode : anodeCfg) {
-    fEvAnode.insert(std::make_pair(anode.first, new SLArEventAnodePtr(anode.second)));
-    fEvAnode[anode.first]->SetID(anode.second->GetIdx());
-    //evAnode->ConfigSystem(anode.second); 
   }
 
   return fEvAnode.size();
 }
 
-template<>
-int SLArMCEventUniquePtr::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
+int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
 {
   for (const auto& scArray : supercellSysCfg->GetMap()) {
     if (fEvSuperCellArray.count(scArray.first)) {
@@ -148,32 +78,14 @@ int SLArMCEventUniquePtr::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercel
       continue;
     }
 
-    fEvSuperCellArray.insert(std::make_pair(scArray.first, std::make_unique<SLArEventSuperCellArrayUniquePtr>(scArray.second)));
+    fEvSuperCellArray.insert(std::make_pair(scArray.first, new SLArEventSuperCellArray(scArray.second)));
     fEvSuperCellArray[scArray.first]->ConfigSystem(scArray.second);
   }
 
   return fEvSuperCellArray.size();
 }
 
-template<>
-int SLArMCEventPtr::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
-{
-  for (const auto& scArray : supercellSysCfg->GetMap()) {
-    if (fEvSuperCellArray.count(scArray.first)) {
-      printf("SLArMCEvent::ConfigSuperCellSystem() WARNING: "); 
-      printf("SuperCelll array with index %i is aleady stored in the MCEvent. Skipping.\n", scArray.first);
-      continue;
-    }
-
-    fEvSuperCellArray.insert(std::make_pair(scArray.first, new SLArEventSuperCellArrayPtr(scArray.second)));
-    fEvSuperCellArray[scArray.first]->ConfigSystem(scArray.second);
-  }
-
-  return fEvSuperCellArray.size();
-}
-
-template<>
-std::unique_ptr<SLArEventAnodeUniquePtr>& SLArMCEventUniquePtr::GetEventAnodeByID(const int& id) {
+SLArEventAnode* SLArMCEvent::GetEventAnodeByID(const int& id) {
   for (auto &anode : fEvAnode) {
     if (anode.second->GetID() == id) {return anode.second;}
   }
@@ -181,42 +93,13 @@ std::unique_ptr<SLArEventAnodeUniquePtr>& SLArMCEventUniquePtr::GetEventAnodeByI
   throw 4;
 }
 
-template<>
-SLArEventAnodePtr*& SLArMCEventPtr::GetEventAnodeByID(const int& id) {
-  for (auto &anode : fEvAnode) {
-    if (anode.second->GetID() == id) {return anode.second;}
-  }
-
-  throw 4;
-}
-
-
-template<class P, class A, class X>
-int SLArMCEvent<P,A,X>::SetEvNumber(int nEv)
+int SLArMCEvent::SetEvNumber(int nEv)
 {
   fEvNumber = nEv;
   return fEvNumber;
 }
 
-template<>
-void SLArMCEventUniquePtr::Reset()
-{
-  for (auto &anode : fEvAnode) {
-    anode.second->ResetHits();
-  }
-
-  for (auto &scArray : fEvSuperCellArray) {
-    scArray.second->ResetHits(); 
-  }
-
-  fSLArPrimary.clear(); 
-
-  fDirection = {0, 0, 1};
-  fEvNumber = -1;
-}
-
-template<>
-void SLArMCEventPtr::Reset()
+void SLArMCEvent::Reset()
 {
   for (auto &anode : fEvAnode) {
     anode.second->ResetHits();
@@ -227,7 +110,7 @@ void SLArMCEventPtr::Reset()
   }
 
   for (auto &p : fSLArPrimary) {
-    delete p; 
+    delete p;
   }
   fSLArPrimary.clear(); 
 
@@ -235,8 +118,7 @@ void SLArMCEventPtr::Reset()
   fEvNumber = -1;
 }
 
-template<class P, class A, class X>
-void SLArMCEvent<P,A,X>::SetDirection(double* dir) {
+void SLArMCEvent::SetDirection(double* dir) {
   if (dir) {
     fDirection.at(0) = dir[0];  
     fDirection.at(1) = dir[1];  
@@ -244,15 +126,13 @@ void SLArMCEvent<P,A,X>::SetDirection(double* dir) {
   } 
 }
 
-template<class P, class A, class X>
-void SLArMCEvent<P,A,X>::SetDirection(double px, double py, double pz) {
+void SLArMCEvent::SetDirection(double px, double py, double pz) {
     fDirection.at(0) = px;  
     fDirection.at(1) = py;  
     fDirection.at(2) = pz;  
 }
 
-template<class P, class A, class X>
-bool SLArMCEvent<P,A,X>::CheckIfPrimary(int trkId) const {
+bool SLArMCEvent::CheckIfPrimary(int trkId) const {
   bool is_primary = false; 
   for (const auto &p : fSLArPrimary) {
     if (trkId == p->GetTrackID()) {
@@ -263,15 +143,9 @@ bool SLArMCEvent<P,A,X>::CheckIfPrimary(int trkId) const {
   return is_primary; 
 }
 
-template<>
-size_t SLArMCEventUniquePtr::RegisterPrimary(std::unique_ptr<SLArMCPrimaryInfoUniquePtr> p) {
+size_t SLArMCEvent::RegisterPrimary(SLArMCPrimaryInfo* p) {
   fSLArPrimary.push_back( std::move(p) );
   return fSLArPrimary.size();
 }
 
-template<>
-size_t SLArMCEventPtr::RegisterPrimary(SLArMCPrimaryInfoPtr* p) {
-  fSLArPrimary.push_back( std::move(p) );
-  return fSLArPrimary.size();
-}
 

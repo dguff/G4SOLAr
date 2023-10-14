@@ -101,19 +101,22 @@ void SLArEventHitsCollection<T>::PrintHits() const {
 }
 
 template<class T>
-SLArEventBacktrackerVector* SLArEventHitsCollection<T>::GetBacktrackerVector(UShort_t key) {
-  
-  auto bkt_vector = &(fBacktrackerCollections[key]);
-  if (bkt_vector->IsEmpty() == false) return bkt_vector;
-  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize <= 0) {
-    printf("BacktrackerRecordSize is %u. I should not be here...\n", 
-        fBacktrackerRecordSize);
-    return nullptr;
+SLArEventBacktrackerVector& SLArEventHitsCollection<T>::GetBacktrackerVector(UShort_t key) {
+  //printf("SLArEventHitsCollection[%i]::GetBacktrackerVector[%u]\n", fIdx, key);
+  auto& bkt_vector = fBacktrackerCollections[key];
+  if (bkt_vector.IsEmpty() == false) {
+    //printf("[%i] Already have a backtrackervector at key: %u\n", fIdx, key);
+    return bkt_vector;
   }
-  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize > 0) {
+  else if (bkt_vector.IsEmpty() && fBacktrackerRecordSize <= 0) {
+    //printf("BacktrackerRecordSize is %u. I should not be here...\n", 
+        //fBacktrackerRecordSize);
+    throw 4;
+  }
+  else if (bkt_vector.IsEmpty() && fBacktrackerRecordSize > 0) {
     //printf("initializing backtracker records vector to size %u\n", 
         //fBacktrackerRecordSize);
-    bkt_vector->InitRecords(fBacktrackerRecordSize);
+    bkt_vector.InitRecords(fBacktrackerRecordSize);
   }
 
   return bkt_vector;

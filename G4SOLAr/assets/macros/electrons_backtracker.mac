@@ -1,0 +1,44 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : electrons.mac
+# @created     : venerdì lug 01, 2022 11:47:12 CEST
+#
+# @description : Produce monoenergetic electrons in the detector center
+######################################################################
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 0.5 mm
+/SLAr/phys/positronCut 0.5 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/phys/DoTracePhotons true
+
+# Set particle energy and source position 
+/SLAr/gen/type ParticleGun
+/SLAr/gen/particle e-
+/SLAr/gen/energy 7 MeV
+/SLAr/gen/volume TPC11
+/SLAr/gen/SetDirectionMode isotropic
+
+# readout elements for backtracking:
+# Charge readout system: charge
+# VUV SiPM readout system: vuv_sipm
+# SuperCell: supercell
+/SLAr/manager/enableBacktracker charge 
+#/SLAr/manager/enableBacktracker vuv_sipm 
+#/SLAr/manager/enableBacktracker supercell 
+
+# available backtrackers:
+# track ID of particle responsible for the hit: trkID
+# track ID of the primary particle responsible for the hit: ancestorID
+# optical process responsible for the hit: opticalProc
+# command format: <system>:<backtracker>
+#/SLAr/manager/registerBacktracker charge:ancestorID
+/SLAr/manager/registerBacktracker charge:trkID
+#/SLAr/manager/registerBacktracker supercell:trkID
+
+# Set output file name
+#/SLAr/manager/SetOutputName electrons.root
+
+# Fire!
+/run/beamOn 20

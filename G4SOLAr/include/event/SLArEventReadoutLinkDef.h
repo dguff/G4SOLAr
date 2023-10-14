@@ -26,31 +26,15 @@
 #pragma link C++ class SLArEventHitsCollection<SLArEventPhotonHit>++;
 #pragma link C++ class SLArEventHitsCollection<SLArEventChargeHit>++;
 #pragma link C++ class SLArEventChargePixel++; 
-#pragma link C++ class std::map<int, std::unique_ptr<SLArEventChargePixel>>++; 
 #pragma link C++ class std::map<int, SLArEventChargePixel*>++; 
-#pragma link C++ class SLArEventTile<std::unique_ptr<SLArEventChargePixel>>++;
-#pragma link C++ class SLArEventTile<SLArEventChargePixel*>++;
-#pragma link C++ typedef SLArEventTilePtr++;
-#pragma link C++ typedef SLArEventTileUniquePtr++;
-#pragma link C++ class std::map<int, std::unique_ptr<SLArEventTileUniquePtr>>++;
-#pragma link C++ class std::map<int, SLArEventTilePtr*>++;
-#pragma link C++ class SLArEventMegatile<std::unique_ptr<SLArEventTileUniquePtr>>++;
-#pragma link C++ class SLArEventMegatile<SLArEventTilePtr*>++;
-#pragma link C++ typedef SLArEventMegatilePtr++;
-#pragma link C++ typedef SLArEventMegatileUniquePtr++;
-#pragma link C++ class std::map<int, std::unique_ptr<SLArEventMegatileUniquePtr>>++;
-#pragma link C++ class std::map<int, SLArEventMegatilePtr*>++;
-#pragma link C++ class SLArEventAnode<std::unique_ptr<SLArEventMegatileUniquePtr>, std::unique_ptr<SLArEventTileUniquePtr>, std::unique_ptr<SLArEventChargePixel>>++;
-#pragma link C++ class SLArEventAnode<SLArEventMegatilePtr*, SLArEventTilePtr*, SLArEventChargePixel*>++;
-#pragma link C++ typedef SLArEventAnodePtr++;
-#pragma link C++ typedef SLArEventAnodeUniquePtr++;
+#pragma link C++ class SLArEventTile++;
+#pragma link C++ class std::map<int, SLArEventTile*>++;
+#pragma link C++ class SLArEventMegatile++;
+#pragma link C++ class std::map<int, SLArEventMegatile*>++;
+#pragma link C++ class SLArEventAnode++;
 #pragma link C++ class SLArEventSuperCell++;
-#pragma link C++ class std::map<int, std::unique_ptr<SLArEventSuperCell>>++;
 #pragma link C++ class std::map<int, SLArEventSuperCell*>++;
-#pragma link C++ class SLArEventSuperCellArray<std::unique_ptr<SLArEventSuperCell>>++;
-#pragma link C++ class SLArEventSuperCellArray<SLArEventSuperCell*>++;
-#pragma link C++ typedef SLArEventSuperCellArrayPtr++;
-#pragma link C++ typedef SLArEventSuperCellArrayUniquePtr++;
+#pragma link C++ class SLArEventSuperCellArray++;
 
 #endif
 

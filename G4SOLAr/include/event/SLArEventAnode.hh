@@ -13,7 +13,6 @@
 #include "config/SLArCfgMegaTile.hh"
 #include "event/SLArEventMegatile.hh"
 
-template<class M, class T, class P>
 class SLArEventAnode : public TNamed {
   public:
     SLArEventAnode(); 
@@ -21,18 +20,15 @@ class SLArEventAnode : public TNamed {
     SLArEventAnode(const SLArEventAnode&);
     ~SLArEventAnode(); 
 
-    template<class N, class U, class Q>
-    void SoftCopy(SLArEventAnode<N, U, Q>& record) const;
-
     int ConfigSystem(SLArCfgAnode* cfg);
-    M& GetOrCreateEventMegatile(const int mtIdx); 
-    inline std::map<int, M>& GetMegaTilesMap() {return fMegaTilesMap;}
-    inline const std::map<int, M>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
+    SLArEventMegatile* GetOrCreateEventMegatile(const int mtIdx); 
+    inline std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
+    inline const std::map<int, SLArEventMegatile*>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
     inline int GetNhits() const {return fNhits;}
     inline bool IsActive() const {return fIsActive;}
 
-    T& RegisterHit(const SLArEventPhotonHit& hit); 
-    P& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
+    SLArEventTile* RegisterHit(const SLArEventPhotonHit& hit); 
+    SLArEventChargePixel* RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
     int SoftResetHits();
 
@@ -52,14 +48,11 @@ class SLArEventAnode : public TNamed {
     bool fIsActive;
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, M> fMegaTilesMap;
+    std::map<int, SLArEventMegatile*> fMegaTilesMap;
 
   public:
     ClassDef(SLArEventAnode, 2)
 };
-
-typedef SLArEventAnode<std::unique_ptr<SLArEventMegatileUniquePtr>, std::unique_ptr<SLArEventTileUniquePtr>, std::unique_ptr<SLArEventChargePixel>> SLArEventAnodeUniquePtr;
-typedef SLArEventAnode<SLArEventMegatilePtr*, SLArEventTilePtr*, SLArEventChargePixel*> SLArEventAnodePtr;
 
 #endif /* end of include guard SLArEventAnode_HH */
 

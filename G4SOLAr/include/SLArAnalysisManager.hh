@@ -50,6 +50,7 @@ class SLArAnalysisManager
 
     void   ConstructBacktracker(const G4String readout_system); 
     void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
+    G4bool CreateEventStructure();
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
     G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
@@ -78,8 +79,7 @@ class SLArAnalysisManager
       return anodeCfg;}
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEventUniquePtr* GetEvent()  {return fMCEvent;}
-    SLArMCEventPtr* GetEventRecord() {return fMCEventRecord;}
+    SLArMCEvent* GetEvent()  {return fMCEvent;}
     G4bool Save ();
 
     // mock fake access
@@ -106,8 +106,7 @@ class SLArAnalysisManager
 
     TFile* fRootFile;
     TTree* fEventTree;
-    SLArMCEventPtr* fMCEventRecord;
-    SLArMCEventUniquePtr* fMCEvent;
+    SLArMCEvent* fMCEvent;
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
     backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;

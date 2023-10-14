@@ -94,12 +94,11 @@ void SLArElectronDrift::PrintProperties() {
   return;
 }
 
-template<class A>
 void SLArElectronDrift::Drift(const int& n, const int& trkId,
     const G4ThreeVector& pos, 
     const double time, 
     SLArCfgAnode* anodeCfg, 
-    A anodeEv) 
+    SLArEventAnode* anodeEv) 
 {
   auto ana_mngr = SLArAnalysisManager::Instance();
   auto bkt_mngr = ana_mngr->GetBacktrackerManager( backtracker:: kCharge );
@@ -162,7 +161,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
       }
 
       SLArEventChargeHit hit(t_[i], trkId, 0); 
-      auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
+      auto evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
 
       //SLArEventMegatile* evMT=nullptr;
       //auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
@@ -194,17 +193,14 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
 
       if (bkt_mngr->IsNull()) continue;
 
-      auto records = 
-        evPixel->GetBacktrackerVector( evPixel->template ConvertToClock<float>(hit.GetTime()));
+      auto& records = 
+        evPixel->GetBacktrackerVector( evPixel->ConvertToClock<float>(hit.GetTime()));
 
       for (size_t ib = 0; ib < bkt_mngr->GetBacktrackers().size(); ib++) {
         bkt_mngr->GetBacktrackers().at(ib)->Eval(&hit, 
-            &records->GetRecords().at(ib));
+            &records.GetRecords().at(ib));
       }
-
     }
   }
 }
 
-template void SLArElectronDrift::Drift<SLArEventAnodePtr*&>(const int& n, const int& trkId, const G4ThreeVector& pos, const double time, SLArCfgAnode* anodeCfg, SLArEventAnodePtr*& anodeEv);
-template void SLArElectronDrift::Drift<std::unique_ptr<SLArEventAnodeUniquePtr>&>(const int& n, const int& trkId, const G4ThreeVector& pos, const double time, SLArCfgAnode* anodeCfg, std::unique_ptr<SLArEventAnodeUniquePtr>& anodeEv);

@@ -15,16 +15,12 @@
 #include "TH3F.h"
 #include "event/SLArEventTrajectory.hh"
 
-template<class T>
 class SLArMCPrimaryInfo : public TNamed 
 {
   public:
     SLArMCPrimaryInfo();
     SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p);
     ~SLArMCPrimaryInfo();
-
-    template<class R>
-    void SoftCopy(SLArMCPrimaryInfo<R>& record) const;
 
     void SetPosition(const double&  x, const double&  y, const double&  z, const double& t = 0);
     void SetMomentum(const double& px, const double& py, const double& pz, const double&   ene);
@@ -47,8 +43,8 @@ class SLArMCPrimaryInfo : public TNamed
     inline double GetTotalLArEdep() const {return fTotalLArEdep;}
     inline int GetID() const {return fID;}
     inline int GetTrackID() const {return fTrkID;}
-    inline std::vector<T>& GetTrajectories() {return fTrajectories;}
-    inline const std::vector<T>& GetConstTrajectories() const {return fTrajectories;}
+    inline std::vector<std::unique_ptr<SLArEventTrajectory>>& GetTrajectories() {return fTrajectories;}
+    inline const std::vector<std::unique_ptr<SLArEventTrajectory>>& GetConstTrajectories() const {return fTrajectories;}
     inline int GetTotalScintPhotons() const {return fTotalScintPhotons;}
     inline int GetTotalCerenkovPhotons() const {return fTotalCerenkovPhotons;}
 
@@ -61,7 +57,7 @@ class SLArMCPrimaryInfo : public TNamed
     void ResetParticle();
     void SoftResetParticle();
     
-    int RegisterTrajectory(T trj);
+    int RegisterTrajectory(std::unique_ptr<SLArEventTrajectory> trj);
 
   private:
     Int_t fID; 
@@ -75,14 +71,11 @@ class SLArMCPrimaryInfo : public TNamed
     double fTotalLArEdep; 
     std::vector<double> fVertex;
     std::vector<double> fMomentum;
-    std::vector<T> fTrajectories;
+    std::vector<std::unique_ptr<SLArEventTrajectory>> fTrajectories;
   
   public:
     ClassDef(SLArMCPrimaryInfo, 3);
 };
-
-typedef SLArMCPrimaryInfo<SLArEventTrajectory*> SLArMCPrimaryInfoPtr;
-typedef SLArMCPrimaryInfo<std::unique_ptr<SLArEventTrajectory>> SLArMCPrimaryInfoUniquePtr;
 
 #endif /* end of include guard SLArMCTRACKINFO_HH */
 

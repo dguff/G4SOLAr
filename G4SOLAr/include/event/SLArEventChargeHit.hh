@@ -13,15 +13,13 @@
 class SLArEventChargeHit : public SLArEventGenericHit {
   public: 
     SLArEventChargeHit(); 
-    SLArEventChargeHit(float time, int trkId, int primaryID); 
+    SLArEventChargeHit(float time, int trkId=-1, int primaryID=-1);
     SLArEventChargeHit(const SLArEventChargeHit& h);
     ~SLArEventChargeHit() {}; 
 
     void   DumpInfo(); 
 
   private:
-    int    fTrkID;
-    int    fPrimaryID; 
 
   public: 
     ClassDef(SLArEventChargeHit, 1);

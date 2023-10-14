@@ -82,7 +82,6 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdRegisterBacktracker->SetGuidance("rnable backtracker on readout system");
   fCmdRegisterBacktracker->SetParameterName("backtraker_system", false);
   fCmdRegisterBacktracker->SetGuidance("Specfiy readout system and backtracker [readout_system]:[backtraker]");
-  fCmdRegisterBacktracker->SetCandidates("trkID ancestorID opticalProc");
   
   fCmdGeoAnodeDepth = 
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);

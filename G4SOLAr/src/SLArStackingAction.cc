@@ -101,7 +101,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       
       //printf("creating trajectory...\n");
       std::unique_ptr<SLArEventTrajectory> trajectory = std::make_unique<SLArEventTrajectory>();
-      //SLArEventTrajectory* trajectory = new SLArEventTrajectory();
+      //SLArEventTrajectory trajectory;
       trajectory->SetTrackID( aTrack->GetTrackID() ); 
       trajectory->SetParentID(aTrack->GetParentID()); 
       trajectory->SetParticleName( particleName );
@@ -120,11 +120,11 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       //printf("found\n");
 
       //SLArMCPrimaryInfoUniquePtr* ancestor = nullptr; 
-      SLArMCPrimaryInfoUniquePtr* ancestor = nullptr; 
+      SLArMCPrimaryInfo* ancestor = nullptr; 
       auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
       for (auto &p : primaries) {
         if (p->GetTrackID() == ancestor_id) {
-          ancestor = p.get(); 
+          ancestor = p; 
           break;
         }
       }
@@ -147,7 +147,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
     if(aTrack->GetParentID()>0)
     { // particle is secondary
       SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
-      SLArMCPrimaryInfoUniquePtr* primary = nullptr; 
+      SLArMCPrimaryInfo* primary = nullptr; 
       //SLArMCPrimaryInfoPtr* primary = nullptr; 
       auto& primaries = anaMngr->GetEvent()->GetPrimaries();
 
@@ -157,7 +157,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 //#endif
       for (auto &p : primaries) {
         if (p->GetTrackID() == primary_parent_id) {
-          primary = p.get(); 
+          primary = p; 
 //#ifdef SLAR_DEBUG
           //printf("primary parent found\n");
 //#endif

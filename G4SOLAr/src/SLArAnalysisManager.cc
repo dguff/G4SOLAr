@@ -55,6 +55,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fIsMaster(isMaster), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fRootFile (nullptr), fEventTree (nullptr), 
+    fMCEvent(nullptr),
     fSuperCellBacktrackerManager(nullptr), 
     fVUVSiPMBacktrackerManager(nullptr), 
     fChargeBacktrackerManager(nullptr), 
@@ -71,8 +72,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent = new SLArMCEventUniquePtr();
-    fMCEventRecord = new SLArMCEventPtr();               
+    fMCEvent = new SLArMCEvent();
     fAnaMsgr = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
@@ -111,19 +111,21 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
+  fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
 
-  fEventTree = new TTree("EventTree", "Event Tree");
-  
+  printf("fMCEvent pointer: %p\n", static_cast<void*>(fMCEvent));
+
+  printf("configuring anode...\n");
   fMCEvent->ConfigAnode( fAnodeCfg ); 
 
+  printf("configuring PDS...\n");
   if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
+  
+  // setup backtracker size
+  SetupBacktrackerRecords(); 
 
-  printf("SLArAnalysisManager: setting up output tree\n");
-
-  //SLArMCEventPtr* evPtr = fMCEvent.get();
-
-  fEventTree->Branch("MCEvent", "SLArMCEventUniquePtr", &fMCEvent);
-  getchar();
+  printf("setting up ROOT TTree Branch...\n");
+  fEventTree->Branch("MCEvent", &fMCEvent);
 
   return true;
 }
@@ -510,8 +512,12 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
     if (fChargeBacktrackerManager->IsNull() == false) {
 
       for (auto& evAnode : fMCEvent->GetEventAnode()) {
+        printf("SLArAnalysisManager::SetupBacktrackerRecordSize for charge readout system to %lu\n", 
+            fChargeBacktrackerManager->GetConstBacktrackers().size());
         evAnode.second->SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
       }
+
+      getchar();
     }
   }
 
@@ -531,6 +537,6 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
         evSCA.second->SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
-
   }
+
 }

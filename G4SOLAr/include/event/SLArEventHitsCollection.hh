@@ -41,7 +41,7 @@ class SLArEventHitsCollection : public TNamed {
     inline const BacktrackerVectorCollection_t& GetBacktrackerRecordCollection() const {return fBacktrackerCollections;}
 
     inline UShort_t GetBacktrackerRecordSize() const {return fBacktrackerRecordSize;}
-    SLArEventBacktrackerVector* GetBacktrackerVector(UShort_t key); 
+    SLArEventBacktrackerVector& GetBacktrackerVector(UShort_t key); 
     inline bool IsActive() const {return fIsActive;} 
 
     virtual void PrintHits() const; 

@@ -136,7 +136,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     if (generatorAction->DoDriftElectrons()) {
 
       if (anodeCfg) {
-        runAction->GetElectronDrift()->Drift<std::unique_ptr<SLArEventAnodeUniquePtr>&>(n_el, 
+        runAction->GetElectronDrift()->Drift(n_el, 
             step->GetTrack()->GetTrackID(), 
             0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
             postStepPoint->GetGlobalTime(), 
@@ -154,12 +154,12 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       G4RunManager::GetRunManager()->GetUserEventAction(); 
     auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
 
-    SLArMCPrimaryInfoUniquePtr* ancestor = nullptr;
+    SLArMCPrimaryInfo* ancestor = nullptr;
     //SLArMCPrimaryInfoPtr* ancestor = nullptr;
-    auto& primaries = anaMngr->GetEvent()->GetPrimaries();
+    auto primaries = anaMngr->GetEvent()->GetPrimaries();
     for (auto &p : primaries) {
       if (p->GetTrackID() == ancestor_id) {
-        ancestor = p.get();
+        ancestor = p;
         break;
       }
     }
