@@ -93,8 +93,8 @@ SLArAnalysisManager::~SLArAnalysisManager()
   if (fChargeBacktrackerManager) delete fChargeBacktrackerManager;
   if (fVUVSiPMBacktrackerManager) delete fVUVSiPMBacktrackerManager;
   if (fSuperCellBacktrackerManager) delete fSuperCellBacktrackerManager;
-  if ( this->fIsMaster ) fgMasterInstance = nullptr;
-  if ( fAnaMsgr        ) delete  fAnaMsgr  ; 
+  if (this->fIsMaster) fgMasterInstance = nullptr;
+  if (fAnaMsgr) delete  fAnaMsgr; 
   fgInstance = nullptr;
   G4cerr << "SLArAnalysisManager DONE" << G4endl;
 }
@@ -112,7 +112,17 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     return false;
   }
   fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
+ 
+  // setup backtracker size
+  SetupBacktrackerRecords(); 
 
+  printf("setting up ROOT TTree Branch...\n");
+  fEventTree->Branch("MCEvent", &fMCEvent);
+
+  return true;
+}
+
+G4bool SLArAnalysisManager::CreateEventStructure() {
   printf("fMCEvent pointer: %p\n", static_cast<void*>(fMCEvent));
 
   printf("configuring anode...\n");
@@ -120,12 +130,6 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 
   printf("configuring PDS...\n");
   if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
-  
-  // setup backtracker size
-  SetupBacktrackerRecords(); 
-
-  printf("setting up ROOT TTree Branch...\n");
-  fEventTree->Branch("MCEvent", &fMCEvent);
 
   return true;
 }

@@ -37,6 +37,11 @@ class SLArEventAnode : public TNamed {
     inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
     inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
     inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    inline void SetZeroSuppressionThreshold(const UShort_t& threshold) {fZeroSuppressionThreshold = threshold;}
+    inline UShort_t GetZeroSuppressionThreshold() const {return fZeroSuppressionThreshold;}
+
+    Int_t ApplyZeroSuppression(); 
+
     //bool SortHits(); 
 
     inline void SetID(const int anode_id) {fID = anode_id;}
@@ -48,6 +53,7 @@ class SLArEventAnode : public TNamed {
     bool fIsActive;
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
+    UShort_t fZeroSuppressionThreshold;
     std::map<int, SLArEventMegatile> fMegaTilesMap;
 
   public:

@@ -12,7 +12,8 @@ ClassImp(SLArEventAnode)
 
 SLArEventAnode::SLArEventAnode()
   : fID(0), fNhits(0), fIsActive(true), 
-    fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0) 
+    fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0), 
+    fZeroSuppressionThreshold(0)
 {}
 
 SLArEventAnode::SLArEventAnode(const SLArEventAnode& right) 
@@ -23,6 +24,7 @@ SLArEventAnode::SLArEventAnode(const SLArEventAnode& right)
   fIsActive = right.fIsActive; 
   fLightBacktrackerRecordSize = right.fLightBacktrackerRecordSize;
   fChargeBacktrackerRecordSize = right.fChargeBacktrackerRecordSize;
+  fZeroSuppressionThreshold = right.fZeroSuppressionThreshold;
   for (const auto &mgev : right.fMegaTilesMap) {
     fMegaTilesMap[mgev.first] = SLArEventMegatile(mgev.second);
   }
@@ -123,6 +125,30 @@ void SLArEventAnode::SetActive(bool is_active) {
   for (auto &mgtile : fMegaTilesMap) {
     mgtile.second.SetActive(is_active); 
   }
+}
+
+Int_t SLArEventAnode::ApplyZeroSuppression() {
+  Int_t erasedHits = 0; 
+
+  printf("SLArEventAnode::ApplyZeroSuppression() Running zero-suppression with threshold %i\n", fZeroSuppressionThreshold);
+  for (auto& mt_itr : fMegaTilesMap) {
+    auto& tile_map = mt_itr.second.GetTileMap();
+    for (auto it_t = tile_map.begin(); it_t != tile_map.end(); it_t++) {
+      auto& pix_map = it_t->second.GetPixelEvents(); 
+      for (auto it_pix = pix_map.begin(); it_pix!=pix_map.end(); ) {
+        auto pix_key = it_pix->first;
+        erasedHits += it_pix->second.ZeroSuppression( fZeroSuppressionThreshold ); 
+        if (it_pix->second.GetHits().empty()) {
+          it_pix = pix_map.erase(it_pix);
+        } 
+        else {
+          it_pix++;
+        }
+      }
+    }
+  }
+
+  return erasedHits;
 }
 
 //bool SLArEventAnode::SortHits() {

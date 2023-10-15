@@ -122,6 +122,23 @@ SLArEventBacktrackerVector& SLArEventHitsCollection<T>::GetBacktrackerVector(USh
   return bkt_vector;
 }
 
+template<class T> 
+int SLArEventHitsCollection<T>::ZeroSuppression(const UShort_t threshold) {
+  int hits_erased = 0; 
+  //printf("ZeroSuppression threshold = %u\n", threshold);
+  for (auto it = fHits.begin(); it != fHits.end(); ) {
+    if (it->second < threshold) {
+      auto key = it->first;
+      //printf("deleting map entry with key [%u] having %u hits\n", key, it->second);
+      fBacktrackerCollections.erase(key);
+      hits_erased += it->second;
+      it = fHits.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  return hits_erased;
+}
 
 template class SLArEventHitsCollection<SLArEventPhotonHit>; 
 template class SLArEventHitsCollection<SLArEventChargeHit>; 

@@ -56,6 +56,8 @@ class SLArEventHitsCollection : public TNamed {
     inline void SetBacktrackerRecordSize(const UShort_t size) {fBacktrackerRecordSize = size;}
     inline void SetNhits(const int& n) {fNhits = n;}
 
+    int ZeroSuppression(const UShort_t threshold);  
+
   protected:
     int fIdx; 
     bool fIsActive; 

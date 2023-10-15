@@ -141,12 +141,13 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     auto slar_event = SLArAnaMgr->GetEvent();
     slar_event->SetEvNumber(event->GetEventID());
 
-    //for (const auto &evAnode : slar_event->GetEventAnode()) {
-      //printf("ANODE %i\n", evAnode.first);
-      //for (const auto &evMT : evAnode.second->GetConstMegaTilesMap()) {
-        //printf("\tMEGATILE %i\n", evMT.first);
-      //}
-    //}
+    // apply zero suppression to charge signal
+    for (auto &evAnode : slar_event->GetEventAnode()) {
+      short thrs = evAnode.second.GetZeroSuppressionThreshold(); 
+      if (thrs > 0) {
+        evAnode.second.ApplyZeroSuppression();
+      }
+    }
     
     SLArAnaMgr->FillEvTree();
     

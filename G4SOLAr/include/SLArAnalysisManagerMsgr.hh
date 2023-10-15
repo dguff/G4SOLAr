@@ -47,6 +47,7 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAnInteger*       fCmdGeoAnodeDepth ; 
     G4UIcmdWithAString*         fCmdEnableBacktracker;
     G4UIcmdWithAString*         fCmdRegisterBacktracker;
+    G4UIcmdWithAnInteger*       fCmdSetZeroSuppressionThrs;
 #ifdef SLAR_GDML
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 
     G4UIcmdWithAString*         fCmdGDMLExport    ;
