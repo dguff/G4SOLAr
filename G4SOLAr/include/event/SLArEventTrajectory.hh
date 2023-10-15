@@ -63,7 +63,9 @@ class SLArEventTrajectory : public TObject
     float GetTotalEdep() const {return fTotalEdep;} 
     float GetTotalNph () const {return fTotalNph;} 
     float GetTotalNel () const {return fTotalNel;} 
+    Bool_t DoStoreTrajectoryPts() const {return fStoreTrajectoryPts;}
 
+    inline void SetStoreTrajectoryPts(const bool store_pts) {fStoreTrajectoryPts = store_pts;}
     inline void SetParticleName(const TString& name) {fParticleName = name;}
     inline void SetCreatorProcess(const TString& proc) {fCreatorProcess = proc;}
     inline void SetEndProcess(const TString& proc) {fEndProcess = proc;}
@@ -86,6 +88,7 @@ class SLArEventTrajectory : public TObject
 
 
   private:
+    Bool_t                 fStoreTrajectoryPts;
     TString                fParticleName     ; 
     TString                fCreatorProcess   ; 
     TString                fEndProcess       ;

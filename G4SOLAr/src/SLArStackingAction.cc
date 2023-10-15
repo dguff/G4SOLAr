@@ -109,6 +109,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetCreatorProcess( creatorProc ); 
       trajectory->SetTime( aTrack->GetGlobalTime() ); 
       trajectory->SetWeight(aTrack->GetWeight()); 
+      trajectory->SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
       
 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 

@@ -86,6 +86,8 @@ class SLArAnalysisManager
     G4bool FakeAccess();
     void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
     void RegisterXSecDump(const SLArXSecDumpSpec xsec_dump); 
+    inline void SetStoreTrajectoryFull(const bool store_trj_pts) {fTrajectoryFull = store_trj_pts;} 
+    inline G4bool StoreTrajectoryFull() const {return fTrajectoryFull;}
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 
@@ -101,6 +103,7 @@ class SLArAnalysisManager
     G4bool   fIsMaster;
     G4String fOutputPath;
     G4String fOutputFileName;
+    G4bool   fTrajectoryFull;
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 

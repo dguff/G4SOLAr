@@ -71,6 +71,10 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdPlotXSec->SetParameterName("xsec_spec", false);
   fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
 
+  fCmdStoreFullTrajectory = 
+    new G4UIcmdWithABool(UIManagerPath+"storeFullTrajectory", this);
+  fCmdStoreFullTrajectory->SetGuidance("Store full track trajectory");
+
   fCmdEnableBacktracker = 
     new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
   fCmdEnableBacktracker->SetGuidance("Enable backtracker on readout system");
@@ -118,6 +122,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdWriteCfgFile       ) delete fCmdWriteCfgFile       ; 
   if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
   if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
+  if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
@@ -174,6 +179,9 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdGeoAnodeDepth) {
     fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
+  }
+  else if (cmd == fCmdStoreFullTrajectory) {
+    SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );
   }
   else if (cmd == fCmdEnableBacktracker) {
     SLArAnaMgr->ConstructBacktracker( newVal );

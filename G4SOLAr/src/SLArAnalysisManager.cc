@@ -54,6 +54,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   : fAnaMsgr  (nullptr),
     fIsMaster(isMaster), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
+    fTrajectoryFull( true ),
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent(nullptr),
     fSuperCellBacktrackerManager(nullptr), 
