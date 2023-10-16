@@ -90,6 +90,9 @@ class SLArAnalysisManager
     inline G4bool StoreTrajectoryFull() const {return fTrajectoryFull;}
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
+#ifdef SLAR_EXTERNAL
+    inline std::map<int, TH1D>& GetExternalSpectrum() {return fExternalsSpectrum;}
+#endif 
 
   protected:
     // virtual functions (overriden in MPI implementation)
@@ -110,6 +113,9 @@ class SLArAnalysisManager
     TFile* fRootFile;
     TTree* fEventTree;
     SLArMCEvent* fMCEvent;
+#ifdef SLAR_EXTERNAL
+    std::map<int, TH1D> fExternalsSpectrum;
+#endif 
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
     backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;

@@ -91,6 +91,9 @@ SLArAnalysisManager::~SLArAnalysisManager()
       fRootFile->Close(); 
     }
   }
+#ifdef SLAR_EXTERNAL
+  fExternalsSpectrum.clear();
+#endif // SLAR_EXTERNAL
   if (fChargeBacktrackerManager) delete fChargeBacktrackerManager;
   if (fVUVSiPMBacktrackerManager) delete fVUVSiPMBacktrackerManager;
   if (fSuperCellBacktrackerManager) delete fSuperCellBacktrackerManager;
@@ -145,6 +148,12 @@ G4bool SLArAnalysisManager::Save()
   }
 
   WriteSysCfg(); 
+
+#ifdef SLAR_EXTERNAL
+  for (const auto& it : fExternalsSpectrum) {
+    it.second.Write();
+  }
+#endif // SLAR_EXTERNAL
 
   fRootFile->Close();
 

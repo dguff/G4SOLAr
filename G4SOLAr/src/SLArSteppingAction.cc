@@ -10,6 +10,7 @@
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArUserTrackInformation.hh"
 #include "SLArTrajectory.hh"
+#include "SLArAnalysisManager.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 #include "detector/Anode/SLArReadoutTileSD.hh"
@@ -152,11 +153,42 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //trajectory.GetPoints().size());
     //getchar(); 
 
+    G4String terminator; 
+
+#ifdef SLAR_EXTERNAL
+   if (thePostPoint->GetStepStatus() == fGeomBoundary) {
+      if ( G4StrUtil::contains(thePostPV->GetLogicalVolume()->GetMaterial()->GetName(), "LAr") )
+      {
+        auto& extSpectrum = SLArAnalysisManager::Instance()->GetExternalSpectrum();
+        G4int pdg = track->GetParticleDefinition()->GetPDGEncoding();
+        if (extSpectrum.find(pdg) == extSpectrum.end()) {
+          char buffer[100];
+          sprintf(buffer, "ext_%i_spectrum", pdg);
+          G4String name = buffer;
+          sprintf(buffer, "%s spectrum (external %s);Energy [MeV];Counts", 
+              track->GetParticleDefinition()->GetParticleName().data(), 
+              SLAR_EXTERNAL_PARTICLE);
+          G4String title = buffer;
+          extSpectrum[pdg] = TH1D(name, title, 2000, 0, 20);
+          extSpectrum[pdg].Fill( thePostPoint->GetKineticEnergy(), track->GetWeight() ); 
+        }
+        else {
+          extSpectrum[pdg].Fill( thePostPoint->GetKineticEnergy(), track->GetWeight() ); 
+        }
+        
+        track->SetTrackStatus( fStopAndKill ); 
+        terminator = "SLArUserInterfaceKiller";
+      }
+   }
+#endif 
+
     if (track->GetTrackStatus() == fStopAndKill) {
 
       auto process = 
         const_cast<G4VProcess*>(step->GetPostStepPoint()->GetProcessDefinedStep()); 
-      G4String terminator = process->GetProcessName(); 
+      if (terminator.empty()){
+        terminator = process->GetProcessName(); 
+      }
 
       G4HadronicProcess* hproc = dynamic_cast<G4HadronicProcess*>(process);
       const G4Isotope* target = NULL;
