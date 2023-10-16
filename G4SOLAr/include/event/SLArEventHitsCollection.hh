@@ -27,11 +27,13 @@ class SLArEventHitsCollection : public TNamed {
     SLArEventHitsCollection(const SLArEventHitsCollection&); 
     virtual ~SLArEventHitsCollection(); 
 
+    void Copy(SLArEventHitsCollection& record) const;
+
     template<typename TT>
     UShort_t ConvertToClock(const TT& val) {return static_cast<UShort_t>(val / fClockUnit);}
     inline UShort_t GetClockUnit() const {return fClockUnit;}
-    inline int GetIdx() {return fIdx;}
-    inline int GetNhits() {return fNhits;}
+    inline int GetIdx() const {return fIdx;}
+    inline int GetNhits() const {return fNhits;}
     inline virtual double GetTime() {return -1.;} 
     inline HitsCollection_t& GetHits() {return fHits;}
     inline const HitsCollection_t& GetConstHits() const {return fHits;}
@@ -39,12 +41,12 @@ class SLArEventHitsCollection : public TNamed {
     inline const BacktrackerVectorCollection_t& GetBacktrackerRecordCollection() const {return fBacktrackerCollections;}
 
     inline UShort_t GetBacktrackerRecordSize() const {return fBacktrackerRecordSize;}
-    SLArEventBacktrackerVector* GetBacktrackerVector(UShort_t key); 
-    inline bool IsActive() {return fIsActive;}
+    SLArEventBacktrackerVector& GetBacktrackerVector(UShort_t key); 
+    inline bool IsActive() const {return fIsActive;} 
 
-    virtual void PrintHits(); 
+    virtual void PrintHits() const; 
 
-    virtual int RegisterHit(const T* hit); 
+    virtual int RegisterHit(const T hit); 
     virtual int ResetHits(); 
 
     //virtual bool SortHits(); 
@@ -52,6 +54,9 @@ class SLArEventHitsCollection : public TNamed {
     inline void SetIdx(int idx) {fIdx = idx;}
     inline void SetClockUnit(const UShort_t unit) {fClockUnit = unit;}
     inline void SetBacktrackerRecordSize(const UShort_t size) {fBacktrackerRecordSize = size;}
+    inline void SetNhits(const int& n) {fNhits = n;}
+
+    int ZeroSuppression(const UShort_t threshold);  
 
   protected:
     int fIdx; 

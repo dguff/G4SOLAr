@@ -31,7 +31,8 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
   fCmdGeoAnodeDepth(nullptr), 
   fCmdEnableBacktracker(nullptr),
-  fCmdRegisterBacktracker(nullptr)
+  fCmdRegisterBacktracker(nullptr), 
+  fCmdSetZeroSuppressionThrs(nullptr)
 #ifdef SLAR_GDML
   ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
   fGDMLFileName("slar_export.gdml")
@@ -70,6 +71,10 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdPlotXSec->SetParameterName("xsec_spec", false);
   fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
 
+  fCmdStoreFullTrajectory = 
+    new G4UIcmdWithABool(UIManagerPath+"storeFullTrajectory", this);
+  fCmdStoreFullTrajectory->SetGuidance("Store full track trajectory");
+
   fCmdEnableBacktracker = 
     new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
   fCmdEnableBacktracker->SetGuidance("Enable backtracker on readout system");
@@ -79,10 +84,14 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
 
   fCmdRegisterBacktracker = 
     new G4UIcmdWithAString(UIManagerPath+"registerBacktracker", this);
-  fCmdRegisterBacktracker->SetGuidance("rnable backtracker on readout system");
+  fCmdRegisterBacktracker->SetGuidance("Add backtracker on readout system");
   fCmdRegisterBacktracker->SetParameterName("backtraker_system", false);
   fCmdRegisterBacktracker->SetGuidance("Specfiy readout system and backtracker [readout_system]:[backtraker]");
-  fCmdRegisterBacktracker->SetCandidates("trkID anchestorID opticalProc");
+
+  fCmdSetZeroSuppressionThrs = 
+    new G4UIcmdWithAnInteger(UIManagerPath+"setZeroSuppressionThrs", this);
+  fCmdSetZeroSuppressionThrs->SetGuidance("Set charge readout zero suppression threshold");
+  fCmdSetZeroSuppressionThrs->SetParameterName("threshold", false);
   
   fCmdGeoAnodeDepth = 
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
@@ -113,8 +122,10 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdWriteCfgFile       ) delete fCmdWriteCfgFile       ; 
   if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
   if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
+  if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
+  if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -169,6 +180,9 @@ void SLArAnalysisManagerMsgr::SetNewValue
   else if (cmd == fCmdGeoAnodeDepth) {
     fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
   }
+  else if (cmd == fCmdStoreFullTrajectory) {
+    SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
   else if (cmd == fCmdEnableBacktracker) {
     SLArAnaMgr->ConstructBacktracker( newVal );
   }
@@ -190,6 +204,12 @@ void SLArAnalysisManagerMsgr::SetNewValue
 
     auto bkt_mngr = SLArAnaMgr->GetBacktrackerManager(_system);
     bkt_mngr->RegisterBacktracker(backtracker::GetBacktrackerEnum(_backtracker), _name);
+  }
+  else if (cmd == fCmdSetZeroSuppressionThrs) {
+    int thrs = std::atoi( newVal ); 
+    for (auto& anode_itr : SLArAnaMgr->GetEvent()->GetEventAnode()) {
+      anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
+    }
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

@@ -12,10 +12,12 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArBacktrackerManager.hh"
+#include <cstdio>
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 
+#include "SLArEventAnode.hh"
 #include "TObjString.h"
 #include "TVectorD.h"
 #include "TParameter.h"
@@ -52,8 +54,9 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   : fAnaMsgr  (nullptr),
     fIsMaster(isMaster), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
+    fTrajectoryFull( true ),
     fRootFile (nullptr), fEventTree (nullptr), 
-    fMCEvent  (nullptr), 
+    fMCEvent(nullptr),
     fSuperCellBacktrackerManager(nullptr), 
     fVUVSiPMBacktrackerManager(nullptr), 
     fChargeBacktrackerManager(nullptr), 
@@ -70,8 +73,8 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent         = new SLArMCEvent();
-    fAnaMsgr         = new SLArAnalysisManagerMsgr();
+    fMCEvent = new SLArMCEvent();
+    fAnaMsgr = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
 }
@@ -91,8 +94,8 @@ SLArAnalysisManager::~SLArAnalysisManager()
   if (fChargeBacktrackerManager) delete fChargeBacktrackerManager;
   if (fVUVSiPMBacktrackerManager) delete fVUVSiPMBacktrackerManager;
   if (fSuperCellBacktrackerManager) delete fSuperCellBacktrackerManager;
-  if ( this->fIsMaster ) fgMasterInstance = nullptr;
-  if ( fAnaMsgr        ) delete  fAnaMsgr  ; 
+  if (this->fIsMaster) fgMasterInstance = nullptr;
+  if (fAnaMsgr) delete  fAnaMsgr; 
   fgInstance = nullptr;
   G4cerr << "SLArAnalysisManager DONE" << G4endl;
 }
@@ -109,14 +112,25 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
+  fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
+ 
+  // setup backtracker size
+  SetupBacktrackerRecords(); 
 
-  fEventTree = new TTree("EventTree", "Event Tree");
-  
+  printf("setting up ROOT TTree Branch...\n");
+  fEventTree->Branch("MCEvent", &fMCEvent);
+
+  return true;
+}
+
+G4bool SLArAnalysisManager::CreateEventStructure() {
+  printf("fMCEvent pointer: %p\n", static_cast<void*>(fMCEvent));
+
+  printf("configuring anode...\n");
   fMCEvent->ConfigAnode( fAnodeCfg ); 
 
+  printf("configuring PDS...\n");
   if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
-
-  fEventTree->Branch("MCEvent", &fMCEvent);
 
   return true;
 }
@@ -501,9 +515,8 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // charge backtrackers 
   if (fChargeBacktrackerManager) {
     if (fChargeBacktrackerManager->IsNull() == false) {
-
-      for (auto evAnode : fMCEvent->GetEventAnode()) {
-        evAnode.second->SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
+      for (auto& evAnode : fMCEvent->GetEventAnode()) {
+        evAnode.second.SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
   }
@@ -511,8 +524,8 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // vuv sipm backtrackers
   if (fVUVSiPMBacktrackerManager) {
     if (fVUVSiPMBacktrackerManager->IsNull() == false) {
-      for (auto evAnode : fMCEvent->GetEventAnode()) {
-        evAnode.second->SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
+      for (auto& evAnode : fMCEvent->GetEventAnode()) {
+        evAnode.second.SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
       }
     }
   }
@@ -520,10 +533,10 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // supercell backtrakers
   if (fSuperCellBacktrackerManager) {
     if (fSuperCellBacktrackerManager->IsNull() == false) {
-      for (auto evSCA : fMCEvent->GetEventSuperCellArray() ) {
-        evSCA.second->SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
+      for (auto& evSCA : fMCEvent->GetEventSuperCellArray() ) {
+        evSCA.second.SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
-
   }
+
 }

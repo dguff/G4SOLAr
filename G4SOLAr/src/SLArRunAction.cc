@@ -47,9 +47,6 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
 
-  // setup backtracker size
-  SLArAnaMgr->SetupBacktrackerRecords(); 
-
   SLArAnaMgr->CreateFileStructure();
 
   fElectronDrift = new SLArElectronDrift(); 

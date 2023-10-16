@@ -21,20 +21,27 @@ class SLArEventAnode : public TNamed {
     ~SLArEventAnode(); 
 
     int ConfigSystem(SLArCfgAnode* cfg);
-    SLArEventMegatile* CreateEventMegatile(const int mtIdx); 
-    inline std::map<int, SLArEventMegatile*>& GetMegaTilesMap() {return fMegaTilesMap;}
-    inline const std::map<int, SLArEventMegatile*>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
-    inline int GetNhits() {return fNhits;}
-    inline bool IsActive() {return fIsActive;}
+    SLArEventMegatile& GetOrCreateEventMegatile(const int mtIdx); 
+    inline std::map<int, SLArEventMegatile>& GetMegaTilesMap() {return fMegaTilesMap;}
+    inline const std::map<int, SLArEventMegatile>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
+    inline int GetNhits() const {return fNhits;}
+    inline bool IsActive() const {return fIsActive;}
 
-    SLArEventTile* RegisterHit(SLArEventPhotonHit* hit); 
+    SLArEventTile& RegisterHit(const SLArEventPhotonHit& hit); 
+    SLArEventChargePixel& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
     inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
     inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
     inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
     inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    inline void SetZeroSuppressionThreshold(const UShort_t& threshold) {fZeroSuppressionThreshold = threshold;}
+    inline UShort_t GetZeroSuppressionThreshold() const {return fZeroSuppressionThreshold;}
+
+    Int_t ApplyZeroSuppression(); 
+
     //bool SortHits(); 
 
     inline void SetID(const int anode_id) {fID = anode_id;}
@@ -46,12 +53,12 @@ class SLArEventAnode : public TNamed {
     bool fIsActive;
     UShort_t fLightBacktrackerRecordSize;
     UShort_t fChargeBacktrackerRecordSize;
-    std::map<int, SLArEventMegatile*> fMegaTilesMap;
+    UShort_t fZeroSuppressionThreshold;
+    std::map<int, SLArEventMegatile> fMegaTilesMap;
 
   public:
-    ClassDef(SLArEventAnode, 1)
+    ClassDef(SLArEventAnode, 2)
 };
-
 
 #endif /* end of include guard SLArEventAnode_HH */
 

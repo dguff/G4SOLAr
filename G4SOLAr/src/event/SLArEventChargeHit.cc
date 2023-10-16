@@ -9,22 +9,17 @@
 ClassImp(SLArEventChargeHit)
 
 SLArEventChargeHit::SLArEventChargeHit()
-  : SLArEventGenericHit(), fTrkID(-1), fPrimaryID(-1) {}
+  : SLArEventGenericHit() {}
 
-SLArEventChargeHit::SLArEventChargeHit(float time, int trkId, int primaryID) 
-  : SLArEventGenericHit(), fTrkID(trkId), fPrimaryID(primaryID) {
-  fTime = time; 
-}
+SLArEventChargeHit::SLArEventChargeHit(float time, int trkID, int primaryID) 
+  : SLArEventGenericHit(time, trkID, primaryID) {}
 
 SLArEventChargeHit::SLArEventChargeHit(const SLArEventChargeHit& h)
   : SLArEventGenericHit(h) 
-{
-  fTrkID = h.fTrkID; 
-  fPrimaryID = h.fPrimaryID;
-}
+{}
 
 void SLArEventChargeHit::DumpInfo() {
   printf("charge hit at t = %g, trk id: %i, primaryID: %i\n", 
-      fTime, fTrkID, fPrimaryID);
+      fTime, fProducerTrkID, fPrimaryProducerTrkID);
 }
 

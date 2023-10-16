@@ -11,6 +11,10 @@ ClassImp(SLArEventGenericHit)
 SLArEventGenericHit::SLArEventGenericHit()
   : fTime(-1), fProducerTrkID(-1), fPrimaryProducerTrkID(-1) {}
 
+SLArEventGenericHit::SLArEventGenericHit(float t, int prodTrkID, int primaryTrkID)
+  : fTime(t), fProducerTrkID(prodTrkID), fPrimaryProducerTrkID(primaryTrkID) {}
+
+
 SLArEventGenericHit::SLArEventGenericHit(const SLArEventGenericHit& other) 
   : TObject(other) 
 {

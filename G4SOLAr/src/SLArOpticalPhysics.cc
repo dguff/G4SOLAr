@@ -70,7 +70,7 @@ void SLArOpticalPhysics::ConstructProcess()
 
   //fWLSProcess = new G4OpWLS("WLS");
 
-  fScintProcess = new SLArScintillation("Scintillation");
+  fScintProcess = new SLArScintillation("Scintillation", fOptical);
   //fScintProcess = new G4Scintillation("Scintillation");
 
   fCerenkovProcess = new G4Cerenkov("Cerenkov");

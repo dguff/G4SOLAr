@@ -47,9 +47,28 @@ SLArEventHitsCollection<T>::~SLArEventHitsCollection() {
 }
 
 template<class T>
-int SLArEventHitsCollection<T>::RegisterHit(const T* hit) {
-  if (!hit) return -1; 
-  fHits[ConvertToClock<float>(hit->GetTime())]++; 
+void SLArEventHitsCollection<T>::Copy(SLArEventHitsCollection& record) const 
+{
+  record.SetBacktrackerRecordSize( fBacktrackerRecordSize ); 
+  record.SetIdx( fIdx ); 
+  record.SetActive( fIsActive ); 
+  record.SetClockUnit( fClockUnit ); 
+  record.SetNhits( fNhits ); 
+
+  for (const auto &hit : fHits) {
+    record.GetHits()[hit.first] = hit.second;
+  }   
+
+  for (const auto &bktv : fBacktrackerCollections) {
+    record.GetBacktrackerRecordCollection()[bktv.first] = bktv.second;
+  }
+
+  return;
+}
+
+template<class T>
+int SLArEventHitsCollection<T>::RegisterHit(const T hit) {
+  fHits[ConvertToClock<float>(hit.GetTime())]++; 
   fNhits++; 
   return fNhits;
 }
@@ -72,7 +91,7 @@ int SLArEventHitsCollection<T>::ResetHits() {
 }
 
 template<class T>
-void SLArEventHitsCollection<T>::PrintHits() {
+void SLArEventHitsCollection<T>::PrintHits() const {
   printf("Hit container ID: %i [%s]\n", fIdx, fName.Data());
   printf("- - - - - - - - - - - - - - - - - - - - - - -\n");
   for (auto &hit : fHits) {
@@ -82,24 +101,44 @@ void SLArEventHitsCollection<T>::PrintHits() {
 }
 
 template<class T>
-SLArEventBacktrackerVector* SLArEventHitsCollection<T>::GetBacktrackerVector(UShort_t key) {
-  
-  auto bkt_vector = &(fBacktrackerCollections[key]);
-  if (bkt_vector->IsEmpty() == false) return bkt_vector;
-  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize <= 0) {
-    printf("BacktrackerRecordSize is %u. I should not be here...\n", 
-        fBacktrackerRecordSize);
-    return nullptr;
+SLArEventBacktrackerVector& SLArEventHitsCollection<T>::GetBacktrackerVector(UShort_t key) {
+  //printf("SLArEventHitsCollection[%i]::GetBacktrackerVector[%u]\n", fIdx, key);
+  auto& bkt_vector = fBacktrackerCollections[key];
+  if (bkt_vector.IsEmpty() == false) {
+    //printf("[%i] Already have a backtrackervector at key: %u\n", fIdx, key);
+    return bkt_vector;
   }
-  else if (bkt_vector->IsEmpty() && fBacktrackerRecordSize > 0) {
+  else if (bkt_vector.IsEmpty() && fBacktrackerRecordSize <= 0) {
+    //printf("BacktrackerRecordSize is %u. I should not be here...\n", 
+        //fBacktrackerRecordSize);
+    throw 4;
+  }
+  else if (bkt_vector.IsEmpty() && fBacktrackerRecordSize > 0) {
     //printf("initializing backtracker records vector to size %u\n", 
         //fBacktrackerRecordSize);
-    bkt_vector->InitRecords(fBacktrackerRecordSize);
+    bkt_vector.InitRecords(fBacktrackerRecordSize);
   }
 
   return bkt_vector;
 }
 
+template<class T> 
+int SLArEventHitsCollection<T>::ZeroSuppression(const UShort_t threshold) {
+  int hits_erased = 0; 
+  //printf("ZeroSuppression threshold = %u\n", threshold);
+  for (auto it = fHits.begin(); it != fHits.end(); ) {
+    if (it->second < threshold) {
+      auto key = it->first;
+      //printf("deleting map entry with key [%u] having %u hits\n", key, it->second);
+      fBacktrackerCollections.erase(key);
+      hits_erased += it->second;
+      it = fHits.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  return hits_erased;
+}
 
 template class SLArEventHitsCollection<SLArEventPhotonHit>; 
 template class SLArEventHitsCollection<SLArEventChargeHit>; 

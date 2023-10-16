@@ -13,8 +13,8 @@
 #include <functional>
 #include "G4ThreeVector.hh"
 
-class SLArEventAnode; 
 class SLArCfgAnode;
+class SLArEventAnode;
 
 class SLArElectronDrift {
   public:

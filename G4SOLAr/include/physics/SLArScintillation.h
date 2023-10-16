@@ -212,9 +212,8 @@ class SLArScintillation : public G4VRestDiscreteProcess
   G4bool fTrackSecondariesFirst;
   G4bool fFiniteRiseTime;
 
-#ifdef G4DEBUG_SCINTILLATION
-  G4double ScintTrackEDep, ScintTrackYield;
-#endif
+  G4double ScintTrackEDep;
+  G4double ScintTrackYield;
 
   G4double single_exp(G4double t, G4double tau2);
   G4double bi_exp(G4double t, G4double tau1, G4double tau2);

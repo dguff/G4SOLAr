@@ -4,12 +4,15 @@
  * @created     : mercoledì ago 10, 2022 12:21:15 CEST
  */
 
+#include <memory>
 #include "event/SLArEventTile.hh"
 
 ClassImp(SLArEventTile)
 
+
 SLArEventTile::SLArEventTile() 
-  : SLArEventHitsCollection<SLArEventPhotonHit>(), fChargeBacktrackerRecordSize(0) {}
+  : SLArEventHitsCollection<SLArEventPhotonHit>(), fChargeBacktrackerRecordSize(0)
+{}
 
 
 SLArEventTile::SLArEventTile(const int idx) 
@@ -18,18 +21,32 @@ SLArEventTile::SLArEventTile(const int idx)
   fName = Form("EvTile%i", fIdx); 
 }
 
-
 SLArEventTile::SLArEventTile(const SLArEventTile& ev) 
   : SLArEventHitsCollection<SLArEventPhotonHit>(ev), fChargeBacktrackerRecordSize(0)
 {
   fChargeBacktrackerRecordSize = ev.fChargeBacktrackerRecordSize;
   if (!ev.fPixelHits.empty()) {
     for (const auto &qhit : ev.fPixelHits) {
-      fPixelHits.insert(
-          std::make_pair(qhit.first, (SLArEventChargePixel*)qhit.second->Clone()));
+      fPixelHits[qhit.first] = qhit.second;
     }
   }
 }
+
+
+
+int SLArEventTile::ResetHits()
+{
+  SLArEventHitsCollection::ResetHits();
+
+  for (auto &pix : fPixelHits) {
+      pix.second.ResetHits(); 
+      //delete pix.second;
+  }
+  fPixelHits.clear(); 
+
+  return fHits.size();
+}
+
 
 SLArEventTile::~SLArEventTile() {
   ResetHits();
@@ -74,22 +91,7 @@ double SLArEventTile::GetTime(EPhProcess proc) const {
   //return true;
 //}
 
-int SLArEventTile::ResetHits()
-{
-  SLArEventHitsCollection::ResetHits();
-
-  for (auto &pix : fPixelHits) {
-    if (pix.second) {
-      pix.second->ResetHits(); 
-      delete pix.second;
-    }
-  }
-  fPixelHits.clear(); 
-
-  return fHits.size();
-}
-
-void SLArEventTile::PrintHits()
+void SLArEventTile::PrintHits() const
 {
   printf("*********************************************\n");
   printf("Hit container ID: %i [%s]\n", fIdx, fName.Data());
@@ -99,35 +101,36 @@ void SLArEventTile::PrintHits()
   }
   if (!fPixelHits.empty()) {
     printf("Pixel readout hits:\n");
-    for (const auto &pix : fPixelHits) pix.second->PrintHits(); 
+    for (const auto &pix : fPixelHits) pix.second.PrintHits(); 
   }
 
   printf("\n"); 
   return;
 }
 
-SLArEventChargePixel* SLArEventTile::RegisterChargeHit(const int pixID, const SLArEventChargeHit* qhit) {
-  SLArEventChargePixel* pixEv = nullptr;
-  if (fPixelHits.count(pixID)) {
+SLArEventChargePixel& SLArEventTile::RegisterChargeHit(const int& pixID, const SLArEventChargeHit& qhit) {
+  
+  auto it = fPixelHits.find(pixID);
+
+  if (it != fPixelHits.end()) {
     //printf("SLArEventTile::RegisterChargeHit(%i): pixel %i already hit.\n", pixID, pixID);
-    pixEv = fPixelHits[pixID];
-    pixEv->RegisterHit(qhit); 
+    it->second.RegisterHit(qhit); 
+    return it->second;
   }
   else {
-    //printf("SLArEventTile::RegisterChargeHit(%i): pixel %i already hit.\n", pixID, pixID);
-    pixEv = new SLArEventChargePixel(pixID, qhit); 
-    pixEv->SetBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
-    fPixelHits.insert(std::make_pair(pixID, pixEv));
+    //printf("SLArEventTile::RegisterChargeHit(%i): creating new pixel hit collection.\n", pixID);
+    fPixelHits.insert(std::make_pair(pixID, SLArEventChargePixel(pixID, qhit)));
+    auto& pixEv = fPixelHits[pixID];
+    pixEv.SetBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
+    return pixEv;  
   }
 
-  //printf("SLArEventTile::RegisterChargeHit(%i): DONE.\n", pixID);
-  return pixEv; 
 }
 
 double SLArEventTile::GetPixelHits() const {
   double nhits = 0.;
   for (const auto &pixel : fPixelHits) {
-    nhits += pixel.second->GetNhits(); 
+    nhits += pixel.second.GetNhits(); 
   }
 
   return nhits; 

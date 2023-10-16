@@ -463,7 +463,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
 
   // 2. Build and place the LAr target
-  G4cerr << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
+  G4cout << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
   fDetector->SetModPV( new G4PVPlacement(0, 
         G4ThreeVector(fDetector->GetGeoPar("det_pos_x"), 
           fDetector->GetGeoPar("det_pos_y"), 
@@ -471,14 +471,14 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
         fDetector->GetModLV(), "target_lar_pv", fWorldLog, 0, 9) ); 
   
   // 3. Build and place the Cryostat
-  G4cerr << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
+  G4cout << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
   fCryostat->SetWorldMaterial(matWorld); 
   ConstructCryostat(); 
 
-  G4cerr << "\nSLArDetectorConstruction: Building the Cathode" << G4endl;
+  G4cout << "\nSLArDetectorConstruction: Building the Cathode" << G4endl;
   ConstructCathode(); 
 
-  G4cerr << "\nSLArDetectorConstruction: Building the TPCs" << G4endl;
+  G4cout << "\nSLArDetectorConstruction: Building the TPCs" << G4endl;
   for (auto &tpc : fTPC) {
     tpc.second->BuildMaterial(fMaterialDBFile); 
     tpc.second->BuildTPC();
@@ -501,6 +501,9 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.25,0.54,0.79, 0.0);
   fWorldLog->SetVisAttributes(visAttributes);
+
+  
+  SLArAnalysisManager::Instance()->CreateEventStructure();
 
   //always return the physical World
   return fWorldPhys;

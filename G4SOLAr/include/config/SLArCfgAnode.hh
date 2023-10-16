@@ -22,7 +22,8 @@ class SLArCfgAnode : public SLArCfgAssembly<SLArCfgMegaTile> {
     ~SLArCfgAnode(); 
 
     TH2Poly* ConstructPixHistMap(const int depth, const std::vector<int>); 
-    SLArPixIdxCoord FindPixel(double x, double y); 
+    SLArPixIdxCoord GetPixelBinCoord(const double& x, const double& y); 
+    SLArPixIdxCoord GetPixelCoord(const double& x, const double& y); 
     void RegisterMap(size_t ilevel, TH2Poly* hmap); 
     inline TH2Poly* GetAnodeMap(size_t ilevel) {return fAnodeLevelsMap.find(ilevel)->second;}
     inline int GetTPCID() const {return fTPCID;}

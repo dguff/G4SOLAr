@@ -35,7 +35,7 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     inline const std::map<int, TBaseModule*>& GetConstMap() const {return fElementsMap;}
     void RegisterElement(TBaseModule* element);
     virtual TH2Poly* BuildPolyBinHist(ESubModuleReferenceFrame kFrame = kWorld, int n = 25, int m = 25);
-    TGraph* BuildGShape() override; 
+    TGraph BuildGShape() override; 
 
   protected: 
     int fNElements; 

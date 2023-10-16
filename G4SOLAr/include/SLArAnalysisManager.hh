@@ -50,6 +50,7 @@ class SLArAnalysisManager
 
     void   ConstructBacktracker(const G4String readout_system); 
     void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
+    G4bool CreateEventStructure();
     G4bool CreateFileStructure();
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
     G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
@@ -78,13 +79,15 @@ class SLArAnalysisManager
       return anodeCfg;}
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEvent* GetEvent()  {return    fMCEvent;}
+    SLArMCEvent* GetEvent()  {return fMCEvent;}
     G4bool Save ();
 
     // mock fake access
     G4bool FakeAccess();
     void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
     void RegisterXSecDump(const SLArXSecDumpSpec xsec_dump); 
+    inline void SetStoreTrajectoryFull(const bool store_trj_pts) {fTrajectoryFull = store_trj_pts;} 
+    inline G4bool StoreTrajectoryFull() const {return fTrajectoryFull;}
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 
@@ -100,12 +103,13 @@ class SLArAnalysisManager
     G4bool   fIsMaster;
     G4String fOutputPath;
     G4String fOutputFileName;
+    G4bool   fTrajectoryFull;
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 
-    TFile*              fRootFile;
-    TTree*              fEventTree;
-    SLArMCEvent*        fMCEvent;
+    TFile* fRootFile;
+    TTree* fEventTree;
+    SLArMCEvent* fMCEvent;
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
     backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;

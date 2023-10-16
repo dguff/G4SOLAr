@@ -42,11 +42,14 @@ class SLArIonAndScintLArQL : public SLArIonAndScintModel {
      */
 
     //! Default Birks Law
-    double QBirks(double dE, double dx, double E_field) const; 
+    double QBirks(const double& dE, const double& dx, const double& E_field) const; 
+    double QBirks(double& dEdx, const double& E_field) const; 
     //! Correction factor for Birks Law
-    double Corr(double dE, double dx, double E_field) const;
+    double Corr(const double& dE, const double& dx, const double& E_field) const;
+    double Corr(double& dEdx, const double& E_field) const;
     //! Chi2 fit to Birks Law Correction
-    double QChi(double dE, double dx, double E_field) const; 
+    double QChi(const double& dE, const double& dx, const double& E_field) const; 
+    double QChi(double& dEdx, const double& E_field) const; 
     //! Charge yield at an infinite electric field -
     double Qinf() const; 
 
@@ -60,8 +63,10 @@ class SLArIonAndScintLArQL : public SLArIonAndScintModel {
     ~SLArIonAndScintLArQL(); // Destructor
 
     // Light and charge yield functions
-    double ComputeScintYield(double energyDeposit, double stepWidth, double electricField) const override;
-    double ComputeIonYield(double energyDeposit, double stepWidth, double electricField) const override;
+    Ion_and_Scint_t ComputeIonAndScintYield(const double& energyDeposit, const double& stepWidth, const double& electricField) const override;
+    Ion_and_Scint_t ComputeIonAndScintYield(double& dEdx, const double& electricField) const override;
+    double ComputeIonYield(const double& energy_dep, const double& hit_distance, const double& electric_field) const;
+    double ComputeIonYield(double& dEdx, const double& electric_field) const;
     double Flat() const;
 
 };

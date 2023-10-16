@@ -24,7 +24,7 @@ class SLArCfgSuperCellArray : public SLArCfgAssembly<SLArCfgSuperCell> {
 
     void DumpMap(); 
 
-    ClassDefOverride(SLArCfgSuperCellArray, 1);
+    ClassDefOverride(SLArCfgSuperCellArray, 2);
 };
 
 #endif /* end of include guard SLARCFGSUPERCELLARRAY_HH */

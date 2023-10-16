@@ -16,6 +16,7 @@
 class SLArEventGenericHit : public TObject {
   public: 
     SLArEventGenericHit(); 
+    SLArEventGenericHit(float t, int prodTrkID=-1, int primaryTrkID=-1);
     SLArEventGenericHit(const SLArEventGenericHit& h); 
     virtual ~SLArEventGenericHit() {}
 

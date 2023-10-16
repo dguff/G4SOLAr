@@ -23,10 +23,9 @@ class SLArIonAndScintSeparate : public SLArIonAndScintModel {
     SLArIonAndScintSeparate(const G4MaterialPropertiesTable* mpt);
     ~SLArIonAndScintSeparate() {}; 
 
-    double ComputeIonYield(const double energy_deposit, const double step_length, const double electric_field) const override; 
-    double ComputeScintYield(const double energy_deposit, const double step_length, const double electric_field) const override; 
-    double ComputeIon(const double energy_deposit, const double step_length, const double electric_field) const override; 
-    double ComputeScint(const double energy_deposit, const double step_length, const double electric_field) const override; 
+    Ion_and_Scint_t ComputeIonAndScintYield(const double& energy_deposit, const double& step_length, const double& electric_field) const override; 
+    Ion_and_Scint_t ComputeIonAndScintYield(double& dEdx, const double& electric_field) const override; 
+    Ion_and_Scint_t ComputeIonAndScint(const double& energy_deposit, const double& step_length, const double& electric_field) const override; 
     void SetLightYield(const double ly) {fLightYield = ly;}
 }; 
 

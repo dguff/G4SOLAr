@@ -5,6 +5,7 @@
  */
 
 #include "event/SLArEventBacktrackerRecord.hh"
+#include <cstdio>
 
 ClassImp(SLArEventBacktrackerRecord) 
 

@@ -6,18 +6,17 @@
 
 #include "SLArUserTrackInformation.hh"
 
-SLArUserTrackInformation::SLArUserTrackInformation()
-  : G4VUserTrackInformation(), fTrajectory(nullptr), fStoreTrajectory(0)
+SLArUserTrackInformation::SLArUserTrackInformation(SLArEventTrajectory* trj)
+  : G4VUserTrackInformation(), fTrajectory(trj), fStoreTrajectory(0)
 {}
 
-SLArUserTrackInformation::SLArUserTrackInformation(const G4String& infoType) 
-  : G4VUserTrackInformation(infoType), fTrajectory(nullptr), fStoreTrajectory(0)
+SLArUserTrackInformation::SLArUserTrackInformation(SLArEventTrajectory* trj, const G4String& infoType) 
+  : G4VUserTrackInformation(infoType), fTrajectory(trj), fStoreTrajectory(0)
 {}
 
 SLArUserTrackInformation::SLArUserTrackInformation(const SLArUserTrackInformation& info)
-  : G4VUserTrackInformation(info) 
+  : G4VUserTrackInformation(info), fTrajectory(info.fTrajectory)
 {
-  fTrajectory = info.fTrajectory; 
   fStoreTrajectory = info.fStoreTrajectory; 
 }
 

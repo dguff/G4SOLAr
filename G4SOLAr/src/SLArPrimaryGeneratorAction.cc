@@ -61,7 +61,7 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(6, nullptr),//--JM Change 5->6
+   fGeneratorActions(7, nullptr),//--JM Change 5->6
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -306,8 +306,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   printf("Primary Generator Action produced %i vertex(ices)\n", n); 
   for (int i=0; i<n; i++) {
+    //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
     SLArMCPrimaryInfo tc_primary;
-
     G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
     //printf("vertex %i has %i particles at t = %g\n", n, np, 
         //anEvent->GetPrimaryVertex(i)->GetT0()); 
@@ -338,7 +338,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       tc_primary.PrintParticle(); 
       //getchar();
 #endif
-      SLArAnaMgr->GetEvent()->RegisterPrimary(new SLArMCPrimaryInfo(tc_primary)); 
+      SLArAnaMgr->GetEvent()->RegisterPrimary( tc_primary );
     }
   }
 
@@ -384,8 +384,9 @@ void SLArPrimaryGeneratorAction::SetGENIEEvntExt(G4int evntID) { // --JM
 }
 
 void SLArPrimaryGeneratorAction::SetGENIEFile(G4String filename) { // --JM
-  printf("Setting GENIE file as:\n\t %s.",filename);
+  printf("Setting GENIE file as:\n\t %s.",filename.data());
   fGENIEFile = filename;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
