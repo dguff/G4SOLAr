@@ -1033,7 +1033,8 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   const auto megatile_vol = (G4PVParameterised*)fReadoutMegaTile.begin()->second->GetModPV(); 
   const auto tile_row_vol = (G4PVParameterised*)megatile_vol->GetLogicalVolume()->GetDaughter(0); 
   const auto pcb_vol     = (G4PVParameterised*)tile_row_vol->GetLogicalVolume()->GetDaughter(0); 
-  const auto sensor_vol  = (G4PVParameterised*)tile_row_vol->GetLogicalVolume()->GetDaughter(1); 
+  const auto base_vol  = (G4PVParameterised*)tile_row_vol->GetLogicalVolume()->GetDaughter(1); 
+  const auto sensor_vol  = (G4PVParameterised*)tile_row_vol->GetLogicalVolume()->GetDaughter(2); 
 
   const auto tile_row_repl = get_plane_replication_data(megatile_vol); 
   const auto tile_repl     = get_plane_replication_data(tile_row_vol); 
@@ -1050,6 +1051,13 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
 
   for (int i=0; i<tile_repl.fNreplica; i++) {
     auto cell = G4GeometryCell(*pcb_vol, pcb_vol->GetCopyNo()); 
+    if (istore->IsKnown(cell) == false) {
+      printf("TILE MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
+          cell.GetPhysicalVolume().GetName().data(), 
+          cell.GetReplicaNumber(), imp);              
+      istore->AddImportanceGeometryCell(imp, cell); 
+    }
+    cell = G4GeometryCell(*base_vol, sensor_vol->GetCopyNo()); 
     if (istore->IsKnown(cell) == false) {
       printf("TILE MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
           cell.GetPhysicalVolume().GetName().data(), 
