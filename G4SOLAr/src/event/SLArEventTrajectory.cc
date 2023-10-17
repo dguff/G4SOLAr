@@ -14,7 +14,7 @@ SLArEventTrajectory::SLArEventTrajectory() :
   fCreatorProcess("noCreator"), 
   fEndProcess("noDestroyer"),
   fPDGID(0), fTrackID(-1), fParentID(-1), 
-  fInitKineticEnergy(0.), fTrackLength(0.), fTime(0.), fWeight(1.),
+  fInitKineticEnergy(0.), fOriginVolCopyNo(0), fTrackLength(0.), fTime(0.), fWeight(1.),
   fInitMomentum(TVector3(0,0,0)), 
   fTotalEdep(0.), fTotalNph(0.), fTotalNel(0.)
 {
@@ -39,6 +39,7 @@ SLArEventTrajectory::SLArEventTrajectory(const SLArEventTrajectory& trj)
   fInitKineticEnergy = trj.fInitKineticEnergy; 
   fTrackLength = trj.fTrackLength; 
   fTime = trj.fTime; 
+  fOriginVolCopyNo = trj.fOriginVolCopyNo;
   fWeight = trj.fWeight;
   fInitMomentum = trj.fInitMomentum; 
   fTotalEdep = trj.fTotalEdep; 
@@ -73,4 +74,60 @@ void SLArEventTrajectory::RegisterPoint(double x, double y, double z, double ene
   return;
 }
 
+ClassImp(SLArEventTrajectoryLite)
 
+SLArEventTrajectoryLite::SLArEventTrajectoryLite() 
+  : TObject(), 
+    fEvNumber(0), fPDGCode(0), fTrkID(-1), fParentID(-1), fOriginVol(0), 
+    fOriginEnergy(0), fEnergy(0.0), fTime(0.0), fWeight(0.0), fVertex{0}, fCreator("")
+{}
+
+SLArEventTrajectoryLite::SLArEventTrajectoryLite(const SLArEventTrajectoryLite& tright) 
+  : TObject(tright) 
+{
+  fEvNumber = tright.fEvNumber;
+  fPDGCode = tright.fPDGCode;
+  fTrkID = tright.fTrkID;
+  fParentID = tright.fParentID;
+  fOriginVol = tright.fOriginVol;
+  fOriginEnergy = tright.fOriginEnergy;
+  fEnergy = tright.fEnergy;
+  fTime = tright.fTime;
+  fWeight = tright.fWeight;
+  fCreator = tright.fCreator;
+  for (int i=0; i<3; i++) {
+    fVertex[i] = tright.fVertex[i]; 
+  }
+}
+
+SLArEventTrajectoryLite::~SLArEventTrajectoryLite() {}
+
+void SLArEventTrajectoryLite::SetValues(const SLArEventTrajectory& trajectory) 
+{
+  fPDGCode = trajectory.fPDGID;
+  fTrkID = trajectory.fTrackID;
+  fParentID = trajectory.fParentID;
+  fWeight = trajectory.fWeight;
+  fTime = trajectory.fTime;
+  fOriginEnergy = trajectory.fInitKineticEnergy;
+  fOriginVol = trajectory.fOriginVolCopyNo;
+  fCreator = trajectory.fCreatorProcess;
+}
+
+void SLArEventTrajectoryLite::Reset() {
+  fEvNumber = 0;
+  fPDGCode = 0; 
+  fTrkID = -1;
+  fParentID = -1;
+  fOriginVol = 0;
+  fOriginEnergy = 0.0;
+  fEnergy = 0.0;
+  fTime = 0.0; 
+  fWeight = 0.0; 
+  fCreator = "";
+  for (int i=0; i<3; i++) {
+    fVertex[i] = 0.;
+  }
+ 
+  return;
+}

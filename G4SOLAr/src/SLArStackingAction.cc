@@ -90,18 +90,29 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       } else {
         //printf("Not a primary, recording parent id\n");
         fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetParentID()); 
-        parentID = aTrack->GetParentID(); 
+        parentID = aTrack->GetParentID();
       }
 
       const char* particleName = aTrack->GetParticleDefinition()->GetParticleName().data(); 
       const char* creatorProc  = "PrimaryGenerator"; 
       if (aTrack->GetCreatorProcess()) {
         creatorProc = aTrack->GetCreatorProcess()->GetProcessName(); 
+        G4double momentum_4[4] = {0}; 
+        for (size_t i = 0; i < 3; i++) {
+          momentum_4[i] = aTrack->GetMomentum()[i];
+        }
+        momentum_4[3] = aTrack->GetKineticEnergy(); 
+        auto trkIdHelp = SLArEventAction::TrackIdHelpInfo_t(
+            aTrack->GetParentID(), 
+            aTrack->GetDynamicParticle()->GetPDGcode(),
+            momentum_4); 
+        if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp)) {
+          creatorProc = fEventAction->GetProcessExtraInfo()[trkIdHelp];
+        }
       }
       
       //printf("creating trajectory...\n");
       std::unique_ptr<SLArEventTrajectory> trajectory = std::make_unique<SLArEventTrajectory>();
-      //SLArEventTrajectory trajectory;
       trajectory->SetTrackID( aTrack->GetTrackID() ); 
       trajectory->SetParentID(aTrack->GetParentID()); 
       trajectory->SetParticleName( particleName );
@@ -110,17 +121,13 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetTime( aTrack->GetGlobalTime() ); 
       trajectory->SetWeight(aTrack->GetWeight()); 
       trajectory->SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
-      
-
+      //trajectory->SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
       auto vertex_momentum = aTrack->GetMomentumDirection();
       trajectory->SetInitMomentum( TVector3(
             vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() ) );
-      //printf("Looking for ancestor...\n");
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
-      //printf("found\n");
 
-      //SLArMCPrimaryInfoUniquePtr* ancestor = nullptr; 
       SLArMCPrimaryInfo* ancestor = nullptr; 
       auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
       for (auto &p : primaries) {

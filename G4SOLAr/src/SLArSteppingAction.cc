@@ -24,6 +24,7 @@
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
+#include "G4Run.hh"
 #include "G4SDManager.hh"
 #include "G4PVReplica.hh"
 
@@ -159,24 +160,21 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
    if (thePostPoint->GetStepStatus() == fGeomBoundary) {
       if ( G4StrUtil::contains(thePostPV->GetLogicalVolume()->GetMaterial()->GetName(), "LAr") )
       {
-        auto& extSpectrum = SLArAnalysisManager::Instance()->GetExternalSpectrum();
-        G4int pdg = track->GetParticleDefinition()->GetPDGEncoding();
-        if (extSpectrum.find(pdg) == extSpectrum.end()) {
-          char buffer[100];
-          sprintf(buffer, "ext_%i_spectrum", pdg);
-          G4String name = buffer;
-          sprintf(buffer, "%s spectrum (external %s);Energy [MeV];Counts", 
-              track->GetParticleDefinition()->GetParticleName().data(), 
-              SLAR_EXTERNAL_PARTICLE);
-          G4String title = buffer;
-          extSpectrum[pdg] = TH1D(name, title, 2000, 0, 20);
-          extSpectrum[pdg].Fill( thePostPoint->GetKineticEnergy(), track->GetWeight() ); 
-        }
-        else {
-          extSpectrum[pdg].Fill( thePostPoint->GetKineticEnergy(), track->GetWeight() ); 
-        }
-        
         track->SetTrackStatus( fStopAndKill ); 
+        
+        auto& ext_record = SLArAnalysisManager::Instance()->GetExternalRecord(); 
+        auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
+        ext_record->SetEvNumber( iev ); 
+        ext_record->SetValues( *trajectory ); 
+        ext_record->SetEnergyAtLAr( thePrePoint->GetKineticEnergy() ); 
+        ext_record->SetVertex(  thePostPoint->GetPosition().x(), 
+                                thePostPoint->GetPosition().y(), 
+                                thePostPoint->GetPosition().z()); 
+
+        SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
+
+        ext_record->Reset(); 
+
         terminator = "SLArUserInterfaceKiller";
       }
    }
@@ -230,6 +228,20 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         terminator += nuclearChannel;
         //printf("terminator: %s\n", terminator.data());
         //getchar(); 
+
+        for (const auto& sec_itr : *secondary) {
+          G4double momentum_4[4] = {0}; 
+          for (size_t i = 0; i < 3; i++) {
+            momentum_4[i] = sec_itr->GetMomentum()[i];
+          }
+          momentum_4[3] = sec_itr->GetKineticEnergy(); 
+
+          fEventAction->RegisterNewProcessExtraInfo(
+              SLArEventAction::TrackIdHelpInfo_t(track->GetTrackID(), 
+                sec_itr->GetDynamicParticle()->GetPDGcode(), 
+                momentum_4),
+              terminator);
+        }
 
       }
 

@@ -9,6 +9,7 @@
 #define SLArEVENTTRAJECTORY_HH
 
 #include <iostream>
+#include <cassert>
 #include "TObject.h"
 #include "TString.h"
 #include "TVector3.h"
@@ -40,7 +41,7 @@ struct trj_point {
 
 };
 
-
+class SLArEventTrajectoryLite;
 
 class SLArEventTrajectory : public TObject
 {
@@ -60,6 +61,7 @@ class SLArEventTrajectory : public TObject
     const TVector3& GetInitMomentum() const {return fInitMomentum;}
     float GetTime()      const {return fTime;}
     float GetWeight() const {return fWeight;}
+    int GetOriginVolumeCopyNo() const {return fOriginVolCopyNo;}
     float GetTotalEdep() const {return fTotalEdep;} 
     float GetTotalNph () const {return fTotalNph;} 
     float GetTotalNel () const {return fTotalNel;} 
@@ -77,6 +79,7 @@ class SLArEventTrajectory : public TObject
     inline void SetInitMomentum(const TVector3& p) {fInitMomentum = p;}
     inline void SetTime(const float& t) {fTime = t;}
     inline void SetWeight(const float& w) {fWeight = w;}
+    inline void SetOriginVolCopyNo(const int& copyno) {fOriginVolCopyNo = copyno;}
     inline void IncrementEdep(const double& edep) {fTotalEdep += edep;}
     inline void IncrementNion(const int& nion) {fTotalNel += nion;}
     inline void IncrementNph(const int& nph) {fTotalNph += nph;}
@@ -86,6 +89,7 @@ class SLArEventTrajectory : public TObject
     void    RegisterPoint(double x, double y, double z, double ene, double edep, int n_ph, int n_el, int copy);
     void    RegisterPoint(const trj_point& point); 
 
+    friend class SLArEventTrajectoryLite;
 
   private:
     Bool_t                 fStoreTrajectoryPts;
@@ -95,6 +99,7 @@ class SLArEventTrajectory : public TObject
     int                    fPDGID            ; 
     int                    fTrackID          ; 
     int                    fParentID         ; 
+    int                    fOriginVolCopyNo  ; 
     float                  fInitKineticEnergy;
     float                  fTrackLength      ; 
     float                  fTime             ; 
@@ -109,6 +114,69 @@ class SLArEventTrajectory : public TObject
     ClassDef(SLArEventTrajectory, 4);
 };
 
+class SLArEventTrajectoryLite : public TObject {
+  public: 
+    SLArEventTrajectoryLite(); 
+    SLArEventTrajectoryLite(const SLArEventTrajectoryLite&); 
+    ~SLArEventTrajectoryLite(); 
+
+    Int_t GetEvNumber() const {return fEvNumber;};
+    Int_t GetPDGCode() const {return fPDGCode;};
+    Int_t GetTrackID() const {return fTrkID;};
+    Int_t GetParentID() const {return fParentID;};
+    Float_t GetOriginEnergy() const {return fOriginEnergy;};
+    Float_t GetEnergyAtLAr() const {return fEnergy;};
+    Float_t GetTime() const {return fTime;};
+    Float_t GetWeight() const {return fWeight;};
+    TString GetCreator() const {return fCreator;};
+    Int_t GetOriginVol() const {return fOriginVol;};
+    const Float_t* GetVertex() const {return fVertex;}
+
+    void SetValues(const SLArEventTrajectory&); 
+    inline void SetEvNumber(const Int_t& iev) {fEvNumber = iev;}
+    inline void SetPDGCode(const Int_t& pdg) {fPDGCode = pdg;}
+    inline void SetTrackID(const Int_t& tid) {fTrkID = tid;}
+    inline void SetParentID(const Int_t& pid) {fParentID = pid;}
+    inline void SetOriginEnergy(const Double_t& ene) {fOriginEnergy = ene;}
+    inline void SetEnergyAtLAr(const Double_t& ene) {fEnergy = ene;}
+    inline void SetTime(const Float_t& time) {fTime = time;}
+    inline void SetWeight(const Float_t& w) {fWeight = w;}
+    inline void SetCreator(const TString& creator) {fCreator = creator;}
+    inline void SetOriginVol(const Int_t& ovol) {fOriginVol = ovol;}
+    inline void SetVertex(const Float_t* vtx) {
+      assert(sizeof(vtx)/sizeof(Float_t) == 3); 
+      for (int i=0; i<3; i++) {
+        fVertex[i] = vtx[i]; 
+      }
+    }
+    inline void SetVertex(const Float_t& x, const Float_t& y, const Float_t& z) {
+      fVertex[0] = x; 
+      fVertex[1] = y; 
+      fVertex[2] = z; 
+    }
+
+    void Reset(); 
+
+    friend class SLArEventTrajectory;
+    friend class SLArAnalysisManager;
+
+  protected: 
+    Int_t fEvNumber;
+    Int_t fPDGCode;
+    Int_t fTrkID;
+    Int_t fParentID;
+    Int_t fOriginVol;
+    Float_t fOriginEnergy;
+    Float_t fEnergy;
+    Float_t fTime;
+    Float_t fWeight;
+    Float_t fVertex[3];
+    TString fCreator;
+
+  public: 
+    ClassDef(SLArEventTrajectoryLite, 1)
+
+};
 
 #endif /* end of include guard SLArEVENTTRAJECTORY_HH */
 

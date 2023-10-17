@@ -167,6 +167,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }
 
     fParentIDMap.clear(); 
+    fExtraProcessInfo.clear(); 
 
     SLArAnaMgr->GetEvent()->Reset();
 }
@@ -397,6 +398,20 @@ void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
   fParentIDMap.insert( std::make_pair(trk_id, p_id) ); 
   return;
 }
+
+void SLArEventAction::RegisterNewProcessExtraInfo(const TrackIdHelpInfo_t& trkHelp, G4String& proc) {
+  if (fExtraProcessInfo.count(trkHelp)) {
+    printf("SLArEventAction::RegisterNewProcessExtraInfo WARNING trk with pdg %i, parent %i and 4-p (%g, %g, %g, %g) already has detailed process info assigned (%s)\n", 
+        trkHelp.pdg, 
+        trkHelp.parent,
+        trkHelp.quadrimomentum[0], trkHelp.quadrimomentum[1], 
+        trkHelp.quadrimomentum[2], trkHelp.quadrimomentum[3],
+        fExtraProcessInfo[trkHelp].data());
+  }
+  fExtraProcessInfo.insert( std::make_pair(trkHelp, proc) ); 
+  return;
+}
+
 
 int SLArEventAction::FindAncestorID(int trkid) {
   int primary = -1; 

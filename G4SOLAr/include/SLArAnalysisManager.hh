@@ -91,7 +91,9 @@ class SLArAnalysisManager
 
     SLArAnalysisManagerMsgr* fAnaMsgr;
 #ifdef SLAR_EXTERNAL
-    inline std::map<int, TH1D>& GetExternalSpectrum() {return fExternalsSpectrum;}
+    void SetupExternalsTree(); 
+    inline TTree* GetExternalsTree() {return fExternalsTree;}
+    inline std::unique_ptr<SLArEventTrajectoryLite>& GetExternalRecord() {return fExternalRecord;}
 #endif 
 
   protected:
@@ -114,7 +116,8 @@ class SLArAnalysisManager
     TTree* fEventTree;
     SLArMCEvent* fMCEvent;
 #ifdef SLAR_EXTERNAL
-    std::map<int, TH1D> fExternalsSpectrum;
+    std::unique_ptr<SLArEventTrajectoryLite> fExternalRecord;
+    TTree* fExternalsTree;
 #endif 
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
