@@ -94,7 +94,9 @@ void SLArElectronDrift::PrintProperties() {
   return;
 }
 
-void SLArElectronDrift::Drift(const int& n, const int& trkId,
+void SLArElectronDrift::Drift(const int& n, 
+    const int& trkId,
+    const int& ancestorId,
     const G4ThreeVector& pos, 
     const double time, 
     SLArCfgAnode* anodeCfg, 
@@ -160,7 +162,7 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
         continue;
       }
 
-      SLArEventChargeHit hit(t_[i], trkId, 0); 
+      SLArEventChargeHit hit(t_[i], trkId, ancestorId); 
       auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
 
       //SLArEventMegatile* evMT=nullptr;

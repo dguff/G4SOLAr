@@ -132,28 +132,10 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     auto generatorAction = (SLArPrimaryGeneratorAction*)
       G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
-
-    if (generatorAction->DoDriftElectrons()) {
-
-      if (anodeCfg) {
-        runAction->GetElectronDrift()->Drift(n_el, 
-            step->GetTrack()->GetTrackID(), 
-            0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
-            postStepPoint->GetGlobalTime(), 
-            anodeCfg, 
-            &anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
-      } else {
-        printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
-        getchar(); 
-      }
-    }
-    hit->Add(edep);
-    
-    // Add edep in LAr to the primary 
     const auto eventAction = (SLArEventAction*)
       G4RunManager::GetRunManager()->GetUserEventAction(); 
     auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
-
+    // Add edep in LAr to the primary 
     SLArMCPrimaryInfo* ancestor = nullptr;
     auto primaries = anaMngr->GetEvent()->GetPrimaries();
     for (auto &p : primaries) {
@@ -164,6 +146,23 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     }
 
     if (ancestor) ancestor->IncrementLArEdep(edep); 
+
+    if (generatorAction->DoDriftElectrons()) {
+      if (anodeCfg) {
+        runAction->GetElectronDrift()->Drift(n_el, 
+            step->GetTrack()->GetTrackID(), ancestor_id,
+            0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
+            postStepPoint->GetGlobalTime(), 
+            anodeCfg, 
+            &anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
+      } else {
+        printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
+        getchar(); 
+      }
+    }
+
+    hit->Add(edep);
+    
   }     
 
   return true;

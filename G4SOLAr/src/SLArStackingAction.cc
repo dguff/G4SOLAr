@@ -76,13 +76,16 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       if (aTrack->GetParentID() == 0) { // this is a primary
         fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetTrackID()); 
         parentID = aTrack->GetTrackID(); 
+        //printf("Track %i is a candidate primary with pdg id %i\n", 
+            //aTrack->GetTrackID(), aTrack->GetParticleDefinition()->GetPDGEncoding());
+
         // fix track ID in primary output object
         auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
         for (auto &primaryInfo : primaries) {
           if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < 1e-6 &&
               fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < 1e-6 &&
               fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < 1e-6) {
-            //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
+            //printf("\tThis is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
             primaryInfo.SetTrackID(aTrack->GetTrackID()); 
             break;
           }
