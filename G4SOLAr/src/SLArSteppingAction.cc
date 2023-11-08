@@ -316,7 +316,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
                 track->GetTotalEnergy()*1e6,
                 thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
 #endif
-            phInfo->AddTrackStatusFlag(boundaryAbsorbed);
+            if (phInfo) phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
             break;
           }
@@ -355,7 +355,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
              //getchar(); 
 #endif
 
-            phInfo->AddTrackStatusFlag(hitPMT);
+            if (phInfo) phInfo->AddTrackStatusFlag(hitPMT);
             if (volName=="SiPMActivePV") {
 //#ifdef SLAR_DEBUG
               //printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i, %i, %i, %i]\n", 
