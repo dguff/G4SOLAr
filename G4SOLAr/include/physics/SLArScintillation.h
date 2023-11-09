@@ -186,6 +186,12 @@ class SLArScintillation : public G4VRestDiscreteProcess
 
   G4int GetNumIonElectrons() const;
   // Returns the current number of ionization electrons (after PostStepDoIt)
+
+  G4bool IsPhotonGeneration() const {return fDoGeneratePhotons;}
+
+  void DisablePhotonGeneration() {fDoGeneratePhotons = false;}
+  void EnablePhotonGeneration() {fDoGeneratePhotons = true;}
+
   
   void DumpPhysicsTable() const;
   // Prints the fast and slow scintillation integral tables.
@@ -211,6 +217,7 @@ class SLArScintillation : public G4VRestDiscreteProcess
   G4bool fStackingFlag;
   G4bool fTrackSecondariesFirst;
   G4bool fFiniteRiseTime;
+  G4bool fDoGeneratePhotons;
 
   G4double ScintTrackEDep;
   G4double ScintTrackYield;

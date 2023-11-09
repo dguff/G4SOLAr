@@ -103,6 +103,7 @@ SLArScintillation::SLArScintillation(const G4String& processName,
   , fEmSaturation(nullptr)
   , fNumPhotons(0)
   , fNumIonElectrons(0)
+  , fDoGeneratePhotons(true)
 {
   secID = G4PhysicsModelCatalog::GetModelID("model_Scintillation");
   SetProcessSubType(fScintillation);
@@ -113,9 +114,9 @@ SLArScintillation::SLArScintillation(const G4String& processName,
 #endif
 
   // Messenger for configuration of the electric field
-  scint_mesg_ = new G4GenericMessenger(this, "SLAr/scint/", "Control Scinitllation Process");
+  scint_mesg_ = new G4GenericMessenger(this, "/SLAr/scint/", "Control Scinitllation Process");
   scint_mesg_->DeclareProperty("electricField", electricField_,"Electric Field for LArQL [kV/cm]");
-
+  scint_mesg_->DeclareProperty("enablePhGeneration", fDoGeneratePhotons, "enable/disable optical ph generation");
 
   if(verboseLevel > 1)
   {
@@ -516,6 +517,18 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
   {
     fNumPhotons = G4int(G4Poisson(MeanNumberOfPhotons));
     fNumIonElectrons = G4int(G4Poisson(MeanNumberOfIonElectrons)); 
+  }
+
+  if (fDoGeneratePhotons == false) {
+    if(verboseLevel > 1)
+    {
+      G4cout << "\n Exiting from SLArScintillation::DoIt -- "
+        << "Generation of Opical Photon is disabled."<< G4endl;
+      G4cout << "\n n_photons = " << fNumPhotons 
+             << ", n_electrons = " << fNumIonElectrons << G4endl;
+    }
+
+    return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   if(fNumPhotons <= 0 || !fStackingFlag)
