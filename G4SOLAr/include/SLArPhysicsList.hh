@@ -48,7 +48,7 @@ class SLArPhysicsList: public G4VModularPhysicsList
 {
   public:
 
-    SLArPhysicsList(G4String);
+    SLArPhysicsList(G4String, G4bool);
     virtual ~SLArPhysicsList();
 
     void SetCuts();
@@ -89,6 +89,7 @@ class SLArPhysicsList: public G4VModularPhysicsList
     SLArPhysicsListMessenger* fMessenger;
 
     G4bool fAbsorptionOn;
+    G4bool fCerenkovOn;
 
     G4VMPLData::G4PhysConstVectorData* fPhysicsVector;
 

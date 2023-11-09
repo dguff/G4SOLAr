@@ -53,7 +53,7 @@ class SLArOpticalPhysics : public G4VPhysicsConstructor
 {
   public:
 
-    SLArOpticalPhysics(G4bool toggle=true);
+    SLArOpticalPhysics(G4bool toggle=true, G4bool do_cerenkov=true);
     virtual ~SLArOpticalPhysics();
 
     virtual void ConstructParticle();
@@ -87,6 +87,7 @@ class SLArOpticalPhysics : public G4VPhysicsConstructor
     G4OpBoundaryProcess* fBoundaryProcess;
 
     G4bool fAbsorptionOn;
+    G4bool fCerenkovOn; 
 
 };
 #endif
