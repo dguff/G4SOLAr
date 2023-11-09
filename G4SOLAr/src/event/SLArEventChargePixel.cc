@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventChargePixel
- * @created     : venerdì nov 11, 2022 14:58:07 CET
+ * @file        : SLArEventChargePixel.cc
+ * @created     : Fri Nov 11, 2022 14:58:07 CET
  */
 
 #include "event/SLArEventChargePixel.hh"

@@ -162,8 +162,14 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
           p.GetParticleName().Data(), p.GetEnergy(), p.GetTrackID());
       printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
           p.GetTotalScintPhotons(), p.GetTotalCerenkovPhotons()); 
-      printf("ReadoutTile Hits: %i\nSuperCell Hits: %i\n\n", 
+      printf("ReadoutTile Photon Hits: %i\nSuperCell Photon Hits: %i\n\n", 
           fReadoutTileHits, fSuperCellHits);
+      printf("Charge Collection Monitor:\n"); 
+      for (const auto &evanode : slar_event->GetEventAnode()) {
+        printf("\t- %s - %lu MT hit(s))\n", 
+            evanode.second.GetName(), evanode.second.GetConstMegaTilesMap().size()); 
+      }
+      printf("\n");
     }
 
     fParentIDMap.clear(); 
