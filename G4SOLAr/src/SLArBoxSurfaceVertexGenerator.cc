@@ -97,6 +97,56 @@ void SLArBoxSurfaceVertexGenerator::SetNoDaughters(bool no_daughters_)
 {
   fNoDaughters = no_daughters_;
 }
+
+G4double SLArBoxSurfaceVertexGenerator::GetSurfaceGenerator() const {
+  if (fFixFace == false) {
+    if (dynamic_cast<const G4Box*>(fSolid)) {
+      const auto box = (G4Box*)fSolid;
+      return box->GetSurfaceArea(); 
+    }
+    else {
+      printf("SLArBoxSurfaceVertexGenerator WARNING: "); 
+      printf("GetSurfaceGenerator() is only implemented for G4Box solids. "); 
+      printf("Feel free to work on your solid's implementation and let me know!\n");
+      printf("Using a box approximation.\n");
+
+      G4ThreeVector lo; 
+      G4ThreeVector hi;
+      G4ThreeVector dim; 
+      fSolid->BoundingLimits(lo, hi);
+
+      for (int i=0; i<3; i++) dim[i] = fabs(hi[i] - lo[i]); 
+
+      G4double half_area = dim[0]*dim[1] + dim[0]*dim[2] + dim[1]*dim[2];
+
+      return 2*half_area; 
+    }
+  }
+  else {
+    if (dynamic_cast<const G4Box*>(fSolid)) {
+      const auto box = (G4Box*)fSolid;
+      if (fVtxFace == slargeo::kXplus || fVtxFace == slargeo::kXminus) {
+        return box->GetYHalfLength()*box->GetZHalfLength()*4;
+      }
+      else if (fVtxFace == slargeo::kYplus || fVtxFace == slargeo::kYminus) {
+        return box->GetYHalfLength()*box->GetZHalfLength()*4;
+      }
+      else if (fVtxFace == slargeo::kZplus || fVtxFace == slargeo::kZminus) {
+        return box->GetYHalfLength()*box->GetXHalfLength()*4;
+      }
+      else {
+        return 0.;
+      }
+    }
+    else {
+      printf("SLArBoxSurfaceVertexGenerator WARNING: "); 
+      printf("GetSurfaceGenerator() is only implemented for G4Box solids. "); 
+      printf("Feel free to work on your solid's implementation and let me know!\n"); 
+      return 0; 
+    }
+
+  }
+}
  
 void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 {

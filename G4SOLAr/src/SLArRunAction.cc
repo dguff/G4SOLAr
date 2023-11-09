@@ -7,6 +7,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArDetectorConstruction.hh"
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArExternalGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"
 
@@ -131,8 +132,14 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   SLArAnaMgr->WriteCfgFile("materials", SLArDetConstr->GetMaterialCfgFile().c_str());
 
   auto SLArGen = (SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
-  if (!SLArGen->GetMarleyConf().empty()) {
+  if (SLArGen->GetGeneratorIndex() == kMarley) {
     SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+  }
+  if (SLArGen->GetGeneratorIndex() == kExternalGen) {
+    auto gen = (SLArExternalGeneratorAction*)SLArGen->GetGenerator(); 
+    G4double area = gen->GetVertexGenerator()->GetSurfaceGenerator(); 
+    printf("surface box area is %g mm2\n", area);
+    SLArAnaMgr->WriteVariable("surface_generator", area); 
   }
 
   SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 

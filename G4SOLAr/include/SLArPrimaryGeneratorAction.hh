@@ -84,8 +84,15 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4String GetMarleyConf() {return fMarleyCfg;}
     EDirectionMode GetDirectionMode() {return fDirectionMode;}
     void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
+    EGenerator GetGeneratorIndex() const {return fGeneratorEnum;}
     void SetGenerator(EGenerator gen) {fGeneratorEnum = gen;}
+    G4VUserPrimaryGeneratorAction* GetGenerator(int index = -1) {
+      if (index == -1) index = fGeneratorEnum;
+      return fGeneratorActions.at(index); 
+    }
+    G4ThreeVector GetSourcePosition() const {return fGunPosition;}
     void SetSourcePosition(G4ThreeVector pos) {fGunPosition = pos;}
+    G4ThreeVector GetGunDirection() const {return fGunDirection;}
     void SetEventDirection(G4ThreeVector dir) {fGunDirection = dir;}
     void SetBulkName(G4String vol);
     void SetBoxName(G4String vol); 
