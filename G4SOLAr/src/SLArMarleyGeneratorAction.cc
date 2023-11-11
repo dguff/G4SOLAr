@@ -57,7 +57,8 @@ SLArMarleyGeneratorAction::SLArMarleyGeneratorAction(
   // or "tgraph" neutrino source)
   marley::RootJSONConfig config( config_file_name );
   marley_generator_= config.create_generator();
-}
+  marley_generator_.reseed( G4Random::getTheSeed() ); 
+} 
 
 void SLArMarleyGeneratorAction::SetupMarleyGen(const std::string& config_file_name) 
 {
