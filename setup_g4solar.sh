@@ -10,12 +10,12 @@
 ######################################################################
 
 printf "%s\n" '-----------------------------------------'
-printf "G4SOLAr Environment Setup - v0.2 2023-11-12\n\n"
+printf "G4SOLAr Environment Setup - v0.2 2023-04-25\n\n"
 
 printf "setup cmake v3_23_1\n"
 setup cmake v3_23_1
-printf "setup root v6_26_02d -qe20:p3913:prof\n"
-setup root v6_26_02d -qe20:p3913:prof
+printf "setup root v6_22_08d -qe20:p392:prof\n"
+setup root v6_22_08d -qe20:p392:prof
 printf "setup geant4 v4_11_1_p01ba -qe20:prof\n"
 setup geant4 v4_11_1_p01ba -qe20:prof
 # export the geant4 installation directory path tothe variable  GEANT4_DIR
