@@ -80,7 +80,7 @@ public:
       inline TrackIdHelpInfo_t() : parent(-1), pdg(-1), quadrimomentum{0} {}
       inline TrackIdHelpInfo_t(const int& _pid, const int& _pdg, const double* p) 
         : parent(_pid), pdg(_pdg) {
-          assert( sizeof(p)/sizeof(double) == 4);
+          //assert( sizeof(p)/sizeof(double) == 4);
           for (size_t i = 0; i < 4; i++) {
             quadrimomentum[i] = p[i];
           }
