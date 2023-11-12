@@ -80,13 +80,13 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
         auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
         for (auto &primaryInfo : primaries) {
           if (aTrack->GetDynamicParticle()->GetPDGcode() == primaryInfo.GetCode()) {
-            G4double tolerance = 1e-4;
+            G4double tolerance = 1e-3;
             if (primaryInfo.GetCode() > 10000) {
               //printf("possible canidate %i - [%g, %g, %g] vs [%g, %g, %g]\n", 
                   //primaryInfo.GetCode(), 
                   //aTrack->GetMomentum().x(), aTrack->GetMomentum().y(), aTrack->GetMomentum().z(), 
                   //primaryInfo.GetMomentum()[0], primaryInfo.GetMomentum()[1], primaryInfo.GetMomentum()[2]); 
-              tolerance = 1e-2;
+              tolerance = 5e-2;
             }
             if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < tolerance &&
                 fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < tolerance &&
