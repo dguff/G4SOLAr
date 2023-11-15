@@ -1,4 +1,5 @@
 #include "SLArGENIEGeneratorAction.hh"
+#include <cstdio>
 
 
 //***********************************************************************
@@ -56,18 +57,17 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   for (int i=0; i<gVar.nPart; i++){
 
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
-    G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
-							gVar.p4[i][0]*1E3,
-							gVar.p4[i][1]*1E3,
-							gVar.p4[i][2]*1E3,
-							gVar.p4[i][3]*1E3);
-    auto vertex = new G4PrimaryVertex(vtx, 0.); // Not sure which is better here
-    //    auto vertex = new G4PrimaryVertex(vtx, gVar.vtx[3]); 
-    
-    vertex->SetPrimary(particle);
-    primary_vertices.push_back(vertex);
+      G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
+          gVar.p4[i][0]*1E3,
+          gVar.p4[i][1]*1E3,
+          gVar.p4[i][2]*1E3,
+          gVar.p4[i][3]*1E3);
+      auto vertex = new G4PrimaryVertex(vtx, 0.); // Not sure which is better here
+      //    auto vertex = new G4PrimaryVertex(vtx, gVar.vtx[3]); 
+      vertex->SetPrimary(particle);
+      primary_vertices.push_back(vertex);
 
-    particle_idx++;
+      particle_idx++;
     }
   }
 

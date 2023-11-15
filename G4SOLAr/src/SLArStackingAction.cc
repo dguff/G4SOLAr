@@ -76,6 +76,9 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       if (aTrack->GetParentID() == 0) { // this is a primary
         fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetTrackID()); 
         parentID = aTrack->GetTrackID(); 
+        //printf("Track %i is a candidate primary with pdg id %i\n", 
+            //aTrack->GetTrackID(), aTrack->GetParticleDefinition()->GetPDGEncoding());
+
         // fix track ID in primary output object
         auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
         for (auto &primaryInfo : primaries) {

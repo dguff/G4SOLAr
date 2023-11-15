@@ -318,9 +318,12 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       if (!particle->GetParticleDefinition()) {
         tc_primary.SetID  (particle->GetPDGcode()); 
         tc_primary.SetName("Ion");
+        //printf("Particle has no definition: PDG ID = %i, setting generic ion\n", particle->GetPDGcode());
       } else {
         tc_primary.SetID  (particle->GetPDGcode());
         tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
+        //printf("Particle has definition: PDG ID = %i, setting %s\n", 
+            //particle->GetPDGcode(), tc_primary.GetName());
       }
 
       tc_primary.SetTrackID(particle->GetTrackID());

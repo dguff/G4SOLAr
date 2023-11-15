@@ -454,13 +454,13 @@ int SLArEventAction::FindAncestorID(int trkid) {
 
     trkid = pid; 
 //#ifdef SLAR_DEBUG
-    //getchar(); 
+//    getchar(); 
 //#endif
   }
 
 #ifdef SLAR_DEBUG
-  printf("Caught! returning %i\n", primary);
-  //getchar(); 
+    printf("Caught! returning %i\n", primary);
+    //getchar(); 
 #endif
 
   return primary; 
