@@ -52,11 +52,14 @@ G4bool SLArAnalysisManager::IsInstance()
 
 SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   : fAnaMsgr  (nullptr),
-    fIsMaster(isMaster), fOutputPath(""),
+    fIsMaster(isMaster), fSeed( time(NULL) ), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fTrajectoryFull( true ),
     fRootFile (nullptr), fEventTree (nullptr), 
     fMCEvent(nullptr),
+#ifdef SLAR_EXTERNAL
+    fExternalRecord(nullptr),
+#endif // SLAR_EXTERNAL
     fSuperCellBacktrackerManager(nullptr), 
     fVUVSiPMBacktrackerManager(nullptr), 
     fChargeBacktrackerManager(nullptr), 
@@ -74,6 +77,9 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   if ( isMaster ) {
     fgMasterInstance = this;
     fMCEvent = new SLArMCEvent();
+#ifdef SLAR_EXTERNAL
+    fExternalRecord = std::make_unique<SLArEventTrajectoryLite>(); 
+#endif // DEBUG
     fAnaMsgr = new SLArAnalysisManagerMsgr();
   }
   fgInstance = this;
@@ -88,9 +94,14 @@ SLArAnalysisManager::~SLArAnalysisManager()
       fRootFile->cd();
       fEventTree->Write();
       fEventTree->Delete();
+#ifdef SLAR_EXTERNAL
+      fExternalsTree->Write(); 
+      fExternalsTree->Delete(); 
+#endif // SLAR_EXTERNAL
       fRootFile->Close(); 
     }
   }
+
   if (fChargeBacktrackerManager) delete fChargeBacktrackerManager;
   if (fVUVSiPMBacktrackerManager) delete fVUVSiPMBacktrackerManager;
   if (fSuperCellBacktrackerManager) delete fSuperCellBacktrackerManager;
@@ -120,6 +131,10 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   printf("setting up ROOT TTree Branch...\n");
   fEventTree->Branch("MCEvent", &fMCEvent);
 
+#ifdef SLAR_EXTERNAL
+  SetupExternalsTree(); 
+#endif // SLAR_EXTERNAL
+
   return true;
 }
 
@@ -145,6 +160,10 @@ G4bool SLArAnalysisManager::Save()
   }
 
   WriteSysCfg(); 
+
+#ifdef SLAR_EXTERNAL
+  fExternalsTree->Write();
+#endif // SLAR_EXTERNAL
 
   fRootFile->Close();
 
@@ -213,19 +232,20 @@ G4bool SLArAnalysisManager::FillEvTree() {
   return true;
 }
 
-int SLArAnalysisManager::WriteVariable(G4String name, G4double val) {
-  if (!fRootFile) {
-    printf("SLArAnalysisManager::WriteVariable WARNING ");
-    printf("rootfile not present yet. Cannot write %s variable.\n", 
-        name.c_str());
-    return 666;
-  } 
+//template<typename T> 
+//int SLArAnalysisManager::WriteVariable (G4String name, T val) {
+  //if (!fRootFile) {
+    //printf("SLArAnalysisManager::WriteVariable WARNING ");
+    //printf("rootfile not present yet. Cannot write %s variable.\n", 
+        //name.c_str());
+    //return 666;
+  //} 
 
-  TParameter<double> var(name, val); 
-  fRootFile->cd(); 
-  int status = var.Write(); 
-  return status; 
-}
+  //TParameter<T> var(name, val); 
+  //fRootFile->cd(); 
+  //int status = var.Write(); 
+  //return status; 
+//}
 
 int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
   if (!fRootFile) {
@@ -540,3 +560,23 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   }
 
 }
+
+#ifdef SLAR_EXTERNAL
+void SLArAnalysisManager::SetupExternalsTree() {
+  fExternalsTree = new TTree("ExternalTree", "Externals reaching LAr interface"); 
+
+  fExternalsTree->Branch("iEv", &fExternalRecord->fEvNumber); 
+  fExternalsTree->Branch("pdgID", &fExternalRecord->fPDGCode); 
+  fExternalsTree->Branch("trkID", &fExternalRecord->fTrkID); 
+  fExternalsTree->Branch("parentID", &fExternalRecord->fParentID); 
+  fExternalsTree->Branch("origin_vol", &fExternalRecord->fOriginVol);
+  fExternalsTree->Branch("origin_energy", &fExternalRecord->fOriginEnergy);
+  fExternalsTree->Branch("weight", &fExternalRecord->fWeight);
+  fExternalsTree->Branch("time", &fExternalRecord->fTime); 
+  fExternalsTree->Branch("lar_energy", &fExternalRecord->fEnergy); 
+  fExternalsTree->Branch("vertex", &fExternalRecord->fVertex, "vertex[3]/F");
+  fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
+  
+}
+#endif // SLAR_EXTERNAL
+

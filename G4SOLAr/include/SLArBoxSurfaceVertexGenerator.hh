@@ -41,6 +41,7 @@ class SLArBoxSurfaceVertexGenerator :
     void SetTolerance(double tolerance_);
     void SetRandomSeed(unsigned int seed_);
     void SetNoDaughters(bool no_daughters_);
+    G4double GetSurfaceGenerator() const; 
 
     // From the VertexGeneratorInterface abstract class:
     void ShootVertex(G4ThreeVector & vertex_) override;

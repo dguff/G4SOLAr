@@ -239,7 +239,8 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
     if (n_brick_tk <= major_width - minor_width) {
       brick_sv = new G4Box("brick_sv", 
           0.5*(spacing-2*majorT_width-tk), 0.5*n_brick_tk, 0.5*(spacing-2*majorT_width-tk)); 
-      yshift = 0.5*(unit_thickness - n_brick_tk);
+      //yshift = 0.5*(unit_thickness - n_brick_tk);
+      yshift = -0.5*(unit_thickness - 2*minor_width - n_brick_tk);
     } else {
       G4double main_tk = n_brick_tk - (major_width - minor_width); 
       G4double fit_tk = major_width-minor_width;
@@ -249,7 +250,7 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
           0.5*(spacing-2*majorT_width-tk), 0.5*fit_tk, 0.5*(spacing-2*majorT_width-tk)); 
       brick_sv = new G4UnionSolid("brick_sv", brick_fit, brick_main, 
           G4TranslateY3D(0.5*(fit_tk + main_tk)) ); 
-      yshift = -0.5*(unit_thickness - n_brick_tk);
+      yshift = -0.5*(unit_thickness - 2*minor_width - fit_tk);
     }
     auto brick_lv = new G4LogicalVolume(brick_sv, fMatBrick->GetMaterial(), "brick_lv"); 
     brick_lv->SetVisAttributes( G4VisAttributes( G4Colour(0, 0, 1) )); 
@@ -506,7 +507,7 @@ void SLArDetCryostat::BuildSupportStructureEdgeUnit() {
   auto corner_main_sv = new G4Box("corner_main_sv", 0.5*major_width, 0.5*major_width, 0.25*tk); 
   auto corner_main_lv = new G4LogicalVolume(corner_main_sv, fMatWaffle->GetMaterial(), 
       "corner_main_lv"); 
-  corner_main_lv->SetVisAttributes( G4Colour(0, 1, 0) ); 
+  corner_main_lv->SetVisAttributes( G4Colour(1, 0, 0) ); 
   G4Transform3D tt = G4Translate3D(-0.5*(unit_thickness-major_width), -0.5*(unit_thickness-major_width), 0); 
   auto corner_main_pv = new G4PVPlacement(tt * G4Translate3D(0, 0, 0.5*(spacing-0.5*tk)),
       corner_main_lv, "corner_main_pv0", 
@@ -518,7 +519,7 @@ void SLArDetCryostat::BuildSupportStructureEdgeUnit() {
   auto corner_tx_sv = new G4Box("corner_tx_sv", 0.5*(major_width-2*tk), 0.5*tk, 0.5*majorT_width); 
   auto corner_tx_lv = new G4LogicalVolume(corner_tx_sv, fMatWaffle->GetMaterial(), 
       "corner_tx_lv"); 
-  corner_tx_lv->SetVisAttributes( G4Colour(0, 1, 0) ); 
+  corner_tx_lv->SetVisAttributes( G4Colour(1, 0, 0) ); 
   new G4PVPlacement(0, 
       G4ThreeVector(-0.5*(unit_thickness-major_width), -0.5*(unit_thickness-tk), 
         -0.5*(spacing-majorT_width-tk)), 
@@ -541,7 +542,7 @@ void SLArDetCryostat::BuildSupportStructureEdgeUnit() {
   auto corner_ty_sv = new G4Box("corner_ty_sv", 0.5*tk, 0.5*major_width, 0.5*majorT_width); 
   auto corner_ty_lv = new G4LogicalVolume(corner_ty_sv, fMatWaffle->GetMaterial(), 
       "corner_ty_lv"); 
-  corner_ty_lv->SetVisAttributes( G4Colour(0, 1, 0) ); 
+  corner_ty_lv->SetVisAttributes( G4Colour(1, 0, 0) ); 
   new G4PVPlacement(0, 
       G4ThreeVector(-0.5*(unit_thickness-tk), -0.5*(unit_thickness-major_width), 
         -0.5*(spacing-majorT_width-tk)), 

@@ -30,7 +30,8 @@ class SLArExternalGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     virtual void GeneratePrimaries(G4Event* ev); 
     void SetVertexGenerator(SLArBoxSurfaceVertexGenerator* vtxGen) {fVtxGen  = vtxGen;}
-    void SourceExternalConfig(const char* ext_cfg_path); 
+    SLArBoxSurfaceVertexGenerator* GetVertexGenerator() {return fVtxGen;}
+    G4double SourceExternalConfig(const char* ext_cfg_path); 
     G4double SetGeneratorBox(const G4String volName); 
 
   protected:

@@ -10,6 +10,7 @@
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArUserTrackInformation.hh"
 #include "SLArTrajectory.hh"
+#include "SLArAnalysisManager.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 #include "detector/Anode/SLArReadoutTileSD.hh"
@@ -23,6 +24,7 @@
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
+#include "G4Run.hh"
 #include "G4SDManager.hh"
 #include "G4PVReplica.hh"
 
@@ -152,11 +154,39 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //trajectory.GetPoints().size());
     //getchar(); 
 
+    G4String terminator; 
+
+#ifdef SLAR_EXTERNAL
+   if (thePostPoint->GetStepStatus() == fGeomBoundary) {
+      if ( G4StrUtil::contains(thePostPV->GetLogicalVolume()->GetMaterial()->GetName(), "LAr") )
+      {
+        track->SetTrackStatus( fStopAndKill ); 
+        
+        auto& ext_record = SLArAnalysisManager::Instance()->GetExternalRecord(); 
+        auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
+        ext_record->SetEvNumber( iev ); 
+        ext_record->SetValues( *trajectory ); 
+        ext_record->SetEnergyAtLAr( thePrePoint->GetKineticEnergy() ); 
+        ext_record->SetVertex(  thePostPoint->GetPosition().x(), 
+                                thePostPoint->GetPosition().y(), 
+                                thePostPoint->GetPosition().z()); 
+
+        SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
+
+        ext_record->Reset(); 
+
+        terminator = "SLArUserInterfaceKiller";
+      }
+   }
+#endif 
+
     if (track->GetTrackStatus() == fStopAndKill) {
 
       auto process = 
         const_cast<G4VProcess*>(step->GetPostStepPoint()->GetProcessDefinedStep()); 
-      G4String terminator = process->GetProcessName(); 
+      if (terminator.empty()){
+        terminator = process->GetProcessName(); 
+      }
 
       G4HadronicProcess* hproc = dynamic_cast<G4HadronicProcess*>(process);
       const G4Isotope* target = NULL;
@@ -198,6 +228,20 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         terminator += nuclearChannel;
         //printf("terminator: %s\n", terminator.data());
         //getchar(); 
+
+        for (const auto& sec_itr : *secondary) {
+          G4double momentum_4[4] = {0}; 
+          for (size_t i = 0; i < 3; i++) {
+            momentum_4[i] = sec_itr->GetMomentum()[i];
+          }
+          momentum_4[3] = sec_itr->GetKineticEnergy(); 
+
+          fEventAction->RegisterNewProcessExtraInfo(
+              SLArEventAction::TrackIdHelpInfo_t(track->GetTrackID(), 
+                sec_itr->GetDynamicParticle()->GetPDGcode(), 
+                momentum_4),
+              terminator);
+        }
 
       }
 
@@ -272,7 +316,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
                 track->GetTotalEnergy()*1e6,
                 thePrePV->GetName().c_str(), thePostPV->GetName().c_str()); 
 #endif
-            phInfo->AddTrackStatusFlag(boundaryAbsorbed);
+            if (phInfo) phInfo->AddTrackStatusFlag(boundaryAbsorbed);
             fEventAction->IncBoundaryAbsorption();
             break;
           }
@@ -311,7 +355,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
              //getchar(); 
 #endif
 
-            phInfo->AddTrackStatusFlag(hitPMT);
+            if (phInfo) phInfo->AddTrackStatusFlag(hitPMT);
             if (volName=="SiPMActivePV") {
 //#ifdef SLAR_DEBUG
               //printf("Copy No hierarchy: [%i, %i, %i, %i, %i, %i, %i, %i, %i, %i]\n", 

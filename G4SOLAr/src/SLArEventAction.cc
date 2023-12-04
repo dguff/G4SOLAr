@@ -162,11 +162,18 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
           p.GetParticleName().Data(), p.GetEnergy(), p.GetTrackID());
       printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
           p.GetTotalScintPhotons(), p.GetTotalCerenkovPhotons()); 
-      printf("ReadoutTile Hits: %i\nSuperCell Hits: %i\n\n", 
+      printf("ReadoutTile Photon Hits: %i\nSuperCell Photon Hits: %i\n\n", 
           fReadoutTileHits, fSuperCellHits);
+      printf("Charge Collection Monitor:\n"); 
+      for (const auto &evanode : slar_event->GetEventAnode()) {
+        printf("\t- %s - %lu MT hit(s))\n", 
+            evanode.second.GetName(), evanode.second.GetConstMegaTilesMap().size()); 
+      }
+      printf("\n");
     }
 
     fParentIDMap.clear(); 
+    fExtraProcessInfo.clear(); 
 
     SLArAnaMgr->GetEvent()->Reset();
 }
@@ -397,6 +404,20 @@ void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
   fParentIDMap.insert( std::make_pair(trk_id, p_id) ); 
   return;
 }
+
+void SLArEventAction::RegisterNewProcessExtraInfo(const TrackIdHelpInfo_t& trkHelp, G4String& proc) {
+  if (fExtraProcessInfo.count(trkHelp)) {
+    printf("SLArEventAction::RegisterNewProcessExtraInfo WARNING trk with pdg %i, parent %i and 4-p (%g, %g, %g, %g) already has detailed process info assigned (%s)\n", 
+        trkHelp.pdg, 
+        trkHelp.parent,
+        trkHelp.quadrimomentum[0], trkHelp.quadrimomentum[1], 
+        trkHelp.quadrimomentum[2], trkHelp.quadrimomentum[3],
+        fExtraProcessInfo[trkHelp].data());
+  }
+  fExtraProcessInfo.insert( std::make_pair(trkHelp, proc) ); 
+  return;
+}
+
 
 int SLArEventAction::FindAncestorID(int trkid) {
   int primary = -1; 

@@ -79,6 +79,7 @@ int main(int argc,char** argv)
   G4String output_dir = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
   G4String material_file = "./assets/materials/materials_db.json"; 
+  G4bool   do_cerenkov = true; 
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
   G4double bias_factor = 1; 
@@ -89,7 +90,7 @@ int main(int argc,char** argv)
 #endif
 
   G4long myseed = 345354;
-  const char* short_opts = "m:o:d:u:t:r:g:p:b:h";
+  const char* short_opts = "m:o:d:u:t:r:g:p:b:c:h";
   static struct option long_opts[12] = 
   {
     {"macro", required_argument, 0, 'm'}, 
@@ -101,6 +102,7 @@ int main(int argc,char** argv)
     {"geometry", required_argument, 0, 'g'}, 
     {"materials", required_argument, 0, 'p'},
     {"bias", required_argument, 0, 'b'},
+    {"cerenkov", required_argument, 0, 'c'},
     {"help", no_argument, 0, 'h'}, 
     {nullptr, no_argument, nullptr, 0}
   };
@@ -160,6 +162,12 @@ int main(int argc,char** argv)
         }
         break;
       };
+      case 'c' : 
+      {
+        do_cerenkov = std::atoi( optarg ); 
+        break;
+      }
+
       case 'h' : 
       {
         PrintUsage(); 
@@ -219,6 +227,9 @@ int main(int argc,char** argv)
   runManager-> SetUserInitialization(detector);
 
   auto analysisManager = SLArAnalysisManager::Instance(); 
+  analysisManager->SetSeed( myseed ); 
+  printf("storing seed in analysis manager: %ld - %ld\n", 
+      myseed, G4Random::getTheSeed());
 
   // External background biasing option
 #ifdef SLAR_EXTERNAL
@@ -235,7 +246,7 @@ int main(int argc,char** argv)
 
   // Physics list
   printf("Creating Phiscs Lists...\n");
-  auto physicsList = new SLArPhysicsList(physName);
+  auto physicsList = new SLArPhysicsList(physName, do_cerenkov);
 #if (defined SLAR_EXTERNAL &&  defined SLAR_EXTERNAL_PARTICLE)
   physicsList->RegisterPhysics(new G4ImportanceBiasing(&mgs));
 #endif

@@ -8,8 +8,8 @@
 
 
 # Set secondary production cuts for gamma and electrons
-/SLAr/phys/electronCut 0.5 mm
-/SLAr/phys/positronCut 0.5 mm
+/SLAr/phys/electronCut 2.5 mm
+/SLAr/phys/positronCut 2.5 mm
 /SLAr/phys/gammaCut 2.5 mm
 /SLAr/phys/stepMax 2.5 mm
 /SLAr/phys/DoTracePhotons false
@@ -19,7 +19,8 @@
 /SLAr/gen/externalconf assets/background/external_neutrons.json
 
 # Set output file name
-/SLAr/manager/SetOutputName external_neutrons.root
+/SLAr/manager/SetOutputName external_neutrons_killer.root
+/SLAr/manager/storeFullTrajectory false
 
 # Fire!
-/run/beamOn 100
+/run/beamOn 10000

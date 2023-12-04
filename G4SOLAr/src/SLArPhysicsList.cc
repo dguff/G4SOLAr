@@ -70,7 +70,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArPhysicsList::SLArPhysicsList(G4String physName) : 
+SLArPhysicsList::SLArPhysicsList(G4String physName, G4bool do_cerenkov) : 
   G4VModularPhysicsList()
 {
   G4LossTableManager::Instance();
@@ -108,7 +108,8 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   }
 
   fAbsorptionOn = true;
-  fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn); 
+  fCerenkovOn = do_cerenkov;
+  fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn, fCerenkovOn); 
 
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics);
@@ -355,7 +356,9 @@ void SLArPhysicsList::SetNbOfPhotonsCerenkov(G4int maxNumber)
 
 void SLArPhysicsList::SetVerbose(G4int verbose)
 {
-  fOpticalPhysics->GetCerenkovProcess()->SetVerboseLevel(verbose);
+  if (fOpticalPhysics->GetCerenkovProcess()) {
+    fOpticalPhysics->GetCerenkovProcess()->SetVerboseLevel(verbose);
+  }
   fOpticalPhysics->GetScintillationProcess()->SetVerboseLevel(verbose);
   fOpticalPhysics->GetAbsorptionProcess()->SetVerboseLevel(verbose);
   fOpticalPhysics->GetRayleighScatteringProcess()->SetVerboseLevel(verbose);

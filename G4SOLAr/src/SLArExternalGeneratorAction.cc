@@ -41,7 +41,7 @@ SLArExternalGeneratorAction::~SLArExternalGeneratorAction()
   if (fRandomEngine) {delete fRandomEngine; fRandomEngine=nullptr;}
 }
 
-void SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path) {
+G4double SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path) {
   FILE* ext_cfg_file = std::fopen(ext_cfg_path, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(ext_cfg_file, readBuffer, sizeof(readBuffer));
@@ -88,6 +88,8 @@ void SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path)
         external_cfg["key"].GetString(), external_cfg["file"].GetString()); 
     getchar(); 
   }
+
+  return fVtxGen->GetSurfaceGenerator(); 
 }
 
 G4double SLArExternalGeneratorAction::SetGeneratorBox(const G4String volName) {
@@ -103,7 +105,11 @@ G4double SLArExternalGeneratorAction::SetGeneratorBox(const G4String volName) {
   fVtxGen->SetBoxLogicalVolume(volume->GetLogicalVolume()); 
   fVtxGen->SetSolidTranslation(volume->GetTranslation()); 
   fVtxGen->SetSolidRotation(volume->GetRotation()); 
-  return volume->GetLogicalVolume()->GetMass()/CLHEP::kg;
+  G4double area = 0; 
+  if (const auto& box = dynamic_cast<G4Box*>(volume->GetLogicalVolume()->GetSolid())) {
+    area = box->GetSurfaceArea(); 
+  }
+  return area/CLHEP::cm2;
 }
 
 void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev) 
