@@ -93,6 +93,9 @@ void SLArGenieGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   std::vector<G4PrimaryVertex*> primary_vertices;
   
   for (int j = 0; j < evt.Npart; j++) {
+  
+  	if ( evt.status[j] != 1 ) continue;
+  	//std::cout << evt.status[j] << std::endl;
 
     // Create a G4PrimaryParticle by setting the PDG code and the 4-momentum   
     G4PrimaryParticle* particle = new G4PrimaryParticle(evt.pdg[j],
