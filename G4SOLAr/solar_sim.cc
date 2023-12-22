@@ -216,8 +216,8 @@ int main(int argc,char** argv)
   // Seed the random number generator manually
   G4Random::setTheSeed(myseed);
 
-  //G4String physName = "FTFP_BERT";
-  G4String physName = "QGSP_BIC_AllHP";
+  G4String physName = "FTFP_BERT_HP";
+  //G4String physName = "QGSP_BIC_AllHP";
 
   // Set mandatory initialization classes
   //
