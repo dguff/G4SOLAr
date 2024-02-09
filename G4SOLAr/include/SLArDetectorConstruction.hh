@@ -90,7 +90,6 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void                            SetAnodeVisAttributes(const int depth = 0); 
 
   private:
-
     //! Detector description initilization
     void Init();
     G4String fGeometryCfgFile; //!< Geometry configuration file
@@ -105,6 +104,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::map<int, SLArDetCathode*> fCathode; 
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
+    SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
     std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
@@ -116,6 +116,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
     
+    //! Construct Cavern
+    void ConstructCavern(); 
     //! Parse the description of the supercell detector system
     void InitSuperCell(const rapidjson::Value&); 
     //! Parse the description of the SC PDS

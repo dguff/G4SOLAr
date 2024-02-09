@@ -144,6 +144,20 @@ void SLArDetectorConstruction::Init() {
     fWorldGeoPars.RegisterGeoPar("size_z",20*CLHEP::m); 
   }
 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  // Parse carvern dimensions
+  if (d.HasMember("Cavern")) {
+    const rapidjson::Value& jcavern = d["Cavern"]; 
+    assert( jcavern.HasMember("dimensions") ); 
+    fCavernGeoPars.ReadFromJSON(jcavern["dimensions"].GetArray()); 
+  }
+  else {
+    fCavernGeoPars.RegisterGeoPar("inner_size_x", 3*CLHEP::m); 
+    fCavernGeoPars.RegisterGeoPar("inner_size_y", 5*CLHEP::m); 
+    fCavernGeoPars.RegisterGeoPar("inner_size_z",18*CLHEP::m);
+    fCavernGeoPars.RegisterGeoPar("rock_thickness", 1*CLHEP::m); 
+    fCavernGeoPars.RegisterGeoPar("shotcrete_thickness", 20*CLHEP::cm); 
+  }
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
@@ -162,7 +176,6 @@ void SLArDetectorConstruction::Init() {
     G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
   }
 
-
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
   if (d.HasMember("SuperCell") && d.HasMember("PhotoDetectionSystem")) {
@@ -173,7 +186,6 @@ void SLArDetectorConstruction::Init() {
     G4cout << "SLArDetectorConstruction::Init PDS DONE" << G4endl;
   }
 
-  
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize ReadoutTile
   if (d.HasMember("ReadoutTile") && d.HasMember("Anode")) {
@@ -449,9 +461,9 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   // ------------- Volumes --------------
   // 1. Build and place WORLD volume
   G4Box* expHall_box = new G4Box("World", 
-      fWorldGeoPars.GetGeoPar("size_x"), 
-      fWorldGeoPars.GetGeoPar("size_y"), 
-      fWorldGeoPars.GetGeoPar("size_z"));  
+      0.5*fWorldGeoPars.GetGeoPar("size_x"), 
+      0.5*fWorldGeoPars.GetGeoPar("size_y"), 
+      0.5*fWorldGeoPars.GetGeoPar("size_z"));  
 
   SLArMaterial* matWorld = new SLArMaterial("Air"); 
   matWorld->BuildMaterialFromDB(fMaterialDBFile); 
@@ -461,6 +473,8 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
 
   fWorldPhys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
+
+  ConstructCavern(); 
 
   // 2. Build and place the LAr target
   G4cout << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
@@ -473,7 +487,7 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   // 3. Build and place the Cryostat
   G4cout << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
   fCryostat->SetWorldMaterial(matWorld); 
-  ConstructCryostat(); 
+  //ConstructCryostat(); 
 
   G4cout << "\nSLArDetectorConstruction: Building the Cathode" << G4endl;
   ConstructCathode(); 
@@ -1222,4 +1236,96 @@ void SLArDetectorConstruction::ConstructCryostatScorer() {
     ilayer++; 
   }
  
+}
+
+void SLArDetectorConstruction::ConstructCavern() {
+
+  printf("Cavern geo pamaters:\n"); 
+  fCavernGeoPars.DumpParMap(); 
+  
+  G4double inner_cavern_x = fCavernGeoPars.GetGeoPar("inner_size_x"); 
+  G4double inner_cavern_y = fCavernGeoPars.GetGeoPar("inner_size_y"); 
+  G4double inner_cavern_z = fCavernGeoPars.GetGeoPar("inner_size_z"); 
+
+  G4double rock_tk = fCavernGeoPars.GetGeoPar("rock_thickness"); 
+  G4double shotcrete_tk = fCavernGeoPars.GetGeoPar("shotcrete_thickness"); 
+
+  G4Box* outer_world_box = new G4Box("outer_world_box", 
+      0.5*fWorldGeoPars.GetGeoPar("size_x"), 
+      0.5*fWorldGeoPars.GetGeoPar("size_y"), 
+      0.5*fWorldGeoPars.GetGeoPar("size_z") ); 
+
+  G4Box* outer_rock_box = new G4Box("outer_rock_box", 
+      0.5*(inner_cavern_x+rock_tk+shotcrete_tk), 
+      0.5*(inner_cavern_y+rock_tk+shotcrete_tk), 
+      0.5*(inner_cavern_z+rock_tk+shotcrete_tk) ); 
+
+  G4Box* inner_rock_box = new G4Box("inner_rock_box", 
+      0.5*(inner_cavern_x+shotcrete_tk), 
+      0.5*(inner_cavern_y+shotcrete_tk), 
+      0.5*(inner_cavern_z+shotcrete_tk) ); 
+
+  G4Box* outer_shotcrete_box = new G4Box("outer_shotcrete_box", 
+      0.5*(inner_cavern_x+shotcrete_tk), 
+      0.5*(inner_cavern_y+shotcrete_tk), 
+      0.5*(inner_cavern_z+shotcrete_tk) ); 
+
+  G4Box* inner_shotcrete_box = new G4Box("inner_shotcrete_box", 
+      0.5*(inner_cavern_x), 
+      0.5*(inner_cavern_y), 
+      0.5*(inner_cavern_z) ); 
+   
+  G4SubtractionSolid* cavern_box = new G4SubtractionSolid("cavern_box", 
+      outer_world_box, inner_shotcrete_box, nullptr, G4ThreeVector(0, 0, 0));
+
+  SLArMaterial* rock_mat_handle = new SLArMaterial(); 
+  rock_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "cavern_rock" ); 
+
+  G4LogicalVolume* cavern_logic = new G4LogicalVolume(
+      cavern_box, rock_mat_handle->GetMaterial(), "cavern_lv" ); 
+
+  new G4PVPlacement(0,G4ThreeVector(), cavern_logic, "cavern_rock", fWorldLog, false, 1, true); 
+
+  G4SubtractionSolid* rock_gen_box = new G4SubtractionSolid("rock_gen_box", 
+      outer_rock_box, inner_rock_box, nullptr, G4ThreeVector(0, 0, 0));
+
+  G4LogicalVolume* rock_gen_logic = new G4LogicalVolume(
+      rock_gen_box, rock_mat_handle->GetMaterial(), "rock_gen_lv" ); 
+
+  new G4PVPlacement(0,G4ThreeVector(), rock_gen_logic,"cavern_rock_gen", cavern_logic, false, 2, true); 
+ 
+  G4SubtractionSolid* shotcrete_box = new G4SubtractionSolid("shotcrete_box", 
+      outer_shotcrete_box, inner_shotcrete_box, nullptr, G4ThreeVector(0, 0, 0));
+
+  SLArMaterial* shotcrete_mat_handle = new SLArMaterial(); 
+  shotcrete_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "cavern_shotcrete" ); 
+
+  G4LogicalVolume* shotcrete_logic = new G4LogicalVolume(
+      shotcrete_box, shotcrete_mat_handle->GetMaterial(), "shotcrete_lv" ); 
+
+  new G4PVPlacement(0,G4ThreeVector(), shotcrete_logic,"cavern_shotcrete", cavern_logic, false, 3, true); 
+
+  G4Box* outer_cavern_scorer_box = new G4Box("outer_cavern_scorer_box", 
+      0.5*(inner_cavern_x), 
+      0.5*(inner_cavern_y), 
+      0.5*(inner_cavern_z) ); 
+
+  G4Box* inner_cavern_scorer_box = new G4Box("inner_cavern_scorer_box", 
+      0.5*(inner_cavern_x-1*CLHEP::cm), 
+      0.5*(inner_cavern_y-1*CLHEP::cm), 
+      0.5*(inner_cavern_z-1*CLHEP::cm) ); 
+
+  G4SubtractionSolid* cavern_scorer_box = new G4SubtractionSolid("cavern_scorer_box", 
+      outer_cavern_scorer_box, inner_cavern_scorer_box, nullptr, G4ThreeVector(0, 0, 0));
+
+  SLArMaterial* scorer_mat_handle = new SLArMaterial(); 
+  scorer_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "Air" ); 
+
+  G4LogicalVolume* cavern_scorer_logic = new G4LogicalVolume(
+      cavern_scorer_box, scorer_mat_handle->GetMaterial(), "cavern_scorer_lv" ); 
+
+  new G4PVPlacement(0,G4ThreeVector(), cavern_scorer_logic, "cavern_scorer_pv", fWorldLog, false, 1, false); 
+
+
+  return; 
 }
