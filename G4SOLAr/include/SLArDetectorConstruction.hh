@@ -113,6 +113,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     G4VPhysicalVolume* fWorldPhys; //!< World physical volume
+    G4VPhysicalVolume* fCavernPhys;//!< Cavern physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     G4String GetFirstChar(G4String line);
     
