@@ -421,6 +421,7 @@ void SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbo
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
   if (fExtScorerHCollID.empty()) return;
 
+#ifdef SLAR_EXTERNAL
   auto anaMngr = SLArAnalysisManager::Instance(); 
   for (const auto& id : fExtScorerHCollID) {
     SLArExtHitsCollection* hHC1 = static_cast<SLArExtHitsCollection*>(hce->GetHC(id)); 
@@ -451,10 +452,12 @@ void SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbo
       ext_record->SetCreator( scorer_hit->fCreator.data() ); 
       ext_record->SetTime( scorer_hit->fTime ); 
       ext_record->SetVertex( scorer_hit->fVertex );
-      
+
       anaMngr->GetExternalsTree()->Fill(); 
     }
   }
+
+#endif
 }
 
 void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
