@@ -133,10 +133,10 @@ private:
     std::map<int, int> fParentIDMap;
     std::map<TrackIdHelpInfo_t, G4String> fExtraProcessInfo;
 
-    void RecordEventReadoutTile (const G4Event* ev, const G4int& verbose = 0);
-    void RecordEventSuperCell( const G4Event* ev, const G4int& verbose = 0); 
-    void RecordEventLAr(const G4Event* ev, const G4int& verbose = 0);
-    void RecordEventExtScorer(const G4Event* ev, const G4int& verbose = 0); 
+    G4int RecordEventReadoutTile (const G4Event* ev, const G4int& verbose = 0);
+    G4int RecordEventSuperCell( const G4Event* ev, const G4int& verbose = 0); 
+    G4int RecordEventLAr(const G4Event* ev, const G4int& verbose = 0);
+    G4int RecordEventExtScorer(const G4Event* ev, const G4int& verbose = 0); 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

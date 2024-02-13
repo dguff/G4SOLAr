@@ -137,6 +137,11 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
+#ifdef SLAR_EXTERNAL
+    G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
+#endif 
+
+
     //RecordEventLAr( event );
 
     if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
@@ -160,6 +165,12 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
         evAnode.second.ApplyZeroSuppression();
       }
     }
+
+#ifdef SLAR_EXTERNAL
+    for (auto &primary : slar_event->GetPrimaries()) {
+      if (ext_scorer_hits == 0) primary.GetTrajectories().clear(); 
+    }
+#endif 
     
     SLArAnaMgr->FillEvTree();
 
@@ -185,19 +196,15 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       }
     }
 
-#ifdef SLAR_EXTERNAL
-    RecordEventExtScorer( event, verbose ); 
-#endif 
-
     fParentIDMap.clear(); 
     fExtraProcessInfo.clear(); 
 
     SLArAnaMgr->GetEvent()->Reset();
 }
 
-void SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& verbose)
+G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& verbose)
 {
-
+  G4int n_hits = 0; 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
 
   if (fTileHCollID!= -2) 
@@ -213,7 +220,7 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ver
         << G4endl; 
       G4Exception("SLArEventAction::RecordEventReadoutTile",
           "SLArCode001", JustWarning, msg);
-      return;
+      return 0;
     }   
 
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
@@ -277,6 +284,7 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ver
         }
       }
       
+      n_hits++;
     }
 
     // Sort hits on PMTs
@@ -286,17 +294,19 @@ void SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ver
     
 
     // Print diagnostics
-    G4int printModulo = 
-      G4RunManager::GetRunManager()->GetPrintProgress();
-    if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
+    //G4int printModulo = 
+      //G4RunManager::GetRunManager()->GetPrintProgress();
+    //if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return n_hits;
   }
 
   if (verbose > 1) printf("SLArEventAction::RecordEventReadoutTile() DONE\n");
+
+  return n_hits;
 }
 
-void SLArEventAction::RecordEventSuperCell(const G4Event* ev, const G4int& verbose)
+G4int SLArEventAction::RecordEventSuperCell(const G4Event* ev, const G4int& verbose)
 {
-
+  G4int n_hits = 0; 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
   if (fSuperCellHCollID != -5) 
   {
@@ -307,11 +317,9 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev, const G4int& verbo
     if ( (!hHC1) ) 
     {
       G4ExceptionDescription msg;
-      msg << "Some of hits collections of this event not found." 
-        << G4endl; 
-      G4Exception("SLArEventAction::RecordEventSuperCell",
-          "SLArCode001", JustWarning, msg);
-      return;
+      msg << "Some of hits collections of this event not found." << G4endl; 
+      G4Exception("SLArEventAction::RecordEventSuperCell", "SLArCode001", JustWarning, msg);
+      return 0;
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     auto bktManager = SLArAnaMgr->GetBacktrackerManager( backtracker::kSuperCell ); 
@@ -369,6 +377,7 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev, const G4int& verbo
         }
       }
       
+      n_hits++;
       //delete dstHit;
     }
     
@@ -380,23 +389,22 @@ void SLArEventAction::RecordEventSuperCell(const G4Event* ev, const G4int& verbo
     //}
 
     // Print diagnostics
-    G4int printModulo = 
-      G4RunManager::GetRunManager()->GetPrintProgress();
-    if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
+    //G4int printModulo = 
+      //G4RunManager::GetRunManager()->GetPrintProgress();
+    //if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return;
   }
 
   if (verbose > 2) printf("SLArEventAction::RecordEventSuperCell() DONE\n");
+  return n_hits;
 }
 
 
-void SLArEventAction::RecordEventLAr(const G4Event* ev, const G4int& verbose)
+G4int SLArEventAction::RecordEventLAr(const G4Event* ev, const G4int& verbose)
 {
-//#ifdef SLAR_DEBUG
-  //printf("  -> RecordEventLAr()\n");
-//#endif
+  G4int n_hits = 0; 
 
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-  if (fLArHCollID.empty()) return;
+  if (fLArHCollID.empty()) return 0;
   else 
   {
     // recover analysis manager
@@ -407,20 +415,18 @@ void SLArEventAction::RecordEventLAr(const G4Event* ev, const G4int& verbose)
 
       SLArLArHit* hit = (*hHC1)[0];
       fTotEdep = hit->GetDepositedEnergy();
+      n_hits++;
     }
-
   }
 
-
-//#ifdef SLAR_DEBUG
-  //printf("     DONE\n"); 
-//#endif
+  return n_hits;
 }
 
-void SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbose) {
+G4int SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbose) {
   G4HCofThisEvent* hce = ev->GetHCofThisEvent();
-  if (fExtScorerHCollID.empty()) return;
+  if (fExtScorerHCollID.empty()) return 0;
 
+  G4int n_hits = 0; 
 #ifdef SLAR_EXTERNAL
   auto anaMngr = SLArAnalysisManager::Instance(); 
   for (const auto& id : fExtScorerHCollID) {
@@ -428,11 +434,9 @@ void SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbo
     if (verbose > 1) printf("SLArExtHitsCollection hce[%i] = %p\n", id, static_cast<void*>(hHC1)); 
     if (!hHC1) {
       G4ExceptionDescription msg;
-      msg << "Some of hits collections of this event not found." 
-        << G4endl; 
-      G4Exception("SLArEventAction::RecordEventExtScorer",
-          "SLArCode001", JustWarning, msg);
-      return;
+      msg << "Some of hits collections of this event not found." << G4endl; 
+      G4Exception("SLArEventAction::RecordEventExtScorer", "SLArCode001", JustWarning, msg);
+      return 0;
     }   
 
     for (size_t i = 0; i < hHC1->entries(); i++) {
@@ -454,10 +458,13 @@ void SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verbo
       ext_record->SetVertex( scorer_hit->fVertex );
 
       anaMngr->GetExternalsTree()->Fill(); 
+      n_hits++; 
     }
   }
 
 #endif
+
+  return n_hits;
 }
 
 void SLArEventAction::RegisterNewTrackPID(int trk_id, int p_id) {
