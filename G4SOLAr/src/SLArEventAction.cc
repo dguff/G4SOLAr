@@ -36,7 +36,8 @@ SLArEventAction::SLArEventAction()
   fSuperCellHCollID(-5)
 {
   // set printing per each event
-  G4RunManager::GetRunManager()->SetPrintProgress(1);
+  G4int verbose = G4EventManager::GetEventManager()->GetVerboseLevel(); 
+  G4RunManager::GetRunManager()->SetPrintProgress(verbose);
 
   fHitCount                = 0;
   fPhotonCount_Scnt        = 0;
