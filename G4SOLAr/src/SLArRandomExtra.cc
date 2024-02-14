@@ -6,7 +6,7 @@
 
 #include "SLArRandomExtra.hh"
 
-inline G4ThreeVector SampleRandomDirection() {
+G4ThreeVector SampleRandomDirection() {
   double cosTheta = 2*G4UniformRand() - 1.;
   double phi = CLHEP::twopi*G4UniformRand();
   double sinTheta = std::sqrt(1. - cosTheta*cosTheta);
