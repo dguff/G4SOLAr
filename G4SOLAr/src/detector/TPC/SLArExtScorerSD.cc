@@ -43,7 +43,15 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
 
   // terminate track after having entered the scorer volume
   track->SetTrackStatus( fStopAndKill ); 
+  if (trkInfo == nullptr) {
+    printf("WARNING: %s track with id %i does not own its SLArUserTrkInformation\n", 
+        track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName().data(),
+        track->GetTrackID()); 
+    return false; 
+  }
   SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
+
+
   if ( fabs(trajectory->GetPDGID()) == 12 || 
        fabs(trajectory->GetPDGID()) == 14 ||
        fabs(trajectory->GetPDGID()) == 16 ) {
