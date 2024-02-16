@@ -122,7 +122,8 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
       //getchar(); 
     }
     TString gBinName = Form("gBin%i", iBin);
-    int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
+    g.SetName( gBinName ); 
+    int bin_idx = h2Bins->AddBin( std::move(new TGraph(g)) );
     el.second->SetBinIdx(bin_idx);
     iBin ++;
   }

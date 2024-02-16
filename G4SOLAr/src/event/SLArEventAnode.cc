@@ -10,8 +10,8 @@
 
 ClassImp(SLArEventAnode)
 
-SLArEventAnode::SLArEventAnode()
-  : fID(0), fNhits(0), fIsActive(true), 
+SLArEventAnode::SLArEventAnode() : TNamed(),
+    fID(0), fNhits(0), fIsActive(true), 
     fLightBacktrackerRecordSize(0), fChargeBacktrackerRecordSize(0), 
     fZeroSuppressionThreshold(0)
 {}

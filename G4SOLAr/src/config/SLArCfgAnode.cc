@@ -24,7 +24,7 @@ SLArCfgAnode::SLArCfgAnode(TString name)
 {}
 
 SLArCfgAnode::~SLArCfgAnode() {
-  for (auto &hmap : fAnodeLevelsMap) {delete hmap.second; hmap.second = 0;}
+  //for (auto &hmap : fAnodeLevelsMap) {delete hmap.second; hmap.second = 0;}
   fAnodeLevelsMap.clear(); 
 }
 
@@ -124,7 +124,8 @@ void SLArCfgAnode::RegisterMap(size_t ilevel, TH2Poly* hmap) {
     exit(1);
   }
 
-  fAnodeLevelsMap.insert(std::make_pair(ilevel, hmap)); 
+  std::unique_ptr<TH2Poly> hmap_unique(hmap); 
+  fAnodeLevelsMap.insert(std::make_pair(ilevel, std::move(hmap_unique))); 
   return;
 }
 
@@ -135,7 +136,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
     // Returns the map of the MegaTiles
     case 0:
       {
-        return fAnodeLevelsMap.find(0)->second; 
+        return fAnodeLevelsMap.find(0)->second.get(); 
       }
       break;
     // Returns the map at tile-level for a specfied MTile
@@ -174,7 +175,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
             ); 
         h2->SetFloat(); 
 
-        TH2Poly* h2_template = fAnodeLevelsMap.find(2)->second;
+        TH2Poly* h2_template = fAnodeLevelsMap.find(2)->second.get();
         for (const auto& bbin : *(h2_template->GetBins())) {
           TH2PolyBin* bin = (TH2PolyBin*)bbin;
           TGraph* g_tpl = (TGraph*)bin->GetPolygon();

@@ -615,7 +615,7 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
             ipoint++; 
           }
 
-          h2->AddBin(g); 
+          h2->AddBin( std::move(g) ); 
 //#ifdef SLAR_DEBUG
           //printf("----------------------------------------------------------------\n");
 //#endif

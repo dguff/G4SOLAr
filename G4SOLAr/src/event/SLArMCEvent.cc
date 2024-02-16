@@ -12,7 +12,7 @@
 ClassImp(SLArMCEvent)
 
 
-SLArMCEvent::SLArMCEvent() : 
+SLArMCEvent::SLArMCEvent() : TObject(),
   fEvNumber(0), fDirection{0, 0, 0}
 {
    fSLArPrimary.reserve(50);

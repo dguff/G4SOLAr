@@ -119,8 +119,9 @@ TH2Poly* SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
     //}
     auto g = mod.second->BuildGShape(); 
     TString gBinName = Form("gBin%i", iBin);
+    g.SetName( gBinName ); 
     printf("SLArCfgBaseSystem::BuildPolyBinHist: Adding bin %i\n", iBin);
-    int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
+    int bin_idx = h2Bins->AddBin( std::move(new TGraph(g)) );
     mod.second->SetBinIdx(bin_idx);
     iBin ++;
   }

@@ -72,13 +72,13 @@ SLArCfgBaseModule::~SLArCfgBaseModule()
 
 void SLArCfgBaseModule::SetupAxes() {
   if (fNormal == TVector3(1, 0, 0) || fNormal == TVector3(-1, 0, 0)) {
-    fAxis0 = TVector3(0, 0, 1);  
+    fAxis0.SetXYZ(0, 0, 1);  
   } 
   else if (fNormal == TVector3(0, 1, 0) || fNormal == TVector3(0, -1, 0)) {
-    fAxis0 = TVector3(0, 0, 1);  
+    fAxis0.SetXYZ(0, 0, 1);  
   } 
   else if (fNormal == TVector3(0, 0, 1) || fNormal == TVector3(0, 0, -1)) {
-    fAxis0 = TVector3(1, 0, 0);  
+    fAxis0.SetXYZ(1, 0, 0);  
   }
   fAxis1 = fAxis0.Cross( fNormal ); 
   for (int i=0; i<3; i++) fAxis1[i] = std::fabs( fAxis1[i] ); 
