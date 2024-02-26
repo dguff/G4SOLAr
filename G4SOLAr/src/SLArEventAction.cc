@@ -142,7 +142,6 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
 #endif 
 
-
     //RecordEventLAr( event );
 
     if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
@@ -154,7 +153,6 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       RecordEventSuperCell( event, verbose );
       if (verbose > 1) printf("DONE\n");
     }
-
      
     auto slar_event = SLArAnaMgr->GetEvent();
     slar_event->SetEvNumber(event->GetEventID());
@@ -167,8 +165,28 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       }
     }
 
+    // set global edep, electrons and photon counts per primary
+    auto& primaries = slar_event->GetPrimaries(); 
+    size_t n_primaries = primaries.size(); 
+    for (size_t i = 0; i < n_primaries; i++) {
+      SLArMCPrimaryInfo& primary = primaries.at(i); 
+      const auto& trjs = primary.GetTrajectories();
+      const size_t n_trjs = trjs.size(); 
+      G4double edep = 0; 
+      G4double nph = 0; 
+      for (size_t j = 0; j < n_trjs; j++) {
+        auto& t = trjs.at(j);
+        edep += t->GetTotalEdep(); 
+        nph += t->GetTotalNph(); 
+      }
+
+      primary.SetTotalEdep( edep ); 
+      primary.SetTotalScintPhotons( nph ); 
+    }
+
 #ifdef SLAR_EXTERNAL
-    for (auto &primary : slar_event->GetPrimaries()) {
+    auto& primaries = slar_event->GetPrimaries();
+    for (auto &primary : primaries) {
       if (ext_scorer_hits == 0) primary.GetTrajectories().clear(); 
     }
 #endif 
@@ -184,6 +202,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       for (const auto &p : primaries ) {
         printf("%s - %g MeV - trk ID %i\n", 
             p.GetParticleName().Data(), p.GetEnergy(), p.GetTrackID());
+        printf("\t%g MeV deposited energy in LAr\n", p.GetTotalLArEdep()); 
         printf("\t%i scintillation ph\n\t%i Cerenkov photons\n", 
             p.GetTotalScintPhotons(), p.GetTotalCerenkovPhotons()); 
         printf("ReadoutTile Photon Hits: %i\nSuperCell Photon Hits: %i\n\n", 

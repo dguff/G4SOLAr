@@ -155,7 +155,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
 
     SLArMCPrimaryInfo* ancestor = nullptr;
-    auto primaries = anaMngr->GetEvent()->GetPrimaries();
+    auto& primaries = anaMngr->GetEvent()->GetPrimaries();
     for (auto &p : primaries) {
       if (p.GetTrackID() == ancestor_id) {
         ancestor = &p;
@@ -163,7 +163,9 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       }
     }
 
-    if (ancestor) ancestor->IncrementLArEdep(edep); 
+    if (ancestor) {
+      ancestor->IncrementLArEdep(edep); 
+    }
   }     
 
   return true;
