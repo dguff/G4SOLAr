@@ -69,8 +69,8 @@ class SLArAnalysisManager
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
     void SetupBacktrackerRecords(); 
-    TTree* GetTree() const {return  fEventTree;}
-    TFile* GetFile() const {return   fRootFile;}
+    TTree* GetTree() const {return  fEventTree.get();}
+    TFile* GetFile() const {return   fRootFile.get();}
     SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
     std::map<int, SLArCfgAnode*>& GetAnodeCfg() {return fAnodeCfg;}
     inline SLArCfgAnode* GetAnodeCfg(int id) {
@@ -79,7 +79,7 @@ class SLArAnalysisManager
       return anodeCfg;}
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEvent* GetEvent()  {return fMCEvent;}
+    SLArMCEvent* GetEvent()  {return fMCEvent.get();}
     G4bool Save ();
 
     // mock fake access
@@ -92,7 +92,7 @@ class SLArAnalysisManager
     SLArAnalysisManagerMsgr* fAnaMsgr;
 #ifdef SLAR_EXTERNAL
     void SetupExternalsTree(); 
-    inline TTree* GetExternalsTree() {return fExternalsTree;}
+    inline TTree* GetExternalsTree() {return fExternalsTree.get();}
     inline std::unique_ptr<SLArEventTrajectoryLite>& GetExternalRecord() {return fExternalRecord;}
 #endif 
 
@@ -112,12 +112,12 @@ class SLArAnalysisManager
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 
-    TFile* fRootFile;
-    TTree* fEventTree;
-    SLArMCEvent* fMCEvent;
+    std::unique_ptr<TFile> fRootFile;
+    std::unique_ptr<TTree> fEventTree;
+    std::unique_ptr<SLArMCEvent>  fMCEvent;
 #ifdef SLAR_EXTERNAL
     std::unique_ptr<SLArEventTrajectoryLite> fExternalRecord;
-    TTree* fExternalsTree;
+    std::unique_ptr<TTree> fExternalsTree;
 #endif 
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
