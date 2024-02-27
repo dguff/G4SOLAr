@@ -94,11 +94,11 @@ TGraph SLArCfgReadoutTile::BuildGShape()
 {
   TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 
-  TVector3 size_tmp = fSize; 
+  TVector3 size_tmp(fSize); 
   TRotation rot; 
   rot.SetXPhi( fPhi ); rot.SetXTheta( fTheta ); rot.SetXPsi( fPsi ); 
-  rot = rot.Inverse(); 
-  size_tmp.Transform( rot ); 
+  TRotation rot_inv = rot.Inverse(); 
+  size_tmp.Transform( rot_inv ); 
   
   g.SetPoint(0, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
   g.SetPoint(1, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));

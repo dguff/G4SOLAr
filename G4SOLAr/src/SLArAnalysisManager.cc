@@ -242,7 +242,7 @@ G4bool SLArAnalysisManager::FillEvTree() {
 
 int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
   if (!fRootFile) {
-    printf("SLArAnalysisManager::WriteVariable WARNING ");
+    printf("SLArAnalysisManager::WriteArray WARNING ");
     printf("rootfile not present yet. Cannot write %s variable.\n", 
         name.c_str());
     return 666;
@@ -256,7 +256,7 @@ int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
 
 int SLArAnalysisManager::WriteCfg(G4String name, const char* cfg) {
   if (!fRootFile) {
-    printf("SLArAnalysisManager::WriteVariable WARNING ");
+    printf("SLArAnalysisManager::WriteCfg WARNING ");
     printf("rootfile not present yet. Cannot write %s variable.\n", 
         name.c_str());
     return 666;
@@ -553,7 +553,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
 
 #ifdef SLAR_EXTERNAL
 void SLArAnalysisManager::SetupExternalsTree() {
-  fExternalsTree = std::make_unique<Tree>("ExternalTree", "Externals reaching LAr interface", 
+  fExternalsTree = std::make_unique<TTree>("ExternalTree", "Externals reaching LAr interface", 
       /*splitlevel*/99, /*dir*/ nullptr); 
 
   fExternalsTree->Branch("iEv", &fExternalRecord->fEvNumber); 

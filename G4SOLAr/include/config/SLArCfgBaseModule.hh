@@ -50,7 +50,7 @@ class SLArCfgBaseModule : public TNamed {
     inline int GetBinIdx() const {return  fBin;}
     inline void SetBinIdx(int bin) {fBin =  bin;}
     //inline TGraph* GetGraphShape() {return fGShape;}
-    inline void SetNormal(double x, double y, double z) {fNormal = TVector3(x, y, z);};
+    inline void SetNormal(double x, double y, double z) {fNormal.SetXYZ(x, y, z);};
     inline void SetNormal(TVector3 vN) {fNormal = vN;}
     inline double GetSizeX() const {return fSize.x();}
     inline double GetSizeY() const {return fSize.y();}
@@ -59,13 +59,17 @@ class SLArCfgBaseModule : public TNamed {
     inline void   SetSizeX(const float _x) {fSize.SetX(_x);}
     inline void   SetSizeY(const float _y) {fSize.SetY(_y);}
     inline void   SetSizeZ(const float _z) {fSize.SetZ(_z);}
-    inline void   SetSize (const float x, const float y, const float z) { fSize = TVector3(x, y, z); }
+    inline void   SetSize (const float x, const float y, const float z) { fSize.SetXYZ(x, y, z); }
 
     inline TVector3 GetNormal() const {return fNormal;}
     virtual TGraph BuildGShape()=0; 
     inline void SetupAxis0( const TVector3 v) {fAxis0 = v;} 
     inline void SetupAxis1( const TVector3 v) {fAxis1 = v;}
-    inline void SetupAxes ( const TVector3 v0, const TVector3 v1 ) {fAxis0 = v0; fAxis1 = v1;}
+    inline void SetupAxes ( const TVector3& v0, const TVector3& v1 ) {
+      Double_t xx[3] = {0, 0, 0}; 
+      v0.GetXYZ( xx ); fAxis0.SetXYZ(xx[0], xx[1], xx[2]); 
+      v1.GetXYZ( xx ); fAxis1.SetXYZ(xx[0], xx[1], xx[2]); 
+    }
     virtual void SetupAxes(); 
     inline const TVector3& GetAxis0() {return fAxis0;} 
     inline const TVector3& GetAxis1() {return fAxis1;} 
