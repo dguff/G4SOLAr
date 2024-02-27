@@ -25,21 +25,21 @@ class SLArExternalGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public: 
     SLArExternalGeneratorAction(); 
-    SLArExternalGeneratorAction(const char* ext_cfg_path); 
+    SLArExternalGeneratorAction(const G4String ext_cfg_path); 
     virtual ~SLArExternalGeneratorAction(); 
 
     virtual void GeneratePrimaries(G4Event* ev); 
     void SetVertexGenerator(SLArBoxSurfaceVertexGenerator* vtxGen) {fVtxGen  = vtxGen;}
     SLArBoxSurfaceVertexGenerator* GetVertexGenerator() {return fVtxGen;}
-    G4double SourceExternalConfig(const char* ext_cfg_path); 
+    G4double SourceExternalConfig(const G4String ext_cfg_path); 
     G4double SetGeneratorBox(const G4String volName); 
 
   protected:
-    SLArPGunGeneratorAction* fParticleGun; 
+    std::unique_ptr<SLArPGunGeneratorAction> fParticleGun; 
     SLArBoxSurfaceVertexGenerator* fVtxGen;
-    TH1D* fEnergySpectrum; 
+    std::unique_ptr<TH1D> fEnergySpectrum; 
     G4String fParticleName; 
-    TRandom3* fRandomEngine; 
+    std::unique_ptr<TRandom3> fRandomEngine; 
 
 }; 
 

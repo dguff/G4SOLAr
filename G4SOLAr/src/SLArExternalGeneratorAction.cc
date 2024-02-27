@@ -27,21 +27,17 @@
 
 
 SLArExternalGeneratorAction::SLArExternalGeneratorAction()
-  : fParticleGun(nullptr), fVtxGen(nullptr), fEnergySpectrum(nullptr)
+  : fVtxGen(nullptr)
 {
-  fParticleGun = new SLArPGunGeneratorAction(1); 
+  fParticleGun = std::make_unique<SLArPGunGeneratorAction>(1); 
 
-  fRandomEngine = new TRandom3( G4Random::getTheSeed() ); 
+  fRandomEngine = std::make_unique<TRandom3>( G4Random::getTheSeed() ); 
 }
 
 SLArExternalGeneratorAction::~SLArExternalGeneratorAction()
-{
-  if (fParticleGun) {delete fParticleGun; fParticleGun=nullptr;}
-  if (fEnergySpectrum) {delete fEnergySpectrum; fEnergySpectrum=nullptr;}
-  if (fRandomEngine) {delete fRandomEngine; fRandomEngine=nullptr;}
-}
+{}
 
-G4double SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_path) {
+G4double SLArExternalGeneratorAction::SourceExternalConfig(const G4String ext_cfg_path) {
   FILE* ext_cfg_file = std::fopen(ext_cfg_path, "r");
   char readBuffer[65536];
   rapidjson::FileReadStream is(ext_cfg_file, readBuffer, sizeof(readBuffer));
@@ -73,22 +69,26 @@ G4double SLArExternalGeneratorAction::SourceExternalConfig(const char* ext_cfg_p
     }
   }
 
-  TFile* input_file = new TFile(external_cfg["file"].GetString()); 
-  if (!input_file) {
+  TFile input_file(external_cfg["file"].GetString()); 
+  if (input_file.IsOpen() == false) {
     printf("SLArExternalGeneratorAction::SourceExternalConfig ERROR\n");
     printf("Cannot open external background file %s.\n", external_cfg["file"].GetString()); 
-    getchar(); 
+    exit(2); 
   }
-  TH1D* h = (TH1D*)input_file->Get(external_cfg["key"].GetString()); 
-  fEnergySpectrum = (TH1D*)h->Clone(); 
-  //input_file->Close(); 
+  TH1D* h = input_file.Get<TH1D>(external_cfg["key"].GetString()); 
+  h->SetDirectory( nullptr ); 
+  input_file.Close(); 
+
+  fEnergySpectrum = std::make_unique<TH1D>( *h ); 
   if (!fEnergySpectrum) {
     printf("SLArExternalGeneratorAction::SourceExternalConfig ERROR\n");
     printf("Cannot read key %s from external background file %s.\n", 
         external_cfg["key"].GetString(), external_cfg["file"].GetString()); 
-    getchar(); 
+    exit(2); 
   }
 
+  fclose(ext_cfg_file); 
+  delete h; 
   return fVtxGen->GetSurfaceGenerator(); 
 }
 
@@ -99,7 +99,7 @@ G4double SLArExternalGeneratorAction::SetGeneratorBox(const G4String volName) {
     printf("SLArBoxSurfaceVertexGenerator::SetGeneratorBox(%s) WARNING\n", 
         volName.c_str());
     printf("Unable to find %s in physical volume store.\n", volName.c_str());
-    getchar(); 
+    exit(2); 
   }
 
   fVtxGen->SetBoxLogicalVolume(volume->GetLogicalVolume()); 
@@ -121,9 +121,9 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   G4ThreeVector vtx_pos(0, 0, 0); 
   fVtxGen->ShootVertex(vtx_pos);
   
-  //printf("Energy spectrum pointer: %p\n", static_cast<void*>(fEnergySpectrum));
-  //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
-  G4double energy = fEnergySpectrum->GetRandom( fRandomEngine ); 
+  printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
+  printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
+  G4double energy = fEnergySpectrum->GetRandom( fRandomEngine.get() ); 
   auto face = fVtxGen->GetVertexFace(); 
   const auto face_normal = slargeo::BoxFaceNormal[face]; 
   //printf("SLArExternalGeneratorAction: vtx face is %i\n", face);

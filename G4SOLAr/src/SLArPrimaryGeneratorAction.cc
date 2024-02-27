@@ -94,25 +94,33 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
     printf("igen = %i\n", igen);
     if (gen) {
       printf("Deleting gen %i\n", igen);
-      if (igen == 0) {
+      if (igen == kParticleGun) {
         SLArPGunGeneratorAction* local = (SLArPGunGeneratorAction*)gen;
         delete local;
       }
-      else if (igen == 1) {
+      else if (igen == kParticleBomb) {
         SLArPBombGeneratorAction* local = (SLArPBombGeneratorAction*)gen;
         delete local;
       }
-      else if (igen == 2) {
+      else if (igen == kDecay0) {
         auto local = (bxdecay0_g4::SLArDecay0GeneratorAction*)gen;
         delete local;
       }
-      else if (igen == 3) {
+      else if (igen == kMarley) {
         auto local = (marley::SLArMarleyGeneratorAction*)gen;
         delete local;
       }
-      else if (igen == 4) {
+      else if (igen == kBackground) {
         auto local = (SLArBackgroundGeneratorAction*)gen;
         delete local;
+      }
+      else if (igen == kExternalGen) {
+        auto local = (SLArExternalGeneratorAction*)gen;
+        delete local;
+      }
+      else if (igen == kGENIE) {
+        auto local = (SLArGENIEGeneratorAction*)gen; 
+        delete local; 
       }
       //gen = nullptr;
     }
@@ -215,7 +223,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         auto decay0_gen = 
           (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0]; 
         if (decay0_gen->HasVertexGenerator() == false) {
-          decay0_gen->SetVertexGenerator(fBulkGenerator);
+          decay0_gen->SetVertexGenerator(*fBulkGenerator);
         }
         gen = decay0_gen; 
       }
