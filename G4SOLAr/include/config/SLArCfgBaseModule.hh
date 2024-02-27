@@ -19,12 +19,14 @@ class SLArCfgBaseModule : public TNamed {
 
   public: 
     SLArCfgBaseModule(); 
-    SLArCfgBaseModule(int idx); 
-    SLArCfgBaseModule(int idx, float xc, float yc, float zc, float phi, float theta, float psi); 
+    SLArCfgBaseModule(int id); 
+    SLArCfgBaseModule(int id, float xc, float yc, float zc, float phi, float theta, float psi); 
     SLArCfgBaseModule(const SLArCfgBaseModule& base); 
     virtual ~SLArCfgBaseModule(); 
 
-    inline virtual void DumpInfo() {}; 
+    inline virtual void DumpInfo() const {}; 
+    inline int GetID() const {return fID;}
+    inline void SetID(int id) {fID = id;}
     inline int GetIdx() const {return fIdx;}
     inline void SetIdx(int idx) {fIdx = idx;}
     inline float GetX() const {return fX;}
@@ -72,6 +74,7 @@ class SLArCfgBaseModule : public TNamed {
     inline const xyzpoint& GetVecNormal(){return fVecNormal;}
 
   protected: 
+    int      fID    ; //!< Module ID
     int      fIdx   ; //!< Module index
     int      fBin   ; //!< Module bin id in TH2Poly projection
     float    fX     ; //!< Module x coordinate in the parent volume frame

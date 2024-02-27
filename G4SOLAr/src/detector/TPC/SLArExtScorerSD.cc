@@ -43,7 +43,15 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
 
   // terminate track after having entered the scorer volume
   track->SetTrackStatus( fStopAndKill ); 
+  if (trkInfo == nullptr) {
+    printf("WARNING: %s track with id %i does not own its SLArUserTrkInformation\n", 
+        track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName().data(),
+        track->GetTrackID()); 
+    return false; 
+  }
   SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
+
+
   if ( fabs(trajectory->GetPDGID()) == 12 || 
        fabs(trajectory->GetPDGID()) == 14 ||
        fabs(trajectory->GetPDGID()) == 16 ) {
@@ -60,10 +68,13 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
   scorer_hit->fParentID = trajectory->GetParentID(); 
   scorer_hit->fTime = trajectory->GetTime(); 
   scorer_hit->fPDGCode = trajectory->GetPDGID(); 
+  scorer_hit->fCreator = trajectory->GetCreatorProcess(); 
+  scorer_hit->fEnergy = thePostPoint->GetKineticEnergy(); 
 
-  scorer_hit->fVertex[0] = thePostPoint->GetPosition().x(); 
-  scorer_hit->fVertex[1] = thePostPoint->GetPosition().y(); 
-  scorer_hit->fVertex[2] = thePostPoint->GetPosition().z(); 
+
+  scorer_hit->fVertex[0] = trajectory->GetPoints().front().fX; 
+  scorer_hit->fVertex[1] = trajectory->GetPoints().front().fY; 
+  scorer_hit->fVertex[2] = trajectory->GetPoints().front().fZ; 
 
   fHitsCollection->insert( scorer_hit ); 
 

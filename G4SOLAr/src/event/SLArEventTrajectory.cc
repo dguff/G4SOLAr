@@ -18,7 +18,7 @@ SLArEventTrajectory::SLArEventTrajectory() :
   fInitMomentum(TVector3(0,0,0)), 
   fTotalEdep(0.), fTotalNph(0.), fTotalNel(0.)
 {
-  //fTrjPoints.reserve(500);
+  fTrjPoints.reserve(500);
 }
 
 SLArEventTrajectory::SLArEventTrajectory(const SLArEventTrajectory& trj) 

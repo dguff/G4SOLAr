@@ -51,6 +51,7 @@
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
+#include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -298,6 +299,8 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     gen = bkgGen;
   }
 
+  G4IonTable* ionTable = G4IonTable::GetIonTable(); 
+
   gen->GeneratePrimaries(anEvent); 
   G4int n = anEvent->GetNumberOfPrimaryVertex(); 
 
@@ -315,13 +318,18 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     for (int ip = 0; ip<np; ip++) {
       //printf("getting particle %i...\n", ip); 
       auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
+      G4String name = ""; 
 
       if (!particle->GetParticleDefinition()) {
         tc_primary.SetID  (particle->GetPDGcode()); 
-        tc_primary.SetName("Ion");
+        name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
+        tc_primary.SetName(name);
+        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
       } else {
         tc_primary.SetID  (particle->GetPDGcode());
-        tc_primary.SetName(particle->GetParticleDefinition()->GetParticleName());
+        name = particle->GetParticleDefinition()->GetParticleName(); 
+        tc_primary.SetName(name);
+        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
       }
 
       tc_primary.SetTrackID(particle->GetTrackID());

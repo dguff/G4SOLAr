@@ -13,7 +13,8 @@
 ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
-  fID(0), fTrkID(0), fName("noParticle"), fEnergy(0.),
+  TNamed(),
+  fID(0), fTrkID(0),fEnergy(0.),
   fTotalEdep(0.), fTotalLArEdep(0), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
   fVertex(3, 0.), fMomentum(3, 0.)
 {
@@ -59,7 +60,8 @@ void SLArMCPrimaryInfo::ResetParticle()
 {
   fID           = 0;
   fTrkID        = 0; 
-  fName         = "noName";
+  fName         = "";
+  fTitle        = "";
   fEnergy       = 0.;
   fTime         = 0.;
   fTotalEdep    = 0.;

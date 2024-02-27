@@ -24,7 +24,8 @@ class SLArElectronDrift {
     void SetElectricField(double E); 
     void ComputeProperties(); 
 
-    void Drift(const int& n, const int& trkId, const G4ThreeVector& pos, 
+    void Drift(const int& n, const int& trkId, const int& ancestorId,
+        const G4ThreeVector& pos, 
         const double time, 
         SLArCfgAnode* anodeCfg, SLArEventAnode* anodeEv);
 

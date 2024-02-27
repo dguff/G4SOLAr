@@ -50,6 +50,7 @@
 #include "G4PSNofSecondary.hh"
 #include "G4SDParticleFilter.hh"
 #include "G4SDParticleWithEnergyFilter.hh"
+#include "G4UnitsTable.hh"
 
 #include <fstream>
 
@@ -734,24 +735,27 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
     int megatile_nr = anodeCfg->GetMap().size(); 
     printf("%s has %i elements registered\n", anodeCfg->GetName(), megatile_nr); 
 #ifdef SLAR_DEBUG
-    for (const auto& mt : anodeCfg->GetMap()) {
-      printf("%s\n", mt.second->GetName()); 
-    }
+    anodeCfg->DumpMap(); 
 #endif
 
-    auto mtileCfg = anodeCfg->GetMap().begin()->second; 
-
-    if (!mtileCfg) printf("mtileCfg is null!\n");
+    const size_t n_megatiles = anodeCfg->GetMap().size(); 
+    if (n_megatiles == 0) {
+      printf("SLArDetectorConstruction::ConstructAnodeMap WARNING: Anode %i has no megatiles registered.\n", 
+        anodeCfg->GetIdx()); 
+      return;
+    }
+    
+    SLArCfgMegaTile& mtileCfg = anodeCfg->GetMap().front(); 
 
     auto hMapMegaTile = anodeCfg->BuildPolyBinHist(); 
     printf("mapMegaTile\n");
-    auto hMapTile     = mtileCfg->BuildPolyBinHist(
+    auto hMapTile     = mtileCfg.BuildPolyBinHist(
         SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative); 
     printf("mapTile\n");
     G4RotationMatrix* mtile_rot = new G4RotationMatrix(
-        mtileCfg->GetPhi(), 
-        mtileCfg->GetTheta(), 
-        mtileCfg->GetPsi());
+        mtileCfg.GetPhi(), 
+        mtileCfg.GetTheta(), 
+        mtileCfg.GetPsi());
     G4RotationMatrix* mtile_rot_inv = new G4RotationMatrix(*mtile_rot); 
     mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 

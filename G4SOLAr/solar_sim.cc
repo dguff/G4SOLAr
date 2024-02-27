@@ -79,7 +79,7 @@ int main(int argc,char** argv)
   G4String output_dir = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
   G4String material_file = "./assets/materials/materials_db.json"; 
-  G4bool   do_cerenkov = true; 
+  G4bool   do_cerenkov = false; 
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
   G4double bias_factor = 1; 

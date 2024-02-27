@@ -11,13 +11,14 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
 
-#include "TNamed.h"
-#include "TVector3.h"
+//#include "TNamed.h"
+//#include "TVector3.h"
 #include "TH2Poly.h"
-#include "config/SLArCfgReadoutTile.hh"
-#include "config/SLArCfgSuperCell.hh"
-#include "config/SLArCfgBaseModule.hh"
+//#include "config/SLArCfgReadoutTile.hh"
+//#include "config/SLArCfgSuperCell.hh"
+#include <config/SLArCfgBaseModule.hh>
 
 template<class TBaseModule>
 class SLArCfgAssembly : public SLArCfgBaseModule {
@@ -28,24 +29,25 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
     SLArCfgAssembly(const SLArCfgAssembly& cfg); 
     virtual ~SLArCfgAssembly(); 
 
-    void DumpMap(); 
-    TBaseModule* FindBaseElementInMap(int ibin); 
-    TBaseModule* GetBaseElement(int idx); 
-    inline std::map<int, TBaseModule*>& GetMap() {return fElementsMap;}
-    inline const std::map<int, TBaseModule*>& GetConstMap() const {return fElementsMap;}
-    void RegisterElement(TBaseModule* element);
+    virtual void DumpMap() const; 
+    TBaseModule& GetBaseElementByBin(int ibin); 
+    TBaseModule& GetBaseElementByID(int ibin); 
+    TBaseModule& GetBaseElement(int idx); 
+    inline std::vector<TBaseModule>& GetMap() {return fElementsMap;}
+    inline const std::vector<TBaseModule>& GetConstMap() const {return fElementsMap;}
+    void RegisterElement(TBaseModule& element);
     virtual TH2Poly* BuildPolyBinHist(ESubModuleReferenceFrame kFrame = kWorld, int n = 25, int m = 25);
     TGraph BuildGShape() override; 
 
   protected: 
     int fNElements; 
-    std::map<int, TBaseModule*> fElementsMap;
+    std::vector<TBaseModule> fElementsMap;
+    std::map<int, int> fBinToIdxMap;
+    std::map<int, int> fIDtoIdxMap; 
 
   public:
-    ClassDefOverride(SLArCfgAssembly,1);
+    ClassDefOverride(SLArCfgAssembly,3);
 }; 
-
-
 
 
 #endif /* end of include guard SLARCFGASSEMBLY_HH */

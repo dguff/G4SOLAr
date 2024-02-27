@@ -29,18 +29,20 @@ SLArCfgSuperCellArray::SLArCfgSuperCellArray(const SLArCfgSuperCellArray &cfg)
 SLArCfgSuperCellArray::~SLArCfgSuperCellArray()
 {
   //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
-  for (auto &sc : fElementsMap)
-    if (sc.second) {delete sc.second; sc.second = 0;}
+  //for (auto &sc : fElementsMap)
+    //if (sc.second) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();
   fNElements = 0;
 }
 
 void SLArCfgSuperCellArray::DumpMap() 
 {
-  std::printf("SLArCfgSuperCellArray %s has %i entries\n", 
-      fName.Data(), (int)fElementsMap.size());
-  for (auto &itr : fElementsMap) {
-    printf("[%i]: SuperCell\n", itr.first);
+  const size_t n_elements = fElementsMap.size();
+  std::printf("SLArCfgSuperCellArray %s has %lu entries\n", 
+      fName.Data(), n_elements);
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    const SLArCfgSuperCell& el = fElementsMap.at(i_element); 
+    printf("SuperCell[%i]: id: %i, %s\n", el.GetIdx(), el.GetID(), el.GetName());
   }
 }
 

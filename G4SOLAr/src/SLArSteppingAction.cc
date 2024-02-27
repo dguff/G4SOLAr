@@ -239,8 +239,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
           fEventAction->RegisterNewProcessExtraInfo(
               SLArEventAction::TrackIdHelpInfo_t(track->GetTrackID(), 
-                sec_itr->GetDynamicParticle()->GetPDGcode(), 
-                momentum_4),
+                sec_itr->GetDynamicParticle()->GetPDGcode(), momentum_4),
               terminator);
         }
 
