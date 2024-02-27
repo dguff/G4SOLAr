@@ -23,6 +23,7 @@
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
 #include <G4PhysicalVolumeStore.hh>
+#include <G4UnitsTable.hh>
 
 #include "G4ios.hh"
 #include <cstdio>

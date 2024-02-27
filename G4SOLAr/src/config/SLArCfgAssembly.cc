@@ -5,8 +5,8 @@
  */
 
 #include "TRegexp.h"
-#include "TPRegexp.h"
-#include "TList.h"
+//#include "TPRegexp.h"
+//#include "TList.h"
 
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgReadoutTile.hh"
@@ -20,6 +20,7 @@ SLArCfgAssembly<TBAseModule>::SLArCfgAssembly()
   : SLArCfgBaseModule()/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName("aAssemblyHasNoName");
+  fElementsMap.reserve(50); 
 }
 
 template<class TBAseModule>
@@ -27,6 +28,7 @@ SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie)
   : SLArCfgBaseModule(serie)/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName(name);
+  fElementsMap.reserve(50);
 #ifdef SLAR_DEBUG
   printf("SLArCfgAssembly created with name %s\n", fName.Data());
 #endif
@@ -39,10 +41,11 @@ SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
   SLArCfgAssembly<TBAseModule>();
   SetName(cfg.fName);
 
-  for (auto &el : cfg.fElementsMap)
+  const size_t n_elements = cfg.fElementsMap.size();
+  fElementsMap.reserve(n_elements); 
+  for (size_t i_element = 0; i_element < n_elements; i_element++)
   {
-    fElementsMap.insert(std::make_pair(
-          el.first, (TBAseModule*)el.second->Clone()));
+    fElementsMap.push_back( TBAseModule(cfg.fElementsMap.at(i_element)) ); 
     fNElements++;
   }
 
@@ -53,46 +56,51 @@ template<class TBAseModule>
 SLArCfgAssembly<TBAseModule>::~SLArCfgAssembly()
 {
   //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
-  for (auto &sc : fElementsMap)
-    if (sc.second) {delete sc.second; sc.second = 0;}
+  //for (auto &sc : fElementsMap)
+    //if (sc) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();
   fNElements = 0;
 }
 
 template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::DumpMap() 
+void SLArCfgAssembly<TBAseModule>::DumpMap() const
 {
+  const size_t n_elements = fElementsMap.size(); 
   std::printf("SLArCfgAssembly %s has %lu entries\n", 
-      fName.Data(), fElementsMap.size());
-  for (auto &itr : fElementsMap)
-    itr.second->DumpInfo();
+      fName.Data(), n_elements);
+  for (size_t i_element = 0; i_element < n_elements; i_element++) 
+  {
+    const auto& itr = fElementsMap.at(i_element); 
+    itr.DumpInfo();
+  }
 }
 
 template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::RegisterElement(TBAseModule* element)
+void SLArCfgAssembly<TBAseModule>::RegisterElement(TBAseModule& element)
 {
-  int idx = element->GetIdx();
-  if (fElementsMap.count(idx)) 
+  int id = element.GetID();
+  if (fIDtoIdxMap.count(id)) 
   {
-    std::cout<<"Base element "<<idx<<" already registered. Skip"<<std::endl;
+    std::cout<<"Base element with id "<<id<<" already registered. Skip"<<std::endl;
     return;
   }
-  fElementsMap.insert( 
-      std::make_pair(idx, element)
-      );
+  element.SetIdx( fElementsMap.size() ); 
+  fIDtoIdxMap.insert( std::make_pair( id, element.GetIdx() ) ); 
+  fElementsMap.push_back(element);
   fNElements++; 
 }
 
 template<class TBaseModule>
-TBaseModule* SLArCfgAssembly<TBaseModule>::GetBaseElement(int idx)
+TBaseModule& SLArCfgAssembly<TBaseModule>::GetBaseElement(int idx)
 {
-  auto it = fElementsMap.find(idx);
-  if (it != fElementsMap.end()) {
-    return it->second;
-  }
-  else {
-    return nullptr;
-  }
+  return fElementsMap.at(idx); 
+  //auto it = fElementsMap.find(idx);
+  //if (it != fElementsMap.end()) {
+    //return it->second;
+  //}
+  //else {
+    //return nullptr;
+  //}
 }
 
 template<class TBaseModule>
@@ -107,11 +115,12 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
   h2Bins->SetFloat();
 
   int iBin = 1;
-  for (auto &el : fElementsMap) 
-  {
+  const size_t n_elements = fElementsMap.size(); 
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    auto& el = GetBaseElement(i_element); 
     //printf("el position (global): %g, %g, %g \n", 
         //el.second->GetPhysX(), el.second->GetPhysY(), el.second->GetPhysZ());
-    TGraph g = el.second->BuildGShape(); 
+    TGraph g = el.BuildGShape(); 
     if (kFrame == kRelative) {
       for (int i=0; i<g.GetN(); i++) {
         //printf("(%g, %g) -> ", g->GetX()[i], g->GetY()[i]);
@@ -123,7 +132,8 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
     }
     TString gBinName = Form("gBin%i", iBin);
     int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
-    el.second->SetBinIdx(bin_idx);
+    el.SetBinIdx(bin_idx);
+    fBinToIdxMap.insert( std::make_pair(bin_idx, i_element) ); 
     iBin ++;
   }
 
@@ -163,8 +173,11 @@ TGraph SLArCfgAssembly<TBaseModule>::BuildGShape() {
   double y_min =  1e10; 
   double y_max = -1e10; 
 
-  for (const auto &el : fElementsMap) {
-    TGraph gbin = el.second->BuildGShape(); 
+  const size_t n_elements = fElementsMap.size();
+
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    auto& el = GetBaseElement(i_element); 
+    TGraph gbin = el.BuildGShape(); 
     double* x = gbin.GetX(); 
     double* y = gbin.GetY(); 
     int n = gbin.GetN(); 
@@ -191,19 +204,33 @@ TGraph SLArCfgAssembly<TBaseModule>::BuildGShape() {
 }
 
 template<class TBaseModule>
-TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin) 
+TBaseModule& SLArCfgAssembly<TBaseModule>::GetBaseElementByBin(int ibin) 
 {
-  TBaseModule* module_cfg = nullptr;
-  for (const auto& mod : fElementsMap) {
-    if (mod.second->GetBinIdx() == ibin) {
-      module_cfg = mod.second; 
-      break;
-    }
-  }
-
+  //TBaseModule* module_cfg = nullptr;
+  //if (fBinToIdxMap.find(ibin) == fBinToIdxMap.end()) {
+    //for (const auto& mod : fElementsMap) {
+      //if (mod.second->GetBinIdx() == ibin) {
+        //module_cfg = mod.second; 
+        //break;
+      //}
+    //}
+  //}
+  //else {
+    int module_idx = fBinToIdxMap.find(ibin)->second;
+    TBaseModule& module_cfg = fElementsMap.at(module_idx); 
+  //}
+  
   return module_cfg;
 }
 
+template<class TBaseModule>
+TBaseModule& SLArCfgAssembly<TBaseModule>::GetBaseElementByID(int id) 
+{
+  int module_idx = fIDtoIdxMap.find(id)->second;
+  TBaseModule& module_cfg = fElementsMap.at(module_idx); 
+
+  return module_cfg;
+}
 
 template class SLArCfgAssembly<SLArCfgSuperCell>; 
 template class SLArCfgAssembly<SLArCfgReadoutTile>;

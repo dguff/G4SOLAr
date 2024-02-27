@@ -30,7 +30,7 @@ SLArEventMegatile::SLArEventMegatile(const SLArEventMegatile& right)
 }
 
 
-SLArEventMegatile::SLArEventMegatile(SLArCfgMegaTile* cfg) 
+SLArEventMegatile::SLArEventMegatile(const SLArCfgMegaTile* cfg) 
   : SLArEventMegatile()
 {
   SetIdx(cfg->GetIdx());
@@ -62,8 +62,8 @@ SLArEventMegatile::~SLArEventMegatile()
 int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
   int ntiles = 0; 
   for (auto &cfgTile : cfg->GetConstMap()) {
-    int idx_tile = cfgTile.second->GetIdx(); 
-    fTilesMap.insert(std::make_pair(idx_tile, SLArEventTile(idx_tile) ));
+    int id_tile = cfgTile.GetID(); 
+    fTilesMap.insert(std::make_pair(id_tile, SLArEventTile(id_tile) ));
     ++ntiles; 
   }
 
@@ -71,16 +71,16 @@ int SLArEventMegatile::ConfigModule(const SLArCfgMegaTile* cfg) {
 }
 
 
-SLArEventTile& SLArEventMegatile::GetOrCreateEventTile(const int& tileIdx) 
+SLArEventTile& SLArEventMegatile::GetOrCreateEventTile(const int& tileId) 
 {
-  auto it  = fTilesMap.find(tileIdx); 
+  auto it  = fTilesMap.find(tileId); 
   if (it != fTilesMap.end()) {
     //printf("SLArEventMegatile::CreateEventTile(%i) WARNING: Tile nr %i already present in MegatTile %i register\n", tileIdx, tileIdx, fIdx);
-    return fTilesMap.find(tileIdx)->second;
+    return fTilesMap.find(tileId)->second;
   }
   else {
-    fTilesMap.insert( std::make_pair(tileIdx, SLArEventTile(tileIdx) ) );  
-    auto& t_event = fTilesMap[tileIdx];
+    fTilesMap.insert( std::make_pair(tileId, SLArEventTile(tileId) ) );  
+    auto& t_event = fTilesMap[tileId];
     t_event.SetBacktrackerRecordSize( fLightBacktrackerRecordSize ); 
     t_event.SetChargeBacktrackerRecordSize( fChargeBacktrackerRecordSize ); 
     return t_event;
