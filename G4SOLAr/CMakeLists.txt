@@ -13,12 +13,22 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   message(STATUS "DEBUG: Adding '-g' option for gdb debugging")
 endif()
 
+#----------------------------------------------------------------------------
+# Define few SoLAr-sim options
+option(SLAR_PROFILE "Enbale profiling with gprof" OFF)
+option(SLAR_EXTERNAL "Build code with special external background features" OFF)
+option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
+
+if (SLAR_PROFILE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+  message(STATUS "Building solar_sim with gprof profiling feature")
+endif()
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui

@@ -29,18 +29,20 @@ SLArCfgMegaTile::SLArCfgMegaTile(const SLArCfgMegaTile &cfg)
 SLArCfgMegaTile::~SLArCfgMegaTile()
 {
   //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
-  for (auto &sc : fElementsMap)
-    if (sc.second) {delete sc.second; sc.second = 0;}
+  //for (auto &sc : fElementsMap)
+    //if (sc.second) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();
   fNElements = 0;
 }
 
-void SLArCfgMegaTile::DumpMap() 
+void SLArCfgMegaTile::DumpMap() const
 {
-  std::printf("SLArCfgMegaTile %s has %i entries\n", 
-      fName.Data(), (int)fElementsMap.size());
-  for (auto &itr : fElementsMap)
-    itr.second->DumpInfo();
+  const size_t n_elements = fElementsMap.size(); 
+  std::printf("SLArCfgMegaTile %s has %lu entries\n", 
+      fName.Data(), n_elements);
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    fElementsMap.at(i_element).DumpInfo();
+  }
 }
 
 /*

@@ -4,7 +4,7 @@
  * @created     : Wed Feb 12, 2020 18:26:02 CET
  */
 
-#include "G4ParticlePropertyTable.hh"
+#include "G4ParticleTable.hh"
 #include "G4Material.hh"
 #include "G4ProcessManager.hh"
 #include "G4ProcessVector.hh"
@@ -19,8 +19,8 @@
 
 #include "SLArEventAnode.hh"
 #include "TObjString.h"
-#include "TVectorD.h"
 #include "TParameter.h"
+#include "TVectorD.h"
 
 SLArAnalysisManager* SLArAnalysisManager::fgMasterInstance = nullptr;
 G4ThreadLocal SLArAnalysisManager* SLArAnalysisManager::fgInstance = nullptr;
@@ -55,11 +55,6 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
     fIsMaster(isMaster), fSeed( time(NULL) ), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fTrajectoryFull( true ),
-    fRootFile (nullptr), fEventTree (nullptr), 
-    fMCEvent(nullptr),
-#ifdef SLAR_EXTERNAL
-    fExternalRecord(nullptr),
-#endif // SLAR_EXTERNAL
     fSuperCellBacktrackerManager(nullptr), 
     fVUVSiPMBacktrackerManager(nullptr), 
     fChargeBacktrackerManager(nullptr), 
@@ -76,7 +71,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent = new SLArMCEvent();
+    fMCEvent = std::make_unique<SLArMCEvent>();
 #ifdef SLAR_EXTERNAL
     fExternalRecord = std::make_unique<SLArEventTrajectoryLite>(); 
 #endif // DEBUG
@@ -89,14 +84,12 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
 SLArAnalysisManager::~SLArAnalysisManager()
 {
   G4cerr << "Deleting SLArAnalysisManager" << G4endl;
-  if (fRootFile        ) {
+  if (fRootFile) {
     if (fRootFile->IsOpen()) {
       fRootFile->cd();
       fEventTree->Write();
-      fEventTree->Delete();
 #ifdef SLAR_EXTERNAL
       fExternalsTree->Write(); 
-      fExternalsTree->Delete(); 
 #endif // SLAR_EXTERNAL
       fRootFile->Close(); 
     }
@@ -115,7 +108,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 {
   G4String filepath = fOutputPath;
   filepath.append(fOutputFileName);
-  fRootFile = new TFile(filepath, "recreate");
+  fRootFile = std::make_unique<TFile>(filepath, "recreate");
 
   if (!fRootFile)
   {
@@ -123,13 +116,14 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
-  fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
+  fEventTree = std::make_unique<TTree>("EventTree", "SoLAr-sim Simulated Events", 
+      /*splitlevel*/ 99, /*dir*/ nullptr);
  
   // setup backtracker size
   SetupBacktrackerRecords(); 
 
   printf("setting up ROOT TTree Branch...\n");
-  fEventTree->Branch("MCEvent", &fMCEvent);
+  fEventTree->Branch("MCEvent", fMCEvent.get());
 
 #ifdef SLAR_EXTERNAL
   SetupExternalsTree(); 
@@ -139,7 +133,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 }
 
 G4bool SLArAnalysisManager::CreateEventStructure() {
-  printf("fMCEvent pointer: %p\n", static_cast<void*>(fMCEvent));
+  printf("fMCEvent pointer: %p\n", fMCEvent.get());
 
   printf("configuring anode...\n");
   fMCEvent->ConfigAnode( fAnodeCfg ); 
@@ -156,7 +150,6 @@ G4bool SLArAnalysisManager::Save()
 
   if (fEventTree) {
     fEventTree->Write();
-    fEventTree->Delete();
   }
 
   WriteSysCfg(); 
@@ -175,7 +168,7 @@ G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell* pdsCfg)
 {
   fPDSysCfg = pdsCfg;
   if (!fPDSysCfg) return false;
-  else             return true ; 
+  else return true ; 
 }
 
 G4bool SLArAnalysisManager::LoadAnodeCfg(SLArCfgAnode* anodeCfg)
@@ -183,7 +176,7 @@ G4bool SLArAnalysisManager::LoadAnodeCfg(SLArCfgAnode* anodeCfg)
   if (fAnodeCfg.count(anodeCfg->GetTPCID())) {
     printf("SLArAnalysisManager::LoadAnodeCfg WARNING "); 
     printf("an anode configuration with index %i is already registered. skip.\n",
-        anodeCfg->GetIdx());
+        anodeCfg->GetID());
     return false;
   }
 
@@ -373,8 +366,6 @@ void SLArAnalysisManager::RegisterXSecDump(const SLArXSecDumpSpec xsec_dump) {
   return;
 }
 
-
-
 int SLArAnalysisManager::WriteCrossSection(const SLArXSecDumpSpec xsec_dump) {
 
   auto particle = G4ParticleTable::GetParticleTable()->FindParticle(xsec_dump.particle_name);
@@ -461,7 +452,6 @@ int SLArAnalysisManager::WriteCrossSection(const SLArXSecDumpSpec xsec_dump) {
 
   return 0; 
 }
-
 
 void SLArAnalysisManager::ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys) {
 
@@ -563,7 +553,8 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
 
 #ifdef SLAR_EXTERNAL
 void SLArAnalysisManager::SetupExternalsTree() {
-  fExternalsTree = new TTree("ExternalTree", "Externals reaching LAr interface"); 
+  fExternalsTree = std::make_unique<Tree>("ExternalTree", "Externals reaching LAr interface", 
+      /*splitlevel*/99, /*dir*/ nullptr); 
 
   fExternalsTree->Branch("iEv", &fExternalRecord->fEvNumber); 
   fExternalsTree->Branch("pdgID", &fExternalRecord->fPDGCode); 
@@ -576,7 +567,6 @@ void SLArAnalysisManager::SetupExternalsTree() {
   fExternalsTree->Branch("lar_energy", &fExternalRecord->fEnergy); 
   fExternalsTree->Branch("vertex", &fExternalRecord->fVertex, "vertex[3]/F");
   fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
-  
 }
 #endif // SLAR_EXTERNAL
 

@@ -30,7 +30,7 @@ class SLArCfgReadoutTile : public SLArCfgBaseModule
     double Get2DSize_Y() {return f2DSize_Y;}
     void   Set2DSize_X(float _x) {f2DSize_X = _x;}
     void   Set2DSize_Y(float _y) {f2DSize_Y = _y;}
-    void   DumpInfo() override;
+    void   DumpInfo() const override;
     TGraph BuildGShape() override;
     // TODO: Move this method in a more appropriate place
     //void   AddPixelToHistMap(TH2Poly* hmap, std::vector<xypoint>);

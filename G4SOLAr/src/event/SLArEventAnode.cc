@@ -49,9 +49,9 @@ int SLArEventAnode::ConfigSystem(SLArCfgAnode* cfg) {
   int imegatile = 0; 
   fID = cfg->GetIdx(); 
   for (const auto &mtcfg : cfg->GetMap()) {
-    int megatile_idx = mtcfg.second->GetIdx(); 
-    if (fMegaTilesMap.count(megatile_idx) == 0) {
-      fMegaTilesMap.insert( std::make_pair( megatile_idx, SLArEventMegatile(mtcfg.second) ) );
+    int megatile_id = mtcfg.GetID(); 
+    if (fMegaTilesMap.count(megatile_id) == 0) {
+      fMegaTilesMap.insert( std::make_pair( megatile_id, SLArEventMegatile(&mtcfg) ) );
       imegatile++;
     }
   }
@@ -110,7 +110,8 @@ SLArEventChargePixel& SLArEventAnode::RegisterChargeHit(const SLArCfgAnode::SLAr
 }
 
 int SLArEventAnode::ResetHits() {
-  printf("SLArEventAnode::ResetHits() clear event on anode %i\n", fID);
+
+  //printf("SLArEventAnode::ResetHits() clear event on anode %i\n", fID);
   int nn = 0; 
   for (auto &mgtile : fMegaTilesMap) {
     nn += mgtile.second.ResetHits(); 
