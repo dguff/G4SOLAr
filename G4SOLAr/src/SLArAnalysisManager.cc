@@ -52,7 +52,7 @@ G4bool SLArAnalysisManager::IsInstance()
 
 SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   : fAnaMsgr  (nullptr),
-    fIsMaster(isMaster), fOutputPath(""),
+    fIsMaster(isMaster), fSeed( time(NULL) ), fOutputPath(""),
     fOutputFileName("solarsim_output.root"), 
     fTrajectoryFull( true ),
     fSuperCellBacktrackerManager(nullptr), 
@@ -225,19 +225,20 @@ G4bool SLArAnalysisManager::FillEvTree() {
   return true;
 }
 
-int SLArAnalysisManager::WriteVariable(G4String name, G4double val) {
-  if (!fRootFile) {
-    printf("SLArAnalysisManager::WriteVariable WARNING ");
-    printf("rootfile not present yet. Cannot write %s variable.\n", 
-        name.c_str());
-    return 666;
-  } 
+//template<typename T> 
+//int SLArAnalysisManager::WriteVariable (G4String name, T val) {
+  //if (!fRootFile) {
+    //printf("SLArAnalysisManager::WriteVariable WARNING ");
+    //printf("rootfile not present yet. Cannot write %s variable.\n", 
+        //name.c_str());
+    //return 666;
+  //} 
 
-  TParameter<double> var(name, val); 
-  fRootFile->cd(); 
-  int status = var.Write(); 
-  return status; 
-}
+  //TParameter<T> var(name, val); 
+  //fRootFile->cd(); 
+  //int status = var.Write(); 
+  //return status; 
+//}
 
 int SLArAnalysisManager::WriteArray(G4String name, G4int size, G4double* val) {
   if (!fRootFile) {
@@ -568,3 +569,4 @@ void SLArAnalysisManager::SetupExternalsTree() {
   fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
 }
 #endif // SLAR_EXTERNAL
+

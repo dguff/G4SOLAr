@@ -227,6 +227,9 @@ int main(int argc,char** argv)
   runManager-> SetUserInitialization(detector);
 
   auto analysisManager = SLArAnalysisManager::Instance(); 
+  analysisManager->SetSeed( myseed ); 
+  printf("storing seed in analysis manager: %ld - %ld\n", 
+      myseed, G4Random::getTheSeed());
 
   // External background biasing option
 #ifdef SLAR_EXTERNAL
