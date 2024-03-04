@@ -4,30 +4,27 @@
  * @created     : martedì lug 19, 2022 13:40:08 CEST
  */
 
-#include <iostream>
-#include <string>
-#include <fstream>
-#include "TList.h"
+//#include <iostream>
+//#include <string>
+//#include <fstream>
+//#include "TList.h"
 
-#include "config/SLArCfgReadoutTile.hh"
+#include <config/SLArCfgReadoutTile.hh>
 
 ClassImp(SLArCfgReadoutTile)
 
 SLArCfgReadoutTile::SLArCfgReadoutTile()
   : SLArCfgBaseModule(), f2DSize_X(0.), f2DSize_Y(0.)
-  //fH2Pixels(nullptr)
 {}
 
-SLArCfgReadoutTile::SLArCfgReadoutTile(int idx) 
-  : SLArCfgBaseModule(idx), f2DSize_X(0.), f2DSize_Y(0.)
-  //fH2Pixels(nullptr) 
+SLArCfgReadoutTile::SLArCfgReadoutTile(int id) 
+  : SLArCfgBaseModule(id), f2DSize_X(0.), f2DSize_Y(0.)
 {}
 
-SLArCfgReadoutTile::SLArCfgReadoutTile(int idx, float xc, float yc, float zc, 
+SLArCfgReadoutTile::SLArCfgReadoutTile(int id, float xc, float yc, float zc, 
              float phi, float theta, float psi) 
-  : SLArCfgBaseModule(idx, xc, yc, zc, phi, theta, psi), 
+  : SLArCfgBaseModule(id, xc, yc, zc, phi, theta, psi), 
   f2DSize_X(0.), f2DSize_Y(0.)
-    //, fH2Pixels(nullptr)
 {}
 
 SLArCfgReadoutTile::SLArCfgReadoutTile(const SLArCfgReadoutTile& ref)
@@ -97,11 +94,11 @@ TGraph SLArCfgReadoutTile::BuildGShape()
 {
   TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 
-  TVector3 size_tmp = fSize; 
+  TVector3 size_tmp(fSize); 
   TRotation rot; 
   rot.SetXPhi( fPhi ); rot.SetXTheta( fTheta ); rot.SetXPsi( fPsi ); 
-  rot = rot.Inverse(); 
-  size_tmp.Transform( rot ); 
+  TRotation rot_inv = rot.Inverse(); 
+  size_tmp.Transform( rot_inv ); 
   
   g.SetPoint(0, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos-0.5*size_tmp));
   g.SetPoint(1, fAxis0.Dot(pos-0.5*size_tmp), fAxis1.Dot(pos+0.5*size_tmp));
@@ -114,10 +111,10 @@ TGraph SLArCfgReadoutTile::BuildGShape()
   return g;
 }
 
-void SLArCfgReadoutTile::DumpInfo() 
+void SLArCfgReadoutTile::DumpInfo() const
 {
-  printf("ReadoutTile id: %i at (%.2f, %.2f) mm, \n", 
-      fIdx, fX, fY);
+  printf("ReadoutTile[%i] id: %i at (%.2f, %.2f) mm, \n", 
+      fIdx, fID, fX, fY);
 }
 
 

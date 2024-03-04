@@ -8,13 +8,6 @@
 
 #define SLARCFGMEGATILE_HH
 
-#include <iostream>
-#include <fstream>
-#include <map>
-
-#include "TNamed.h"
-#include "TVector3.h"
-#include "TH2Poly.h"
 #include "config/SLArCfgReadoutTile.hh"
 #include "config/SLArCfgAssembly.hh"
 
@@ -28,12 +21,12 @@ class SLArCfgMegaTile : public SLArCfgAssembly<SLArCfgReadoutTile> {
     //TODO: Reimplement in CfgAnode
     //SLArCfgReadoutTile* FindPixel(double, double); 
 
-    void DumpMap(); 
+    void DumpMap() const override; 
 
   private: 
 
   public:
-    ClassDef(SLArCfgMegaTile, 1)
+    ClassDefOverride(SLArCfgMegaTile, 1)
 };
 
 

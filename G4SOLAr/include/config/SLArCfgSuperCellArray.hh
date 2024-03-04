@@ -8,10 +8,6 @@
 
 #define SLARCFGSUPERCELLARRAY_HH
 
-#include <iostream>
-#include <fstream>
-#include <map>
-
 #include "config/SLArCfgAssembly.hh"
 #include "config/SLArCfgSuperCell.hh"
 
@@ -24,7 +20,7 @@ class SLArCfgSuperCellArray : public SLArCfgAssembly<SLArCfgSuperCell> {
 
     void DumpMap(); 
 
-    ClassDefOverride(SLArCfgSuperCellArray, 2);
+    ClassDefOverride(SLArCfgSuperCellArray, 3);
 };
 
 #endif /* end of include guard SLARCFGSUPERCELLARRAY_HH */

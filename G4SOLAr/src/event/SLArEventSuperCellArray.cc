@@ -43,8 +43,8 @@ SLArEventSuperCellArray::~SLArEventSuperCellArray() {
 int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
   int nsc = 0; 
   for (const auto &sc : cfg->GetMap()) {
-      if (fSuperCellMap.count(sc.first) == 0) {
-        fSuperCellMap.insert( std::make_pair(sc.first, SLArEventSuperCell(sc.first)) ); 
+      if (fSuperCellMap.count(sc.GetID()) == 0) {
+        fSuperCellMap.insert( std::make_pair(sc.GetID(), SLArEventSuperCell(sc.GetID())) ); 
         nsc++;
     }
   }

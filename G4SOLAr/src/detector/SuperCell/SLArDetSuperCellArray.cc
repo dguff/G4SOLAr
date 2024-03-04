@@ -249,33 +249,33 @@ SLArCfgSuperCellArray* SLArDetSuperCellArray::BuildSuperCellArrayCfg() {
       rpl_sc_row.fStartingPos + rpl_sc_row.fWidth*i_sc_row*rpl_sc_row.fReplicaAxisVec;
 
     for (int i_sc_clm = 0; i_sc_clm < rpl_sc_clm.fNreplica; i_sc_clm++) {
-      G4int sc_idx = (i_sc_row+1)*100 + i_sc_clm;
+      G4int sc_id = (i_sc_row+1)*100 + i_sc_clm;
       G4String scName = Form("%s_%i_%i", 
-          fPhotoDetModel.data(), arrayCfg->GetIdx(), sc_idx); 
-      SLArCfgSuperCell* scCfg = new SLArCfgSuperCell(sc_idx);
-      scCfg->SetName(scName);
+          fPhotoDetModel.data(), arrayCfg->GetIdx(), sc_id); 
+      SLArCfgSuperCell scCfg(sc_id);
+      scCfg.SetName(scName);
 
       G4ThreeVector sc_local_pos = pos_sc_row + 
         rpl_sc_clm.fStartingPos + rpl_sc_clm.fWidth*i_sc_clm*rpl_sc_clm.fReplicaAxisVec;
-      scCfg->SetX(sc_local_pos.x()); 
-      scCfg->SetY(sc_local_pos.y()); 
-      scCfg->SetZ(sc_local_pos.z()); 
+      scCfg.SetX(sc_local_pos.x()); 
+      scCfg.SetY(sc_local_pos.y()); 
+      scCfg.SetZ(sc_local_pos.z()); 
 
       G4ThreeVector sc_abs_pos = fGlobalPosition + sc_local_pos.transform(*rot_inv); 
 
-      scCfg->SetPhysX( sc_abs_pos.x() ); 
-      scCfg->SetPhysY( sc_abs_pos.y() ); 
-      scCfg->SetPhysZ( sc_abs_pos.z() ); 
+      scCfg.SetPhysX( sc_abs_pos.x() ); 
+      scCfg.SetPhysY( sc_abs_pos.y() ); 
+      scCfg.SetPhysZ( sc_abs_pos.z() ); 
 
-      scCfg->SetPhi( arrayCfg->GetPhi() ); 
-      scCfg->SetTheta( arrayCfg->GetTheta() ); 
-      scCfg->SetPsi( arrayCfg->GetPsi() ); 
+      scCfg.SetPhi( arrayCfg->GetPhi() ); 
+      scCfg.SetTheta( arrayCfg->GetTheta() ); 
+      scCfg.SetPsi( arrayCfg->GetPsi() ); 
 
-      scCfg->SetNormal( arrayCfg->GetNormal() ); 
-      scCfg->SetupAxes(); 
+      scCfg.SetNormal( arrayCfg->GetNormal() ); 
+      scCfg.SetupAxes(); 
 
       const auto scBox = (G4Box*)fSuperCell->GetModSV();
-      scCfg->SetSize( 2*scBox->GetXHalfLength(),
+      scCfg.SetSize( 2*scBox->GetXHalfLength(),
                       2*scBox->GetYHalfLength(), 
                       2*scBox->GetZHalfLength() ); 
 

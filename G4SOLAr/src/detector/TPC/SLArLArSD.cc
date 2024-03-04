@@ -90,11 +90,9 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       //getchar(); 
     #endif
 
-
     SLArRunAction* runAction = 
       (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
   
-
     SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
 
     // Get hit from collection
@@ -111,11 +109,11 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       for (size_t iproc = 0; iproc < stepMngr->GetMAXofPostStepLoops(); iproc++) {
         G4VProcess* proc = (*process_vector)[iproc]; 
 
-        if (proc->GetProcessName() == "Scintillation") {
+        if (proc->GetProcessName() == "Scintillation")  {
           SLArScintillation* scint_process = (SLArScintillation*)proc; 
           n_ph = scint_process->GetNumPhotons(); 
           n_el = scint_process->GetNumIonElectrons(); 
-          
+
           break;
         } 
       }
@@ -137,7 +135,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
     // Add edep in LAr to the primary 
     SLArMCPrimaryInfo* ancestor = nullptr;
-    auto primaries = anaMngr->GetEvent()->GetPrimaries();
+    auto& primaries = anaMngr->GetEvent()->GetPrimaries();
     for (auto &p : primaries) {
       if (p.GetTrackID() == ancestor_id) {
         ancestor = &p;
