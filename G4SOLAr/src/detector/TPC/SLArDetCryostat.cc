@@ -269,7 +269,7 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
       fGeoInfo->GetGeoPar("target_x") + 2*cryo_tk,
       fGeoInfo->GetGeoPar("target_y") + 2*cryo_tk, 
       fGeoInfo->GetGeoPar("target_z") + 2*cryo_tk); 
-  const auto spacing = fGeoInfo->GetGeoPar("spacing"); 
+  const auto spacing = fGeoInfo->GetGeoPar("waffle_spacing"); 
 
   // get normal versor for the given cryostat face
   const G4ThreeVector normal = slargeo::BoxFaceNormal[kFace]; 
