@@ -63,6 +63,15 @@ class SLArMCEvent : public TObject
 
     inline std::vector<SLArMCPrimaryInfo>& GetPrimaries() {return fSLArPrimary ;}
     inline SLArMCPrimaryInfo& GetPrimary(int ip) {return fSLArPrimary.at(ip);}
+    inline SLArMCPrimaryInfo& GetPrimaryByTrkID(int id) {
+      for (auto &p : fSLArPrimary) {
+        if (p.GetTrackID() == id) return p;
+      }
+
+      printf("SLArMCEvent::GetPrimaryByTrkID WARNING: Unable to find primary wit track id %i returning the first primary in the list\n", 
+          id);
+      return fSLArPrimary.front();
+    }
     bool  CheckIfPrimary(int trkId) const;
 
     size_t RegisterPrimary(SLArMCPrimaryInfo& p);
