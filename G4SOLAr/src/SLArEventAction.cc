@@ -186,7 +186,6 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }
 
 #ifdef SLAR_EXTERNAL
-    auto& primaries = slar_event->GetPrimaries();
     for (auto &primary : primaries) {
       if (ext_scorer_hits == 0) primary.GetTrajectories().clear(); 
     }
