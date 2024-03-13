@@ -79,7 +79,7 @@ ClassImp(SLArEventTrajectoryLite)
 SLArEventTrajectoryLite::SLArEventTrajectoryLite() 
   : TObject(), 
     fEvNumber(0), fPDGCode(0), fTrkID(-1), fParentID(-1), fOriginVol(0), 
-    fOriginEnergy(0), fEnergy(0.0), fTime(0.0), fWeight(0.0), fVertex{0}, fCreator("")
+    fOriginEnergy(0), fEnergy(0.0), fTime(0.0), fWeight(0.0), fOriginVertex{0}, fScorerVertex{0}, fCreator("")
 {}
 
 SLArEventTrajectoryLite::SLArEventTrajectoryLite(const SLArEventTrajectoryLite& tright) 
@@ -96,7 +96,8 @@ SLArEventTrajectoryLite::SLArEventTrajectoryLite(const SLArEventTrajectoryLite& 
   fWeight = tright.fWeight;
   fCreator = tright.fCreator;
   for (int i=0; i<3; i++) {
-    fVertex[i] = tright.fVertex[i]; 
+    fOriginVertex[i] = tright.fOriginVertex[i]; 
+    fScorerVertex[i] = tright.fScorerVertex[i]; 
   }
 }
 
@@ -126,7 +127,8 @@ void SLArEventTrajectoryLite::Reset() {
   fWeight = 0.0; 
   fCreator = "";
   for (int i=0; i<3; i++) {
-    fVertex[i] = 0.;
+    fOriginVertex[i] = 0.;
+    fScorerVertex[i] = 0.;
   }
  
   return;

@@ -469,13 +469,14 @@ G4int SLArEventAction::RecordEventExtScorer(const G4Event* ev, const G4int& verb
       ext_record->SetPDGCode( scorer_hit->fPDGCode ); 
       ext_record->SetTrackID( scorer_hit->fTrkID ); 
       ext_record->SetParentID( scorer_hit->fParentID ); 
-      ext_record->SetOriginVol( scorer_hit->fOriginVol ); 
       ext_record->SetOriginEnergy( scorer_hit->fOriginEnergy ); 
-      ext_record->SetEnergyAtLAr( scorer_hit->fEnergy ); 
+      ext_record->SetEnergyAtScorer( scorer_hit->fEnergy ); 
       ext_record->SetWeight( scorer_hit->fWeight ); 
       ext_record->SetCreator( scorer_hit->fCreator.data() ); 
       ext_record->SetTime( scorer_hit->fTime ); 
-      ext_record->SetVertex( scorer_hit->fVertex );
+      ext_record->SetScorerVertex( scorer_hit->fVertex );
+      ext_record->SetOriginVol( scorer_hit->fOriginVol ); 
+      ext_record->SetOriginVertex( scorer_hit->fOriginVertex ); 
 
       anaMngr->GetExternalsTree()->Fill(); 
       n_hits++; 

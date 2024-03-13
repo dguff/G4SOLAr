@@ -45,6 +45,7 @@ class SLArExtHit : public G4VHit
     G4float fTime;
     G4float fWeight;
     G4float fVertex[3];
+    G4float fOriginVertex[3];
     G4String fCreator;
 };
 

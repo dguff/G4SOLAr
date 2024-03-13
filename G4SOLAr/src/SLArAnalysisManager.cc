@@ -564,8 +564,9 @@ void SLArAnalysisManager::SetupExternalsTree() {
   fExternalsTree->Branch("origin_energy", &fExternalRecord->fOriginEnergy);
   fExternalsTree->Branch("weight", &fExternalRecord->fWeight);
   fExternalsTree->Branch("time", &fExternalRecord->fTime); 
-  fExternalsTree->Branch("lar_energy", &fExternalRecord->fEnergy); 
-  fExternalsTree->Branch("vertex", &fExternalRecord->fVertex, "vertex[3]/F");
+  fExternalsTree->Branch("scorer_energy", &fExternalRecord->fEnergy); 
+  fExternalsTree->Branch("origin_vertex", &fExternalRecord->fOriginVertex, "vertex[3]/F");
+  fExternalsTree->Branch("scorer_vertex", &fExternalRecord->fScorerVertex, "scorer_vertex[3]/F");
   fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
 }
 #endif // SLAR_EXTERNAL

@@ -71,10 +71,13 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
   scorer_hit->fCreator = trajectory->GetCreatorProcess(); 
   scorer_hit->fEnergy = thePostPoint->GetKineticEnergy(); 
 
+  scorer_hit->fOriginVertex[0] = trajectory->GetPoints().front().fX; 
+  scorer_hit->fOriginVertex[1] = trajectory->GetPoints().front().fY; 
+  scorer_hit->fOriginVertex[2] = trajectory->GetPoints().front().fZ; 
 
-  scorer_hit->fVertex[0] = trajectory->GetPoints().front().fX; 
-  scorer_hit->fVertex[1] = trajectory->GetPoints().front().fY; 
-  scorer_hit->fVertex[2] = trajectory->GetPoints().front().fZ; 
+  scorer_hit->fVertex[0] = thePostPoint->GetPosition().x();
+  scorer_hit->fVertex[1] = thePostPoint->GetPosition().y();
+  scorer_hit->fVertex[2] = thePostPoint->GetPosition().z();
 
   fHitsCollection->insert( scorer_hit ); 
 

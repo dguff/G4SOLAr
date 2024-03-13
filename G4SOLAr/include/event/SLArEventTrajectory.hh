@@ -130,7 +130,7 @@ class SLArEventTrajectoryLite : public TObject {
     Float_t GetWeight() const {return fWeight;};
     TString GetCreator() const {return fCreator;};
     Int_t GetOriginVol() const {return fOriginVol;};
-    const Float_t* GetVertex() const {return fVertex;}
+    const Float_t* GetOriginVertex() const {return fOriginVertex;}
 
     void SetValues(const SLArEventTrajectory&); 
     inline void SetEvNumber(const Int_t& iev) {fEvNumber = iev;}
@@ -138,22 +138,34 @@ class SLArEventTrajectoryLite : public TObject {
     inline void SetTrackID(const Int_t& tid) {fTrkID = tid;}
     inline void SetParentID(const Int_t& pid) {fParentID = pid;}
     inline void SetOriginEnergy(const Double_t& ene) {fOriginEnergy = ene;}
-    inline void SetEnergyAtLAr(const Double_t& ene) {fEnergy = ene;}
+    inline void SetEnergyAtScorer(const Double_t& ene) {fEnergy = ene;}
     inline void SetTime(const Float_t& time) {fTime = time;}
     inline void SetWeight(const Float_t& w) {fWeight = w;}
     inline void SetCreator(const TString& creator) {fCreator = creator;}
     inline void SetOriginVol(const Int_t& ovol) {fOriginVol = ovol;}
-    inline void SetVertex(const Float_t* vtx) {
+    inline void SetOriginVertex(const Float_t* vtx) {
       //assert(sizeof(vtx)/sizeof(Float_t) == 3); 
       for (int i=0; i<3; i++) {
-        fVertex[i] = vtx[i]; 
+        fOriginVertex[i] = vtx[i]; 
       }
     }
-    inline void SetVertex(const Float_t& x, const Float_t& y, const Float_t& z) {
-      fVertex[0] = x; 
-      fVertex[1] = y; 
-      fVertex[2] = z; 
+    inline void SetOriginVertex(const Float_t& x, const Float_t& y, const Float_t& z) {
+      fOriginVertex[0] = x; 
+      fOriginVertex[1] = y; 
+      fOriginVertex[2] = z; 
     }
+    inline void SetScorerVertex(const Float_t* vtx) {
+      //assert(sizeof(vtx)/sizeof(Float_t) == 3); 
+      for (int i=0; i<3; i++) {
+        fScorerVertex[i] = vtx[i]; 
+      }
+    }
+    inline void SetScorerVertex(const Float_t& x, const Float_t& y, const Float_t& z) {
+      fScorerVertex[0] = x; 
+      fScorerVertex[1] = y; 
+      fScorerVertex[2] = z; 
+    }
+
 
     void Reset(); 
 
@@ -170,7 +182,8 @@ class SLArEventTrajectoryLite : public TObject {
     Float_t fEnergy;
     Float_t fTime;
     Float_t fWeight;
-    Float_t fVertex[3];
+    Float_t fOriginVertex[3];
+    Float_t fScorerVertex[3];
     TString fCreator;
 
   public: 
