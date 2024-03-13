@@ -121,8 +121,8 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   G4ThreeVector vtx_pos(0, 0, 0); 
   fVtxGen->ShootVertex(vtx_pos);
   
-  printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
-  printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
+  //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
+  //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
   G4double energy = fEnergySpectrum->GetRandom( fRandomEngine.get() ); 
   auto face = fVtxGen->GetVertexFace(); 
   const auto face_normal = slargeo::BoxFaceNormal[face]; 
