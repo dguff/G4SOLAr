@@ -126,15 +126,15 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
     }
 
     if (trkInfo->CheckStoreTrajectory() == true) {
+      if (trajectory->GetPoints().empty()) {
+        // record origin point
+        trj_point step_point = set_evtrj_point( thePrePoint, 0, 0 ); 
+        trajectory->RegisterPoint(step_point); 
+      }
+
       if (trajectory->DoStoreTrajectoryPts()) {
         //printf("SLArSteppingAction::here we go\n"); 
         //printf("trajectory has %lu points\n", trajectory->GetPoints().size());
-        if (trajectory->GetPoints().empty()) {
-          // record origin point
-          trj_point step_point = set_evtrj_point( thePrePoint, 0, 0 ); 
-          trajectory->RegisterPoint(step_point); 
-        }
-
         trj_point step_point = set_evtrj_point( thePostPoint, n_el, n_ph ); 
         trajectory->RegisterPoint(step_point); 
       }
@@ -167,10 +167,10 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
         ext_record->SetEvNumber( iev ); 
         ext_record->SetValues( *trajectory ); 
-        ext_record->SetEnergyAtLAr( thePrePoint->GetKineticEnergy() ); 
-        ext_record->SetVertex(  thePostPoint->GetPosition().x(), 
-                                thePostPoint->GetPosition().y(), 
-                                thePostPoint->GetPosition().z()); 
+        ext_record->SetEnergyAtScorer( thePrePoint->GetKineticEnergy() ); 
+        ext_record->SetScorerVertex(  thePostPoint->GetPosition().x(), 
+                                      thePostPoint->GetPosition().y(), 
+                                      thePostPoint->GetPosition().z()); 
 
         SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
 
