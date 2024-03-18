@@ -43,7 +43,7 @@
 #include "SLArBackgroundGeneratorAction.hh"
 #include "SLArGENIEGeneratorAction.hh"//--JM
 #ifdef SLAR_CRY
-#include "SLArCRYGeneratorAction.hh"
+#include "cry/SLArCRYGeneratorAction.hh"
 #endif
 
 #include "Randomize.hh"
@@ -134,7 +134,7 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
       }
 #ifdef SLAR_CRY
       else if (igen == kCRY) {
-        auto local = (SLArCRYGeneratorAction*)gen; 
+        auto local = (cry::SLArCRYGeneratorAction*)gen; 
         delete local; 
       }
 #endif

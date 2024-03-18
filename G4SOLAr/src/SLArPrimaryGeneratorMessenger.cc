@@ -10,7 +10,7 @@
 
 #include "SLArPrimaryGeneratorAction.hh"
 #ifdef SLAR_CRY
-#include "SLArCRYGeneratorAction.hh"
+#include "cry/SLArCRYGeneratorAction.hh"
 #endif
 #include "SLArBulkVertexGenerator.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
