@@ -131,7 +131,7 @@ void SLArEventAnode::SetActive(bool is_active) {
 Int_t SLArEventAnode::ApplyZeroSuppression() {
   Int_t erasedHits = 0; 
 
-  printf("SLArEventAnode::ApplyZeroSuppression() Running zero-suppression with threshold %i\n", fZeroSuppressionThreshold);
+  //printf("SLArEventAnode::ApplyZeroSuppression() Running zero-suppression with threshold %i\n", fZeroSuppressionThreshold);
   for (auto& mt_itr : fMegaTilesMap) {
     auto& tile_map = mt_itr.second.GetTileMap();
     for (auto it_t = tile_map.begin(); it_t != tile_map.end(); it_t++) {

@@ -514,18 +514,18 @@ int SLArEventAction::FindAncestorID(int trkid) {
   SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
   auto& primaries = anaMngr->GetEvent()->GetPrimaries(); 
   bool caught = false; 
-#ifdef SLAR_DEBUG
-  printf("SLArEventAction::FindAncestorID() Lookging for primary parent of %i among\n", trkid);
-  for (const auto& _pid : fParentIDMap) {
-    printf("%i - PID: %i\n", _pid.first, _pid.second); 
-  }
+//#ifdef SLAR_DEBUG
+  //printf("SLArEventAction::FindAncestorID() Lookging for primary parent of %i among\n", trkid);
+  //for (const auto& _pid : fParentIDMap) {
+    //printf("%i - PID: %i\n", _pid.first, _pid.second); 
+  //}
 
-  printf("\nList of primaries: \n");
-  for (const SLArMCPrimaryInfo& p : primaries) {
-    printf("%s - PID: %i\n", p.GetParticleName().Data(), p.GetTrackID());
-  }
-  //getchar(); 
-#endif
+  //printf("\nList of primaries: \n");
+  //for (const SLArMCPrimaryInfo& p : primaries) {
+    //printf("%s - PID: %i\n", p.GetParticleName().Data(), p.GetTrackID());
+  //}
+  ////getchar(); 
+//#endif
 
   while ( !caught ) {
     pid = fParentIDMap[trkid];
@@ -546,10 +546,10 @@ int SLArEventAction::FindAncestorID(int trkid) {
 //#endif
   }
 
-#ifdef SLAR_DEBUG
-    printf("Caught! returning %i\n", primary);
-    //getchar(); 
-#endif
+//#ifdef SLAR_DEBUG
+    //printf("Caught! returning %i\n", primary);
+    ////getchar(); 
+//#endif
 
   return primary; 
 }
