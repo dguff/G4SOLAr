@@ -53,17 +53,26 @@ namespace bxdecay0_g4 {
 namespace marley {
   class SLArMarleyGeneratorAction;
 }
+#ifdef SLAR_CRY
+namespace cry {
+  class SLArCRYGeneratorAction;
+}
+#endif 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 enum  EGenerator {
-  kParticleGun=0, 
-  kParticleBomb=1, 
-  kDecay0=2, 
-  kMarley=3, 
-  kBackground=4, 
-  kExternalGen=5,
-  kGENIE=6};
+  kParticleGun=0
+  ,kParticleBomb=1 
+  ,kDecay0=2 
+  ,kMarley=3 
+  ,kBackground=4 
+  ,kExternalGen=5
+  ,kGENIE=6
+#ifdef SLAR_CRY
+  ,kCRY=7
+#endif 
+};
 
 enum  EDirectionMode {kFixed = 0, kRandom = 1};
 
@@ -108,6 +117,11 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetGENIEEvntExt(G4int evntID); //--JM
     void SetGENIEFile(G4String filename); //--JM
 
+#ifdef SLAR_GDML
+    void AppendCRYInput(const G4String); 
+
+#endif
+
     inline void SetVerboseLevel( G4int verbose) { fVerbose = verbose; }
     inline G4int GetVerboseLevel() const {return fVerbose;}
 
@@ -136,6 +150,8 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     G4int fGENIEEvntNum; //--JM
     G4String fGENIEFile;
+
+    G4String fCRYCfg; 
 
     G4int fVerbose;
 

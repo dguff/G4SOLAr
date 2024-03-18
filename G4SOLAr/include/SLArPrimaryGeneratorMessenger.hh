@@ -19,6 +19,7 @@ class G4UIcmdWithAString;
 class G4UIcmdWithADouble; 
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithABool; 
+class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -46,6 +47,12 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithAString*                 fCmdMarley;
     G4UIcmdWithAString*                 fCmdBackgoundConf; 
     G4UIcmdWithAString*                 fCmdExternalConf; 
+#ifdef SLAR_CRY
+    G4UIcmdWithAString*                 fCmdCRYFile; 
+    G4UIcmdWithAString*                 fCmdCRYInput;
+    G4UIcmdWithoutParameter*            fCmdCRYUpdate;
+    G4UIcmdWithADoubleAndUnit*          fCmdCRYQuota;
+#endif
 
     G4UIcmdWithABool*                   fCmdTracePhotons;
     G4UIcmdWithABool*                   fCmdDriftElectrons;

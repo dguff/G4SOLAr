@@ -42,9 +42,9 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
 #ifdef SLAR_DEBUG
   if (aTrack->GetDynamicParticle()->GetParticleDefinition() != 
       G4OpticalPhoton::Definition()) {
-    printf("SLArTrajectory: Create new SLArTrajectory for trk %i\n", 
-        aTrack->GetTrackID());
-    getchar();
+    //printf("SLArTrajectory: Create new SLArTrajectory for trk %i\n", 
+        //aTrack->GetTrackID());
+    //getchar();
   }
 #endif
 
