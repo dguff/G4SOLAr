@@ -42,6 +42,9 @@
 #include "SLArExternalGeneratorAction.hh"
 #include "SLArBackgroundGeneratorAction.hh"
 #include "SLArGENIEGeneratorAction.hh"//--JM
+#ifdef SLAR_CRY
+#include "SLArCRYGeneratorAction.hh"
+#endif
 
 #include "Randomize.hh"
 #include "SLArRandomExtra.hh"
@@ -58,7 +61,11 @@
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fGeneratorActions(7, nullptr),//--JM Change 5->6
+#ifdef SLAR_CRY
+   fGeneratorActions(8, nullptr),
+#else
+   fGeneratorActions(7, nullptr),
+#endif
    fBulkGenerator(0), 
    fVolumeName(""), 
    fGeneratorEnum(kParticleGun), 
@@ -76,6 +83,9 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
   fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
   fGeneratorActions[kGENIE] = new SLArGENIEGeneratorAction();//--JM
+#ifdef SLAR_CRY
+  fGeneratorActions[kCRY] = new cry::SLArCRYGeneratorAction();
+#endif // DEBUG
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
@@ -161,7 +171,6 @@ void SLArPrimaryGeneratorAction::SetBoxName(G4String vol) {
   fBoxGenerator->SetSolidRotation(volume->GetRotation()); 
   return;
 }
-
 
 void SLArPrimaryGeneratorAction::SetGunParticle(const G4String particle_name) 
 {
@@ -275,17 +284,25 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
     case kGENIE:
       {
-	SLArGENIEGeneratorAction* genie_gen = 
-	  (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
-	genie_gen->SetGENIEEvntExt(fGENIEEvntNum);
-	genie_gen->Initialize(fGENIEFile);
-	gen = genie_gen;
+        SLArGENIEGeneratorAction* genie_gen = 
+          (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
+        genie_gen->SetGENIEEvntExt(fGENIEEvntNum);
+        genie_gen->Initialize(fGENIEFile);
+        gen = genie_gen;
       }        
-      break;//--JM
+      break;
+
+    case kCRY: 
+      {
+        cry::SLArCRYGeneratorAction* cry_gen = 
+          (cry::SLArCRYGeneratorAction*)fGeneratorActions[kCRY]; 
+        gen = cry_gen;
+        break;
+      }
 
     default:
       {
-        printf("SLArPGunGeneratorAction::GeneratePrimaries() ERROR ");
+        printf("SLArPrimaryGeneratorAction::GeneratePrimaries() ERROR ");
         printf("Unknown generator option.\n");
         return;
       }
@@ -382,7 +399,6 @@ void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
   gen->SourceExternalConfig(external_cfg); 
   return; 
 }
-
 
 void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
 {

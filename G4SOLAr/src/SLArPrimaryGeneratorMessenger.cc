@@ -9,6 +9,7 @@
 #include "SLArPrimaryGeneratorMessenger.hh"
 
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArCRYGeneratorAction.hh"
 #include "SLArBulkVertexGenerator.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "G4UIdirectory.hh"
@@ -20,6 +21,7 @@
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -34,10 +36,10 @@ SLArPrimaryGeneratorMessenger::
   fCmdGenerator= 
     new G4UIcmdWithAString("/SLAr/gen/type", this);
   fCmdGenerator->SetGuidance("Set SOLAr generator");
-  fCmdGenerator->SetGuidance("(ParticleGun, Decay0, ...)");
+  fCmdGenerator->SetGuidance("(ParticleGun, ParticleBomb, Decay0, Marley, ExternalGen, GENIE, CRY)");  
   fCmdGenerator->SetParameterName("Mode", false);
   fCmdGenerator->SetDefaultValue("ParticleGun");
-  fCmdGenerator->SetCandidates("ParticleGun ParticleBomb Decay0 Marley ExternalGen GENIE");//--JM Add GENIE
+  fCmdGenerator->SetCandidates("ParticleGun ParticleBomb Decay0 Marley ExternalGen GENIE CRY");
 
 
   fCmdParticle= 
@@ -134,6 +136,28 @@ SLArPrimaryGeneratorMessenger::
   fCmdGENIEFile->SetParameterName("GENIE_file",false);
   fCmdGENIEFile->SetDefaultValue("enubet_genie_seed.root");
 
+#ifdef SLAR_CRY
+  fCmdCRYFile = 
+    new G4UIcmdWithAString("/SLAr/gen/CRY/file",this);
+  fCmdCRYFile->SetGuidance("This reads the CRY definition from a file");
+  fCmdCRYFile->AvailableForStates(G4State_PreInit,G4State_Idle);
+   
+  fCmdCRYInput = new G4UIcmdWithAString("/SLAr/gen/CRY/input",this);
+  fCmdCRYInput->SetGuidance("CRY input lines");
+  fCmdCRYInput->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  fCmdCRYUpdate = new G4UIcmdWithoutParameter("/SLAr/gen/CRY/update",this);
+  fCmdCRYUpdate->SetGuidance("Update CRY definition.");
+  fCmdCRYUpdate->SetGuidance("This command MUST be applied before \"beamOn\" ");
+  fCmdCRYUpdate->SetGuidance("if you changed the CRY definition.");
+  fCmdCRYUpdate->AvailableForStates(G4State_Idle);
+
+  fCmdCRYQuota = new G4UIcmdWithADoubleAndUnit("/SLAr/gen/CRY/quota", this); 
+  fCmdCRYQuota->SetGuidance("Set cosmic-rays production quota (y)"); 
+  fCmdCRYQuota->SetDefaultValue(0.0); 
+  fCmdCRYQuota->SetDefaultUnit("m"); 
+#endif
+
   fCmdVerbose = 
     new G4UIcmdWithAnInteger("/SLAr/gen/verbose", this); 
   fCmdVerbose->SetGuidance("verbose level"); 
@@ -160,6 +184,12 @@ SLArPrimaryGeneratorMessenger::~SLArPrimaryGeneratorMessenger()
   delete fCmdDriftElectrons;
   delete fCmdGENIEEvtSeed;
   delete fCmdGENIEFile;
+#ifdef SLAR_CRY
+  delete fCmdCRYFile; 
+  delete fCmdCRYInput;
+  delete fCmdCRYUpdate; 
+  delete fCmdCRYQuota;
+#endif
   delete fCmdVerbose;
 }
 
@@ -178,7 +208,16 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     else if (G4StrUtil::contains(strMode, "Decay0")) gen = kDecay0;
     else if (G4StrUtil::contains(strMode, "Marley")) gen = kMarley;
     else if (G4StrUtil::contains(strMode, "ExternalGen")) gen = kExternalGen;
-    else if (G4StrUtil::contains(strMode, "GENIE")) gen = kGENIE; //--JM
+    else if (G4StrUtil::contains(strMode, "GENIE")) gen = kGENIE;
+#ifdef SLAR_CRY
+    else if (G4StrUtil::contains(strMode, "CRY")) gen = kCRY;
+#endif
+    else {
+      G4cout << "SLArPrimaryGeneratorMessenger: Unable to set generator " 
+        << strMode.data() 
+        << ". Generator is not defined of not properly linked."
+        << G4endl;
+    }
 
     fSLArAction->SetGenerator(gen);
   } 
@@ -249,10 +288,31 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
     G4String filename = newValue; 
     fSLArAction->SetGENIEFile(filename); 
   } //--JM
+#ifdef SLAR_CRY
+  else if( command == fCmdCRYInput ) { 
+    cry::SLArCRYGeneratorAction* cryGen = dynamic_cast<cry::SLArCRYGeneratorAction*>(fSLArAction->GetGenerator(kCRY));
+    cryGen->InputCRY(); 
+    cryGen->GetMessInput().append(newValue);
+    cryGen->GetMessInput().append(" ");
+  }
+  else if ( command == fCmdCRYFile ) {
+    cry::SLArCRYGeneratorAction* cryGen = dynamic_cast<cry::SLArCRYGeneratorAction*>(fSLArAction->GetGenerator(kCRY));
+    cryGen->CRYFromFile( newValue ); 
+  }
+  else if ( command == fCmdCRYUpdate ) {
+    cry::SLArCRYGeneratorAction* cryGen = dynamic_cast<cry::SLArCRYGeneratorAction*>(fSLArAction->GetGenerator(kCRY));
+    cryGen->UpdateCRY(); 
+  }
+  else if ( command == fCmdCRYQuota ) {
+    cry::SLArCRYGeneratorAction* cryGen = dynamic_cast<cry::SLArCRYGeneratorAction*>(fSLArAction->GetGenerator(kCRY));
+    G4double y_cry = fCmdCRYQuota->GetNewDoubleValue( newValue ); 
+    cryGen->SetGenQuota( y_cry ); 
+  }
+#endif
   else if (command == fCmdVerbose) {
     G4String verbose_str = newValue; 
     fSLArAction->SetVerboseLevel( std::stoi( verbose_str ) ); 
-  } //--JM
+  }
 
 }
 

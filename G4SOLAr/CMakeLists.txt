@@ -24,6 +24,7 @@ endif()
 option(SLAR_PROFILE "Enbale profiling with gprof" OFF)
 option(SLAR_EXTERNAL "Build code with special external background features" OFF)
 option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
+option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -42,6 +43,13 @@ else()
 endif()
 
 find_package(ROOT REQUIRED COMPONENTS RIO Core)
+
+if (DEFINED ENV{CRYHOME}) 
+  set(SLAR_CRY_INTERFACE "ON")
+  message(STATUS "Found CRY package at $ENV{CRYHOME}. Building CRY interface classes")
+  set(CRY_INCLUDE_DIRS $ENV{CRYHOME}/src)
+  set(CRY_LIBRARIES $ENV{CRYHOME}/lib/libCRY.a)
+endif()
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
@@ -126,6 +134,10 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
 
 if (CLHEP_EXTERNAL) 
   include_directories(${CLHEP_EXTERNAL})
+endif()
+
+if (SLAR_CRY_INTERFACE)
+  include_directories(${CRY_INCLUDE_DIRS})
 endif()
 
 file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
@@ -226,11 +238,15 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+if (SLAR_CRY_INTERFACE)
+  target_link_libraries(solar_sim ${CRY_LIBRARIES})
+endif()
 target_compile_definitions(solar_sim 
   PUBLIC 
   $<$<CONFIG:Debug>:SLAR_DEBUG>
   $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
   $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
+  $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
   SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
   PRIVATE
   "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
