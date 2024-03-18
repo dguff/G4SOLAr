@@ -132,6 +132,12 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
         auto local = (SLArGENIEGeneratorAction*)gen; 
         delete local; 
       }
+#ifdef SLAR_CRY
+      else if (igen == kCRY) {
+        auto local = (SLArCRYGeneratorAction*)gen; 
+        delete local; 
+      }
+#endif
       //gen = nullptr;
     }
     igen++;
@@ -292,6 +298,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }        
       break;
 
+#ifdef SLAR_CRY
     case kCRY: 
       {
         cry::SLArCRYGeneratorAction* cry_gen = 
@@ -299,6 +306,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         gen = cry_gen;
         break;
       }
+#endif
 
     default:
       {

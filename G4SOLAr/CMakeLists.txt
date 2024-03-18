@@ -136,10 +136,6 @@ if (CLHEP_EXTERNAL)
   include_directories(${CLHEP_EXTERNAL})
 endif()
 
-if (SLAR_CRY_INTERFACE)
-  include_directories(${CRY_INCLUDE_DIRS})
-endif()
-
 file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/event/*.cc
                     ${G4SOLAR_SRC_DIR}/config/*.cc
@@ -161,6 +157,14 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
                     )
+
+if (SLAR_CRY_INTERFACE)
+  include_directories(${CRY_INCLUDE_DIRS})
+  file(GLOB cry_sources ${G4SOLAR_SRC_DIR}/cry/*.cc)
+  file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
+endif()
+
+
 
 add_definitions(${ROOT_CXX_FLAGS})
 
@@ -230,7 +234,12 @@ execute_process(
 # Add the executable, and link it to the Geant4 libraries
 #
 
-add_executable(solar_sim solar_sim.cc ${sources} ${headers})
+if (SLAR_CRY_INTERFACE)
+  add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
+else()
+  add_executable(solar_sim solar_sim.cc ${sources} ${headers})
+endif()
+  
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)

@@ -9,7 +9,9 @@
 #include "SLArPrimaryGeneratorMessenger.hh"
 
 #include "SLArPrimaryGeneratorAction.hh"
+#ifdef SLAR_CRY
 #include "SLArCRYGeneratorAction.hh"
+#endif
 #include "SLArBulkVertexGenerator.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "G4UIdirectory.hh"
