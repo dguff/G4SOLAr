@@ -79,7 +79,8 @@ ClassImp(SLArEventTrajectoryLite)
 SLArEventTrajectoryLite::SLArEventTrajectoryLite() 
   : TObject(), 
     fEvNumber(0), fPDGCode(0), fTrkID(-1), fParentID(-1), fOriginVol(0), 
-    fOriginEnergy(0), fEnergy(0.0), fTime(0.0), fWeight(0.0), fOriginVertex{0}, fScorerVertex{0}, fCreator("")
+    fOriginEnergy(0), fEnergy(0.0), fTime(0.0), fWeight(0.0), 
+    fOriginVertex(0., 0., 0.), fScorerVertex(0., 0., 0.), fCreator("")
 {}
 
 SLArEventTrajectoryLite::SLArEventTrajectoryLite(const SLArEventTrajectoryLite& tright) 

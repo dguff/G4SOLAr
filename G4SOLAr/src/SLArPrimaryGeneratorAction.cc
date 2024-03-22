@@ -85,7 +85,7 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
   fGeneratorActions[kGENIE] = new SLArGENIEGeneratorAction();//--JM
 #ifdef SLAR_CRY
   fGeneratorActions[kCRY] = new cry::SLArCRYGeneratorAction();
-#endif // DEBUG
+#endif 
 
   fBulkGenerator = new SLArBulkVertexGenerator(); 
   fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
