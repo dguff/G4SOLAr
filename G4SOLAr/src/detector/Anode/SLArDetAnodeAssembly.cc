@@ -270,7 +270,7 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
 
   printf("%s has %lu elements registered\n", 
       anodeCfg->GetName(), anodeCfg->GetMap().size());
-  getchar(); 
+  //getchar(); 
 
   return anodeCfg; 
 }
