@@ -133,15 +133,15 @@ void SLArDetAnodeAssembly::BuildAnodeAssembly(SLArDetReadoutTileAssembly* megati
 
 }
 
-SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
-  SLArCfgAnode* anodeCfg = new SLArCfgAnode("Anode_"+std::to_string(fID)); 
-  anodeCfg->SetIdx( fID ); 
-  anodeCfg->SetTPCID( fTPCID ); 
-  anodeCfg->SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
-  anodeCfg->SetupAxes(); 
-  anodeCfg->SetPhi( fGeoInfo->GetGeoPar("anode_phi") ); 
-  anodeCfg->SetTheta( fGeoInfo->GetGeoPar("anode_theta") ); 
-  anodeCfg->SetPsi( fGeoInfo->GetGeoPar("anode_psi") ); 
+SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
+  SLArCfgAnode anodeCfg("Anode_"+std::to_string(fID)); 
+  anodeCfg.SetIdx( fID ); 
+  anodeCfg.SetTPCID( fTPCID ); 
+  anodeCfg.SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
+  anodeCfg.SetupAxes(); 
+  anodeCfg.SetPhi( fGeoInfo->GetGeoPar("anode_phi") ); 
+  anodeCfg.SetTheta( fGeoInfo->GetGeoPar("anode_theta") ); 
+  anodeCfg.SetPsi( fGeoInfo->GetGeoPar("anode_psi") ); 
 
 
   auto anode_parameterised = (G4PVParameterised*)fModLV->GetDaughter(0); 
@@ -157,7 +157,7 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
   if (anode_parameterised->IsParameterised() == false) {
     printf("SLArDetAnodeAssembly::BuildAnodeConfig() "); 
     printf("Anode is not a parameterised volume! Quit.\n"); 
-    return nullptr; 
+    throw std::runtime_error("SLArDetAnodeAssembly::BuildAnodeConfig() ERROR: Anode is not a parameterized volume.\n"); 
   }
 
   auto get_replication_data = [](G4PVParameterised* pv) {
@@ -184,30 +184,30 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
       rpl_mt_row.fStartingPos + rpl_mt_row.fWidth*(i_mt_row)*rpl_mt_row.fReplicaAxisVec;
 
     for (int i_mt_clm = 0; i_mt_clm < rpl_mt_clm.fNreplica; i_mt_clm++) {
-      G4int mt_idx = (i_mt_row+1)*1000 + i_mt_clm;
+      G4int mt_id = (i_mt_row+1)*1000 + i_mt_clm;
       G4String mtName = Form("%s_%i_%i", 
-          fTileAssemblyModel.data(), anodeCfg->GetIdx(), mt_idx); 
-      SLArCfgMegaTile* mtCfg = new SLArCfgMegaTile(mtName, mt_idx); 
+          fTileAssemblyModel.data(), anodeCfg.GetID(), mt_id); 
+      SLArCfgMegaTile mtCfg(mtName, mt_id); 
 
       G4ThreeVector mt_local_pos = pos_mt_row + 
         rpl_mt_clm.fStartingPos + rpl_mt_clm.fWidth*(i_mt_clm)*rpl_mt_clm.fReplicaAxisVec;
-      mtCfg->SetX(mt_local_pos.x()); 
-      mtCfg->SetY(mt_local_pos.y()); 
-      mtCfg->SetZ(mt_local_pos.z()); 
+      mtCfg.SetX(mt_local_pos.x()); 
+      mtCfg.SetY(mt_local_pos.y()); 
+      mtCfg.SetZ(mt_local_pos.z()); 
 
       G4ThreeVector mt_abs_pos = fPosition + mt_local_pos.transform(*rot_inv); 
-      mtCfg->SetPhysX( mt_abs_pos.x() ); 
-      mtCfg->SetPhysY( mt_abs_pos.y() ); 
-      mtCfg->SetPhysZ( mt_abs_pos.z() ); 
+      mtCfg.SetPhysX( mt_abs_pos.x() ); 
+      mtCfg.SetPhysY( mt_abs_pos.y() ); 
+      mtCfg.SetPhysZ( mt_abs_pos.z() ); 
 
-      mtCfg->SetPhi( anodeCfg->GetPhi() ); 
-      mtCfg->SetTheta( anodeCfg->GetTheta() ); 
-      mtCfg->SetPsi( anodeCfg->GetPsi() ); 
+      mtCfg.SetPhi( anodeCfg.GetPhi() ); 
+      mtCfg.SetTheta( anodeCfg.GetTheta() ); 
+      mtCfg.SetPsi( anodeCfg.GetPsi() ); 
 
-      mtCfg->SetNormal( anodeCfg->GetNormal() ); 
-      mtCfg->SetupAxes(); 
+      mtCfg.SetNormal( anodeCfg.GetNormal() ); 
+      mtCfg.SetupAxes(); 
       
-      mtCfg->SetSize( 
+      mtCfg.SetSize( 
           2*((G4Box*)megatile_lv->GetSolid())->GetXHalfLength(),
           2*((G4Box*)megatile_lv->GetSolid())->GetYHalfLength(),
           2*((G4Box*)megatile_lv->GetSolid())->GetZHalfLength() ); 
@@ -226,50 +226,50 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
 
           G4ThreeVector t_abs_pos = mt_abs_pos + t_local_pos.transform(*rot_inv); 
 
-          auto tileCfg = new SLArCfgReadoutTile( 100*(i_t_row+1) + i_t_clm ); 
-          G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg->GetIdx(), 
-              mtCfg->GetIdx(), tileCfg->GetIdx()); 
-          tileCfg->SetName( tileName.data() ); 
+          SLArCfgReadoutTile tileCfg( 100*(i_t_row+1) + i_t_clm ); 
+          G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg.GetID(), 
+              mtCfg.GetID(), tileCfg.GetID()); 
+          tileCfg.SetName( tileName.data() ); 
           //printf("tile name: %s\n", tileCfg->GetName()); 
 
-          tileCfg->SetPhi( anodeCfg->GetPhi() ); 
-          tileCfg->SetTheta( anodeCfg->GetTheta() ); 
-          tileCfg->SetPsi( anodeCfg->GetPsi() ); 
+          tileCfg.SetPhi( anodeCfg.GetPhi() ); 
+          tileCfg.SetTheta( anodeCfg.GetTheta() ); 
+          tileCfg.SetPsi( anodeCfg.GetPsi() ); 
 
-          tileCfg->SetX( t_local_pos.x() ); 
-          tileCfg->SetY( t_local_pos.y() ); 
-          tileCfg->SetX( t_local_pos.z() ); 
+          tileCfg.SetX( t_local_pos.x() ); 
+          tileCfg.SetY( t_local_pos.y() ); 
+          tileCfg.SetX( t_local_pos.z() ); 
           
-          tileCfg->SetPhysX( t_abs_pos.x() ); 
-          tileCfg->SetPhysY( t_abs_pos.y() ); 
-          tileCfg->SetPhysZ( t_abs_pos.z() ); 
+          tileCfg.SetPhysX( t_abs_pos.x() ); 
+          tileCfg.SetPhysY( t_abs_pos.y() ); 
+          tileCfg.SetPhysZ( t_abs_pos.z() ); 
 
-          tileCfg->SetNormal( mtCfg->GetNormal() ); 
-          tileCfg->SetupAxes(); 
+          tileCfg.SetNormal( mtCfg.GetNormal() ); 
+          tileCfg.SetupAxes(); 
 
-          tileCfg->SetSize( 
+          tileCfg.SetSize( 
               2*((G4Box*)tile_lv->GetSolid())->GetXHalfLength(),
               2*((G4Box*)tile_lv->GetSolid())->GetYHalfLength(),
               2*((G4Box*)tile_lv->GetSolid())->GetZHalfLength() ); 
 
-          mtCfg->RegisterElement( tileCfg ); 
+          mtCfg.RegisterElement( tileCfg ); 
         }
       }
 
-      auto h2 = mtCfg->BuildPolyBinHist(SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative);
+      auto h2 = mtCfg.BuildPolyBinHist(SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative);
       delete h2;
 
-      anodeCfg->RegisterElement( mtCfg ); 
+      anodeCfg.RegisterElement( mtCfg ); 
     }
 
-    anodeCfg->SetSize(
+    anodeCfg.SetSize(
         2*((G4Box*)fModSV)->GetXHalfLength(),
         2*((G4Box*)fModSV)->GetYHalfLength(),
         2*((G4Box*)fModSV)->GetZHalfLength() ); 
   }
 
   printf("%s has %lu elements registered\n", 
-      anodeCfg->GetName(), anodeCfg->GetMap().size());
+      anodeCfg.GetName(), anodeCfg.GetMap().size());
 
   return anodeCfg; 
 }

@@ -17,7 +17,7 @@
 class SLArEventMegatile : public TNamed {
   public: 
     SLArEventMegatile(); 
-    SLArEventMegatile(SLArCfgMegaTile* cfg); 
+    SLArEventMegatile(const SLArCfgMegaTile* cfg); 
     SLArEventMegatile(const SLArEventMegatile& right);
     ~SLArEventMegatile(); 
 

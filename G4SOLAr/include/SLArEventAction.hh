@@ -69,7 +69,7 @@ public:
     inline G4double GetEDep()const             {return fTotEdep;}
     inline G4int GetAbsorptionCount()const     {return fAbsorptionCount;}
     inline G4int GetBoundaryAbsorptionCount()const {return fBoundaryAbsorptionCount;}
-    int   FindAncestorID(int); 
+    int FindAncestorID(int); 
     void  RegisterNewTrackPID(int, int); 
 
     struct TrackIdHelpInfo_t {

@@ -29,9 +29,9 @@ SLArTrackingAction::~SLArTrackingAction() {}
 
 void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
-#ifdef SLAR_DEBUG
-  printf("SLArTrackingAction::PreUserTrackingAction\n");
-#endif // DEBUG
+//#ifdef SLAR_DEBUG
+  //printf("SLArTrackingAction::PreUserTrackingAction\n");
+//#endif // DEBUG
 
   //Let this be up to the user via vis.mac
   if (aTrack->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
@@ -73,9 +73,9 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     }
   }
 
-#ifdef SLAR_DEBUG
-  printf("SLArTrackingAction::PreUserTrackingAction() DONE\n");
-#endif // DEBUG
+//#ifdef SLAR_DEBUG
+  //printf("SLArTrackingAction::PreUserTrackingAction() DONE\n");
+//#endif // DEBUG
        //Use custom trajectory class
 }
 

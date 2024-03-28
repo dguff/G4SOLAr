@@ -30,8 +30,8 @@ SLArEventAnode::SLArEventAnode(const SLArEventAnode& right)
   }
 }
 
-SLArEventAnode::SLArEventAnode(SLArCfgAnode* cfg) : SLArEventAnode() {
-  SetName(cfg->GetName()); 
+SLArEventAnode::SLArEventAnode(const SLArCfgAnode& cfg) : SLArEventAnode() {
+  SetName(cfg.GetName()); 
   //ConfigSystem(cfg); 
   return;
 }
@@ -45,13 +45,13 @@ SLArEventAnode::~SLArEventAnode() {
 }
 
 
-int SLArEventAnode::ConfigSystem(SLArCfgAnode* cfg) {
+int SLArEventAnode::ConfigSystem(const SLArCfgAnode& cfg) {
   int imegatile = 0; 
-  fID = cfg->GetIdx(); 
-  for (const auto &mtcfg : cfg->GetMap()) {
-    int megatile_idx = mtcfg.second->GetIdx(); 
-    if (fMegaTilesMap.count(megatile_idx) == 0) {
-      fMegaTilesMap.insert( std::make_pair( megatile_idx, SLArEventMegatile(mtcfg.second) ) );
+  fID = cfg.GetIdx(); 
+  for (const auto &mtcfg : cfg.GetConstMap()) {
+    int megatile_id = mtcfg.GetID(); 
+    if (fMegaTilesMap.count(megatile_id) == 0) {
+      fMegaTilesMap.insert( std::make_pair( megatile_id, SLArEventMegatile(&mtcfg) ) );
       imegatile++;
     }
   }
@@ -131,7 +131,7 @@ void SLArEventAnode::SetActive(bool is_active) {
 Int_t SLArEventAnode::ApplyZeroSuppression() {
   Int_t erasedHits = 0; 
 
-  printf("SLArEventAnode::ApplyZeroSuppression() Running zero-suppression with threshold %i\n", fZeroSuppressionThreshold);
+  //printf("SLArEventAnode::ApplyZeroSuppression() Running zero-suppression with threshold %i\n", fZeroSuppressionThreshold);
   for (auto& mt_itr : fMegaTilesMap) {
     auto& tile_map = mt_itr.second.GetTileMap();
     for (auto it_t = tile_map.begin(); it_t != tile_map.end(); it_t++) {

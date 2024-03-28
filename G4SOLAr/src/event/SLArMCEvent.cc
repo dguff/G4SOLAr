@@ -59,19 +59,19 @@ SLArMCEvent::~SLArMCEvent()
 }
 
 
-int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
+int SLArMCEvent::ConfigAnode(const std::map<int, SLArCfgAnode>& anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
     fEvAnode.insert(std::make_pair(anode.first, SLArEventAnode(anode.second)));
-    fEvAnode[anode.first].SetID(anode.second->GetIdx());
+    fEvAnode[anode.first].SetID(anode.second.GetIdx());
   }
 
   return fEvAnode.size();
 }
 
-int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
+int SLArMCEvent::ConfigSuperCellSystem(const SLArCfgSystemSuperCell& supercellSysCfg)
 {
-  for (const auto& scArray : supercellSysCfg->GetMap()) {
+  for (const auto& scArray : supercellSysCfg.GetConstMap()) {
     if (fEvSuperCellArray.count(scArray.first)) {
       printf("SLArMCEvent::ConfigSuperCellSystem() WARNING: "); 
       printf("SuperCelll array with index %i is aleady stored in the MCEvent. Skipping.\n", scArray.first);

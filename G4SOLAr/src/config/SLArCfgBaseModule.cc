@@ -9,60 +9,53 @@
 ClassImp(SLArCfgBaseModule)
 
 SLArCfgBaseModule::SLArCfgBaseModule() : TNamed(), 
-  fIdx(-1), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
+  fID(-1), fIdx(-1), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
   fPhysX(0.), fPhysY(0.), fPhysZ(0.), 
   fNormal(0, 0, 1), fAxis0(0, 0, 0), fAxis1(0, 0, 0), fSize(0, 0, 0),
   fVecAxis0{0, 0, 0}, fVecAxis1{0, 0, 0}, fVecNormal{0, 0, 0}
 {}
 
-SLArCfgBaseModule::SLArCfgBaseModule(int idx) : TNamed(),
-  fIdx(idx), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
+SLArCfgBaseModule::SLArCfgBaseModule(int id) : TNamed(),
+  fID(id), fIdx(-1), fBin(0), fX(0.), fY(0.), fZ(0.), fPhi(0.), fTheta(0.), fPsi(0.), 
   fPhysX(0.), fPhysY(0.), fPhysZ(0.), 
   fNormal(0, 0, 1), fAxis0(0, 0, 0), fAxis1(0, 0, 0), fSize(0, 0, 0),
   fVecAxis0{0, 0, 0}, fVecAxis1{0, 0, 0}, fVecNormal{0, 0, 0}
 {}
 
-SLArCfgBaseModule::SLArCfgBaseModule(int idx, float xc, float yc, float zc, 
+SLArCfgBaseModule::SLArCfgBaseModule(int id, float xc, float yc, float zc, 
              float phi, float theta, float psi) : TNamed(), 
-  fIdx(idx), fBin(0), fX(xc), fY(yc), fZ(zc), fPhi(phi), fTheta(theta), fPsi(psi), 
+  fID(id), fIdx(-1), fBin(0), fX(xc), fY(yc), fZ(zc), fPhi(phi), fTheta(theta), fPsi(psi), 
   fPhysX(0.), fPhysY(0.), fPhysZ(0.), 
   fNormal(0, 0, 1), fAxis0(0, 0, 0), fAxis1(0, 0, 0), fSize(0, 0, 0),
   fVecAxis0{0, 0, 0}, fVecAxis1{0, 0, 0}, fVecNormal{0, 0, 0}
-{
-  fIdx   = idx  ; 
-  fX     = xc   ;
-  fY     = yc   ;
-  fZ     = zc   ; 
-  fPhi   = phi  ;
-  fTheta = theta;
-  fPsi   = psi  ;
-}
+{}
 
 SLArCfgBaseModule::SLArCfgBaseModule(const SLArCfgBaseModule& base) : 
-  SLArCfgBaseModule() 
+  TNamed(base)
 {
-    fIdx = base.fIdx;
-    fBin = base.fBin;
-    fX = base.fX;
-    fY = base.fY;
-    fZ = base.fZ;
-    fPhi = base.fPhi;
-    fTheta = base.fTheta;
-    fPsi = base.fPsi;
-    fPhysX = base.fPhysX;
-    fPhysY = base.fPhysY;
-    fPhysZ = base.fPhysZ;
-    fNormal = base.fNormal;
-    fAxis0 = base.fAxis0; 
-    fAxis1 = base.fAxis1; 
-    fSize = base.fSize;
+  fID = base.fID;
+  fIdx = base.fIdx;
+  fBin = base.fBin;
+  fX = base.fX;
+  fY = base.fY;
+  fZ = base.fZ;
+  fPhi = base.fPhi;
+  fTheta = base.fTheta;
+  fPsi = base.fPsi;
+  fPhysX = base.fPhysX;
+  fPhysY = base.fPhysY;
+  fPhysZ = base.fPhysZ;
+  fNormal = base.fNormal;
+  fAxis0 = base.fAxis0; 
+  fAxis1 = base.fAxis1; 
+  fSize = base.fSize;
 
-    fVecAxis0 = base.fVecAxis0;
-    fVecAxis1 = base.fVecAxis1; 
-    fVecNormal= base.fVecNormal;
-    //if (base.fGShape) {
-      //fGShape = (TGraph*)base.fGShape->Clone();
-    //}
+  fVecAxis0 = base.fVecAxis0;
+  fVecAxis1 = base.fVecAxis1; 
+  fVecNormal= base.fVecNormal;
+  //if (base.fGShape) {
+  //fGShape = (TGraph*)base.fGShape->Clone();
+  //}
 }
 
 SLArCfgBaseModule::~SLArCfgBaseModule()

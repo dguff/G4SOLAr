@@ -50,6 +50,7 @@
 #include "G4PSNofSecondary.hh"
 #include "G4SDParticleFilter.hh"
 #include "G4SDParticleWithEnergyFilter.hh"
+#include "G4UnitsTable.hh"
 
 #include <fstream>
 
@@ -634,7 +635,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 
   // Get PMTSystem Configuration
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  SLArCfgSystemSuperCell*  pdsCfg = new SLArCfgSystemSuperCell("PDSCfg"); 
+  SLArCfgSystemSuperCell&  pdsCfg = SLArAnaMgr->GetPDSCfg();
 
   printf("-- Building SuperCell arrays\n");
   for (auto &array_ : fSCArray) {
@@ -655,10 +656,10 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
         rot, pos, tpc->GetModLV(), 0, scarray_id); 
 
     auto array_cfg = scarray->BuildSuperCellArrayCfg(); 
-    array_cfg->SetX( pos.x() ); array_cfg->SetPhysX( glb_pos.x() );
-    array_cfg->SetY( pos.y() ); array_cfg->SetPhysY( glb_pos.y() );
-    array_cfg->SetZ( pos.z() ); array_cfg->SetPhysZ( glb_pos.z() );
-    pdsCfg->RegisterElement( array_cfg ); 
+    array_cfg.SetX( pos.x() ); array_cfg.SetPhysX( glb_pos.x() );
+    array_cfg.SetY( pos.y() ); array_cfg.SetPhysY( glb_pos.y() );
+    array_cfg.SetZ( pos.z() ); array_cfg.SetPhysZ( glb_pos.z() );
+    pdsCfg.RegisterElement( array_cfg ); 
   }
 
  
@@ -705,9 +706,9 @@ void SLArDetectorConstruction::BuildAndPlaceAnode() {
         rot, pos, tpc->GetModLV(), 0, anode_id); 
 
     auto anode_cfg = anode->BuildAnodeConfig(); 
-    anode_cfg->SetX( pos.x() ); anode_cfg->SetPhysX( glb_pos.x() ); 
-    anode_cfg->SetY( pos.y() ); anode_cfg->SetPhysY( glb_pos.y() ); 
-    anode_cfg->SetZ( pos.z() ); anode_cfg->SetPhysZ( glb_pos.z() ); 
+    anode_cfg.SetX( pos.x() ); anode_cfg.SetPhysX( glb_pos.x() ); 
+    anode_cfg.SetY( pos.y() ); anode_cfg.SetPhysY( glb_pos.y() ); 
+    anode_cfg.SetZ( pos.z() ); anode_cfg.SetPhysZ( glb_pos.z() ); 
     ana_mgr->LoadAnodeCfg(anode_cfg); 
   }
 
@@ -728,42 +729,47 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
   auto ana_mgr = SLArAnalysisManager::Instance(); 
 
   for (auto &anodeCfg_ : ana_mgr->GetAnodeCfg()) {
-    auto anodeCfg = anodeCfg_.second; 
+    auto& anodeCfg = anodeCfg_.second; 
     // access the first megatile to extract the map of the tiles 
     // (which is replicated for all the megatiles in the anode). 
-    int megatile_nr = anodeCfg->GetMap().size(); 
-    printf("%s has %i elements registered\n", anodeCfg->GetName(), megatile_nr); 
+    int megatile_nr = anodeCfg.GetMap().size(); 
+    printf("%s has %i elements registered\n", anodeCfg.GetName(), megatile_nr); 
 #ifdef SLAR_DEBUG
-    for (const auto& mt : anodeCfg->GetMap()) {
-      printf("%s\n", mt.second->GetName()); 
-    }
+    anodeCfg->DumpMap(); 
 #endif
 
-    auto mtileCfg = anodeCfg->GetMap().begin()->second; 
+    const size_t n_megatiles = anodeCfg.GetMap().size(); 
+    if (n_megatiles == 0) {
+      printf("SLArDetectorConstruction::ConstructAnodeMap WARNING: Anode %i has no megatiles registered.\n", 
+        anodeCfg.GetIdx()); 
+      return;
+    }
+    
+    printf("getting front megatile\n"); 
+    SLArCfgMegaTile& mtileCfg = anodeCfg.GetMap().front(); 
 
-    if (!mtileCfg) printf("mtileCfg is null!\n");
-
-    auto hMapMegaTile = anodeCfg->BuildPolyBinHist(); 
+    printf("creating TH2Poly for a megatile...\n"); 
+    auto hMapMegaTile = anodeCfg.BuildPolyBinHist();
     printf("mapMegaTile\n");
-    auto hMapTile     = mtileCfg->BuildPolyBinHist(
+    auto hMapTile     = mtileCfg.BuildPolyBinHist(
         SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative); 
     printf("mapTile\n");
     G4RotationMatrix* mtile_rot = new G4RotationMatrix(
-        mtileCfg->GetPhi(), 
-        mtileCfg->GetTheta(), 
-        mtileCfg->GetPsi());
+        mtileCfg.GetPhi(), 
+        mtileCfg.GetTheta(), 
+        mtileCfg.GetPsi());
     G4RotationMatrix* mtile_rot_inv = new G4RotationMatrix(*mtile_rot); 
     mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 
     auto hMapPixel = fReadoutTile->BuildTileChgPixelMap(
-        G4ThreeVector(anodeCfg->GetAxis0().x(), anodeCfg->GetAxis0().y(), anodeCfg->GetAxis0().z()), 
-        G4ThreeVector(anodeCfg->GetAxis1().x(), anodeCfg->GetAxis1().y(), anodeCfg->GetAxis1().z()), 
+        G4ThreeVector(anodeCfg.GetAxis0().x(), anodeCfg.GetAxis0().y(), anodeCfg.GetAxis0().z()), 
+        G4ThreeVector(anodeCfg.GetAxis1().x(), anodeCfg.GetAxis1().y(), anodeCfg.GetAxis1().z()), 
         nullptr, mtile_rot_inv);
     printf("mapPixel\n");
 
-    anodeCfg->RegisterMap(0, hMapMegaTile); 
-    anodeCfg->RegisterMap(1, hMapTile); 
-    anodeCfg->RegisterMap(2, hMapPixel); 
+    anodeCfg.RegisterMap(0, hMapMegaTile); 
+    anodeCfg.RegisterMap(1, hMapTile); 
+    anodeCfg.RegisterMap(2, hMapPixel); 
 
     delete mtile_rot;
     delete mtile_rot_inv; 

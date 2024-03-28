@@ -19,7 +19,7 @@ class SLArDetSuperCellArray : public SLArBaseDetModule {
     SLArDetSuperCellArray(); 
     ~SLArDetSuperCellArray(); 
     
-    SLArCfgSuperCellArray* BuildSuperCellArrayCfg(); 
+    SLArCfgSuperCellArray BuildSuperCellArrayCfg(); 
     void BuildMaterial(G4String materials_db); 
     void BuildSuperCellArray(SLArDetSuperCell*); 
 

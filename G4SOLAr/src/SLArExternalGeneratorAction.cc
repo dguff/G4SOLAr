@@ -31,6 +31,7 @@ SLArExternalGeneratorAction::SLArExternalGeneratorAction()
   : fVtxGen(nullptr)
 {
   fParticleGun = std::make_unique<SLArPGunGeneratorAction>(1); 
+
   fRandomEngine = std::make_unique<TRandom3>( G4Random::getTheSeed() ); 
 }
 
@@ -100,7 +101,7 @@ G4double SLArExternalGeneratorAction::SetGeneratorBox(const G4String volName) {
     printf("SLArBoxSurfaceVertexGenerator::SetGeneratorBox(%s) WARNING\n", 
         volName.c_str());
     printf("Unable to find %s in physical volume store.\n", volName.c_str());
-    getchar(); 
+    exit(2); 
   }
 
   fVtxGen->SetBoxLogicalVolume(volume->GetLogicalVolume()); 
@@ -122,7 +123,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   G4ThreeVector vtx_pos(0, 0, 0); 
   fVtxGen->ShootVertex(vtx_pos);
   
-  printf("Energy spectrum pointer: %p\n", static_cast<void*>(fEnergySpectrum.get()));
+  printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
   printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
   G4double energy = fEnergySpectrum->GetRandom( fRandomEngine.get() ); 
   auto face = fVtxGen->GetVertexFace(); 

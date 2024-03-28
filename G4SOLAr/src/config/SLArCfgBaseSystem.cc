@@ -4,6 +4,7 @@
  * @created     : martedì lug 19, 2022 13:05:36 CEST
  */
 
+#include <stdexcept>
 #include <map>
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -40,7 +41,7 @@ SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem<TA
   fNElements = cfg.fNElements; 
   for (const auto &mod : cfg.fElementsMap) {
     fElementsMap.insert(
-        std::make_pair(mod.first, new TAssemblyModule(*mod.second))); 
+        std::make_pair(mod.first, TAssemblyModule(mod.second))); 
   }
 
   //fH2Bins = nullptr; 
@@ -60,45 +61,47 @@ SLArCfgBaseSystem<TAssemblyModule>::SLArCfgBaseSystem(const SLArCfgBaseSystem<TA
 template<class TAssemblyModule>
 SLArCfgBaseSystem<TAssemblyModule>::~SLArCfgBaseSystem() {
   for (auto &mod : fElementsMap) {
-    if (mod.second) {delete mod.second; mod.second = 0;}
+    //if (mod.second) {delete mod.second; mod.second = 0;}
   }
   fElementsMap.clear(); 
   //if (fH2Bins) {delete fH2Bins;}
 }
 
 template<class TAssemblyModule>
-TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(const char* name)
+TAssemblyModule& SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(const char* name)
 {
-  TAssemblyModule* module_cfg = nullptr;
-  for (const auto& mod : fElementsMap) {
-    if (strcmp(mod.second->GetName(),name) == 0) {
-      module_cfg = mod.second; 
-      break;
+  for (auto& mod : fElementsMap) {
+    if (strcmp(mod.second.GetName(),name) == 0) {
+      return mod.second;
     }
   }
-
-  return module_cfg;
+  
+  char err_msg[100]; 
+  sprintf(err_msg, 
+      "SLArCfgBaseSystem::GetBaseElement() ERROR: Element '%s' not found in register\n\n", 
+      name);
+  throw std::runtime_error(err_msg); 
 }
 
 template<class TAssemblyModule>
-TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(int idx)
+TAssemblyModule& SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(int idx)
 {
   return fElementsMap.find(idx)->second;
 }
 
 
 template<class TAssemblyModule>
-void SLArCfgBaseSystem<TAssemblyModule>::RegisterElement(TAssemblyModule* mod) 
+void SLArCfgBaseSystem<TAssemblyModule>::RegisterElement(TAssemblyModule& mod) 
 {
-  int idx = mod->GetIdx();
+  int idx = mod.GetIdx();
   if (fElementsMap.count(idx)) 
   {
     std::cout<<"Base element "<<idx<<" already registered. Skip"<<std::endl;
     return;
   }
 
-  printf("SLArCfgBaseSystem::RegisterElement(%s)...\n", mod->GetName());
-  fElementsMap.insert( std::make_pair(idx, mod) );
+  printf("SLArCfgBaseSystem::RegisterElement(%s)...\n", mod.GetName());
+  fElementsMap.insert( std::make_pair(idx, std::move(mod)) );
   printf("DONE\n");
   fNElements++; 
 }
@@ -117,12 +120,12 @@ TH2Poly* SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
     //if (!mod.second->GetGraphShape()) {
       //mod.second->BuildGShape(); 
     //}
-    auto g = mod.second->BuildGShape(); 
+    auto g = mod.second.BuildGShape(); 
     TString gBinName = Form("gBin%i", iBin);
     g.SetName( gBinName ); 
     printf("SLArCfgBaseSystem::BuildPolyBinHist: Adding bin %i\n", iBin);
     int bin_idx = h2Bins->AddBin( std::move(new TGraph(g)) );
-    mod.second->SetBinIdx(bin_idx);
+    mod.second.SetBinIdx(bin_idx);
     iBin ++;
   }
 
@@ -130,27 +133,33 @@ TH2Poly* SLArCfgBaseSystem<TAssemblyModule>::BuildPolyBinHist()
 }
 
 template<class TAssemblyModule>
-void SLArCfgBaseSystem<TAssemblyModule>::DumpMap() 
+void SLArCfgBaseSystem<TAssemblyModule>::DumpMap() const
 {
   std::printf("SLArCfgSystem %s has %lu entries\n", 
       fName.Data(), fElementsMap.size());
   for (auto &itr : fElementsMap)
-    itr.second->DumpInfo();
+    itr.second.DumpInfo();
+}
+
+template<class TAssemblyModule>
+void SLArCfgBaseSystem<TAssemblyModule>::DumpInfo() const 
+{
+  DumpMap(); 
 }
 
 
 template<class TAssemblyModule>
-TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ibin) 
+TAssemblyModule& SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ibin) 
 {
-  TAssemblyModule* module_cfg = nullptr;
-  for (const auto& mod : fElementsMap) {
-    if (mod.second->GetBinIdx() == ibin) {
-      module_cfg = mod.second; 
-      break;
+  for (auto& mod : fElementsMap) {
+    if (mod.second.GetBinIdx() == ibin) {
+      return mod.second; 
     }
   }
 
-  return module_cfg;
+  char err_msg[100]; 
+  sprintf(err_msg, "SLArCfgBaseSystem::FindBaseElementInMap() ERROR: Element with bin index %i not found in register\n\n", ibin);
+  throw std::runtime_error(err_msg); 
 }
 
 //template<class TAssemblyModule>
@@ -161,14 +170,14 @@ TAssemblyModule* SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
 //}
 
 template<class TAssemblyModule> 
-TGraph SLArCfgBaseSystem<TAssemblyModule>::BuildGShape() {
+TGraph SLArCfgBaseSystem<TAssemblyModule>::BuildGShape() const {
   double x_min =  1e10;
   double x_max = -1e10; 
   double y_min =  1e10; 
   double y_max = -1e10; 
 
   for (const auto &el : fElementsMap) {
-    TGraph gbin = el.second->BuildGShape(); 
+    TGraph gbin = el.second.BuildGShape(); 
     double* x = gbin.GetX(); 
     double* y = gbin.GetY(); 
     int n = gbin.GetN(); 

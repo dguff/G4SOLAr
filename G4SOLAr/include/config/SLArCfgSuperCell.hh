@@ -21,8 +21,8 @@ class SLArCfgSuperCell : public SLArCfgBaseModule
           float phi, float theta, float psi);
     ~SLArCfgSuperCell();
 
-    void   DumpInfo() override;
-    TGraph BuildGShape() override;
+    void   DumpInfo() const override;
+    TGraph BuildGShape() const override;
 
   protected:
 

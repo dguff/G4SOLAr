@@ -206,7 +206,7 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdSetZeroSuppressionThrs) {
     int thrs = std::atoi( newVal ); 
-    for (auto& anode_itr : SLArAnaMgr->GetEvent()->GetEventAnode()) {
+    for (auto& anode_itr : SLArAnaMgr->GetEvent().GetEventAnode()) {
       anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
     }
   }

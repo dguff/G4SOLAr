@@ -76,15 +76,28 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       if (aTrack->GetParentID() == 0) { // this is a primary
         fEventAction->RegisterNewTrackPID(aTrack->GetTrackID(), aTrack->GetTrackID()); 
         parentID = aTrack->GetTrackID(); 
+        //printf("Track %i is a candidate primary with pdg id %i\n", 
+            //aTrack->GetTrackID(), aTrack->GetParticleDefinition()->GetPDGEncoding());
+
         // fix track ID in primary output object
-        auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+        auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
         for (auto &primaryInfo : primaries) {
-          if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < 1e-6 &&
-              fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < 1e-6 &&
-              fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < 1e-6) {
-            //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
-            primaryInfo.SetTrackID(aTrack->GetTrackID()); 
-            break;
+          if (aTrack->GetDynamicParticle()->GetPDGcode() == primaryInfo.GetCode()) {
+            G4double tolerance = 1e-3;
+            if (primaryInfo.GetCode() > 10000) {
+              //printf("possible canidate %i - [%g, %g, %g] vs [%g, %g, %g]\n", 
+                  //primaryInfo.GetCode(), 
+                  //aTrack->GetMomentum().x(), aTrack->GetMomentum().y(), aTrack->GetMomentum().z(), 
+                  //primaryInfo.GetMomentum()[0], primaryInfo.GetMomentum()[1], primaryInfo.GetMomentum()[2]); 
+              tolerance = 5e-2;
+            }
+            if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < tolerance &&
+                fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < tolerance &&
+                fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < tolerance) {
+              //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
+              primaryInfo.SetTrackID(aTrack->GetTrackID()); 
+              break;
+            }
           }
         }
       } else {
@@ -106,6 +119,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
             aTrack->GetParentID(), 
             aTrack->GetDynamicParticle()->GetPDGcode(),
             momentum_4); 
+        //std::printf("trkID: %i, ParentID: %i, pdg code: %i\n", 
+            //aTrack->GetTrackID(), aTrack->GetParentID(), trkIdHelp.pdg); 
         if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp)) {
           creatorProc = fEventAction->GetProcessExtraInfo()[trkIdHelp];
         }
@@ -129,14 +144,14 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
-      auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+      auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
       for (auto &p : primaries) {
         if (p.GetTrackID() == ancestor_id) {
           ancestor = &p; 
           break;
         }
       }
-
+      if (!ancestor) printf("Unable to find corresponding primary particle\n");
 #ifdef SLAR_DEBUG
       if (!ancestor) printf("Unable to find corresponding primary particle\n");
 #endif
@@ -157,7 +172,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
       SLArMCPrimaryInfo* primary = nullptr; 
       //SLArMCPrimaryInfoPtr* primary = nullptr; 
-      auto& primaries = anaMngr->GetEvent()->GetPrimaries();
+      auto& primaries = anaMngr->GetEvent().GetPrimaries();
 
       int primary_parent_id = fEventAction->FindAncestorID(aTrack->GetParentID()); 
 //#ifdef SLAR_DEBUG

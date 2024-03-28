@@ -152,6 +152,8 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
 
   SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 
 
+  SLArAnaMgr->WriteVariable("rndm_seed", SLArAnaMgr->GetSeed()); 
+
   SLArAnaMgr->Save();
 
   delete fElectronDrift;  fElectronDrift = nullptr;

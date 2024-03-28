@@ -12,7 +12,6 @@
 #include <vector>
 #include <memory>
 #include "TNamed.h"
-#include "TH3F.h"
 #include "event/SLArEventTrajectory.hh"
 
 class SLArMCPrimaryInfo : public TNamed 
@@ -26,7 +25,6 @@ class SLArMCPrimaryInfo : public TNamed
     void SetMomentum(const double& px, const double& py, const double& pz, const double&   ene);
     inline void SetID(const int& id) {fID = id;}
     inline void SetTrackID(const int& id) {fTrkID = id;}
-    inline void SetName(const char* name) {fName = name;}
     inline void SetTime(const double& time) {fTime = time;}
     inline void SetTotalEdep(const float& edep) {fTotalEdep = edep;}
     inline void SetTotalLArEdep(const float& edep) {fTotalLArEdep = edep;}
@@ -50,7 +48,9 @@ class SLArMCPrimaryInfo : public TNamed
 
     inline void IncrementLArEdep(const double edep) {fTotalLArEdep += edep;}
     inline void IncrementScintPhotons() {fTotalScintPhotons++;}
+    inline void IncrementScintPhotons(const size_t n) {fTotalScintPhotons += n;}
     inline void IncrementCherPhotons() {fTotalCerenkovPhotons++;}
+    inline void IncrementCherPhotons(const size_t n) {fTotalCerenkovPhotons += n;}
 
     void PrintParticle() const;
 
@@ -62,15 +62,14 @@ class SLArMCPrimaryInfo : public TNamed
   private:
     Int_t fID; 
     Int_t fTrkID;
-    TString fName; 
-    double fEnergy;
-    double fTime;
-    double fTotalEdep;
+    Double_t fEnergy;
+    Double_t fTime;
+    Double_t fTotalEdep;
     Int_t fTotalScintPhotons;
     Int_t fTotalCerenkovPhotons;
-    double fTotalLArEdep; 
-    std::vector<double> fVertex;
-    std::vector<double> fMomentum;
+    Double_t fTotalLArEdep; 
+    std::vector<Double_t> fVertex;
+    std::vector<Double_t> fMomentum;
     std::vector<std::unique_ptr<SLArEventTrajectory>> fTrajectories;
   
   public:

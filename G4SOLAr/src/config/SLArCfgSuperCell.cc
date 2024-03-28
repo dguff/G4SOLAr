@@ -15,12 +15,12 @@ ClassImp(SLArCfgSuperCell)
 SLArCfgSuperCell::SLArCfgSuperCell() : SLArCfgBaseModule()
 {}
 
-SLArCfgSuperCell::SLArCfgSuperCell(int idx) : SLArCfgBaseModule(idx)
+SLArCfgSuperCell::SLArCfgSuperCell(int id) : SLArCfgBaseModule(id)
 {}
 
-SLArCfgSuperCell::SLArCfgSuperCell(int idx, float xc, float yc, float zc, 
+SLArCfgSuperCell::SLArCfgSuperCell(int id, float xc, float yc, float zc, 
              float phi, float theta, float psi) 
-  : SLArCfgBaseModule(idx, xc, yc, zc, phi, theta, psi)
+  : SLArCfgBaseModule(id, xc, yc, zc, phi, theta, psi)
 {}
 
 SLArCfgSuperCell::~SLArCfgSuperCell() 
@@ -28,7 +28,7 @@ SLArCfgSuperCell::~SLArCfgSuperCell()
   //if (fGShape) {delete fGShape; fGShape = nullptr;}
 }
 
-TGraph SLArCfgSuperCell::BuildGShape() 
+TGraph SLArCfgSuperCell::BuildGShape() const
 {
   TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 
@@ -61,10 +61,10 @@ TGraph SLArCfgSuperCell::BuildGShape()
   return g; 
 }
 
-void SLArCfgSuperCell::DumpInfo() 
+void SLArCfgSuperCell::DumpInfo() const
 {
-  printf("SuperCell id: %i at (%.2f, %.2f) mm, \n", 
-      fIdx, fX, fY);
+  printf("SuperCell[%i] id: %i at (%.2f, %.2f) mm, \n", 
+      fIdx, fID, fX, fY);
 }
 
 

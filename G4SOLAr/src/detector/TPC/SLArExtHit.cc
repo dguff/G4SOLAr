@@ -16,7 +16,7 @@ G4ThreadLocal G4Allocator<SLArExtHit>* SLArExtHitAllocator;
 
 SLArExtHit::SLArExtHit() : G4VHit(),
   fEvNumber(0), fPDGCode(0), fTrkID(-1), fParentID(-1), fOriginVol(-1),
-  fOriginEnergy(0.0), fEnergy(0.0), fTime(0.0), fWeight(1.0), fVertex{0.0}, 
+  fOriginEnergy(0.0), fEnergy(0.0), fTime(0.0), fWeight(1.0), fVertex{0.0}, fOriginVertex{0.0},
   fCreator("")
 {}
 
@@ -31,10 +31,11 @@ SLArExtHit::SLArExtHit(const SLArExtHit &right) : G4VHit(),
   fEvNumber(right.fEvNumber), fPDGCode(right.fPDGCode), fTrkID(right.fTrkID), 
   fParentID(right.fParentID), fOriginVol(right.fOriginVol), 
   fOriginEnergy(right.fOriginEnergy), fEnergy(right.fEnergy), fTime(right.fTime), 
-  fWeight(right.fWeight), fVertex{0}, fCreator(right.fCreator) 
+  fWeight(right.fWeight), fVertex{0}, fOriginVertex{0.0}, fCreator(right.fCreator) 
 {
   for (size_t i = 0; i < 3; i++) {
     fVertex[i] = right.fVertex[i];
+    fOriginVertex[i] = right.fOriginVertex[i];
   }
 }
 
@@ -54,6 +55,7 @@ const SLArExtHit& SLArExtHit::operator=(const SLArExtHit &right)
   fCreator = right.fCreator;
   for (size_t i = 0; i < 3; i++) {
     fVertex[i] = right.fVertex[i];
+    fOriginVertex[i] = right.fOriginVertex[i];
   }
 
   return *this;
@@ -76,6 +78,7 @@ G4bool SLArExtHit::operator==(const SLArExtHit &right) const
   is_equal *= (fCreator == right.fCreator);
   for (size_t i = 0; i < 3; i++) {
     is_equal *= (fVertex[i] == right.fVertex[i]);
+    is_equal *= (fOriginVertex[i] == right.fOriginVertex[i]);
   }
 
   return is_equal;
@@ -89,7 +92,8 @@ void SLArExtHit::Print() const
   printf("event %i:\n", fEvNumber); 
   printf("pdg: %i - trkID: %i - parentID: %i\n", fPDGCode, fTrkID, fParentID); 
   printf("Origin: [%g, %g, %g] (copy nr %i) - creator: %s - initial energy: %g\n", 
-      fVertex[0], fVertex[1], fVertex[2], fOriginVol, fCreator.data(), fOriginEnergy); 
+      fOriginVertex[0], fOriginVertex[1], fOriginVertex[2], 
+      fOriginVol, fCreator.data(), fOriginEnergy); 
   printf("time: %g, weight: %g\n", fTime, fWeight); 
 
   return;
@@ -109,6 +113,7 @@ void SLArExtHit::reset() {
   fWeight = 0;
   for (size_t i = 0; i < 3; i++) {
     fVertex[i] = 0.0;
+    fOriginVertex[i] = 0.0;
   }
   fCreator = "";
   

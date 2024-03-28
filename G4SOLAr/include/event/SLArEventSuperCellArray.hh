@@ -14,11 +14,11 @@
 class SLArEventSuperCellArray : public TNamed {
   public: 
     SLArEventSuperCellArray(); 
-    SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg); 
+    SLArEventSuperCellArray(const SLArCfgSuperCellArray& cfg); 
     SLArEventSuperCellArray(const SLArEventSuperCellArray&); 
     ~SLArEventSuperCellArray();
 
-    int ConfigSystem(SLArCfgSuperCellArray* cfg); 
+    int ConfigSystem(const SLArCfgSuperCellArray& cfg); 
     inline std::map<int, SLArEventSuperCell>& GetSuperCellMap() {return fSuperCellMap;}
     inline const std::map<int, SLArEventSuperCell>& GetConstSuperCellMap() const {return fSuperCellMap;}
     inline int GetNhits() const {return fNhits;}

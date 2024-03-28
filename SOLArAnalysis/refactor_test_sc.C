@@ -44,20 +44,20 @@ void refactor_test_sc(const TString file_path, const int iev)
   std::map<int, TH2Poly*> h2SCArray; 
 
   for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
-    const auto cfgSCArray = cfgSCArray_.second;
+    auto& cfgSCArray = cfgSCArray_.second;
     printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
-        cfgSCArray->GetMap().size());
+        cfgSCArray.GetConstMap().size());
     printf("\tposition: [%g, %g, %g] mm\n", 
-        cfgSCArray->GetPhysX(), cfgSCArray->GetPhysY(), cfgSCArray->GetPhysZ()); 
+        cfgSCArray.GetPhysX(), cfgSCArray.GetPhysY(), cfgSCArray.GetPhysZ()); 
     printf("\tnormal: [%g, %g, %g]\n", 
-        cfgSCArray->GetNormal().x(), cfgSCArray->GetNormal().y(), cfgSCArray->GetNormal().z() );
+        cfgSCArray.GetNormal().x(), cfgSCArray.GetNormal().y(), cfgSCArray.GetNormal().z() );
     printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
-        cfgSCArray->GetPhi()*TMath::RadToDeg(), 
-        cfgSCArray->GetTheta()*TMath::RadToDeg(), 
-        cfgSCArray->GetPsi()*TMath::RadToDeg());
-    cfgSCArray->BuildGShape(); 
-    auto h2 = cfgSCArray->BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
-    h2SCArray.insert( std::make_pair(cfgSCArray->GetIdx(), h2) ); 
+        cfgSCArray.GetPhi()*TMath::RadToDeg(), 
+        cfgSCArray.GetTheta()*TMath::RadToDeg(), 
+        cfgSCArray.GetPsi()*TMath::RadToDeg());
+    cfgSCArray.BuildGShape(); 
+    auto h2 = cfgSCArray.BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
+    h2SCArray.insert( std::make_pair(cfgSCArray.GetIdx(), h2) ); 
   }
   printf("\n");
 

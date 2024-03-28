@@ -31,6 +31,7 @@
 #include "marley/Particle.hh"
 #include "marley/RootJSONConfig.hh"
 
+#include "SLArAnalysisManager.hh"
 #include "SLArMarleyGeneratorAction.hh"
 
 namespace marley {
@@ -57,7 +58,9 @@ SLArMarleyGeneratorAction::SLArMarleyGeneratorAction(
   // or "tgraph" neutrino source)
   marley::RootJSONConfig config( config_file_name );
   marley_generator_= config.create_generator();
-}
+  const auto run_seed = SLArAnalysisManager::Instance()->GetSeed();
+  marley_generator_.reseed( run_seed ); 
+} 
 
 void SLArMarleyGeneratorAction::SetupMarleyGen(const std::string& config_file_name) 
 {

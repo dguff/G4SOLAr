@@ -7,16 +7,14 @@
 ######################################################################
 
 
-# Set output path and file name
-/SLAr/manager/SetOutputName slar_ar42.root
-/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
-
 # Select bxdecay0 generator
 /SLAr/gen/type Decay0
+/SLAr/gen/volume target_lar_pv
 
 # Set secondary production cuts for gamma and electrons
 /SLAr/phys/gammaCut 0.5 mm
 /SLAr/phys/electronCut 0.5 mm
+/SLAr/scint/enablePhGeneration false
 
 
 # Set decay to be produced by bxdecay0

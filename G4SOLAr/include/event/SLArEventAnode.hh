@@ -16,11 +16,11 @@
 class SLArEventAnode : public TNamed {
   public:
     SLArEventAnode(); 
-    SLArEventAnode(SLArCfgAnode* cfg);
+    SLArEventAnode(const SLArCfgAnode& cfg);
     SLArEventAnode(const SLArEventAnode&);
     ~SLArEventAnode(); 
 
-    int ConfigSystem(SLArCfgAnode* cfg);
+    int ConfigSystem(const SLArCfgAnode& cfg);
     SLArEventMegatile& GetOrCreateEventMegatile(const int mtIdx); 
     inline std::map<int, SLArEventMegatile>& GetMegaTilesMap() {return fMegaTilesMap;}
     inline const std::map<int, SLArEventMegatile>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
