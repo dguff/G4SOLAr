@@ -138,7 +138,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
       //trajectory->SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
-      auto vertex_momentum = aTrack->GetMomentumDirection();
+      auto& vertex_momentum = aTrack->GetMomentumDirection();
       trajectory->SetInitMomentum( TVector3(
             vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() ) );
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 

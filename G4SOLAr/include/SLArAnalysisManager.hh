@@ -88,8 +88,8 @@ class SLArAnalysisManager
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
     void SetupBacktrackerRecords(); 
-    TTree* GetTree() const {return  fEventTree.get();}
-    TFile* GetFile() const {return   fRootFile.get();}
+    TTree* GetTree() const {return  fEventTree;}
+    TFile* GetFile() const {return   fRootFile;}
     SLArCfgSystemSuperCell& GetPDSCfg() {return  fPDSysCfg;}
     std::map<int, SLArCfgAnode>& GetAnodeCfg() {return fAnodeCfg;}
     inline SLArCfgAnode& GetAnodeCfg(int id) {
@@ -115,7 +115,7 @@ class SLArAnalysisManager
     SLArAnalysisManagerMsgr* fAnaMsgr;
 #ifdef SLAR_EXTERNAL
     void SetupExternalsTree(); 
-    inline TTree* GetExternalsTree() {return fExternalsTree.get();}
+    inline TTree* GetExternalsTree() {return fExternalsTree;}
     inline SLArEventTrajectoryLite& GetExternalRecord() {return fExternalRecord;}
 #endif 
 
@@ -136,12 +136,12 @@ class SLArAnalysisManager
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 
-    std::unique_ptr<TFile> fRootFile;
-    std::unique_ptr<TTree> fEventTree;
+    TFile* fRootFile;
+    TTree* fEventTree;
     SLArMCEvent  fMCEvent;
 #ifdef SLAR_EXTERNAL
     SLArEventTrajectoryLite fExternalRecord;
-    std::unique_ptr<TTree> fExternalsTree;
+    TTree* fExternalsTree;
 #endif 
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;

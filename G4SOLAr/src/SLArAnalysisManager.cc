@@ -108,7 +108,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 {
   G4String filepath = fOutputPath;
   filepath.append(fOutputFileName);
-  fRootFile = std::make_unique<TFile>(filepath, "recreate");
+  fRootFile = new TFile(filepath, "recreate");
 
   if (!fRootFile)
   {
@@ -116,14 +116,15 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
-  fEventTree = std::make_unique<TTree>("EventTree", "SoLAr-sim Simulated Events", 
-      /*splitlevel*/ 99, /*dir*/ nullptr);
+  fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
  
   // setup backtracker size
   SetupBacktrackerRecords(); 
 
   printf("setting up ROOT TTree Branch...\n");
   fEventTree->Branch("MCEvent", &fMCEvent);
+
+  printf("MCEvent tree created with AutoFlush set to %lld\n", fEventTree->GetAutoFlush());
 
 #ifdef SLAR_EXTERNAL
   SetupExternalsTree(); 
@@ -554,21 +555,22 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
 
 #ifdef SLAR_EXTERNAL
 void SLArAnalysisManager::SetupExternalsTree() {
-  fExternalsTree = std::make_unique<TTree>("ExternalTree", "Externals reaching LAr interface", 
-      /*splitlevel*/99, /*dir*/ nullptr); 
+  fExternalsTree = new TTree("ExternalTree", "Externals reaching LAr interface");
 
-  fExternalsTree->Branch("iEv", &fExternalRecord->fEvNumber); 
-  fExternalsTree->Branch("pdgID", &fExternalRecord->fPDGCode); 
-  fExternalsTree->Branch("trkID", &fExternalRecord->fTrkID); 
-  fExternalsTree->Branch("parentID", &fExternalRecord->fParentID); 
-  fExternalsTree->Branch("origin_vol", &fExternalRecord->fOriginVol);
-  fExternalsTree->Branch("origin_energy", &fExternalRecord->fOriginEnergy);
-  fExternalsTree->Branch("weight", &fExternalRecord->fWeight);
-  fExternalsTree->Branch("time", &fExternalRecord->fTime); 
-  fExternalsTree->Branch("scorer_energy", &fExternalRecord->fEnergy); 
-  fExternalsTree->Branch("origin_vertex", &fExternalRecord->fOriginVertex);
-  fExternalsTree->Branch("scorer_vertex", &fExternalRecord->fScorerVertex);
-  fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
+  fExternalsTree->Branch("iEv", &fExternalRecord.fEvNumber); 
+  fExternalsTree->Branch("pdgID", &fExternalRecord.fPDGCode); 
+  fExternalsTree->Branch("trkID", &fExternalRecord.fTrkID); 
+  fExternalsTree->Branch("parentID", &fExternalRecord.fParentID); 
+  fExternalsTree->Branch("origin_vol", &fExternalRecord.fOriginVol);
+  fExternalsTree->Branch("origin_energy", &fExternalRecord.fOriginEnergy);
+  fExternalsTree->Branch("weight", &fExternalRecord.fWeight);
+  fExternalsTree->Branch("time", &fExternalRecord.fTime); 
+  fExternalsTree->Branch("scorer_energy", &fExternalRecord.fEnergy); 
+  fExternalsTree->Branch("origin_vertex", &fExternalRecord.fOriginVertex);
+  fExternalsTree->Branch("scorer_vertex", &fExternalRecord.fScorerVertex);
+  fExternalsTree->Branch("creator", &fExternalRecord.fCreator); 
+
+  printf("ExternalsTree created with AutoFlush set to %lld\n", fExternalsTree->GetAutoFlush()); 
 }
 #endif // SLAR_EXTERNAL
 

@@ -165,16 +165,16 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         
         auto& ext_record = SLArAnalysisManager::Instance()->GetExternalRecord(); 
         auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
-        ext_record->SetEvNumber( iev ); 
-        ext_record->SetValues( *trajectory ); 
-        ext_record->SetEnergyAtScorer( thePrePoint->GetKineticEnergy() ); 
-        ext_record->SetScorerVertex(  thePostPoint->GetPosition().x(), 
+        ext_record.SetEvNumber( iev ); 
+        ext_record.SetValues( *trajectory ); 
+        ext_record.SetEnergyAtScorer( thePrePoint->GetKineticEnergy() ); 
+        ext_record.SetScorerVertex(  thePostPoint->GetPosition().x(), 
                                       thePostPoint->GetPosition().y(), 
                                       thePostPoint->GetPosition().z()); 
 
         SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
 
-        ext_record->Reset(); 
+        ext_record.Reset(); 
 
         terminator = "SLArUserInterfaceKiller";
       }
