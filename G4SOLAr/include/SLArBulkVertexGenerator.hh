@@ -11,16 +11,13 @@
 // Standard library
 #include <random>
 
-// BxDecay0/G4:
-#include "bxdecay0_g4/vertex_generator_interface.hh"
+#include <G4LogicalVolume.hh>
+#include <G4Box.hh>
+#include <G4ThreeVector.hh>
+#include <G4RotationMatrix.hh>
+#include <SLArVertextGenerator.hh>
 
-#include "G4LogicalVolume.hh"
-#include "G4Box.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-
-class SLArBulkVertexGenerator
-  : public bxdecay0_g4::VertexGeneratorInterface
+class SLArBulkVertexGenerator: public SLArVertexGenerator
 {
 public:
 
@@ -58,11 +55,9 @@ public:
 
   double GetFiducialFraction() {return fFVFraction;}
 
-  // From the VertexGeneratorInterface abstract class:
   void ShootVertex(G4ThreeVector & vertex_) override;
     
 private:
-
   // Configuration:
   const G4LogicalVolume * fLogVol = nullptr; ///< Reference to the logical volume
   G4ThreeVector fBulkTranslation; ///< The box position in world coordinate frame

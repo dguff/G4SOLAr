@@ -68,7 +68,7 @@ void SLArMarleyGeneratorAction::SetupMarleyGen(const std::string& config_file_na
   marley_generator_= config.create_generator();
 }
 
-void SLArMarleyGeneratorAction::SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface* vtx_gen)
+void SLArMarleyGeneratorAction::SetVertexGenerator(SLArVertexGenerator* vtx_gen)
 {
   marley_vertex_generator_ = vtx_gen; 
   return;

@@ -119,7 +119,6 @@ class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
 #ifdef SLAR_GDML
     void AppendCRYInput(const G4String); 
-
 #endif
 
     inline void SetVerboseLevel( G4int verbose) { fVerbose = verbose; }

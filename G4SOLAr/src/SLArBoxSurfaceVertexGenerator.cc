@@ -4,8 +4,9 @@
  * @created     Tue Apr 11, 2023 09:58:41 CEST
  */
 
-#include "SLArBoxSurfaceVertexGenerator.hh"
-#include "G4RandomTools.hh"
+#include <SLArBoxSurfaceVertexGenerator.hh>
+#include <G4RandomTools.hh>
+#include <G4Box.hh>
 
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()
 {

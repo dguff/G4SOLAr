@@ -667,7 +667,7 @@ namespace bxdecay0_g4{
     return _vertex_generator_ != nullptr;
   }
 
-  void SLArDecay0GeneratorAction::SetVertexGenerator(VertexGeneratorInterface & vertex_generator_)
+  void SLArDecay0GeneratorAction::SetVertexGenerator(SLArVertexGenerator& vertex_generator_)
   {
     if (_owned_vertex_generator_ and _vertex_generator_ != nullptr) {
       delete _vertex_generator_;
@@ -679,7 +679,7 @@ namespace bxdecay0_g4{
     return;
   }
  
-  void SLArDecay0GeneratorAction::SetVertexGenerator(VertexGeneratorInterface * vertex_generator_ptr_)
+  void SLArDecay0GeneratorAction::SetVertexGenerator(SLArVertexGenerator* vertex_generator_ptr_)
   {
     if (_owned_vertex_generator_ and _vertex_generator_ != nullptr) {
       delete _vertex_generator_;
@@ -691,12 +691,12 @@ namespace bxdecay0_g4{
     return;
   }
  
-  VertexGeneratorInterface & SLArDecay0GeneratorAction::GetVertexGenerator()
+  SLArVertexGenerator& SLArDecay0GeneratorAction::GetVertexGenerator()
   {
     return *_vertex_generator_;
   }
  
-  const VertexGeneratorInterface & SLArDecay0GeneratorAction::GetVertexGeneratorConst() const
+  const SLArVertexGenerator& SLArDecay0GeneratorAction::GetVertexGeneratorConst() const
   {
     return *_vertex_generator_;
   }

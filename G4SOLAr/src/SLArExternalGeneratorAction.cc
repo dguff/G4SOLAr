@@ -21,6 +21,7 @@
 #include "TRandom3.h"
 
 #include "G4PhysicalVolumeStore.hh"
+#include "G4Box.hh"
 #include "G4RandomTools.hh"
 #include "G4Poisson.hh"
 #include "G4Event.hh"

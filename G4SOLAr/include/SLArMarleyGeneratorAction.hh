@@ -22,8 +22,7 @@
 
 // Geant4 includes
 #include "G4VUserPrimaryGeneratorAction.hh"
-
-#include "bxdecay0_g4/vertex_generator_interface.hh"
+#include "SLArVertextGenerator.hh"
 
 // MARLEY includes
 #include "marley/Generator.hh"
@@ -39,7 +38,7 @@ class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
     SLArMarleyGeneratorAction(const std::string& config_file_name);
 
     void SetupMarleyGen(const std::string& config_file_name); 
-    void SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface*); 
+    void SetVertexGenerator(SLArVertexGenerator*); 
     virtual void GeneratePrimaries(G4Event*) override;
     void SetNuDirection(G4ThreeVector dir) {marley_nu_direction = dir;} 
     G4ThreeVector GetNuDirection() {return marley_nu_direction;}
@@ -47,7 +46,7 @@ class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
   protected:
     // MARLEY event generator object
     marley::Generator marley_generator_;
-    bxdecay0_g4::VertexGeneratorInterface* marley_vertex_generator_;
+    SLArVertexGenerator* marley_vertex_generator_;
     G4ThreeVector marley_nu_direction; 
     double SampleDecayTime(const double half_life) const;
     std::map<double, double> fHalfLifeTable;

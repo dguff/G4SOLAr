@@ -10,16 +10,13 @@
 
 #include <random>
 
-#include "bxdecay0_g4/vertex_generator_interface.hh"
+#include <G4LogicalVolume.hh>
+#include <G4ThreeVector.hh>
+#include <G4RotationMatrix.hh>
+#include <detector/SLArGeoUtils.hh>
+#include <SLArVertextGenerator.hh>
 
-#include "G4LogicalVolume.hh"
-#include "G4Box.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "detector/SLArGeoUtils.hh"
-
-class SLArBoxSurfaceVertexGenerator : 
-  public bxdecay0_g4::VertexGeneratorInterface 
+class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
 {
   public: 
     SLArBoxSurfaceVertexGenerator(); 

@@ -10,7 +10,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include <G4ParticleGun.hh>
-#include <bxdecay0_g4/vertex_generator_interface.hh>
+#include <SLArVertextGenerator.hh>
 
 class G4Event; 
 
@@ -120,22 +120,22 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
     /// Set the reference to an external vertex generator provided by the user.
     ///
     /// The vertex generator object must inherit the `bxdecay0_g4::VertexGeneratorInterface` abstract class.
-    void SetVertexGenerator(VertexGeneratorInterface & vertex_generator_);
+    void SetVertexGenerator(SLArVertexGenerator& vertex_generator_);
     
     /// Install a vertex generator provided by the user but owned by the PGA.
     ///
     /// The vertex generator object must inherit the `bxdecay0_g4::VertexGeneratorInterface` abstract class.
     /// The vertex generator object will be destroyed with the PGA.
-    void SetVertexGenerator(VertexGeneratorInterface * vertex_generator_ptr_);
+    void SetVertexGenerator(SLArVertexGenerator* vertex_generator_ptr_);
     
-    VertexGeneratorInterface & GetVertexGenerator();
+    SLArVertexGenerator& GetVertexGenerator();
    
-    const VertexGeneratorInterface & GetVertexGeneratorConst() const;
+    const SLArVertexGenerator& GetVertexGeneratorConst() const;
     
   protected:
 
     G4ParticleGun * _particle_gun_ = nullptr; ///< The Geant4 particle gun
-    VertexGeneratorInterface * _vertex_generator_ = nullptr; ///< Reference to an external vertex generator
+    SLArVertexGenerator* _vertex_generator_ = nullptr; ///< Reference to an external vertex generator
     bool _owned_vertex_generator_ = false;
     SLArDecay0GeneratorMessenger * _messenger_ = nullptr; ///< Messenger
     ConfigurationInterface _config_; ///< Current configuration
