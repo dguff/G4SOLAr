@@ -189,7 +189,7 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   //printf("vertex generator face is: %i\n", fVtxFace);
   //G4cout << "face normal is: " << BoxFaceNormal[fVtxFace] << G4endl;
-  G4ThreeVector face_axis = G4ThreeVector(0, 0, 0); 
+  G4ThreeVector face_axis(0, 0, 0); 
   for (int j=0; j<3; j++) {
     if (axis[j].dot(slargeo::BoxFaceNormal[fVtxFace]) != 0) {
       face_axis = axis[j]; 
@@ -200,7 +200,7 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   G4ThreeVector face_center_local = 
     -0.5*dim.dot(slargeo::BoxFaceNormal[fVtxFace])*face_axis;
   //G4cout << "face_center_local: " << face_center_local << G4endl; 
-  G4ThreeVector local_displacement = G4ThreeVector(0, 0, 0); 
+  G4ThreeVector local_displacement(0, 0, 0); 
   for (int j=0; j<3; j++) {
     double rnd = G4UniformRand() - 0.5; 
     local_displacement[j] += 
@@ -209,10 +209,12 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   //G4cout << "local_displacement: " << local_displacement << G4endl;
 
   G4ThreeVector localVertex = face_center_local + local_displacement;
+  G4ThreeVector finalVertex = fBulkInverseRotation(localVertex) + fBulkTranslation;
 
-  vertex_ = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  vertex_.set(finalVertex.x(), finalVertex.y(), finalVertex.z()); 
   //G4cout << "vertex = " << vertex_ << G4endl;
   //getchar(); 
+  axis.clear();
   fCounter++;
 }
 

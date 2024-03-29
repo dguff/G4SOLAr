@@ -130,7 +130,8 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
         lo.z() + 0.5*delta + G4UniformRand()*(hi.z()-lo.z()-delta));
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries);
 
-  vertex_ = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
   fCounter++;
 }
 

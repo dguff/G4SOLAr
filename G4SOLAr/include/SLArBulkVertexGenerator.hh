@@ -77,7 +77,7 @@ private:
   G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
   unsigned int fCounter = 0.0; // Internal vertex counter
 
-  double ComputeDeltaX(G4ThreeVector& lo, G4ThreeVector& hi, double fiducialf = 0.); 
+  double ComputeDeltaX(G4ThreeVector& lo, G4ThreeVector& hi, double fiducialf = 1.); 
      
 };
 

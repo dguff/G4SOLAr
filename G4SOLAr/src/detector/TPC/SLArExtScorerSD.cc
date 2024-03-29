@@ -49,7 +49,7 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
         track->GetTrackID()); 
     return false; 
   }
-  SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
+  const SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
 
 
   if ( fabs(trajectory->GetPDGID()) == 12 || 
@@ -71,9 +71,9 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
   scorer_hit->fCreator = trajectory->GetCreatorProcess(); 
   scorer_hit->fEnergy = thePostPoint->GetKineticEnergy(); 
 
-  scorer_hit->fOriginVertex[0] = trajectory->GetPoints().front().fX; 
-  scorer_hit->fOriginVertex[1] = trajectory->GetPoints().front().fY; 
-  scorer_hit->fOriginVertex[2] = trajectory->GetPoints().front().fZ; 
+  scorer_hit->fOriginVertex[0] = trajectory->GetConstPoints().front().fX; 
+  scorer_hit->fOriginVertex[1] = trajectory->GetConstPoints().front().fY; 
+  scorer_hit->fOriginVertex[2] = trajectory->GetConstPoints().front().fZ; 
 
   scorer_hit->fVertex[0] = thePostPoint->GetPosition().x();
   scorer_hit->fVertex[1] = thePostPoint->GetPosition().y();
@@ -86,7 +86,6 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
     scorer_hit->Print(); 
     //getchar(); 
   }
-
 
   return true;
 }
