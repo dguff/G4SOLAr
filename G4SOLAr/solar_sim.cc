@@ -275,7 +275,7 @@ int main(int argc,char** argv)
     physicsList->RegisterPhysics( biasingPhysics ); 
   }
 
-  runManager-> SetUserInitialization(physicsList);
+  runManager->SetUserInitialization(physicsList);
 
   // User action initialization
   printf("Creating User Action...\n");

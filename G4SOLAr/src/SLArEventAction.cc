@@ -522,7 +522,6 @@ int SLArEventAction::FindAncestorID(int trkid) {
   //for (const SLArMCPrimaryInfo& p : primaries) {
     //printf("%s - PID: %i\n", p.GetParticleName().Data(), p.GetTrackID());
   //}
-  ////getchar(); 
 //#endif
 
   while ( !caught ) {
@@ -540,7 +539,7 @@ int SLArEventAction::FindAncestorID(int trkid) {
 
     trkid = pid; 
 //#ifdef SLAR_DEBUG
-//    getchar(); 
+    //getchar(); 
 //#endif
   }
 

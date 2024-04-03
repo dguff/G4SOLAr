@@ -735,7 +735,7 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
     int megatile_nr = anodeCfg.GetMap().size(); 
     printf("%s has %i elements registered\n", anodeCfg.GetName(), megatile_nr); 
 #ifdef SLAR_DEBUG
-    anodeCfg->DumpMap(); 
+    anodeCfg.DumpMap(); 
 #endif
 
     const size_t n_megatiles = anodeCfg.GetMap().size(); 

@@ -442,7 +442,7 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
 
     }
     else{
-     // Use the normal Scintillation By Particle Type if the particle is not a MIP - currently not used
+      // Use the normal Scintillation By Particle Type if the particle is not a MIP - currently not used
 #ifdef SLAR_DEBUG
       printf("SLArScintillation: %s - getting nr of photons for particle type\n", 
           aTrack.GetParticleDefinition()->GetParticleName().data());
@@ -458,31 +458,31 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
           electricField_);
       MeanNumberOfPhotons = IonAndScintYield.scint * (TotalEnergyDeposit/CLHEP::MeV); 
       MeanNumberOfIonElectrons = IonAndScintYield.ion * (TotalEnergyDeposit/CLHEP::MeV); 
-    }
 #ifdef SLAR_DEBUG
-    G4double PartX= aStep.GetPreStepPoint()->GetPosition().x()/CLHEP::cm;
-    G4double PartY= aStep.GetPreStepPoint()->GetPosition().y()/CLHEP::cm;
-    G4double PartZ= aStep.GetPreStepPoint()->GetPosition().z()/CLHEP::cm;
-    G4double PartE= aStep.GetPreStepPoint()->GetKineticEnergy()/CLHEP::MeV;
-    G4cout << " --------------------------------------------- " << G4endl;
-    G4cout << "Using ScintByParticle predicting " << MeanNumberOfPhotons << " photons with ";
-    if (MIP) {
-      G4cout << "LArQL model" << G4endl;
-    }
-    else {
-      G4cout << "Constant LY value" << G4endl;
-    }
-    G4cout << "Particle: " << aStep.GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName() << G4endl;
-    G4cout << "Position : " << PartX << " " << PartY << " " << PartZ << " cm" << G4endl;
-    G4cout << "E_Kin : " << PartE << " MeV" << G4endl;
-    G4cout << "TotalEnergyDeposit = " << TotalEnergyDeposit / CLHEP::MeV<< " MeV" << G4endl;
-    G4cout << "StepWidth = " << StepWidth / CLHEP::cm << " cm" << G4endl;
-    G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
-    G4cout << "Light yield = " << IonAndScintYield.scint << " ph/MeV" << G4endl; 
-    G4cout << "Charge yield = " << IonAndScintYield.ion << " elec/MeV" << G4endl; 
-    G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
-    G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
+      G4double PartX= aStep.GetPreStepPoint()->GetPosition().x()/CLHEP::cm;
+      G4double PartY= aStep.GetPreStepPoint()->GetPosition().y()/CLHEP::cm;
+      G4double PartZ= aStep.GetPreStepPoint()->GetPosition().z()/CLHEP::cm;
+      G4double PartE= aStep.GetPreStepPoint()->GetKineticEnergy()/CLHEP::MeV;
+      G4cout << " --------------------------------------------- " << G4endl;
+      G4cout << "Using ScintByParticle predicting " << MeanNumberOfPhotons << " photons with ";
+      if (MIP) {
+        G4cout << "LArQL model" << G4endl;
+      }
+      else {
+        G4cout << "Constant LY value" << G4endl;
+      }
+      G4cout << "Particle: " << aStep.GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName() << G4endl;
+      G4cout << "Position : " << PartX << " " << PartY << " " << PartZ << " cm" << G4endl;
+      G4cout << "E_Kin : " << PartE << " MeV" << G4endl;
+      G4cout << "TotalEnergyDeposit = " << TotalEnergyDeposit / CLHEP::MeV<< " MeV" << G4endl;
+      G4cout << "StepWidth = " << StepWidth / CLHEP::cm << " cm" << G4endl;
+      G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
+      G4cout << "Light yield = " << IonAndScintYield.scint << " ph/MeV" << G4endl; 
+      G4cout << "Charge yield = " << IonAndScintYield.ion << " elec/MeV" << G4endl; 
+      G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
+      G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
 #endif
+    }
   }
   else
   {
