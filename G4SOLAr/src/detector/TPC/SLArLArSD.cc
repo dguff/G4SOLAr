@@ -131,7 +131,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
           n_el);
 #endif
 
-      auto generatorAction = (SLArPrimaryGeneratorAction*)
+      auto generatorAction = (gen::SLArPrimaryGeneratorAction*)
         G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
       const auto eventAction = (SLArEventAction*)
         G4RunManager::GetRunManager()->GetUserEventAction(); 

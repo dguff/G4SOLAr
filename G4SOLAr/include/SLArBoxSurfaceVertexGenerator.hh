@@ -11,17 +11,21 @@
 #include <random>
 
 #include <G4LogicalVolume.hh>
+#include <G4VSolid.hh>
 #include <G4ThreeVector.hh>
 #include <G4RotationMatrix.hh>
 #include <detector/SLArGeoUtils.hh>
 #include <SLArVertextGenerator.hh>
 
+namespace gen {
 class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
 {
   public: 
     SLArBoxSurfaceVertexGenerator(); 
     SLArBoxSurfaceVertexGenerator(const SLArBoxSurfaceVertexGenerator&); 
     ~SLArBoxSurfaceVertexGenerator() override; 
+
+    G4String GetType() const override {return "boxface_vertex_generator";}
 
     void FixVertexFace(const bool isFaceFixed) {fFixFace = isFaceFixed;}
     void SetVertexFace(const slargeo::EBoxFace face) {fVtxFace = face;}
@@ -40,8 +44,18 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     void SetNoDaughters(bool no_daughters_);
     G4double GetSurfaceGenerator() const; 
 
-    // From the VertexGeneratorInterface abstract class:
     void ShootVertex(G4ThreeVector & vertex_) override;
+    void Config(const rapidjson::Value& config) override;
+    void Config(const G4String& vol_face_name); 
+    void Print() const override {
+      printf("SLArBoxSurfaceVertexGenerator info dump:\n"); 
+      printf("logical (solid) volume name: %s (%s)\n",
+          fLogVol->GetName().data(), fSolid->GetName().data()); 
+      printf("fixed face: %i - face number: %i\n", fFixFace, fVtxFace); 
+      printf("box surface: %g mm2\n\n", GetSurfaceGenerator()); 
+      return;
+    }
+    const rapidjson::Document ExportConfig() const override;
 
   private:
     // Configuration:
@@ -57,8 +71,9 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     // Working internals:
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
     G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
+    G4double fSurface = 0.0; 
     unsigned int fCounter = 0.0; // Internal vertex counter
 }; 
-
+}
 #endif /* end of include guard SLARBOXSURFACEVERTEXGENERATOR_HH */
 

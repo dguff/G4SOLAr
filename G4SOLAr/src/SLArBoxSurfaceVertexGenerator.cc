@@ -4,10 +4,14 @@
  * @created     Tue Apr 11, 2023 09:58:41 CEST
  */
 
+#include <regex>
+
 #include <SLArBoxSurfaceVertexGenerator.hh>
+#include <G4PhysicalVolumeStore.hh>
 #include <G4RandomTools.hh>
 #include <G4Box.hh>
 
+namespace gen {
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse(); 
@@ -219,4 +223,80 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   fCounter++;
 }
 
+void SLArBoxSurfaceVertexGenerator::Config( const rapidjson::Value& config) {
+  if ( !config.HasMember("volume") ) {
+    throw std::invalid_argument("box surface vtx gen missing mandatory \"volume\" field\n");
+  }
 
+  G4String volumeName = config["volume"].GetString();
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
+  if (volume == nullptr) {
+    char err_msg[200]; 
+    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    throw std::runtime_error(err_msg);
+  }
+
+  SetBoxLogicalVolume(volume->GetLogicalVolume()); 
+  SetSolidTranslation(volume->GetTranslation()); 
+  SetSolidRotation(volume->GetRotation()); 
+
+  if (config.HasMember("origin_face")) {
+      FixVertexFace(true); 
+      SetVertexFace(
+          (slargeo::EBoxFace)config["origin_face"].GetInt()); 
+  }
+
+  return;
+}
+
+void SLArBoxSurfaceVertexGenerator::Config( const G4String& config ) {
+  std::regex pattern("([a-zA-Z0-9_\\-]+)\\.?(\\d+)?$"); 
+  std::smatch match; 
+  std::regex_search(config, match, pattern); 
+
+  G4String volumeName = match[1].str(); 
+  G4String faceName = match[2].str(); 
+
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
+  if (volume == nullptr) {
+    char err_msg[200];
+    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    throw std::runtime_error(err_msg); 
+  }
+
+  SetBoxLogicalVolume(volume->GetLogicalVolume()); 
+  SetSolidTranslation(volume->GetTranslation()); 
+  SetSolidRotation(volume->GetRotation()); 
+
+  if (const auto& box = dynamic_cast<G4Box*>(volume->GetLogicalVolume()->GetSolid())) {
+    fSurface = box->GetSurfaceArea(); 
+  }
+
+
+  if (faceName.empty() == false) {
+      FixVertexFace(true); 
+      SetVertexFace(
+          (slargeo::EBoxFace)std::atoi(faceName) ); 
+  }
+
+  return;
+
+
+}
+
+const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
+  rapidjson::Document vtx_info; 
+  vtx_info.SetObject(); 
+
+  vtx_info.AddMember("type", rapidjson::StringRef( GetType().data() ), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("solid_volume", rapidjson::StringRef(fSolid->GetName().data()), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("logical_volume", rapidjson::StringRef(fLogVol->GetName().data()), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("is_fixed_face", fFixFace, vtx_info.GetAllocator()); 
+  if (fFixFace) {
+    vtx_info.AddMember("fixed_face", fVtxFace, vtx_info.GetAllocator()); 
+  }
+  vtx_info.AddMember("surface", GetSurfaceGenerator(), vtx_info.GetAllocator()); 
+  
+  return vtx_info;
+}
+}

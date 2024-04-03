@@ -5,9 +5,10 @@
  */
 
 #include "SLArBulkVertexGenerator.hh"
-
+#include "G4PhysicalVolumeStore.hh"
 #include "G4RandomTools.hh"
 
+namespace gen {
 SLArBulkVertexGenerator::SLArBulkVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse();
@@ -38,7 +39,7 @@ const G4LogicalVolume * SLArBulkVertexGenerator::GetBulkLogicalVolume() const
   return fLogVol;
 }
   
-void SLArBulkVertexGenerator::SetBulkLogicalVolume(const G4LogicalVolume * logvol_)
+void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_)
 {
   fSolid = logvol_->GetSolid();
   fLogVol = logvol_;
@@ -159,4 +160,50 @@ double SLArBulkVertexGenerator::ComputeDeltaX(
   printf("deltax: %g\n", deltax); 
 
   return deltax; 
+}
+
+void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
+  if (volume == nullptr) {
+    char err_msg[200]; 
+    sprintf(err_msg, "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", volumeName.c_str());
+    throw std::runtime_error(err_msg);
+  }
+
+  SetBulkLogicalVolume(volume->GetLogicalVolume()); 
+  SetSolidTranslation(volume->GetTranslation()); 
+  SetSolidRotation(volume->GetRotation()); 
+  return;
+}
+
+void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
+  if ( !cfg.HasMember("volume") ) {
+    throw std::invalid_argument("Missing mandatory \"volume\" field from bulk vtx generator specs.\n"); 
+  }
+  G4String volName = cfg["volume"].GetString(); 
+  if (cfg.HasMember("fiducial_fraction")) {
+    fFVFraction = cfg["fiducial_fraction"].GetDouble(); 
+  }
+  if (cfg.HasMember("avoid_daughters")) {
+    fNoDaughters = cfg["avoid_daughters"].GetBool();
+  }
+  Config(volName);
+}
+
+const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
+  rapidjson::Document vtx_info; 
+  vtx_info.SetObject(); 
+
+  G4String gen_type = GetType();
+  G4String solid_name = fSolid->GetName();
+  G4String logic_name = fLogVol->GetName();
+
+  vtx_info.AddMember("type", rapidjson::StringRef( gen_type.data() ), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("solid_volume", rapidjson::StringRef(solid_name.data()), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("logical_volume", rapidjson::StringRef(logic_name.data()), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("fiducial_volume_fraction", fFVFraction, vtx_info.GetAllocator()); 
+  vtx_info.AddMember("cubic_volume", GetCubicVolumeGenerator(), vtx_info.GetAllocator()); 
+  vtx_info.AddMember("mass", GetMassVolumeGenerator(), vtx_info.GetAllocator()); 
+  return vtx_info;
+}
 }
