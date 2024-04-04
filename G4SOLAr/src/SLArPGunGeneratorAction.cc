@@ -46,10 +46,10 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   for (size_t i = 0; i < fGunConfig.n_particles; i++) {
     G4ThreeVector vtx(0, 0, 0); 
     G4ParticleMomentum p(0, 0, 1); 
-    if (fGunConfig.direction_mode == EDirectionMode::kFixed) {
+    if (fGunConfig.direction_mode == EDirectionMode::kFixedDir) {
       p.set( fGunConfig.direction.x(), fGunConfig.direction.y(), fGunConfig.direction.z()); 
     } 
-    else if (fGunConfig.direction_mode == EDirectionMode::kRandom) {
+    else if (fGunConfig.direction_mode == EDirectionMode::kRandomDir) {
       G4ThreeVector random_dir = SampleRandomDirection(); 
       p.set(random_dir.x(), random_dir.y(), random_dir.z()); 
     }
@@ -83,14 +83,14 @@ void SLArPGunGeneratorAction::Configure(const rapidjson::Value& config) {
     if (config["direction"].IsString()) {
       G4String dir_mode = config["direction"].GetString(); 
       if (dir_mode == "isotropic") {
-        fGunConfig.direction_mode = EDirectionMode::kRandom;
+        fGunConfig.direction_mode = EDirectionMode::kRandomDir;
       } else if (dir_mode == "fixed") {
-        fGunConfig.direction_mode = EDirectionMode::kFixed;
+        fGunConfig.direction_mode = EDirectionMode::kFixedDir;
         fGunConfig.direction.set(0, 0, 1); 
       }
     }
     else if (config["direction"].IsArray()) {
-      fGunConfig.direction_mode = EDirectionMode::kFixed;
+      fGunConfig.direction_mode = EDirectionMode::kFixedDir;
       assert( config["direction"].GetArray().Size() == 3 ); 
       G4double dir[3] = {0}; 
       G4int idir = 0; 
@@ -124,7 +124,7 @@ G4String SLArPGunGeneratorAction::WriteConfig() const {
   d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
   d.AddMember("particle", rapidjson::StringRef(fGunConfig.particle_name.data()), d.GetAllocator()); 
   d.AddMember("energy", fGunConfig.particle_energy, d.GetAllocator()); 
-  if (fGunConfig.direction_mode == EDirectionMode::kFixed) {
+  if (fGunConfig.direction_mode == EDirectionMode::kFixedDir) {
     d.AddMember("direction_mode", rapidjson::StringRef("fixed"), d.GetAllocator()); 
     rapidjson::Value jdir; 
     jdir.SetArray();
@@ -133,7 +133,7 @@ G4String SLArPGunGeneratorAction::WriteConfig() const {
     jdir.PushBack( fGunConfig.direction.z(), d.GetAllocator() ); 
     d.AddMember("direction", jdir, d.GetAllocator()); 
   }
-  else if (fGunConfig.direction_mode == EDirectionMode::kRandom) {
+  else if (fGunConfig.direction_mode == EDirectionMode::kRandomDir) {
     d.AddMember("direction_mode", rapidjson::StringRef("isotropic"), d.GetAllocator()); 
   }
 

@@ -89,7 +89,7 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   std::array<double, 3> dir = 
   {fMarleyConfig.direction.x(), fMarleyConfig.direction.y(), fMarleyConfig.direction.z()};
-  if (fMarleyConfig.direction_mode == EDirectionMode::kRandom) {
+  if (fMarleyConfig.direction_mode == EDirectionMode::kRandomDir) {
     G4ThreeVector dir_tmp = SampleRandomDirection();
     dir.at(0) = dir_tmp.x(); 
     dir.at(1) = dir_tmp.y(); 
@@ -166,14 +166,14 @@ void SLArMarleyGeneratorAction::Configure(const rapidjson::Value& config) {
     if (config["direction"].IsString()) {
       G4String dir_mode = config["direction"].GetString(); 
       if (dir_mode == "isotropic") {
-        fMarleyConfig.direction_mode = EDirectionMode::kRandom;
+        fMarleyConfig.direction_mode = EDirectionMode::kRandomDir;
       } else if (dir_mode == "fixed") {
-        fMarleyConfig.direction_mode = EDirectionMode::kFixed;
+        fMarleyConfig.direction_mode = EDirectionMode::kFixedDir;
         fMarleyConfig.direction.set(0, 0, 1); 
       }
     }
     else if (config["direction"].IsArray()) {
-      fMarleyConfig.direction_mode = EDirectionMode::kFixed;
+      fMarleyConfig.direction_mode = EDirectionMode::kFixedDir;
       assert( config["direction"].GetArray().Size() == 3 ); 
       G4double dir[3] = {0}; 
       G4int idir = 0; 

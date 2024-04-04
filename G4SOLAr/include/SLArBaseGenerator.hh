@@ -15,7 +15,7 @@
 
 namespace gen{
 
-  enum  EDirectionMode {kFixed = 0, kRandom = 1};
+  enum  EDirectionMode {kFixedDir = 0, kRandomDir = 1};
 
   enum  EGenerator {
     kUndefinedGen = -1 
@@ -61,23 +61,28 @@ namespace gen{
 
   class SLArBaseGenerator : public G4VUserPrimaryGeneratorAction {
     public: 
-      inline SLArBaseGenerator(const G4String label="") : G4VUserPrimaryGeneratorAction(), fLabel(label) {}
+      inline SLArBaseGenerator(const G4String label="") 
+        : G4VUserPrimaryGeneratorAction(), fVerbose(0), fLabel(label) {}
       inline virtual ~SLArBaseGenerator() {};
 
-      void SetLabel(const G4String& label) {fLabel = label;}
-      G4String GetLabel() const {return fLabel;}
+      inline void SetVerboseLevel(const G4int i) {fVerbose = i;}
+      inline G4int GetVerboseLevel() const {return fVerbose;}
+
+      inline void SetLabel(const G4String& label) {fLabel = label;}
+      inline G4String GetLabel() const {return fLabel;}
       virtual void Configure(const rapidjson::Value& config)=0; 
       void ConfigureVertexGenerator(const rapidjson::Value& config);
 
-     virtual G4String GetGeneratorType() const = 0; 
-     virtual EGenerator GetGeneratorEnum() const = 0; 
-     
-     virtual G4String WriteConfig() const = 0;
+      virtual G4String GetGeneratorType() const = 0; 
+      virtual EGenerator GetGeneratorEnum() const = 0; 
 
-     virtual void GeneratePrimaries(G4Event*) = 0; 
-     void RegisterPrimaries(const G4Event*, const G4int); 
+      virtual G4String WriteConfig() const = 0;
+
+      virtual void GeneratePrimaries(G4Event*) = 0; 
+      void RegisterPrimaries(const G4Event*, const G4int); 
 
     protected: 
+      G4int fVerbose;
       G4String fLabel;
       std::unique_ptr<SLArVertexGenerator> fVtxGen;
   };

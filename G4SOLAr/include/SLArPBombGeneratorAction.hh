@@ -25,7 +25,7 @@ class SLArPBombGeneratorAction : public SLArBaseGenerator
       G4double particle_energy = 1.0e-6; 
       G4double time = 0.0; 
       G4int    n_particles = 1; 
-      EDirectionMode direction_mode = EDirectionMode::kRandom;
+      EDirectionMode direction_mode = EDirectionMode::kRandomDir;
       G4ThreeVector direction {0, 0, 0};
     };
 

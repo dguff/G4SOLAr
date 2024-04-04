@@ -22,7 +22,7 @@ class SLArPGunGeneratorAction : public SLArBaseGenerator
       G4String particle_name = "e-"; 
       G4double particle_energy = 1.0; 
       G4int    n_particles = 1; 
-      EDirectionMode direction_mode = kFixed;
+      EDirectionMode direction_mode = EDirectionMode::kFixedDir;
       G4ThreeVector direction {0, 0, 1};
     };
 

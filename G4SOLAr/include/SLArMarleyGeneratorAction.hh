@@ -40,7 +40,7 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
       G4String marley_config_path {};
       G4double time = 0.0; 
       G4int    n_particles = 1; 
-      EDirectionMode direction_mode = EDirectionMode::kRandom;
+      EDirectionMode direction_mode = EDirectionMode::kRandomDir;
       G4ThreeVector direction {0, 0, 0};
     };
     SLArMarleyGeneratorAction(G4String label = "");
