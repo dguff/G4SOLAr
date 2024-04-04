@@ -119,11 +119,11 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   double delta = 0.; 
   if (fFVFraction < 1.0) {
     delta = ComputeDeltaX(lo, hi); 
-    printf("delta = %g\n", delta);
+    //printf("delta = %g\n", delta);
   }
 
   G4ThreeVector localVertex;
-  G4int maxtries=10000, itry=1;
+  G4int maxtries=100000, itry=1;
   do {
     localVertex.set(
         lo.x() + 0.5*delta + G4UniformRand()*(hi.x()-lo.x()-delta),
@@ -145,7 +145,7 @@ double SLArBulkVertexGenerator::ComputeDeltaX(
   double B = hi.y() - lo.y(); 
   double C = hi.z() - lo.z(); 
 
-  printf("A: %g, B: %g, C: %g, f: %g\n", A, B, C, fiducialf);
+  //printf("A: %g, B: %g, C: %g, f: %g\n", A, B, C, fiducialf);
 
   double a = 1.0; 
   double b = -1.0*(A+B+C); 
@@ -157,7 +157,7 @@ double SLArBulkVertexGenerator::ComputeDeltaX(
   double DD = std::cbrt(0.5*(D1 + std::sqrt(D1*D1 -4*D0*D0*D0)));
 
   deltax = - (b + DD + D0/DD) / (3*a); 
-  printf("deltax: %g\n", deltax); 
+  //printf("deltax: %g\n", deltax); 
 
   return deltax; 
 }
