@@ -321,7 +321,7 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // Store Primary information id dst
-  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+  //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
   //if (fDirectionMode == kRandom) {
     //fGenDirection = SampleRandomDirection();
@@ -335,60 +335,62 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       //}
   //}  
  
-  G4IonTable* ionTable = G4IonTable::GetIonTable(); 
+  //G4IonTable* ionTable = G4IonTable::GetIonTable(); 
 
   for (const auto& gen : fGeneratorActions) {
+    G4int previousNrOfVertices = anEvent->GetNumberOfPrimaryVertex();
     gen.second->GeneratePrimaries( anEvent ); 
+    gen.second->RegisterPrimaries( anEvent, previousNrOfVertices ); 
   }
 
-  G4int n = anEvent->GetNumberOfPrimaryVertex(); 
+  //G4int n = anEvent->GetNumberOfPrimaryVertex(); 
 
-  if (fVerbose) {
-    printf("Primary Generator Action produced %i vertex(ices)\n", n); 
-  }
-  for (int i=0; i<n; i++) {
-    //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
-    SLArMCPrimaryInfo tc_primary;
-    G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
-    if (fVerbose) {
-      printf("vertex %i has %i particles at t = %g\n", n, np, 
-          anEvent->GetPrimaryVertex(i)->GetT0()); 
-    }
-    for (int ip = 0; ip<np; ip++) {
-      //printf("getting particle %i...\n", ip); 
-      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
-      G4String name = ""; 
+  //if (fVerbose) {
+    //printf("Primary Generator Action produced %i vertex(ices)\n", n); 
+  //}
+  //for (int i=0; i<n; i++) {
+    ////std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
+    //SLArMCPrimaryInfo tc_primary;
+    //G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
+    //if (fVerbose) {
+      //printf("vertex %i has %i particles at t = %g\n", n, np, 
+          //anEvent->GetPrimaryVertex(i)->GetT0()); 
+    //}
+    //for (int ip = 0; ip<np; ip++) {
+      ////printf("getting particle %i...\n", ip); 
+      //auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
+      //G4String name = ""; 
 
-      if (!particle->GetParticleDefinition()) {
-        tc_primary.SetID  (particle->GetPDGcode()); 
-        name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
-        tc_primary.SetName(name);
-        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
-      } else {
-        tc_primary.SetID  (particle->GetPDGcode());
-        name = particle->GetParticleDefinition()->GetParticleName(); 
-        tc_primary.SetName(name);
-        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
-      }
+      //if (!particle->GetParticleDefinition()) {
+        //tc_primary.SetID  (particle->GetPDGcode()); 
+        //name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
+        //tc_primary.SetName(name);
+        //tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
+      //} else {
+        //tc_primary.SetID  (particle->GetPDGcode());
+        //name = particle->GetParticleDefinition()->GetParticleName(); 
+        //tc_primary.SetName(name);
+        //tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
+      //}
 
-      tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
-          anEvent->GetPrimaryVertex(i)->GetY0(), 
-          anEvent->GetPrimaryVertex(i)->GetZ0());
-      tc_primary.SetMomentum(
-          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
-          particle->GetKineticEnergy());
-      tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
+      //tc_primary.SetTrackID(particle->GetTrackID());
+      //tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+          //anEvent->GetPrimaryVertex(i)->GetY0(), 
+          //anEvent->GetPrimaryVertex(i)->GetZ0());
+      //tc_primary.SetMomentum(
+          //particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+          //particle->GetKineticEnergy());
+      //tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
       
 
-#ifdef SLAR_DEBUG
-      printf("Adding particle to primary output list\n"); 
-      tc_primary.PrintParticle(); 
-      getchar();
-#endif
-      SLArAnaMgr->GetEvent().RegisterPrimary( tc_primary );
-    }
-  }
+//#ifdef SLAR_DEBUG
+      //printf("Adding particle to primary output list\n"); 
+      //tc_primary.PrintParticle(); 
+      //getchar();
+//#endif
+      //SLArAnaMgr->GetEvent().RegisterPrimary( tc_primary );
+    //}
+  //}
 
   return;
 }

@@ -75,6 +75,7 @@ namespace gen{
      virtual G4String WriteConfig() const = 0;
 
      virtual void GeneratePrimaries(G4Event*) = 0; 
+     void RegisterPrimaries(const G4Event*, const G4int); 
 
     protected: 
       G4String fLabel;

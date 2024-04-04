@@ -108,7 +108,7 @@ void refactor_test_sc(const TString file_path, const int iev)
         if (t.second.GetPixelHits() == 0 ) continue;
         auto h2t_ = AnodeSysCfg[tpc_id]->ConstructPixHistMap(2, std::vector<int>{mt.first, t.first}); 
         for (const auto &p : t.second.GetConstPixelEvents()) {
-          printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
+          //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
           h2t_->SetBinContent( p.first, p.second.GetNhits() );
           //p.second.PrintHits();
           if (p.second.GetNhits() > z_max) z_max = p.second.GetNhits(); 
@@ -151,7 +151,8 @@ void refactor_test_sc(const TString file_path, const int iev)
 
     for (const auto &p : primaries) {
       printf("----------------------------------------\n");
-      printf("PRIMARY vertex: %s - K0 = %2f - t = %.2f - vtx [%.1f, %.1f, %.1f]\n", 
+      printf("[gen: %s] PRIMARY vertex: %s - K0 = %2f - t = %.2f - vtx [%.1f, %.1f, %.1f]\n", 
+          p.GetGeneratorLabel().Data(),
           p.GetParticleName().Data(), p.GetEnergy(), p.GetTime(), 
           p.GetVertex()[0], p.GetVertex()[1], p.GetVertex()[2]);
       auto& trajectories = p.GetConstTrajectories(); 

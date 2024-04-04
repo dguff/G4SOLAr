@@ -37,8 +37,8 @@ class SLArMCPrimaryInfo : public TNamed
     inline std::vector<double> GetVertex() const {return fVertex;}
     inline double GetEnergy() const {return fEnergy;}
     inline int GetCode() const {return fID;}
-    inline TString& GetGeneratorLabel() {return fGeneratorLabel;}
-    inline const TString GetGeneratorLable() const {return fGeneratorLabel;}
+    inline TString GetGeneratorLabel() {return fGeneratorLabel;}
+    inline TString GetGeneratorLabel() const {return fGeneratorLabel;}
     inline double GetTime() const {return fTime;}
     inline double GetTotalEdep() const {return fTotalEdep;}
     inline double GetTotalLArEdep() const {return fTotalLArEdep;}
