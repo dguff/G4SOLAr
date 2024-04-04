@@ -119,7 +119,12 @@ namespace gen {
       void AppendCRYInput(const G4String); 
 #endif
 
-      inline void SetVerboseLevel( G4int verbose) { fVerbose = verbose; }
+      void SetVerboseLevel( G4int verbose) { 
+        fVerbose = verbose; 
+        for (auto& gen : fGeneratorActions) {
+          gen.second->SetVerboseLevel( fVerbose ); 
+        }
+      }
       inline G4int GetVerboseLevel() const {return fVerbose;}
 
     private:

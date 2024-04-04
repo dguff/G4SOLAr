@@ -85,9 +85,7 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
 
   G4int total_vertices = anEvent->GetNumberOfPrimaryVertex(); 
 
-  const int verbose = 1;
-
-  if (verbose) {
+  if (fVerbose) {
     printf("[gen] %s primary generator action produced %i vertex(ices)\n", 
         fLabel.data(), total_vertices - firstVertex); 
   }
@@ -95,7 +93,7 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
     //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
     SLArMCPrimaryInfo tc_primary;
     G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
-    if (verbose) {
+    if (fVerbose) {
       printf("vertex %i has %i particles at t = %g\n", i, np, 
           anEvent->GetPrimaryVertex(i)->GetT0()); 
     }
