@@ -693,9 +693,9 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
         aStep.GetPreStepPoint()->GetTouchableHandle());
       secTrack->SetParentID(aTrack.GetTrackID());
       secTrack->SetCreatorModelID(secID);
-      //if(fScintillationTrackInfo)
-        //secTrack->SetUserInformation(
-          //new G4ScintillationTrackInformation(scintType));
+      if(fScintillationTrackInfo)
+        secTrack->SetUserInformation(
+          new G4ScintillationTrackInformation(scintType));
       aParticleChange.AddSecondary(secTrack);
     }
   }
