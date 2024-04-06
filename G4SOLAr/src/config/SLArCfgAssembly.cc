@@ -16,16 +16,16 @@
 
 templateClassImp(SLArCfgAssembly)
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::SLArCfgAssembly() 
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::SLArCfgAssembly() 
   : SLArCfgBaseModule()/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName("aAssemblyHasNoName");
   fElementsMap.reserve(50); 
 }
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie) 
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::SLArCfgAssembly(TString name, int serie) 
   : SLArCfgBaseModule(serie)/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName(name);
@@ -50,11 +50,18 @@ SLArCfgAssembly<TBaseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
     fNElements++;
   }
 
+  for (const auto& p : cfg.fBinToIdxMap) {
+    fBinToIdxMap.insert( {p.first, p.second} ); 
+  }
+  for (const auto& p : cfg.fIDtoIdxMap) {
+    fIDtoIdxMap.insert( {p.first, p.second} ); 
+  }
+
   //if (fNElements) SetTH2BinIdx();
 }
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::~SLArCfgAssembly()
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::~SLArCfgAssembly()
 {
   //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
   //for (auto &sc : fElementsMap)
@@ -63,8 +70,8 @@ SLArCfgAssembly<TBAseModule>::~SLArCfgAssembly()
   fNElements = 0;
 }
 
-template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::DumpMap() const
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::DumpMap() const
 {
   const size_t n_elements = fElementsMap.size(); 
   std::printf("SLArCfgAssembly %s has %lu entries\n", 
@@ -77,15 +84,15 @@ void SLArCfgAssembly<TBAseModule>::DumpMap() const
 }
 
 
-template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::DumpInfo() const
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::DumpInfo() const
 {
   DumpMap(); 
 }
 
 
-template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::RegisterElement(TBAseModule& element)
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::RegisterElement(TBaseModule& element)
 {
   int id = element.GetID();
   if (fIDtoIdxMap.count(id)) 

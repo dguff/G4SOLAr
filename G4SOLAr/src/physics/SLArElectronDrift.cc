@@ -153,8 +153,8 @@ void SLArElectronDrift::Drift(const int& n,
   for (G4int i=0; i<n_elec_anode; i++) {
     pixID = anodeCfg->GetPixelCoord(x_[i], y_[i]); 
     if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-      SLArCfgMegaTile& mtile = anodeCfg->GetBaseElementByID(pixID[0]); 
-      SLArCfgReadoutTile& tile = mtile.GetBaseElementByID(pixID[1]); 
+      SLArCfgMegaTile& mtile = anodeCfg->GetBaseElement(pixID[0]); 
+      SLArCfgReadoutTile& tile = mtile.GetBaseElement(pixID[1]); 
       //if (!tile) {
         //printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
             //pixID[1], pixID[0], pixID[1], pixID[2]);

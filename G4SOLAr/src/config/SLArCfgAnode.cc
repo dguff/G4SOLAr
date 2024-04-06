@@ -141,7 +141,6 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelCoord(const double& x0, cons
   return pidx; 
 }
 
-
 void SLArCfgAnode::RegisterMap(size_t ilevel, TH2Poly* hmap) {
   fAnodeLevelsMap.at(ilevel) = std::unique_ptr<TH2Poly>(hmap); 
   return;
@@ -160,7 +159,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
     // Returns the map at tile-level for a specfied MTile
     case 1:
       {
-        SLArCfgMegaTile& cfgMegaTile  = GetBaseElementByID(idx[0]); 
+        SLArCfgMegaTile& cfgMegaTile  = GetBaseElement(idx[0]); 
         //if (!cfgMegaTile) {
           //return nullptr;
         //}
@@ -178,8 +177,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
           //return nullptr; 
         //}
         SLArCfgReadoutTile& cfgTile = cfgMegaTile.GetBaseElement(idx[1]);
-        auto tile_pos = 
-          TVector3( cfgTile.GetPhysX(), cfgTile.GetPhysY(), cfgTile.GetPhysZ() ); 
+        TVector3 tile_pos( cfgTile.GetPhysX(), cfgTile.GetPhysY(), cfgTile.GetPhysZ() ); 
         //double tile_xpos = cfgTile->GetPhysZ(); 
         //double tile_ypos = cfgTile->GetPhysY(); 
 
