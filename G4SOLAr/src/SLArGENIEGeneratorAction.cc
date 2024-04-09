@@ -93,7 +93,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   size_t particle_idx = 0; // Think this can be done in a better way
 
   G4ThreeVector vtx(0.,0.,0.);
-  vtx.set(gVar.vtx[0]*1E3, gVar.vtx[1]*1E3, gVar.vtx[2]*1E3);
+  vtx.set(gVar.vtx[0]*10, gVar.vtx[1]*10, gVar.vtx[2]*10);
   std::vector<G4PrimaryVertex*> primary_vertices;
 
   for (int i=0; i<gVar.nPart; i++){
@@ -115,7 +115,6 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 
   for (const auto& vertex : primary_vertices)
     ev->AddPrimaryVertex(vertex);
-
 }
 
 //***********************************************************************

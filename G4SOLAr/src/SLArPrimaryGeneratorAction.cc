@@ -195,6 +195,15 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
         break;
       }
 
+    case (kGENIE) : 
+      {
+        auto gen = new SLArGENIEGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
+      }
+
+
 #ifdef SLAR_CRY
     case (kCRY) : 
       {
