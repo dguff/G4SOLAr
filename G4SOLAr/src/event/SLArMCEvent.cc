@@ -4,9 +4,8 @@
  * @created     : mercoledì ago 10, 2022 11:52:40 CEST
  */
 
-#include "SLArAnalysisManager.hh"
-#include "event/SLArMCEvent.hh"
-#include "TRandom3.h"
+#include <event/SLArMCEvent.hh>
+#include <TRandom3.h>
 #include <cstdio>
 #include <typeinfo>
 ClassImp(SLArMCEvent)

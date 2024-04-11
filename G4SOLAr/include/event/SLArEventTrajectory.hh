@@ -206,7 +206,6 @@ class SLArEventTrajectoryLite : public TObject {
     void Reset(); 
 
     friend class SLArEventTrajectory;
-    friend class SLArAnalysisManager;
 
   protected: 
     Int_t fEvNumber;
