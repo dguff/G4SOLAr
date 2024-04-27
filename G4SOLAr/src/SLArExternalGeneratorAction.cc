@@ -113,7 +113,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
 
     if (dynamic_cast<SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
       auto face = static_cast<SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())->GetVertexFace(); 
-      const auto& face_normal = slargeo::BoxFaceNormal[face]; 
+      const auto& face_normal = geo::BoxFaceNormal[face]; 
       //printf("SLArExternalGeneratorAction: vtx face is %i\n", face);
       //printf("SLArExternalGeneratorAction: face normal is [%.1f, %.1f, %.1f]\n", 
       //face_normal.x(), face_normal.y(), face_normal.z()); 
@@ -156,7 +156,7 @@ void SLArExternalGeneratorAction::Configure(const rapidjson::Value& config) {
       fConfig.ext_spectrum_key = config["energy_spectrum_key"].GetString(); 
     }
   } else if (config.HasMember("energy")) {
-    fConfig.ext_particle_energy = SLArGeoInfo::ParseJsonVal( config["energy"] ); 
+    fConfig.ext_particle_energy = unit::ParseJsonVal( config["energy"] ); 
   } else {
     fConfig.ext_particle_energy = 1.0; 
   }

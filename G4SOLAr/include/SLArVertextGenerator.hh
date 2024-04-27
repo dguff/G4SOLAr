@@ -11,7 +11,8 @@
 
 #include <G4ThreeVector.hh>
 #include <rapidjson/document.h>
-#include <SLArGeoInfo.hh>
+#include <SLArGeoUtils.hh>
+#include <SLArUnit.hpp>
 
 namespace gen {
   enum EVertexGenerator {kUndefinedVtxGen = -1, kPoint = 0, kBulk = 1, kBoxVolSurface = 2};
@@ -80,7 +81,7 @@ class SLArPointVertexGenerator : public SLArVertexGenerator {
       }
       auto jxyz = config["xyz"].GetArray(); 
       assert(jxyz.Size() == 3);
-      G4double vunit = SLArGeoInfo::GetJSONunit(config); 
+      G4double vunit = unit::GetJSONunit(config); 
 
       fVertex.setX( jxyz[0].GetDouble() * vunit ); 
       fVertex.setY( jxyz[1].GetDouble() * vunit ); 

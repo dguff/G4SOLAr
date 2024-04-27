@@ -4,17 +4,21 @@
  * @created     : Monday Feb 12, 2024 12:27:48 CET
  */
 
-#include "detector/SLArGeoUtils.hh"
-#include "G4Box.hh"
+#include <utility>
+#include <regex>
 
-namespace slargeo {
-  G4double get_bounding_volume_surface(const G4VSolid* solid) {
+#include <detector/SLArGeoUtils.hh>
+#include <G4Box.hh>
+
+
+namespace geo {
+  double get_bounding_volume_surface(const G4VSolid* solid) {
     if (dynamic_cast<const G4Box*>(solid)) {
       const auto box = (G4Box*)solid;
       return box->GetSurfaceArea(); 
     }
     else {
-      printf("slargeo::get_bounding_volume_surface: WARNING"); 
+      printf("geo::get_bounding_volume_surface: WARNING"); 
       printf("get_bounding_volume_surface is only implemented for G4Box solids. "); 
       printf("Feel free to work on your solid's implementation and let me know!\n");
       printf("Using a box approximation.\n");

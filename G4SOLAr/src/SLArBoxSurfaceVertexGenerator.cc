@@ -105,7 +105,7 @@ void SLArBoxSurfaceVertexGenerator::SetNoDaughters(bool no_daughters_)
 
 G4double SLArBoxSurfaceVertexGenerator::GetSurfaceGenerator() const {
   if (fFixFace == false) {
-    return slargeo::get_bounding_volume_surface(fSolid); 
+    return geo::get_bounding_volume_surface(fSolid); 
     //if (dynamic_cast<const G4Box*>(fSolid)) {
       //const auto box = (G4Box*)fSolid;
       //return box->GetSurfaceArea(); 
@@ -131,13 +131,13 @@ G4double SLArBoxSurfaceVertexGenerator::GetSurfaceGenerator() const {
   else {
     if (dynamic_cast<const G4Box*>(fSolid)) {
       const auto box = (G4Box*)fSolid;
-      if (fVtxFace == slargeo::kXplus || fVtxFace == slargeo::kXminus) {
+      if (fVtxFace == geo::kXplus || fVtxFace == geo::kXminus) {
         return box->GetYHalfLength()*box->GetZHalfLength()*4;
       }
-      else if (fVtxFace == slargeo::kYplus || fVtxFace == slargeo::kYminus) {
+      else if (fVtxFace == geo::kYplus || fVtxFace == geo::kYminus) {
         return box->GetYHalfLength()*box->GetZHalfLength()*4;
       }
-      else if (fVtxFace == slargeo::kZplus || fVtxFace == slargeo::kZminus) {
+      else if (fVtxFace == geo::kZplus || fVtxFace == geo::kZminus) {
         return box->GetYHalfLength()*box->GetXHalfLength()*4;
       }
       else {
@@ -168,13 +168,13 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   if (fFixFace == false) {
     G4double total_area = 2*(dim.x()*dim.y() + dim.x()*dim.z() + dim.y()*dim.z()); 
-    std::map<slargeo::EBoxFace, G4double> area_fraction; 
+    std::map<geo::EBoxFace, G4double> area_fraction; 
 
     for (int i=0; i<6; i++) {
-      slargeo::EBoxFace kFace = slargeo::EBoxFace(i); 
+      geo::EBoxFace kFace = geo::EBoxFace(i); 
       G4double area = 1; 
       for (int  j=0; j < 3; j++) {
-        if (slargeo::BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
+        if (geo::BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
       }
 
       area_fraction.insert( std::make_pair(kFace, area / total_area)); 
@@ -186,30 +186,30 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     //printf("face_sample = %g\n", face_sample);
     while (face_sample > face_prob) {
       iface++;
-      face_prob += area_fraction[(slargeo::EBoxFace)iface]; 
+      face_prob += area_fraction[(geo::EBoxFace)iface]; 
     }
 
-    fVtxFace = (slargeo::EBoxFace)iface;
+    fVtxFace = (geo::EBoxFace)iface;
   }
 
   //printf("vertex generator face is: %i\n", fVtxFace);
   //G4cout << "face normal is: " << BoxFaceNormal[fVtxFace] << G4endl;
   G4ThreeVector face_axis(0, 0, 0); 
   for (int j=0; j<3; j++) {
-    if (axis[j].dot(slargeo::BoxFaceNormal[fVtxFace]) != 0) {
+    if (axis[j].dot(geo::BoxFaceNormal[fVtxFace]) != 0) {
       face_axis = axis[j]; 
       break;
     }
   }
 
   G4ThreeVector face_center_local = 
-    -0.5*dim.dot(slargeo::BoxFaceNormal[fVtxFace])*face_axis;
+    -0.5*dim.dot(geo::BoxFaceNormal[fVtxFace])*face_axis;
   //G4cout << "face_center_local: " << face_center_local << G4endl; 
   G4ThreeVector local_displacement(0, 0, 0); 
   for (int j=0; j<3; j++) {
     double rnd = G4UniformRand() - 0.5; 
     local_displacement[j] += 
-    slargeo::BoxFaceNormal[fVtxFace].cross( axis[j] ).mag()*rnd*dim[j];
+    geo::BoxFaceNormal[fVtxFace].cross( axis[j] ).mag()*rnd*dim[j];
   }
   //G4cout << "local_displacement: " << local_displacement << G4endl;
 
@@ -243,7 +243,7 @@ void SLArBoxSurfaceVertexGenerator::Config( const rapidjson::Value& config) {
   if (config.HasMember("origin_face")) {
       FixVertexFace(true); 
       SetVertexFace(
-          (slargeo::EBoxFace)config["origin_face"].GetInt()); 
+          (geo::EBoxFace)config["origin_face"].GetInt()); 
   }
 
   return;
@@ -276,7 +276,7 @@ void SLArBoxSurfaceVertexGenerator::Config( const G4String& config ) {
   if (faceName.empty() == false) {
       FixVertexFace(true); 
       SetVertexFace(
-          (slargeo::EBoxFace)std::atoi(faceName) ); 
+          (geo::EBoxFace)std::atoi(faceName) ); 
   }
 
   return;

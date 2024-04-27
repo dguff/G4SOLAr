@@ -28,8 +28,8 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     G4String GetType() const override {return "boxface_vertex_generator";}
 
     void FixVertexFace(const bool isFaceFixed) {fFixFace = isFaceFixed;}
-    void SetVertexFace(const slargeo::EBoxFace face) {fVtxFace = face;}
-    slargeo::EBoxFace GetVertexFace() const {return fVtxFace;}
+    void SetVertexFace(const geo::EBoxFace face) {fVtxFace = face;}
+    geo::EBoxFace GetVertexFace() const {return fVtxFace;}
     const G4LogicalVolume* GetBoxLogicalVolume() const; 
     void SetBoxLogicalVolume(const G4LogicalVolume*); 
     const G4VSolid* GetSolid() const; 
@@ -66,7 +66,7 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     unsigned int fRandomSeed{0}; ///< Seed for the random number generator
     bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
     bool fFixFace = false; ///
-    slargeo::EBoxFace fVtxFace = slargeo::kXplus; 
+    geo::EBoxFace fVtxFace = geo::kXplus; 
 
     // Working internals:
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
