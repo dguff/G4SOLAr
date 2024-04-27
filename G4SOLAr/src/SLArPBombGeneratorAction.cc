@@ -90,7 +90,7 @@ void SLArPBombGeneratorAction::Configure(const rapidjson::Value& config) {
     SetParticle( fBombConfig.particle_name ); 
   }
   if (config.HasMember("energy")) {
-    fBombConfig.particle_energy = SLArGeoInfo::ParseJsonVal( config["energy"] ); 
+    fBombConfig.particle_energy = unit::ParseJsonVal( config["energy"] ); 
   }
   if (config.HasMember("n_particles")) {
     fBombConfig.n_particles = config["n_particles"].GetInt();

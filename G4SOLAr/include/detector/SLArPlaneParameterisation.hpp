@@ -8,11 +8,11 @@
 
 #define SLARPLANEPARAMETERISATION_HPP
 
-#include "SLArGeoInfo.hh"
+#include <SLArUnit.hpp>
 
-#include "G4VPVParameterisation.hh"
-#include "G4PVParameterised.hh"
-#include "G4VPhysicalVolume.hh"
+#include <G4VPVParameterisation.hh>
+#include <G4PVParameterised.hh>
+#include <G4VPhysicalVolume.hh>
 
 class SLArPlaneParameterisation : public G4VPVParameterisation {
   public: 
@@ -70,7 +70,7 @@ inline SLArPlaneParameterisation::SLArPlaneParameterisation(
   else if (axis_str == "y") SetReplicationAxis(kYAxis); 
   else if (axis_str == "z") SetReplicationAxis(kZAxis); 
 
-  fSpacing = SLArGeoInfo::ParseJsonVal(jreplica["spacing"]); 
+  fSpacing = unit::ParseJsonVal(jreplica["spacing"]); 
   return; 
 }
 

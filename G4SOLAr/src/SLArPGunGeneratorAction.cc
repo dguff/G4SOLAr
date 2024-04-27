@@ -74,7 +74,7 @@ void SLArPGunGeneratorAction::Configure(const rapidjson::Value& config) {
     SetParticle( fGunConfig.particle_name ); 
   }
   if (config.HasMember("energy")) {
-    fGunConfig.particle_energy = SLArGeoInfo::ParseJsonVal( config["energy"] ); 
+    fGunConfig.particle_energy = unit::ParseJsonVal( config["energy"] ); 
   }
   if (config.HasMember("n_particles")) {
     fGunConfig.n_particles = config["n_particles"].GetInt();
