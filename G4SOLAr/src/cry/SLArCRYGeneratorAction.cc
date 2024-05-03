@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArCRYGeneratorAction
+ * @file        : SLArCRYGeneratorAction.cc
  * @created     : Wednesday Mar 13, 2024 17:49:49 CET
  */
 
@@ -136,7 +136,8 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         G4ThreeVector((*vect)[j]->x()*CLHEP::m, fConfig.cry_gen_y, (*vect)[j]->y()*CLHEP::m));
     particleGun->SetParticleMomentumDirection(
         G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v()));
-    particleGun->SetParticleTime((*vect)[j]->t()*CLHEP::s);
+    //particleGun->SetParticleTime((*vect)[j]->t()*CLHEP::s);
+    particleGun->SetParticleTime(0.0*CLHEP::s);
     particleGun->GeneratePrimaryVertex(anEvent);
     delete (*vect)[j];
   }
@@ -173,7 +174,7 @@ void SLArCRYGeneratorAction::CRYConfig_t::to_input() {
   cry_mess_input.append( line_max ); 
 
   G4String line_gen_size = "subboxLength " 
-    + std::to_string( (int)std::round(box_lenght / CLHEP::m) ) + " "; 
+    + std::to_string( (box_lenght / CLHEP::m) ) + " "; 
   cry_mess_input.append( line_gen_size ); 
 
   G4String line_date = "date " + date + " "; 
@@ -233,11 +234,11 @@ void SLArCRYGeneratorAction::Configure(const rapidjson::Value& config) {
   }
 
   if (config.HasMember("box_length")) {
-    fConfig.box_lenght = SLArGeoInfo::ParseJsonVal( config["box_length"] ); 
+    fConfig.box_lenght = unit::ParseJsonVal( config["box_length"] ); 
   }
 
   if (config.HasMember("generator_y")) {
-    fConfig.cry_gen_y = SLArGeoInfo::ParseJsonVal( config["generator_y"] ); 
+    fConfig.cry_gen_y = unit::ParseJsonVal( config["generator_y"] ); 
   }
 
   fConfig.to_input(); 
