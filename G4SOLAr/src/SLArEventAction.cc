@@ -66,13 +66,14 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 #endif
 
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
+  auto detConstruction = (SLArDetectorConstruction*)
+    G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+
   if (fTileHCollID == -2) 
     fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
   if (fSuperCellHCollID == -5) 
     fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
   if (fLArHCollID.empty()) {
-    auto detConstruction = (SLArDetectorConstruction*)
-      G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
     for (const auto &tpc : detConstruction->GetDetTPCs() ) {
       auto coll_id = 
         sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
@@ -82,13 +83,16 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 
   #ifdef SLAR_EXTERNAL
   if (fExtScorerHCollID.empty()) {
-    auto scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume("cavern_scorer_pv"); 
-    if (scorer_pv) {
-      const auto sd = (SLArExtScorerSD*)scorer_pv->GetLogicalVolume()->GetSensitiveDetector(); 
-      fExtScorerHCollID.push_back( sd->GetHitsCollectionID() ); 
-    }
-    else {
-      printf("SLArEventAction::BeginofEventAction() WARNING cannot find volume 'cavern_scorer_pv' in Pysical Volume Store\n");
+    auto& ext_scorer_list = detConstruction->GetVecExtScorerPV();
+    for (const auto& scorer_pv : ext_scorer_list) {
+      if (scorer_pv) {
+        const auto sd = (SLArExtScorerSD*)scorer_pv->GetLogicalVolume()->GetSensitiveDetector(); 
+        fExtScorerHCollID.push_back( sd->GetHitsCollectionID() ); 
+      }
+      else {
+        printf("SLArEventAction::BeginofEventAction() WARNING cannot find volume '%s' in Pysical Volume Store\n",
+            scorer_pv->GetName().data());
+      }
     }
   }
   #endif // DEBUG

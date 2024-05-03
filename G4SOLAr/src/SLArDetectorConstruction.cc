@@ -564,19 +564,39 @@ void SLArDetectorConstruction::ConstructSDandField()
   }
 
 
-#ifdef SLAR_EXTERNAL
-  auto cavern_scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume("cavern_scorer_pv"); 
-  if (cavern_scorer_pv) {
-    auto ext_scorer_sd = 
-      new SLArExtScorerSD("/Ext/cavern"); 
-    SDman->AddNewDetector(ext_scorer_sd); 
-    SetSensitiveDetector(cavern_scorer_pv->GetLogicalVolume(), ext_scorer_sd); 
-    auto runAction = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
-    runAction->RegisterExtScorerLV( cavern_scorer_pv->GetLogicalVolume() ); 
-  }
-#endif
 }
 
+void SLArDetectorConstruction::AddExternalScorer(const G4String phys_volume_name, const G4String alias)
+{
+  // sensitive detectors 
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  G4String SDname;
+#ifdef SLAR_EXTERNAL
+  auto external_scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume(phys_volume_name); 
+  if (external_scorer_pv) {
+    G4String ext_scorer_name = "/Ext/scorer/" + alias;
+    printf("SLArDetectorConstruction::AddExternalScorer(): "); 
+    printf("Making %s a scorer volume (%s)\n", phys_volume_name.data(), ext_scorer_name.data()); 
+
+    auto ext_scorer_sd = 
+      new SLArExtScorerSD(ext_scorer_name); 
+    SDman->AddNewDetector(ext_scorer_sd); 
+    SetSensitiveDetector(external_scorer_pv->GetLogicalVolume(), ext_scorer_sd); 
+    auto runAction = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
+    runAction->RegisterExtScorerLV( external_scorer_pv->GetLogicalVolume() ); 
+    fExtScorerPV.push_back( external_scorer_pv ); 
+  }
+  else {
+    printf("SLArDetectorConstruction::AddExternalScorer(): ERROR "); 
+    printf("Unable to fond physical volume %s in physical volume store\n", phys_volume_name.data()); 
+  }
+#else
+  G4cout << "SLArDetectorConstruction::AddExternalScorer WARNING: " << G4endl;
+  G4cout << "This method is active only when solar_sim is compiled with SLAR_EXTERNAL option, and this is not the case." << G4endl;
+#endif
+
+  return;
+}
 
 
 SLArDetTPC* SLArDetectorConstruction::GetDetTPC(int copyid) 
