@@ -4,16 +4,17 @@
  * @created     Tue Mar 21, 2023 12:00:33 CET
  */
 
-#include "detector/Anode/SLArDetAnodeAssembly.hh"
-#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
-#include "detector/SLArPlaneParameterisation.hpp"
+#include <detector/Anode/SLArDetAnodeAssembly.hh>
+#include <detector/Anode/SLArDetReadoutTileAssembly.hh>
+#include <detector/SLArPlaneParameterisation.hpp>
+#include <detector/SLArGeoUtils.hh>
 
-#include "config/SLArCfgAnode.hh"
+#include <config/SLArCfgAnode.hh>
 
-#include "G4VisAttributes.hh"
-#include "G4PVParameterised.hh"
-#include "G4Box.hh"
-#include "G4RotationMatrix.hh"
+#include <G4VisAttributes.hh>
+#include <G4PVParameterised.hh>
+#include <G4Box.hh>
+#include <G4RotationMatrix.hh>
 
 SLArDetAnodeAssembly::SLArDetAnodeAssembly() : 
   SLArBaseDetModule(), 
@@ -56,7 +57,7 @@ void SLArDetAnodeAssembly::Init(const rapidjson::Value& jconf) {
 
   auto jpos = janode["position"].GetObject(); 
   int idim = 0; 
-  G4double vunit = SLArGeoInfo::Unit2Val(jpos["unit"]); 
+  G4double vunit = unit::Unit2Val(jpos["unit"]); 
   for (const auto &v : jpos["xyz"].GetArray()) {
     fPosition[idim] = (v.GetDouble() * vunit); 
     fGeoInfo->RegisterGeoPar("pos_"+suffix[idim], fPosition[idim]); 
@@ -64,7 +65,7 @@ void SLArDetAnodeAssembly::Init(const rapidjson::Value& jconf) {
   }
 
   auto jrot = janode["rot"].GetObject(); 
-  vunit = SLArGeoInfo::Unit2Val(jrot["unit"]); 
+  vunit = unit::Unit2Val(jrot["unit"]); 
   assert(jrot.HasMember("val")); 
   assert(jrot["val"].IsArray()); 
   assert(jrot["val"].GetArray().Size() == 3);
@@ -114,8 +115,9 @@ void SLArDetAnodeAssembly::BuildAnodeAssembly(SLArDetReadoutTileAssembly* megati
         "anode_row_lv")); 
   fAnodeRow->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
 
-  SLArPlaneParameterisation* anodeRowParametrization = 
-    new SLArPlaneParameterisation(kZAxis, G4ThreeVector(0, 0, -0.5*(anode_z-mt_z)), mt_z); 
+  SLArPlaneParameterisation* anodeRowParametrization =
+      new SLArPlaneParameterisation(kZAxis, G4ThreeVector(0, 0, -0.5*mt_z*(n_z-1)), mt_z); 
+ 
   fAnodeRow->SetModPV(
       new G4PVParameterised("anode_row_pv", 
         megatile->GetModLV(), fAnodeRow->GetModLV(),kZAxis, n_z, 
@@ -127,7 +129,8 @@ void SLArDetAnodeAssembly::BuildAnodeAssembly(SLArDetReadoutTileAssembly* megati
   fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 
   SLArPlaneParameterisation* anodeParameterization = 
-    new SLArPlaneParameterisation(kXAxis, G4ThreeVector(-0.5*(anode_x-mt_x), 0, 0), mt_x); 
+      new SLArPlaneParameterisation(kXAxis, G4ThreeVector(-0.5*mt_x*(n_x-1), 0, 0), mt_x); 
+  
   SetModPV(new G4PVParameterised("anode_pv", fAnodeRow->GetModLV(), fModLV,
         kXAxis, n_x, anodeParameterization, true)); 
 

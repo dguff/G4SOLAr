@@ -7,6 +7,7 @@
 
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/SLArPlaneParameterisation.hpp"
+#include "detector/SLArGeoUtils.hh"
 #include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
@@ -465,9 +466,9 @@ void SLArDetReadoutTile::BuildUnitCellStructure(const rapidjson::Value& celldef)
     G4String name_ = comp["name"].GetString(); 
     G4int copy_ = comp["copy"].GetInt(); 
     G4ThreeVector pos_ = G4ThreeVector(0, 0, 0); 
-    if (comp.HasMember("pos_x")) pos_.setX(SLArGeoInfo::ParseJsonVal(comp["pos_x"]));
-    if (comp.HasMember("pos_y")) pos_.setY(SLArGeoInfo::ParseJsonVal(comp["pos_y"]));
-    if (comp.HasMember("pos_z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(comp["pos_z"]));
+    if (comp.HasMember("pos_x")) pos_.setX(unit::ParseJsonVal(comp["pos_x"]));
+    if (comp.HasMember("pos_y")) pos_.setY(unit::ParseJsonVal(comp["pos_y"]));
+    if (comp.HasMember("pos_z")) pos_.setZ(unit::ParseJsonVal(comp["pos_z"]));
 
     fCellStructure.push_back( SUnitCellComponent(name_, copy_, mod, pos_) );
   }
@@ -487,9 +488,9 @@ void SLArDetReadoutTile::BuildUnitCellPixMap(const rapidjson::Value& pixblueprin
 
     for (const auto &edge : pix["edges"].GetArray()) {
       G4ThreeVector pos_ = G4ThreeVector(0, 0, 0); 
-      if (edge.HasMember("x")) pos_.setX(SLArGeoInfo::ParseJsonVal(edge["x"]));
-      if (edge.HasMember("y")) pos_.setY(SLArGeoInfo::ParseJsonVal(edge["y"]));
-      if (edge.HasMember("z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(edge["z"]));
+      if (edge.HasMember("x")) pos_.setX(unit::ParseJsonVal(edge["x"]));
+      if (edge.HasMember("y")) pos_.setY(unit::ParseJsonVal(edge["y"]));
+      if (edge.HasMember("z")) pos_.setZ(unit::ParseJsonVal(edge["z"]));
 
       pixArea.fEdges.push_back(pos_); 
     }
