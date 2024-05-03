@@ -21,6 +21,9 @@
 #ifdef SLAR_CRY
 #include <cry/SLArCRYGeneratorAction.hh>
 #endif
+#ifdef SLAR_RADSRC
+#include <radsrc/SLArRadSrcGeneratorAction.hh>
+#endif
 
 #include <Randomize.hh>
 #include <SLArRandomExtra.hh>
@@ -203,7 +206,6 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
         break;
       }
 
-
 #ifdef SLAR_CRY
     case (kCRY) : 
       {
@@ -212,8 +214,17 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
         this_gen = gen; 
         break;
       }
-
 #endif 
+
+#ifdef SLAR_RADSRC
+    case (kRadSrc) : 
+      {
+        auto gen = new radsrc::SLArRadSrcGeneratorAction(label);
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen;
+        break;
+      }
+#endif
 
     default:
       {
@@ -233,8 +244,9 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
 SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
 {
   printf("Deleting SLArPrimaryGeneratorAction...\n");
-  int igen = 0; 
+  int igen = -1; 
   for (auto &gen : fGeneratorActions) {
+    igen = gen.second->GetGeneratorEnum();
     printf("igen = %i\n", igen);
     if (gen.second) {
       printf("Deleting gen %i\n", igen);
@@ -272,9 +284,14 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
         delete local; 
       }
 #endif
+#ifdef SLAR_RADSRC
+      else if (igen == kRadSrc) {
+        auto local = (radsrc::SLArRadSrcGeneratorAction*)gen.second;
+        delete local;
+      }
+#endif 
       //gen = nullptr;
     }
-    igen++;
   }
   //if (fBulkGenerator) delete fBulkGenerator;
   //if (fBoxGenerator) delete fBoxGenerator;

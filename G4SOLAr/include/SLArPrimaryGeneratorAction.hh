@@ -64,6 +64,12 @@ namespace gen {
   }
 #endif 
 
+#ifdef SLAR_RADSRC
+  namespace radsrc {
+    class SLArRadSrcGeneratorAction;
+  }
+#endif
+
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
   class SLArPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   {

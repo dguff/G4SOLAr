@@ -25,6 +25,7 @@ option(SLAR_PROFILE "Enbale profiling with gprof" OFF)
 option(SLAR_EXTERNAL "Build code with special external background features" OFF)
 option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
 option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
+option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -49,6 +50,13 @@ if (DEFINED ENV{CRYHOME})
   message(STATUS "Found CRY package at $ENV{CRYHOME}. Building CRY interface classes")
   set(CRY_INCLUDE_DIRS $ENV{CRYHOME}/src)
   set(CRY_LIBRARIES $ENV{CRYHOME}/lib/libCRY.a)
+endif()
+
+if (DEFINED ENV{RADSRC_HOME})
+  set(SLAR_RADSRC_INTERFACE "ON")
+  message(STATUS "Found RadSrc package at $ENV{RADSRC_HOME}. Building RadSrc interface classes")
+  set(RADSRC_INCLUDE_DIRS $ENV{RADSRC_HOME}/src/libradsrc)
+  set(RADSRC_LIBRARIES $ENV{RADSRC_HOME}/lib/libradsrc.a)
 endif()
 
 #----------------------------------------------------------------------------
@@ -164,7 +172,11 @@ if (SLAR_CRY_INTERFACE)
   file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
 endif()
 
-
+if (SLAR_RADSRC_INTERFACE)
+  include_directories(${RADSRC_INCLUDE_DIRS})
+  file(GLOB radsrc_sources ${G4SOLAR_SRC_DIR}/radsrc/*.cc)
+  file(GLOB radsrc_headers ${G4SOLAR_INCLUDE_DIR}/radsrc/*.hh)
+endif()
 
 add_definitions(${ROOT_CXX_FLAGS})
 
@@ -235,11 +247,17 @@ execute_process(
 #
 
 if (SLAR_CRY_INTERFACE)
-  add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
+  if (SLAR_RADSRC_INTERFACE) 
+    add_executable(solar_sim solar_sim.cc 
+      ${sources} ${cry_sources} ${radsrc_sources} 
+      ${headers} ${cry_headers} ${radsrc_headers})
+  else()
+    add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
+  endif()
 else()
   add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 endif()
-  
+
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
@@ -250,12 +268,17 @@ target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim ${CRY_LIBRARIES})
 endif()
+if (SLAR_RADSRC_INTERFACE) 
+  target_link_libraries(solar_sim ${RADSRC_LIBRARIES})
+endif()
+
 target_compile_definitions(solar_sim 
   PUBLIC 
   $<$<CONFIG:Debug>:SLAR_DEBUG>
   $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
   $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
   $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
+  $<$<STREQUAL:${SLAR_RADSRC_INTERFACE},ON>:SLAR_RADSRC>
   SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
   PRIVATE
   "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
