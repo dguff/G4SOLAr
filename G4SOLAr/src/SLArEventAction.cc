@@ -143,30 +143,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-#ifdef SLAR_EXTERNAL
-    G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
-#endif 
-
-    //RecordEventLAr( event );
-
-    if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
-      RecordEventReadoutTile ( event, verbose );
-    }
-
-    if (verbose > 1) printf("Recording SuperCell hits...\n");
-    RecordEventSuperCell( event, verbose );
-    if (verbose > 1) printf("DONE\n");
-     
     auto& slar_event = SLArAnaMgr->GetEvent();
     slar_event.SetEvNumber(event->GetEventID());
-
-    // apply zero suppression to charge signal
-    for (auto &evAnode : slar_event.GetEventAnode()) {
-      short thrs = evAnode.second.GetZeroSuppressionThreshold(); 
-      if (thrs > 0) {
-        evAnode.second.ApplyZeroSuppression();
-      }
-    }
 
     // set global edep, electrons and photon counts per primary
     auto& primaries = slar_event.GetPrimaries(); 
@@ -187,7 +165,27 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       primary.SetTotalScintPhotons( nph ); 
     }
 
-#ifdef SLAR_EXTERNAL
+#ifndef SLAR_EXTERNAL
+    //RecordEventLAr( event );
+
+    if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
+      RecordEventReadoutTile ( event, verbose );
+    }
+
+    if (verbose > 1) printf("Recording SuperCell hits...\n");
+    RecordEventSuperCell( event, verbose );
+    if (verbose > 1) printf("DONE\n");
+     
+    // apply zero suppression to charge signal
+    for (auto &evAnode : slar_event.GetEventAnode()) {
+      short thrs = evAnode.second.GetZeroSuppressionThreshold(); 
+      if (thrs > 0) {
+        evAnode.second.ApplyZeroSuppression();
+      }
+    }
+    #else
+    G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
+
     for (auto &primary : primaries) {
       if (ext_scorer_hits == 0) primary.GetTrajectories().clear(); 
     }
