@@ -524,6 +524,7 @@ void SLArDetectorConstruction::ConstructSDandField()
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDname;
 
+#ifndef SLAR_EXTERNAL
   auto anaMngr = SLArAnalysisManager::Instance(); 
   if (anaMngr->GetPhysicsBiasingMap().size() > 0) {
     for (const auto &biasing : anaMngr->GetPhysicsBiasingMap() ) {
@@ -563,6 +564,7 @@ void SLArDetectorConstruction::ConstructSDandField()
     iTPC++; 
   }
 
+#endif
 
 }
 
@@ -811,6 +813,17 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   printf("fCavern PV ptr: %p\n", static_cast<void*>(fCavernPhys));
   istore->AddImportanceGeometryCell(
       1, *fCavernPhys, fCavernPhys->GetCopyNo()); 
+  size_t n_cavern_layers = fCavernPhys->GetLogicalVolume()->GetNoDaughters(); 
+  for (int i = 0; i<n_cavern_layers; i++) {
+    auto vol = fCavernPhys->GetLogicalVolume()->GetDaughter(i);
+    auto cell = G4GeometryCell(*vol, vol->GetCopyNo()); 
+    if (istore->IsKnown(cell) == false) {
+      printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
+          cell.GetPhysicalVolume().GetName().data(), 
+          imp, cell.GetReplicaNumber(), static_cast<void*>(vol) );
+      istore->AddImportanceGeometryCell(imp, cell); 
+    }
+  }
 
   printf("\nCryostat ----------------------------------------\n");
   printf("fCryostat PV ptr: %p\n", static_cast<void*>(fCryostat->GetModPV())); 
@@ -1097,7 +1110,7 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
           cell.GetReplicaNumber(), imp);              
       istore->AddImportanceGeometryCell(imp, cell); 
     }
-    cell = G4GeometryCell(*base_vol, sensor_vol->GetCopyNo()); 
+    cell = G4GeometryCell(*base_vol, base_vol->GetCopyNo()); 
     if (istore->IsKnown(cell) == false) {
       printf("TILE MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
           cell.GetPhysicalVolume().GetName().data(), 
@@ -1344,16 +1357,16 @@ void SLArDetectorConstruction::ConstructCavern() {
   new G4PVPlacement(0,G4ThreeVector(), shotcrete_logic,"cavern_shotcrete", cavern_logic, false, 3, true); 
 
   //----------------------------------------------------- cavern_scorer_surface 
-  G4SubtractionSolid* cavern_scorer_box = new G4SubtractionSolid("cavern_scorer_box", 
-      outer_cavern_scorer_box, inner_cavern_scorer_box, nullptr, G4ThreeVector(0, 0, 0));
+  //G4SubtractionSolid* cavern_scorer_box = new G4SubtractionSolid("cavern_scorer_box", 
+      //outer_cavern_scorer_box, inner_cavern_scorer_box, nullptr, G4ThreeVector(0, 0, 0));
 
-  SLArMaterial* scorer_mat_handle = new SLArMaterial(); 
-  scorer_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "Air" ); 
+  //SLArMaterial* scorer_mat_handle = new SLArMaterial(); 
+  //scorer_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "Air" ); 
 
-  G4LogicalVolume* cavern_scorer_logic = new G4LogicalVolume(
-      cavern_scorer_box, scorer_mat_handle->GetMaterial(), "cavern_scorer_lv" ); 
+  //G4LogicalVolume* cavern_scorer_logic = new G4LogicalVolume(
+      //cavern_scorer_box, scorer_mat_handle->GetMaterial(), "cavern_scorer_lv" ); 
 
-  new G4PVPlacement(0, G4ThreeVector(), cavern_scorer_logic, "cavern_scorer_pv", cavern_logic, false, 4, false); 
+  //new G4PVPlacement(0, G4ThreeVector(), cavern_scorer_logic, "cavern_scorer_pv", cavern_logic, false, 4, false); 
 
   return; 
 }
