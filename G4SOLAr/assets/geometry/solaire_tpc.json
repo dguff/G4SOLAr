@@ -4,7 +4,7 @@
     "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, -1, 0]},
     "dimensions" : [
       {"name" : "tpc_x"  , "val" : 2.00, "unit" :  "m"},
-      {"name" : "tpc_y"  , "val" : 1.61, "unit" :  "m"},
+      {"name" : "tpc_y"  , "val" : 1.85, "unit" :  "m"},
       {"name" : "tpc_z"  , "val" : 2.00, "unit" :  "m"}
     ]
     ,

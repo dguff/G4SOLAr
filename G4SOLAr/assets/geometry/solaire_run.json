@@ -23,7 +23,7 @@
     "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, -1, 0]},
     "dimensions" : [
       {"name" : "tpc_x" , "val" : 2.00, "unit" : "m"},
-      {"name" : "tpc_y" , "val" : 1.61, "unit" : "m"},
+      {"name" : "tpc_y" , "val" : 1.85, "unit" : "m"},
       {"name" : "tpc_z" , "val" : 2.00, "unit" : "m"}
     ]
     ,
@@ -70,11 +70,11 @@
     {"id" : 26 , "name" : "plywood_3" , "material" : "Plywood" , "thickness" : {"val": 1.0 , "unit" : "cm"}, "importance" : 20} ,
     {"id" : 27 , "name" : "triplex" , "material" : "Steel" , "thickness" : {"val": 1.5 , "unit" : "mm"}, "importance" : 20} ,
     {"id" : 28 , "name" : "plywood_4" , "material" : "Plywood" , "thickness" : {"val": 1.0 , "unit" : "cm"}, "importance" : 20} ,
-    {"id" : 29 , "name" : "polyurethane_2" , "material" : "Polyurethane" , "thickness" : {"val": 39.0 , "unit" : "cm"}, "importance" : 20} ,
+    {"id" : 29 , "name" : "polyurethane_2" , "material" : "Polyurethane" , "thickness" : {"val": 39.0 , "unit" : "cm"}, "importance" : 40} ,
     {"id" : 30 , "name" : "plywood_5" , "material" : "Plywood" , "thickness" : {"val": 1.0 , "unit" : "cm"}, "importance" : 40} ,
-    {"id" : 31 , "name" : "copper" , "material" : "Copper" , "thickness" : {"val": 7.0 , "unit" : "cm"}, "importance" : 40} ,
-    {"id" : 32 , "name" : "hdpe" , "material" : "HDPE" , "thickness" : {"val": 10.0 , "unit" : "cm"}, "importance" : 80} ,
-    {"id" : 33 , "name" : "inner_frame" , "material" : "Steel" , "thickness" : {"val": 1.2 , "unit" : "mm"}, "importance" : 80}
+    {"id" : 31 , "name" : "copper" , "material" : "Copper" , "thickness" : {"val": 7.0 , "unit" : "cm"}, "importance" : 800} ,
+    {"id" : 32 , "name" : "hdpe" , "material" : "HDPE" , "thickness" : {"val": 10.0 , "unit" : "cm"}, "importance" :1600} ,
+    {"id" : 33 , "name" : "inner_frame" , "material" : "Steel" , "thickness" : {"val": 1.2 , "unit" : "mm"}, "importance" :1600}
   ],
   "Cryostat_support" : {
     "steel_thickness" : {"val" : 20, "unit" : "mm"},
