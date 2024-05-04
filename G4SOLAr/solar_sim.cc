@@ -249,6 +249,10 @@ int main(int argc,char** argv)
   printf("storing seed in analysis manager: %ld - %ld\n", 
       myseed, G4Random::getTheSeed());
 
+
+  // Physics list
+  printf("Creating Phiscs Lists...\n");
+  auto physicsList = new SLArPhysicsList(physName, do_cerenkov);
   // External background biasing option
 #ifdef SLAR_EXTERNAL
 #ifndef SLAR_EXTERNAL_PARTICLE
@@ -257,24 +261,13 @@ int main(int argc,char** argv)
   const char* ext_particle = SLAR_EXTERNAL_PARTICLE;
   G4GeometrySampler* mgs = nullptr; 
   G4bool activate_importance_sampling = true;
-  if (G4ParticleTable::GetParticleTable()->FindParticle(ext_particle) == nullptr) {
-    activate_importance_sampling = false;   
-  }
-  else {
-    mgs = new G4GeometrySampler(detector->GetPhysicalWorld(), ext_particle);
-  }
+  mgs = new G4GeometrySampler(detector->GetPhysicalWorld(), ext_particle);
   printf("Built with SLAR_EXTERNAL flag for particle %s\n", ext_particle);
-#endif
-#endif
-
-
-
-  // Physics list
-  printf("Creating Phiscs Lists...\n");
-  auto physicsList = new SLArPhysicsList(physName, do_cerenkov);
-#if (defined SLAR_EXTERNAL &&  defined SLAR_EXTERNAL_PARTICLE)
   if (activate_importance_sampling) physicsList->RegisterPhysics(new G4ImportanceBiasing(mgs));
 #endif
+#endif
+
+
   if ( do_bias ) {
     auto biasingPhysics = new G4GenericBiasingPhysics("biasing_"+bias_particle);  
     if (bias_process.size() > 0) biasingPhysics->Bias(bias_particle, bias_process); 

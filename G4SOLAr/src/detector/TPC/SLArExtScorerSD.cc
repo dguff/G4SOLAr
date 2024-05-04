@@ -27,9 +27,10 @@ void SLArExtScorerSD::Initialize(G4HCofThisEvent* hce) {
   fHitsCollection = new SLArExtHitsCollection(SensitiveDetectorName, collectionName[0]); 
   if (fHCID < 0) {
     fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); 
-    if (verboseLevel) {
+    //if (verboseLevel) {
       printf("Registering SLArExtHitsCollection with ID %i\n", fHCID); 
-    }
+      //getchar();
+    //}
   }
 
   hce->AddHitsCollection(fHCID,fHitsCollection);
@@ -55,7 +56,7 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
   if ( fabs(trajectory->GetPDGID()) == 12 || 
        fabs(trajectory->GetPDGID()) == 14 ||
        fabs(trajectory->GetPDGID()) == 16 ) {
-    return false;
+    return true;
   }
 
   auto scorer_hit = new SLArExtHit(); 
