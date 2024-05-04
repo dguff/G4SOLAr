@@ -39,6 +39,18 @@ struct trj_point {
     fLAr = in_lar;
   }
 
+  trj_point(const trj_point& right) {
+    fX = right.fX;
+    fY = right.fY;
+    fZ = right.fZ;
+    fKEnergy = right.fKEnergy;
+    fEdep = right.fEdep;
+    fNph = right.fNph; 
+    fNel = right.fNel;
+    fCopy = right.fCopy; 
+    fLAr = right.fLAr;
+  }
+
 };
 
 class SLArEventTrajectoryLite;
