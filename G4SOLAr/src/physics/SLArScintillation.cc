@@ -421,6 +421,7 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
   // If we have Scintillation by type enabled, we want to get a function that includes the anti-correlation between light and charge yield.
   if(fScintillationByParticleType)
   {
+    Ion_and_Scint_t IonAndScintYield;
     G4bool MIP = ((TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) < 40);
     if (MIP) {
       SLArIonAndScintLArQL* ion_and_scint  = 
@@ -430,19 +431,21 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
           aTrack.GetParticleDefinition()->GetParticleName().data());
       printf("dE/dx = %g MeV/cm\n", (TotalEnergyDeposit/CLHEP::MeV) / (StepWidth/CLHEP::cm) ); 
 #endif
-      //Get yield1,2,3 from the MaterialPropertiesTable - this is a little bit hacky, but it works
-      // Set MeanNumberOfPhotons
-      Ion_and_Scint_t IonAndScintYield = ion_and_scint->ComputeIonAndScintYield(
+      // Set scintillation yield
+      GetScintillationYieldByParticleType( aTrack, aStep, yield1, yield2, yield3); 
+
+      IonAndScintYield = ion_and_scint->ComputeIonAndScintYield(
           TotalEnergyDeposit/CLHEP::MeV,
           StepWidth/CLHEP::cm,electricField_); 
 
+      // Set MeanNumberOfPhotons
       MeanNumberOfPhotons = IonAndScintYield.scint*(TotalEnergyDeposit/CLHEP::MeV);
       // Set MeanNumberOfIonElectrons
       MeanNumberOfIonElectrons = IonAndScintYield.ion*(TotalEnergyDeposit/CLHEP::MeV); 
 
     }
     else{
-     // Use the normal Scintillation By Particle Type if the particle is not a MIP - currently not used
+      // Use the normal Scintillation By Particle Type if the particle is not a MIP - currently not used
 #ifdef SLAR_DEBUG
       printf("SLArScintillation: %s - getting nr of photons for particle type\n", 
           aTrack.GetParticleDefinition()->GetParticleName().data());
@@ -480,6 +483,8 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
     G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
     G4cout << "Light yield = " << IonAndScintYield.scint << " ph/MeV" << G4endl; 
     G4cout << "Charge yield = " << IonAndScintYield.ion << " elec/MeV" << G4endl; 
+    G4cout << "Mean nr of photons = " << MeanNumberOfPhotons << G4endl;
+    G4cout << "Mean nr of electrons = " << MeanNumberOfIonElectrons << G4endl;
     G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
     G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
 #endif
@@ -507,6 +512,8 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
     else
       MeanNumberOfPhotons *= TotalEnergyDeposit;
   }// Not ScintByParticle
+
+
   sum_yields = yield1 + yield2 + yield3;
 
   if(MeanNumberOfPhotons > 10.)
@@ -618,6 +625,9 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
       continue;
 
     G4double CIImax = scintIntegral->GetMaxValue();
+    //printf("[scnt %i] fNumPhotons: %i -> numPhot = %lu (%.2f\%%)\n", 
+        //scnt, fNumPhotons, numPhot, G4double(numPhot) / fNumPhotons); 
+    //getchar();
     for(size_t i = 0; i < numPhot; ++i)
     {
       // Determine photon energy

@@ -1,0 +1,30 @@
+{
+  "generator" : [
+    {
+      "type" : "decay0", 
+      "label" : "Ar39", 
+      "config" : {
+        "decay0_type" : "background",
+        "nuclide" : "Ar39", 
+        "n_decays" : 100,
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {"volume" : "TPC10", "fiducial_fraction" : 1.00}
+        }
+      }
+    },
+    {
+      "type" : "decay0", 
+      "label" : "Ar42", 
+      "config" : {
+        "decay0_type" : "background",
+        "nuclide" : "Ar42", 
+        "n_decays" : 1,
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {"volume" : "TPC10", "fiducial_fraction" : 1.00}
+        }
+      }
+    }
+  ]
+}

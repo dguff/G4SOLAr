@@ -1,432 +1,467 @@
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file SLAr/src/SLArPrimaryGeneratorAction.cc
-/// \brief Implementation of the SLArPrimaryGeneratorAction class
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-#include "SLArAnalysisManager.hh"
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArPrimaryGeneratorAction
+ * @created     : Sunday Mar 31, 2024 20:22:05 CEST
+ */
 
-#include "SLArPrimaryGeneratorAction.hh"
-#include "SLArPrimaryGeneratorMessenger.hh"
-#include "SLArBulkVertexGenerator.hh"
-#include "SLArBoxSurfaceVertexGenerator.hh"
-#include "SLArPGunGeneratorAction.hh"
-#include "SLArPBombGeneratorAction.hh"
-#include "SLArMarleyGeneratorAction.hh"
-#include "SLArDecay0GeneratorAction.hh"
-#include "SLArExternalGeneratorAction.hh"
-#include "SLArBackgroundGeneratorAction.hh"
-#include "SLArGENIEGeneratorAction.hh"//--JM
+
+#include <SLArAnalysisManager.hh>
+
+#include <SLArPrimaryGeneratorAction.hh>
+#include <SLArPrimaryGeneratorMessenger.hh>
+#include <SLArBulkVertexGenerator.hh>
+#include <SLArBoxSurfaceVertexGenerator.hh>
+#include <SLArPGunGeneratorAction.hh>
+#include <SLArPBombGeneratorAction.hh>
+#include <SLArMarleyGeneratorAction.hh>
+#include <SLArDecay0GeneratorAction.hh>
+#include <SLArExternalGeneratorAction.hh>
+//#include <SLArBackgroundGeneratorAction.hh>
+#include <SLArGENIEGeneratorAction.hh>
 #ifdef SLAR_CRY
-#include "cry/SLArCRYGeneratorAction.hh"
+#include <cry/SLArCRYGeneratorAction.hh>
+#endif
+#ifdef SLAR_RADSRC
+#include <radsrc/SLArRadSrcGeneratorAction.hh>
 #endif
 
-#include "Randomize.hh"
-#include "SLArRandomExtra.hh"
+#include <Randomize.hh>
+#include <SLArRandomExtra.hh>
 
-#include "G4VSolid.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
+#include <G4VSolid.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4Event.hh>
+#include <G4ParticleGun.hh>
+#include <G4ParticleTable.hh>
+#include <G4IonTable.hh>
+#include <G4ParticleDefinition.hh>
+
+#include <rapidjson/document.h>
+#include <rapidjson/filereadstream.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+namespace gen {
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-#ifdef SLAR_CRY
-   fGeneratorActions(8, nullptr),
-#else
-   fGeneratorActions(7, nullptr),
-#endif
-   fBulkGenerator(0), 
-   fVolumeName(""), 
-   fGeneratorEnum(kParticleGun), 
-   fGunPosition(0, 0, 0),
-   fGunDirection(0, 0, 1), 
+   //fVolumeName(""), 
+   //fGeneratorEnum(kParticleGun), 
+   //fGenPosition(0, 0, 0),
+   //fGenDirection(0, 0, 1), 
    fDoTraceOptPhotons(true), 
    fDoDriftElectrons(true), 
    fVerbose(0)
 {
-  G4int n_particle = 1;
-  fGeneratorActions[kParticleGun]= new SLArPGunGeneratorAction(n_particle); 
-  fGeneratorActions[kParticleBomb]= new SLArPBombGeneratorAction(n_particle); 
-  fGeneratorActions[kMarley]= new marley::SLArMarleyGeneratorAction(); 
-  fGeneratorActions[kDecay0]= new bxdecay0_g4::SLArDecay0GeneratorAction(); 
-  fGeneratorActions[kBackground] = new SLArBackgroundGeneratorAction(); 
-  fGeneratorActions[kExternalGen] = new SLArExternalGeneratorAction(); 
-  fGeneratorActions[kGENIE] = new SLArGENIEGeneratorAction();//--JM
-#ifdef SLAR_CRY
-  fGeneratorActions[kCRY] = new cry::SLArCRYGeneratorAction();
-#endif 
-
-  fBulkGenerator = new SLArBulkVertexGenerator(); 
-  fBoxGenerator  = new SLArBoxSurfaceVertexGenerator(); 
-
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
+SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction(const rapidjson::Value& config) 
+: SLArPrimaryGeneratorAction()
 {
-  printf("Deleting SLArPrimaryGeneratorAction...\n");
-  int igen = 0; 
-  for (auto &gen : fGeneratorActions) {
-    printf("igen = %i\n", igen);
-    if (gen) {
-      printf("Deleting gen %i\n", igen);
-      if (igen == kParticleGun) {
-        SLArPGunGeneratorAction* local = (SLArPGunGeneratorAction*)gen;
-        delete local;
+  Configure( config ); 
+
+  return;
+}
+
+SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction(const G4String config_file_path) 
+: SLArPrimaryGeneratorAction() 
+{
+  FILE* config_file = std::fopen(config_file_path, "r");
+  char readBuffer[65536];
+  rapidjson::FileReadStream is(config_file, readBuffer, sizeof(readBuffer));
+
+  rapidjson::Document d;
+  d.ParseStream<rapidjson::kParseCommentsFlag>(is);
+  assert(d.IsObject());
+
+  Configure( d ); 
+
+  std::fclose( config_file ); 
+}
+
+void SLArPrimaryGeneratorAction::Configure(const G4String config_file_path) {
+  FILE* gen_cfg_file = std::fopen(config_file_path, "r");
+  char readBuffer[65536];
+  rapidjson::FileReadStream is(gen_cfg_file, readBuffer, sizeof(readBuffer));
+
+  rapidjson::Document d;
+  d.ParseStream<rapidjson::kParseCommentsFlag>(is);
+  assert(d.IsObject());
+
+  Configure( d );
+
+  fclose( gen_cfg_file ); 
+  return;
+}  
+
+void SLArPrimaryGeneratorAction::Configure(const rapidjson::Value& configuration) {
+  if (fGeneratorActions.empty() == false) {
+    Reset();
+  }
+  assert( configuration.HasMember("generator") );
+
+  const auto& gen_list = configuration["generator"];
+
+  if (gen_list.IsArray()) {
+    for (const auto& gen_config : gen_list.GetArray()) {
+      try {
+        AddGenerator(gen_config); 
       }
-      else if (igen == kParticleBomb) {
-        SLArPBombGeneratorAction* local = (SLArPBombGeneratorAction*)gen;
-        delete local;
+      catch (const std::invalid_argument& e) {
+        std::cerr << "SLArPrimaryGeneratorAction::Configure ERROR:" << std::endl;
+        std::cerr << e.what() <<std::endl;
+        exit( EXIT_FAILURE ); 
       }
-      else if (igen == kDecay0) {
-        auto local = (bxdecay0_g4::SLArDecay0GeneratorAction*)gen;
-        delete local;
-      }
-      else if (igen == kMarley) {
-        auto local = (marley::SLArMarleyGeneratorAction*)gen;
-        delete local;
-      }
-      else if (igen == kBackground) {
-        auto local = (SLArBackgroundGeneratorAction*)gen;
-        delete local;
-      }
-      else if (igen == kExternalGen) {
-        auto local = (SLArExternalGeneratorAction*)gen;
-        delete local;
-      }
-      else if (igen == kGENIE) {
-        auto local = (SLArGENIEGeneratorAction*)gen; 
-        delete local; 
-      }
-#ifdef SLAR_CRY
-      else if (igen == kCRY) {
-        auto local = (cry::SLArCRYGeneratorAction*)gen; 
-        delete local; 
-      }
-#endif
-      //gen = nullptr;
     }
-    igen++;
-  }
-  if (fBulkGenerator) delete fBulkGenerator;
-  if (fBoxGenerator) delete fBoxGenerator;
-  if (fGunMessenger) delete fGunMessenger;
-  printf("DONE\n");
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void SLArPrimaryGeneratorAction::SetBulkName(G4String vol) {
-  fVolumeName = vol; 
-  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
-  if (volume == nullptr) {
-    printf("SLArPrimaryGeneratorAction::SetBulkName(%s) WARNING\n", vol.c_str());
-    printf("Unable to find %s in physical volume store.\n", vol.c_str());
+  } 
+  else if (gen_list.IsObject()) {
+    try {AddGenerator( gen_list );}
+    catch (const std::invalid_argument& e) {
+      std::cerr << "SLArPrimaryGeneratorAction::Configure ERROR:" << std::endl;
+      std::cerr << e.what() <<std::endl;
+      exit( EXIT_FAILURE ); 
+    }
   }
 
-  fBulkGenerator->SetBulkLogicalVolume(volume->GetLogicalVolume()); 
-  fBulkGenerator->SetSolidTranslation(volume->GetTranslation()); 
-  fBulkGenerator->SetSolidRotation(volume->GetRotation()); 
   return;
 }
 
-void SLArPrimaryGeneratorAction::SetBoxName(G4String vol) {
-  fVolumeName = vol; 
-  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fVolumeName); 
-  if (volume == nullptr) {
-    printf("SLArPrimaryGeneratorAction::SetBoxName(%s) WARNING\n", vol.c_str());
-    printf("Unable to find %s in physical volume store.\n", vol.c_str());
+void SLArPrimaryGeneratorAction::Reset() {
+  printf("SLArPrimaryGeneratorAction::Reset() Clear current generator settings...\n");
+  for (auto &gen : fGeneratorActions) {
+    printf("[gen] Removing %s...\n", gen.first.data());
+    if (gen.second) delete gen.second;
   }
 
-  fBoxGenerator->SetBoxLogicalVolume(volume->GetLogicalVolume()); 
-  fBoxGenerator->SetSolidTranslation(volume->GetTranslation()); 
-  fBoxGenerator->SetSolidRotation(volume->GetRotation()); 
-  return;
+  fGeneratorActions.clear(); 
 }
 
-void SLArPrimaryGeneratorAction::SetGunParticle(const G4String particle_name) 
-{
-  SLArPGunGeneratorAction* particle_gun = 
-    (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
-  particle_gun->SetParticle(particle_name); 
-
-  SLArPBombGeneratorAction* particle_bomb = 
-    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
-  particle_bomb->SetParticle(particle_name); 
-}
-
-void SLArPrimaryGeneratorAction::SetGunEnergy(const G4double ekin) 
-{
-  SLArPGunGeneratorAction* particle_gun = 
-    (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
-  particle_gun->SetParticleKineticEnergy(ekin); 
-
-  SLArPBombGeneratorAction* particle_bomb = 
-    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
-  particle_bomb->SetParticleKineticEnergy(ekin); 
-}
-
-void SLArPrimaryGeneratorAction::SetGunNumberOfParticles(const G4int n) 
-{
-  //SLArPGunGeneratorAction* particle_gun = 
-    //(SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
-  //particle_gun->SetNumberOfParticles(n); 
-
-  SLArPBombGeneratorAction* particle_bomb = 
-    (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
-  particle_bomb->SetNumberOfParticles(n); 
-}
-
-
-void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{
-  // Store Primary information id dst
-  SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-
-  if (fDirectionMode == kRandom) {
-    fGunDirection = SampleRandomDirection();
+void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
+  if ( !jgen.HasMember("type"  ) ) {
+    throw std::invalid_argument("Generator spec does not include mandatory \"type\" field");
   }
+  if ( !jgen.HasMember("label" ) ) {
+    throw std::invalid_argument("Generator spec does not include mandatory \"label\" field");
+  }
+  if( !jgen.HasMember("config") ) {
+    throw std::invalid_argument("Generator spec does not include mandatory \"config\" field");
+  };
 
-  if (fBulkGenerator->GetBulkLogicalVolume()) {
-      fBulkGenerator->ShootVertex( fGunPosition ); 
-      if (fVerbose) {
-        printf("Gun position: %.2f, %.2f, %.2f\n", 
-            fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
+  G4String label = jgen["label"].GetString(); 
+  G4String type  = jgen["type"].GetString(); 
+
+  EGenerator kGenIdx = gen::GetGeneratorIndex( type ); 
+  SLArBaseGenerator* this_gen = nullptr;
+
+  printf("[gen] Adding %s generator with label %s...\n", type.data(), label.data());
+
+  switch (kGenIdx) {
+    case (kParticleGun) : 
+      {
+        auto gen = new SLArPGunGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
       }
-  }  
- 
-  G4VUserPrimaryGeneratorAction* gen = nullptr; 
 
-  switch (fGeneratorEnum) {
-    
-    case kDecay0:
+    case (kParticleBomb) : 
       {
-        auto decay0_gen = 
-          (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0]; 
-        if (decay0_gen->HasVertexGenerator() == false) {
-          decay0_gen->SetVertexGenerator(*fBulkGenerator);
-        }
-        gen = decay0_gen; 
+        auto gen = new SLArPGunGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
       }
-      break;
 
-    case kMarley: 
+    case (kDecay0) : 
       {
-        marley::SLArMarleyGeneratorAction* marley_gen = 
-          (marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
-        marley_gen->SetVertexGenerator(fBulkGenerator); 
-        marley_gen->SetNuDirection(fGunDirection); 
-        gen = marley_gen; 
+        auto gen = new bxdecay0_g4::SLArDecay0GeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
       }
-      break;
-    
-    case kParticleGun: 
+
+    case (kMarley) : 
       {
-        SLArPGunGeneratorAction* pgun_gen = 
-          (SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
-        pgun_gen->SetParticlePosition(fGunPosition); 
-        pgun_gen->SetParticleMomentumDirection(fGunDirection); 
-        gen = pgun_gen; 
+        auto gen = new marley::SLArMarleyGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen;
+        break;
       }
-      break;
 
-    case kParticleBomb: 
+    case (kExternalGen) : 
       {
-        SLArPBombGeneratorAction* pbomb_gen = 
-          (SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
-        pbomb_gen->SetParticlePosition(fGunPosition); 
-        if (fDirectionMode == kFixed) {
-          pbomb_gen->SetParticleMomentumDirection(fGunDirection); 
-        }
-        else {
-          pbomb_gen->SetParticleMomentumDirection( G4ThreeVector(0, 0, 0) );
-        }
-        gen = pbomb_gen; 
+        auto gen = new SLArExternalGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
       }
-      break;
 
-    case kExternalGen:
+    case (kGENIE) : 
       {
-        SLArExternalGeneratorAction* ext_gen = 
-          (SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
-        ext_gen->SetVertexGenerator(fBoxGenerator); 
-        gen = ext_gen;
-      }        
-      break;
-
-    case kGENIE:
-      {
-        SLArGENIEGeneratorAction* genie_gen = 
-          (SLArGENIEGeneratorAction*)fGeneratorActions[kGENIE]; 
-        genie_gen->SetGENIEEvntExt(fGENIEEvntNum);
-        genie_gen->Initialize(fGENIEFile);
-        gen = genie_gen;
-      }        
-      break;
+        auto gen = new SLArGENIEGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
+      }
 
 #ifdef SLAR_CRY
-    case kCRY: 
+    case (kCRY) : 
       {
-        cry::SLArCRYGeneratorAction* cry_gen = 
-          (cry::SLArCRYGeneratorAction*)fGeneratorActions[kCRY]; 
-        gen = cry_gen;
+        auto gen = new cry::SLArCRYGeneratorAction(label); 
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen; 
+        break;
+      }
+#endif 
+
+#ifdef SLAR_RADSRC
+    case (kRadSrc) : 
+      {
+        auto gen = new radsrc::SLArRadSrcGeneratorAction(label);
+        gen->Configure( jgen["config"] ); 
+        this_gen = gen;
         break;
       }
 #endif
 
     default:
       {
-        printf("SLArPrimaryGeneratorAction::GeneratePrimaries() ERROR ");
-        printf("Unknown generator option.\n");
-        return;
+        gen::printGeneratorType(); 
+        char err_msg[200]; 
+        sprintf(err_msg, "Unable to find %s primary gen among available options.\n", 
+            type.data()); 
+        throw std::invalid_argument(err_msg); 
       }
-      break;
-  };
-
-  if (fIncludeBackground) {
-    printf("SLArPrimaryGeneratorAction::GeneratePrimaries: ");
-    printf("Using SLArBackgroundGeneratorAction!!\n");
-    SLArBackgroundGeneratorAction* bkgGen = 
-      (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground]; 
-    bxdecay0_g4::SLArDecay0GeneratorAction* decay0Gen = 
-      (bxdecay0_g4::SLArDecay0GeneratorAction*)fGeneratorActions[kDecay0];
-
-    bkgGen->LoadPrimaryGenerator(gen); 
-    bkgGen->LoadBackgroundGenerator(decay0Gen); 
-    bkgGen->LoadVertexGenerator(fBulkGenerator); 
-    bkgGen->PrintBackgroundModel(); 
-    gen = bkgGen;
   }
 
-  G4IonTable* ionTable = G4IonTable::GetIonTable(); 
+  fGeneratorActions.insert(std::make_pair(label, this_gen)); 
+  return;
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-  gen->GeneratePrimaries(anEvent); 
-  G4int n = anEvent->GetNumberOfPrimaryVertex(); 
-
-  if (fVerbose) {
-    printf("Primary Generator Action produced %i vertex(ices)\n", n); 
-  }
-  for (int i=0; i<n; i++) {
-    //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
-    SLArMCPrimaryInfo tc_primary;
-    G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
-    if (fVerbose) {
-      printf("vertex %i has %i particles at t = %g\n", n, np, 
-          anEvent->GetPrimaryVertex(i)->GetT0()); 
+SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
+{
+  printf("Deleting SLArPrimaryGeneratorAction...\n");
+  int igen = -1; 
+  for (auto &gen : fGeneratorActions) {
+    igen = gen.second->GetGeneratorEnum();
+    printf("igen = %i\n", igen);
+    if (gen.second) {
+      printf("Deleting gen %i\n", igen);
+      if (igen == kParticleGun) {
+        SLArPGunGeneratorAction* local = (SLArPGunGeneratorAction*)gen.second;
+        delete local;
+      }
+      else if (igen == kParticleBomb) {
+        SLArPBombGeneratorAction* local = (SLArPBombGeneratorAction*)gen.second;
+        delete local;
+      }
+      else if (igen == kDecay0) {
+        auto local = (bxdecay0_g4::SLArDecay0GeneratorAction*)gen.second;
+        delete local;
+      }
+      else if (igen == kMarley) {
+        auto local = (marley::SLArMarleyGeneratorAction*)gen.second;
+        delete local;
+      }
+      //else if (igen == kBackground) {
+        //auto local = (SLArBackgroundGeneratorAction*)gen.second;
+        //delete local;
+      //}
+      else if (igen == kExternalGen) {
+        auto local = (SLArExternalGeneratorAction*)gen.second;
+        delete local;
+      }
+      else if (igen == kGENIE) {
+        auto local = (SLArGENIEGeneratorAction*)gen.second;
+        delete local; 
+      }
+#ifdef SLAR_CRY
+      else if (igen == kCRY) {
+        auto local = (cry::SLArCRYGeneratorAction*)gen.second; 
+        delete local; 
+      }
+#endif
+#ifdef SLAR_RADSRC
+      else if (igen == kRadSrc) {
+        auto local = (radsrc::SLArRadSrcGeneratorAction*)gen.second;
+        delete local;
+      }
+#endif 
+      //gen = nullptr;
     }
-    for (int ip = 0; ip<np; ip++) {
-      //printf("getting particle %i...\n", ip); 
-      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
-      G4String name = ""; 
+  }
+  //if (fBulkGenerator) delete fBulkGenerator;
+  //if (fBoxGenerator) delete fBoxGenerator;
+  if (fGunMessenger) delete fGunMessenger;
+  printf("DONE\n");
+}
 
-      if (!particle->GetParticleDefinition()) {
-        tc_primary.SetID  (particle->GetPDGcode()); 
-        name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
-        tc_primary.SetName(name);
-        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
-      } else {
-        tc_primary.SetID  (particle->GetPDGcode());
-        name = particle->GetParticleDefinition()->GetParticleName(); 
-        tc_primary.SetName(name);
-        tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
-      }
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-      tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
-          anEvent->GetPrimaryVertex(i)->GetY0(), 
-          anEvent->GetPrimaryVertex(i)->GetZ0());
-      tc_primary.SetMomentum(
-          particle->GetPx(), particle->GetPy(), particle->GetPz(), 
-          particle->GetKineticEnergy());
-      tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
+//void SLArPrimaryGeneratorAction::ConfigBulkVertexGen(G4String vol) {
+  //fBulkGenerator->Config( vol ); 
+  //return;
+//}
+
+//void SLArPrimaryGeneratorAction::ConfigBoxSurfaceVertexGen(G4String vol) {
+  //fBoxGenerator->Config( vol ); 
+//}
+
+//void SLArPrimaryGeneratorAction::SetGunParticle(const G4String particle_name) 
+//{
+  //SLArPGunGeneratorAction* particle_gun = 
+    //(SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  //particle_gun->SetParticle(particle_name); 
+
+  //SLArPBombGeneratorAction* particle_bomb = 
+    //(SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  //particle_bomb->SetParticle(particle_name); 
+//}
+
+//void SLArPrimaryGeneratorAction::SetGunEnergy(const G4double ekin) 
+//{
+  //SLArPGunGeneratorAction* particle_gun = 
+    //(SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  //particle_gun->SetParticleKineticEnergy(ekin); 
+
+  //SLArPBombGeneratorAction* particle_bomb = 
+    //(SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  //particle_bomb->SetParticleKineticEnergy(ekin); 
+//}
+
+//void SLArPrimaryGeneratorAction::SetGunNumberOfParticles(const G4int n) 
+//{
+  ////SLArPGunGeneratorAction* particle_gun = 
+    ////(SLArPGunGeneratorAction*)fGeneratorActions[kParticleGun]; 
+  ////particle_gun->SetNumberOfParticles(n); 
+
+  //SLArPBombGeneratorAction* particle_bomb = 
+    //(SLArPBombGeneratorAction*)fGeneratorActions[kParticleBomb]; 
+  //particle_bomb->SetNumberOfParticles(n); 
+//}
+
+
+void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+{
+  // Store Primary information id dst
+  //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+
+  //if (fDirectionMode == kRandom) {
+    //fGenDirection = SampleRandomDirection();
+  //}
+
+  //if (fBulkGenerator->GetBulkLogicalVolume()) {
+      //fBulkGenerator->ShootVertex( fGunPosition ); 
+      //if (fVerbose) {
+        //printf("Gun position: %.2f, %.2f, %.2f\n", 
+            //fGunPosition.x(), fGunPosition.y(), fGunPosition.z()); 
+      //}
+  //}  
+ 
+  //G4IonTable* ionTable = G4IonTable::GetIonTable(); 
+
+  for (const auto& gen : fGeneratorActions) {
+    G4int previousNrOfVertices = anEvent->GetNumberOfPrimaryVertex();
+    gen.second->GeneratePrimaries( anEvent ); 
+    gen.second->RegisterPrimaries( anEvent, previousNrOfVertices ); 
+  }
+
+  //G4int n = anEvent->GetNumberOfPrimaryVertex(); 
+
+  //if (fVerbose) {
+    //printf("Primary Generator Action produced %i vertex(ices)\n", n); 
+  //}
+  //for (int i=0; i<n; i++) {
+    ////std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
+    //SLArMCPrimaryInfo tc_primary;
+    //G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
+    //if (fVerbose) {
+      //printf("vertex %i has %i particles at t = %g\n", n, np, 
+          //anEvent->GetPrimaryVertex(i)->GetT0()); 
+    //}
+    //for (int ip = 0; ip<np; ip++) {
+      ////printf("getting particle %i...\n", ip); 
+      //auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
+      //G4String name = ""; 
+
+      //if (!particle->GetParticleDefinition()) {
+        //tc_primary.SetID  (particle->GetPDGcode()); 
+        //name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
+        //tc_primary.SetName(name);
+        //tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
+      //} else {
+        //tc_primary.SetID  (particle->GetPDGcode());
+        //name = particle->GetParticleDefinition()->GetParticleName(); 
+        //tc_primary.SetName(name);
+        //tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
+      //}
+
+      //tc_primary.SetTrackID(particle->GetTrackID());
+      //tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+          //anEvent->GetPrimaryVertex(i)->GetY0(), 
+          //anEvent->GetPrimaryVertex(i)->GetZ0());
+      //tc_primary.SetMomentum(
+          //particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+          //particle->GetKineticEnergy());
+      //tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
       
 
-#ifdef SLAR_DEBUG
-      printf("Adding particle to primary output list\n"); 
-      tc_primary.PrintParticle(); 
+//#ifdef SLAR_DEBUG
+      //printf("Adding particle to primary output list\n"); 
+      //tc_primary.PrintParticle(); 
       //getchar();
-#endif
-      SLArAnaMgr->GetEvent().RegisterPrimary( tc_primary );
-    }
-  }
+//#endif
+      //SLArAnaMgr->GetEvent().RegisterPrimary( tc_primary );
+    //}
+  //}
 
   return;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
-  fMarleyCfg = marley_conf; 
-  delete fGeneratorActions[kMarley]; 
-  fGeneratorActions[kMarley] = new marley::SLArMarleyGeneratorAction(fMarleyCfg); 
+//void SLArPrimaryGeneratorAction::SetMarleyConf(G4String marley_conf) {
+  //fMarleyCfg = marley_conf; 
+  //delete fGeneratorActions[kMarley]; 
+  //fGeneratorActions[kMarley] = new marley::SLArMarleyGeneratorAction(fMarleyCfg); 
 
-  marley::SLArMarleyGeneratorAction* marley_gen = 
-      (marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
-    marley_gen->SetVertexGenerator(fBulkGenerator); 
-  return; 
+  //marley::SLArMarleyGeneratorAction* marley_gen = 
+      //(marley::SLArMarleyGeneratorAction*)fGeneratorActions[kMarley]; 
+    ////marley_gen->SetVertexGenerator(fBulkGenerator); 
+  //return; 
+//}
+
+//void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
+  //SLArExternalGeneratorAction* gen = 
+    //(SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
+  ////gen->SetVertexGenerator(fBulkGenerator);
+  //gen->SourceExternalConfig(external_cfg); 
+  //return; 
+//}
+
+//void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
+//{
+  //fIncludeBackground = true; 
+  //fBackgoundModelCfg = background_conf; 
+  //SLArBackgroundGeneratorAction* bkgGen = 
+    //(SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground];
+   //bkgGen->BuildBackgroundTable(fBackgoundModelCfg);
+   //return;
+//}
+
+//void SLArPrimaryGeneratorAction::SetGENIEEvntExt(G4int evntID) { // --JM
+  //// Set event ID to start simulation at
+  //printf("Setting GENIE starting event ID to %i.",evntID);
+  //fGENIEEvntNum = evntID;
+//}
+
+//void SLArPrimaryGeneratorAction::SetGENIEFile(G4String filename) { // --JM
+  //printf("Setting GENIE file as:\n\t %s.",filename.data());
+  //fGENIEFile = filename;
+//}
+
 }
-
-void SLArPrimaryGeneratorAction::SetExternalConf(G4String external_cfg) {
-  SLArExternalGeneratorAction* gen = 
-    (SLArExternalGeneratorAction*)fGeneratorActions[kExternalGen]; 
-  gen->SetVertexGenerator(fBoxGenerator);
-  gen->SourceExternalConfig(external_cfg); 
-  return; 
-}
-
-void SLArPrimaryGeneratorAction::SetBackgroundConf(G4String background_conf)
-{
-  fIncludeBackground = true; 
-  fBackgoundModelCfg = background_conf; 
-  SLArBackgroundGeneratorAction* bkgGen = 
-    (SLArBackgroundGeneratorAction*)fGeneratorActions[kBackground];
-   bkgGen->BuildBackgroundTable(fBackgoundModelCfg);
-   return;
-}
-
-void SLArPrimaryGeneratorAction::SetGENIEEvntExt(G4int evntID) { // --JM
-  // Set event ID to start simulation at
-  printf("Setting GENIE starting event ID to %i.",evntID);
-  fGENIEEvntNum = evntID;
-}
-
-void SLArPrimaryGeneratorAction::SetGENIEFile(G4String filename) { // --JM
-  printf("Setting GENIE file as:\n\t %s.",filename.data());
-  fGENIEFile = filename;
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

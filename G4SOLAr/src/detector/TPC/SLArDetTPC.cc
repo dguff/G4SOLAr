@@ -292,7 +292,7 @@ void SLArDetTPC::Init(const rapidjson::Value& jconf) {
   }
 
   if (jtpc.HasMember("electric_field")) {
-    fElectricField = SLArGeoInfo::ParseJsonVal( jtpc["electric_field"] ); 
+    fElectricField = unit::ParseJsonVal( jtpc["electric_field"] ); 
     printf("electric_field is %g kV/cm\n", fElectricField/(CLHEP::kilovolt/CLHEP::cm)); 
     auto jfield = jtpc["electric_field"].GetObj(); 
     auto jdir   = jfield["direction"].GetArray(); 
@@ -318,12 +318,12 @@ void SLArDetTPC::Init(const rapidjson::Value& jconf) {
 void SLArDetTPC::InitFieldCage(const rapidjson::Value& jconf) {
   fFieldCage = new SLArBaseDetModule(); 
   auto fc_geoInfo = fFieldCage->GetGeoInfo(); 
-  fc_geoInfo->RegisterGeoPar("corner_radius", SLArGeoInfo::ParseJsonVal(jconf["corner_radius"]));
-  fc_geoInfo->RegisterGeoPar("thickness", SLArGeoInfo::ParseJsonVal(jconf["thickness"]));
-  fc_geoInfo->RegisterGeoPar("wall_distance", SLArGeoInfo::ParseJsonVal(jconf["wall_distance"])); 
-  fc_geoInfo->RegisterGeoPar("spacing", SLArGeoInfo::ParseJsonVal(jconf["spacing"])); 
-  fc_geoInfo->RegisterGeoPar("height_long_side", SLArGeoInfo::ParseJsonVal(jconf["height_long_side"])); 
-  fc_geoInfo->RegisterGeoPar("height_short_side", SLArGeoInfo::ParseJsonVal(jconf["height_short_side"]));
+  fc_geoInfo->RegisterGeoPar("corner_radius", unit::ParseJsonVal(jconf["corner_radius"]));
+  fc_geoInfo->RegisterGeoPar("thickness", unit::ParseJsonVal(jconf["thickness"]));
+  fc_geoInfo->RegisterGeoPar("wall_distance", unit::ParseJsonVal(jconf["wall_distance"])); 
+  fc_geoInfo->RegisterGeoPar("spacing", unit::ParseJsonVal(jconf["spacing"])); 
+  fc_geoInfo->RegisterGeoPar("height_long_side", unit::ParseJsonVal(jconf["height_long_side"])); 
+  fc_geoInfo->RegisterGeoPar("height_short_side", unit::ParseJsonVal(jconf["height_short_side"]));
   
   return;
 }

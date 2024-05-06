@@ -39,6 +39,18 @@ struct trj_point {
     fLAr = in_lar;
   }
 
+  trj_point(const trj_point& right) {
+    fX = right.fX;
+    fY = right.fY;
+    fZ = right.fZ;
+    fKEnergy = right.fKEnergy;
+    fEdep = right.fEdep;
+    fNph = right.fNph; 
+    fNel = right.fNel;
+    fCopy = right.fCopy; 
+    fLAr = right.fLAr;
+  }
+
 };
 
 class SLArEventTrajectoryLite;
@@ -77,6 +89,7 @@ class SLArEventTrajectory : public TObject
     inline void SetInitKineticEne(const float& k) {fInitKineticEnergy=k;}
     inline void SetTrackLength(const float& l) {fTrackLength = l;}
     inline void SetInitMomentum(const TVector3& p) {fInitMomentum = p;}
+    inline void SetInitMomentum(const double& px, const double& py, const double& pz) {fInitMomentum.SetXYZ(px, py, pz);}
     inline void SetTime(const float& t) {fTime = t;}
     inline void SetWeight(const float& w) {fWeight = w;}
     inline void SetOriginVolCopyNo(const int& copyno) {fOriginVolCopyNo = copyno;}

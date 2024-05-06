@@ -56,7 +56,7 @@ void SLArActionInitialization::BuildForMaster() const
   SetUserAction(eventAction);
 
 
-  SetUserAction(new SLArPrimaryGeneratorAction());
+  SetUserAction(new gen::SLArPrimaryGeneratorAction());
   SetUserAction(new SLArRunAction());
   SetUserAction(trkAction);
   SetUserAction(new SLArSteppingAction(eventAction, trkAction));
@@ -72,7 +72,7 @@ void SLArActionInitialization::Build() const
   SetUserAction(eventAction);
 
 
-  SetUserAction(new SLArPrimaryGeneratorAction());
+  SetUserAction(new gen::SLArPrimaryGeneratorAction());
   SetUserAction(new SLArRunAction());
   SetUserAction(trkAction);
   SetUserAction(new SLArSteppingAction(eventAction, trkAction));

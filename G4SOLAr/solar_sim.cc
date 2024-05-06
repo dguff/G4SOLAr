@@ -18,6 +18,7 @@
 #include "G4UImanager.hh"
 
 #include "SLArUserPath.hh"
+#include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
 #include "SLArDetectorConstruction.hh"
@@ -34,6 +35,7 @@ namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
     fprintf(stderr, " solar_sim\t[-m/--macro macro_file]]\n");
+    fprintf(stderr, " \t\t[-x/--generator generator configuration file]\n");
     fprintf(stderr, " \t\t[-l/--physics_list set basic physics list (default is FTFP_BERT_HP)]\n");
     fprintf(stderr, " \t\t[-o/--output output_file_name]\n");
     fprintf(stderr, " \t\t[-d/--output_dir output_dir]\n");
@@ -79,6 +81,7 @@ int main(int argc,char** argv)
   G4String session;
   G4String output = ""; 
   G4String output_dir = ""; 
+  G4String generator_file = ""; 
   G4String geometry_file = "./assets/geometry/geometry.json"; 
   G4String material_file = "./assets/materials/materials_db.json"; 
   G4bool   do_cerenkov = false; 
@@ -93,8 +96,8 @@ int main(int argc,char** argv)
 #endif
 
   G4long myseed = 345354;
-  const char* short_opts = "m:o:d:l:u:t:r:g:p:b:c:h";
-  static struct option long_opts[13] = 
+  const char* short_opts = "m:o:d:l:x:u:t:r:g:p:b:c:h";
+  static struct option long_opts[14] = 
   {
     {"macro", required_argument, 0, 'm'}, 
     {"output", required_argument, 0, 'o'}, 
@@ -103,6 +106,7 @@ int main(int argc,char** argv)
     {"session", required_argument, 0, 'u'}, 
     {"threads", required_argument, 0, 't'}, 
     {"seed", required_argument, 0, 'r'}, 
+    {"generator", required_argument, 0, 'x'},
     {"geometry", required_argument, 0, 'g'}, 
     {"materials", required_argument, 0, 'p'},
     {"bias", required_argument, 0, 'b'},
@@ -129,6 +133,12 @@ int main(int argc,char** argv)
       case 'd': {
         output_dir = optarg;
         printf("solar_sim output directory: %s\n", output_dir.c_str());  
+        break;
+      }
+
+      case 'x' : {
+        generator_file = optarg;
+        printf("getting generator configuration from %s\n", generator_file.data()); 
         break;
       }
 
@@ -239,6 +249,10 @@ int main(int argc,char** argv)
   printf("storing seed in analysis manager: %ld - %ld\n", 
       myseed, G4Random::getTheSeed());
 
+
+  // Physics list
+  printf("Creating Phiscs Lists...\n");
+  auto physicsList = new SLArPhysicsList(physName, do_cerenkov);
   // External background biasing option
 #ifdef SLAR_EXTERNAL
 #ifndef SLAR_EXTERNAL_PARTICLE
@@ -247,24 +261,13 @@ int main(int argc,char** argv)
   const char* ext_particle = SLAR_EXTERNAL_PARTICLE;
   G4GeometrySampler* mgs = nullptr; 
   G4bool activate_importance_sampling = true;
-  if (G4ParticleTable::GetParticleTable()->FindParticle(ext_particle) == nullptr) {
-    activate_importance_sampling = false;   
-  }
-  else {
-    mgs = new G4GeometrySampler(detector->GetPhysicalWorld(), ext_particle);
-  }
+  mgs = new G4GeometrySampler(detector->GetPhysicalWorld(), ext_particle);
   printf("Built with SLAR_EXTERNAL flag for particle %s\n", ext_particle);
-#endif
-#endif
-
-
-
-  // Physics list
-  printf("Creating Phiscs Lists...\n");
-  auto physicsList = new SLArPhysicsList(physName, do_cerenkov);
-#if (defined SLAR_EXTERNAL &&  defined SLAR_EXTERNAL_PARTICLE)
   if (activate_importance_sampling) physicsList->RegisterPhysics(new G4ImportanceBiasing(mgs));
 #endif
+#endif
+
+
   if ( do_bias ) {
     auto biasingPhysics = new G4GenericBiasingPhysics("biasing_"+bias_particle);  
     if (bias_process.size() > 0) biasingPhysics->Bias(bias_particle, bias_process); 
@@ -275,7 +278,7 @@ int main(int argc,char** argv)
     physicsList->RegisterPhysics( biasingPhysics ); 
   }
 
-  runManager-> SetUserInitialization(physicsList);
+  runManager->SetUserInitialization(physicsList);
 
   // User action initialization
   printf("Creating User Action...\n");
@@ -285,6 +288,12 @@ int main(int argc,char** argv)
   //
   printf("RunManager initialization...\n");
   runManager->Initialize();
+
+  if (generator_file.empty() == false) {
+    gen::SLArPrimaryGeneratorAction* gen = 
+      (gen::SLArPrimaryGeneratorAction*)runManager->GetUserPrimaryGeneratorAction(); 
+    gen->Configure( generator_file ); 
+  }
 
   #ifdef SLAR_EXTERNAL
   if (activate_importance_sampling) detector->CreateImportanceStore(); 

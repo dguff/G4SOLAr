@@ -66,13 +66,14 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 #endif
 
   G4SDManager* sdManager = G4SDManager::GetSDMpointer();
+  auto detConstruction = (SLArDetectorConstruction*)
+    G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+
   if (fTileHCollID == -2) 
     fTileHCollID  = sdManager->GetCollectionID("ReadoutTileColl"  );
   if (fSuperCellHCollID == -5) 
     fSuperCellHCollID = sdManager->GetCollectionID("SuperCellColl"); 
   if (fLArHCollID.empty()) {
-    auto detConstruction = (SLArDetectorConstruction*)
-      G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
     for (const auto &tpc : detConstruction->GetDetTPCs() ) {
       auto coll_id = 
         sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
@@ -82,13 +83,16 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
 
   #ifdef SLAR_EXTERNAL
   if (fExtScorerHCollID.empty()) {
-    auto scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume("cavern_scorer_pv"); 
-    if (scorer_pv) {
-      const auto sd = (SLArExtScorerSD*)scorer_pv->GetLogicalVolume()->GetSensitiveDetector(); 
-      fExtScorerHCollID.push_back( sd->GetHitsCollectionID() ); 
-    }
-    else {
-      printf("SLArEventAction::BeginofEventAction() WARNING cannot find volume 'cavern_scorer_pv' in Pysical Volume Store\n");
+    auto& ext_scorer_list = detConstruction->GetVecExtScorerPV();
+    for (const auto& scorer_pv : ext_scorer_list) {
+      if (scorer_pv) {
+        const auto sd = (SLArExtScorerSD*)scorer_pv->GetLogicalVolume()->GetSensitiveDetector(); 
+        fExtScorerHCollID.push_back( sd->GetHitsCollectionID() ); 
+      }
+      else {
+        printf("SLArEventAction::BeginofEventAction() WARNING cannot find volume '%s' in Pysical Volume Store\n",
+            scorer_pv->GetName().data());
+      }
     }
   }
   #endif // DEBUG
@@ -139,30 +143,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     }   
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
-#ifdef SLAR_EXTERNAL
-    G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
-#endif 
-
-    //RecordEventLAr( event );
-
-    if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
-      RecordEventReadoutTile ( event, verbose );
-    }
-
-    if (verbose > 1) printf("Recording SuperCell hits...\n");
-    RecordEventSuperCell( event, verbose );
-    if (verbose > 1) printf("DONE\n");
-     
     auto& slar_event = SLArAnaMgr->GetEvent();
     slar_event.SetEvNumber(event->GetEventID());
-
-    // apply zero suppression to charge signal
-    for (auto &evAnode : slar_event.GetEventAnode()) {
-      short thrs = evAnode.second.GetZeroSuppressionThreshold(); 
-      if (thrs > 0) {
-        evAnode.second.ApplyZeroSuppression();
-      }
-    }
 
     // set global edep, electrons and photon counts per primary
     auto& primaries = slar_event.GetPrimaries(); 
@@ -183,7 +165,27 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       primary.SetTotalScintPhotons( nph ); 
     }
 
-#ifdef SLAR_EXTERNAL
+#ifndef SLAR_EXTERNAL
+    //RecordEventLAr( event );
+
+    if ( !SLArAnaMgr->GetAnodeCfg().empty() ) {
+      RecordEventReadoutTile ( event, verbose );
+    }
+
+    if (verbose > 1) printf("Recording SuperCell hits...\n");
+    RecordEventSuperCell( event, verbose );
+    if (verbose > 1) printf("DONE\n");
+     
+    // apply zero suppression to charge signal
+    for (auto &evAnode : slar_event.GetEventAnode()) {
+      short thrs = evAnode.second.GetZeroSuppressionThreshold(); 
+      if (thrs > 0) {
+        evAnode.second.ApplyZeroSuppression();
+      }
+    }
+    #else
+    G4int ext_scorer_hits = RecordEventExtScorer( event, verbose ); 
+
     for (auto &primary : primaries) {
       if (ext_scorer_hits == 0) primary.GetTrajectories().clear(); 
     }
@@ -522,7 +524,6 @@ int SLArEventAction::FindAncestorID(int trkid) {
   //for (const SLArMCPrimaryInfo& p : primaries) {
     //printf("%s - PID: %i\n", p.GetParticleName().Data(), p.GetTrackID());
   //}
-  ////getchar(); 
 //#endif
 
   while ( !caught ) {
@@ -540,7 +541,7 @@ int SLArEventAction::FindAncestorID(int trkid) {
 
     trkid = pid; 
 //#ifdef SLAR_DEBUG
-//    getchar(); 
+    //getchar(); 
 //#endif
   }
 

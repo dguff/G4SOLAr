@@ -40,12 +40,12 @@ SLArCfgAnode::~SLArCfgAnode() {
   fAnodeLevelsMap.clear(); 
 }
 
-SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelBinCoord(const double& x0, const double& x1) {
-  SLArCfgAnode::SLArPixIdxCoord pidx = {-9}; 
+SLArCfgAnode::SLArPixIdx SLArCfgAnode::GetPixelBinIndex(const double& x0, const double& x1) {
+  SLArCfgAnode::SLArPixIdx pidx = {-9, -9, -9}; 
 
   int ibin = fAnodeLevelsMap.at(0)->FindBin(x0, x1); 
 
-  if (ibin <= 0) return pidx;
+  if (ibin < 0) return pidx;
   //SLArCfgMegaTile& megatile = GetBaseElementByBin(ibin);
   SLArCfgMegaTile& megatile = GetBaseElement(ibin-1);
   //if (megatile) {
@@ -88,8 +88,8 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelBinCoord(const double& x0, c
   return pidx; 
 }
 
-SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelCoord(const double& x0, const double& x1) {
-  SLArCfgAnode::SLArPixIdxCoord pidx = {-9}; 
+SLArCfgAnode::SLArPixIdx SLArCfgAnode::GetPixelIndex(const double& x0, const double& x1) {
+  SLArCfgAnode::SLArPixIdx pidx = {-9}; 
 
   //printf("original coordinates: %g, %g\n", x0, x1);
   int ibin = fAnodeLevelsMap.at(0)->FindBin(x0, x1); 
@@ -122,7 +122,6 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelCoord(const double& x0, cons
   local_x1 = x1 - t_x1;
   //printf("looking for bin at coordinates: %g, %g\n", local_x0, local_x1); 
   pidx[2] = fAnodeLevelsMap.at(2)->FindBin(local_x0, local_x1); 
-  //printf("pix id %i\n", pidx[2]);
   //} 
 //#ifdef SLAR_DEBUG
   //else {
@@ -140,7 +139,6 @@ SLArCfgAnode::SLArPixIdxCoord SLArCfgAnode::GetPixelCoord(const double& x0, cons
 
   return pidx; 
 }
-
 
 void SLArCfgAnode::RegisterMap(size_t ilevel, TH2Poly* hmap) {
   fAnodeLevelsMap.at(ilevel) = std::unique_ptr<TH2Poly>(hmap); 
@@ -160,7 +158,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
     // Returns the map at tile-level for a specfied MTile
     case 1:
       {
-        SLArCfgMegaTile& cfgMegaTile  = GetBaseElementByID(idx[0]); 
+        SLArCfgMegaTile& cfgMegaTile  = GetBaseElement(idx[0]); 
         //if (!cfgMegaTile) {
           //return nullptr;
         //}
@@ -178,8 +176,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
           //return nullptr; 
         //}
         SLArCfgReadoutTile& cfgTile = cfgMegaTile.GetBaseElement(idx[1]);
-        auto tile_pos = 
-          TVector3( cfgTile.GetPhysX(), cfgTile.GetPhysY(), cfgTile.GetPhysZ() ); 
+        TVector3 tile_pos( cfgTile.GetPhysX(), cfgTile.GetPhysY(), cfgTile.GetPhysZ() ); 
         //double tile_xpos = cfgTile->GetPhysZ(); 
         //double tile_ypos = cfgTile->GetPhysY(); 
 

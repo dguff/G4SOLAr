@@ -13,11 +13,7 @@
 #include <map>
 #include <vector>
 
-//#include "TNamed.h"
-//#include "TVector3.h"
 #include "TH2Poly.h"
-//#include "config/SLArCfgReadoutTile.hh"
-//#include "config/SLArCfgSuperCell.hh"
 #include <config/SLArCfgBaseModule.hh>
 
 template<class TBaseModule>
@@ -40,7 +36,16 @@ class SLArCfgAssembly : public SLArCfgBaseModule {
       return fElementsMap.at(module_idx); 
     }; 
     inline TBaseModule& GetBaseElementByID(int const id) {
-      int module_idx = fIDtoIdxMap.find(id)->second;
+      auto itr = fIDtoIdxMap.find(id); 
+      if (itr == fIDtoIdxMap.end()) {
+        // TODO: handle this with by throwing an exception
+        printf("WARNING: Cannot find base element with id %i in %s\n", id, fName.Data());
+        printf("IDtoIdx map has size: %lu\n", fIDtoIdxMap.size()); 
+        for (const auto& p : fIDtoIdxMap) {
+          printf("ID: %i -> idx: %i\n", p.first, p.second); 
+        }
+      }
+      int module_idx = itr->second;
       return fElementsMap.at(module_idx); 
     }
     inline const TBaseModule& GetBaseElementByID(const int id) const {

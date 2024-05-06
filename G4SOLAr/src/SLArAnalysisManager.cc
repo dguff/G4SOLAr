@@ -87,7 +87,7 @@ SLArAnalysisManager::~SLArAnalysisManager()
   if (fRootFile) {
     if (fRootFile->IsOpen()) {
       fRootFile->cd();
-      fEventTree->Write();
+      if (fEventTree) fEventTree->Write();
 #ifdef SLAR_EXTERNAL
       fExternalsTree->Write(); 
 #endif // SLAR_EXTERNAL

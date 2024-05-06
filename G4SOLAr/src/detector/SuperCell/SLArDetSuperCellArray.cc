@@ -54,7 +54,7 @@ void SLArDetSuperCellArray::Init(const rapidjson::Value& jconf) {
 
   auto jpos = jarray["position"].GetObject(); 
   int idim = 0; 
-  G4double vunit = SLArGeoInfo::Unit2Val(jpos["unit"]); 
+  G4double vunit = unit::Unit2Val(jpos["unit"]); 
   for (const auto &v : jpos["xyz"].GetArray()) {
     fPosition[idim] = (v.GetDouble() * vunit); 
     fGeoInfo->RegisterGeoPar("pos_"+xyz_suffix[idim], fPosition[idim]); 
@@ -62,7 +62,7 @@ void SLArDetSuperCellArray::Init(const rapidjson::Value& jconf) {
   }
 
   auto jrot = jarray["rot"].GetObject(); 
-  vunit = SLArGeoInfo::Unit2Val(jrot["unit"]); 
+  vunit = unit::Unit2Val(jrot["unit"]); 
   assert(jrot.HasMember("val")); 
   assert(jrot["val"].IsArray()); 
   assert(jrot["val"].GetArray().Size() == 3);

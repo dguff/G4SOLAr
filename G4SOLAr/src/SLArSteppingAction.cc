@@ -128,6 +128,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
     if (trkInfo->CheckStoreTrajectory() == true) {
       if (trajectory->GetPoints().empty()) {
         // record origin point
+        //printf("recording origin point:\n"); 
         trj_point step_point = set_evtrj_point( thePrePoint, 0, 0 ); 
         trajectory->RegisterPoint(step_point); 
       }
@@ -136,6 +137,7 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
         //printf("SLArSteppingAction::here we go\n"); 
         //printf("trajectory has %lu points\n", trajectory->GetPoints().size());
         trj_point step_point = set_evtrj_point( thePostPoint, n_el, n_ph ); 
+        step_point.fEdep = step->GetTotalEnergyDeposit(); 
         trajectory->RegisterPoint(step_point); 
       }
     }

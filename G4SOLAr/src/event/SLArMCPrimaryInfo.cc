@@ -14,7 +14,7 @@ ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
   TNamed(),
-  fID(0), fTrkID(0),fEnergy(0.),
+  fID(0), fTrkID(0), fGeneratorLabel(), fEnergy(0.),
   fTotalEdep(0.), fTotalLArEdep(0), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
   fVertex(3, 0.), fMomentum(3, 0.)
 {
@@ -23,7 +23,7 @@ SLArMCPrimaryInfo::SLArMCPrimaryInfo() :
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
   : TNamed(p), 
-    fID(p.fID), fTrkID(p.fTrkID), fEnergy(p.fEnergy), 
+    fID(p.fID), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
     fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
     fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
     fVertex(p.fVertex), fMomentum(p.fMomentum) 
@@ -60,6 +60,7 @@ void SLArMCPrimaryInfo::ResetParticle()
 {
   fID           = 0;
   fTrkID        = 0; 
+  fGeneratorLabel = "";
   fName         = "";
   fTitle        = "";
   fEnergy       = 0.;
@@ -81,6 +82,7 @@ void SLArMCPrimaryInfo::ResetParticle()
 void SLArMCPrimaryInfo::PrintParticle() const
 {
   std::cout << "SLAr Primary Info: " << std::endl;
+  std::cout << "Generator:" << fGeneratorLabel << std::endl;
   std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 

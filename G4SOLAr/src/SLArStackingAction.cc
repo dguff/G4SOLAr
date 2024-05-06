@@ -121,7 +121,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
             momentum_4); 
         //std::printf("trkID: %i, ParentID: %i, pdg code: %i\n", 
             //aTrack->GetTrackID(), aTrack->GetParentID(), trkIdHelp.pdg); 
-        if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp)) {
+        if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp) ) {
           creatorProc = fEventAction->GetProcessExtraInfo()[trkIdHelp];
         }
       }
@@ -139,8 +139,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       //trajectory->SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
       auto& vertex_momentum = aTrack->GetMomentumDirection();
-      trajectory->SetInitMomentum( TVector3(
-            vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() ) );
+      trajectory->SetInitMomentum( vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() );
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
@@ -211,7 +210,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 
 
       auto generatorAction = 
-        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
+        (gen::SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
       if (generatorAction->DoTraceOptPhotons() == false) {
         kClassification = G4ClassificationOfNewTrack::fKill;
       }

@@ -21,6 +21,7 @@ class G4UIcommand;
 // This project:
 #include "SLArDecay0GeneratorAction.hh"
 
+namespace gen {
 namespace bxdecay0_g4 {
 
   /// \brief BxDecay0 Geant4 primary generator messenger
@@ -123,7 +124,7 @@ namespace bxdecay0_g4 {
   };
   
 } // end of namespace bxdecay0_g4 
-
+}
 
 
 

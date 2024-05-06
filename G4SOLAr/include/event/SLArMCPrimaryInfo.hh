@@ -25,6 +25,7 @@ class SLArMCPrimaryInfo : public TNamed
     void SetMomentum(const double& px, const double& py, const double& pz, const double&   ene);
     inline void SetID(const int& id) {fID = id;}
     inline void SetTrackID(const int& id) {fTrkID = id;}
+    inline void SetGeneratorLabel(const std::string gen_label) {fGeneratorLabel = gen_label;}
     inline void SetTime(const double& time) {fTime = time;}
     inline void SetTotalEdep(const float& edep) {fTotalEdep = edep;}
     inline void SetTotalLArEdep(const float& edep) {fTotalLArEdep = edep;}
@@ -36,6 +37,8 @@ class SLArMCPrimaryInfo : public TNamed
     inline std::vector<double> GetVertex() const {return fVertex;}
     inline double GetEnergy() const {return fEnergy;}
     inline int GetCode() const {return fID;}
+    inline TString GetGeneratorLabel() {return fGeneratorLabel;}
+    inline TString GetGeneratorLabel() const {return fGeneratorLabel;}
     inline double GetTime() const {return fTime;}
     inline double GetTotalEdep() const {return fTotalEdep;}
     inline double GetTotalLArEdep() const {return fTotalLArEdep;}
@@ -62,6 +65,7 @@ class SLArMCPrimaryInfo : public TNamed
   private:
     Int_t fID; 
     Int_t fTrkID;
+    TString fGeneratorLabel;
     Double_t fEnergy;
     Double_t fTime;
     Double_t fTotalEdep;

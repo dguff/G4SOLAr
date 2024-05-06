@@ -78,7 +78,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
     G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
-    std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
+    //! Get the vector containing the SuperCell Physical Volumes
+    inline std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV() {return fSuperCellsPV;}
+    //! Get the vector containing the Physical Volumes of volumes set as ExtScorer
+    inline std::vector<G4VPhysicalVolume*>&GetVecExtScorerPV() {return fExtScorerPV;}
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file
@@ -88,6 +91,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void                            ConstructCryostatScorer(); 
     //! Set anode visualization attributes 
     void                            SetAnodeVisAttributes(const int depth = 0); 
+    //! Add External Scorer Volume
+    void                            AddExternalScorer(const G4String phys_volume_name, const G4String alias);
 
   private:
     //! Detector description initilization
@@ -115,6 +120,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4VPhysicalVolume* fWorldPhys; //!< World physical volume
     G4VPhysicalVolume* fCavernPhys;//!< Cavern physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
+    std::vector<G4VPhysicalVolume*> fExtScorerPV;
     G4String GetFirstChar(G4String line);
     
     //! Construct Cavern

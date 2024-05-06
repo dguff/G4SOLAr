@@ -91,7 +91,7 @@ SLArEventTile& SLArEventAnode::RegisterHit(const SLArEventPhotonHit& hit) {
   //}
 }
 
-SLArEventChargePixel& SLArEventAnode::RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixID, const SLArEventChargeHit& hit) {
+SLArEventChargePixel& SLArEventAnode::RegisterChargeHit(const SLArCfgAnode::SLArPixIdx& pixID, const SLArEventChargeHit& hit) {
   const int mgtile_idx = pixID.at(0);
   const int tile_idx = pixID.at(1); 
   const int pix_idx = pixID.at(2); 
