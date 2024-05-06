@@ -167,6 +167,9 @@ int main (int argc, char *argv[]) {
         if (mt.GetNChargeHits() == 0) continue;
 
         const auto& mt_cfg = anode_cfg->GetBaseElement(mt_itr.first);
+        
+        ch_analyzer.set_megatile_config( &mt_cfg ); 
+
         const auto& t_map = mt.GetConstTileMap(); 
         for (const auto &t_itr : t_map) {
           const auto& t = t_itr.second;

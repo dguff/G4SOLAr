@@ -61,18 +61,29 @@ int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UI
 
   //printf("%i: %p\n", pix_bin-1, static_cast<void*>(bin)); 
   if (bin != nullptr) {
-    TVector3 pad_pos = get_bin_center( bin ); 
+    TVector3 pad_pos = get_bin_center( bin, fCfgAnode->GetAxis0(), fCfgAnode->GetAxis1() ); 
     TVector3 t_phys( fCfgTile->GetPhysX(), fCfgTile->GetPhysY(), fCfgTile->GetPhysZ() ); 
     TVector3 anode_pos( fCfgAnode->GetX(), fCfgAnode->GetY(), fCfgAnode->GetZ()); 
-    TVector3 pad_phys = pad_pos.Transform(fRot) ;
-    TVector3 hit_phys = t_phys + pad_phys ;
+    TVector3 mt_pos ( fCfgMegaTile->GetX(), fCfgMegaTile->GetY(), fCfgMegaTile->GetZ()); 
+    TVector3 t_pos ( fCfgTile->GetX(), fCfgTile->GetY(), fCfgTile->GetZ()); 
+
+    TVector3 pad_anode_pos = mt_pos + t_pos;
+
+    TVector3 pad_anode_phys = pad_anode_pos.Transform(fRot) + anode_pos + pad_pos;
+    
+    //printf("ANODE %i: anode_pos : %.2f, %.2f, %.2f mm\n", fCfgAnode->GetID(), anode_pos.x(), anode_pos.y(), anode_pos.z()); 
+    //printf("MT %i: mt_pos: %.2f, %.2f, %.2f\n", fCfgMegaTile->GetIdx(), mt_pos.x(), mt_pos.y(), mt_pos.z());
+    //printf("T %i: t_pos: %.2f, %.2f, %.2f\n", fCfgTile->GetIdx(), t_pos.x(), t_pos.y(), t_pos.z());
+    //printf("P pos: %.2f, %.2f, %.2f mm\n", pad_pos.x(), pad_pos.y(), pad_pos.z()); 
+
+    //printf("pad_anode_pos: %.2f, %.2f, %.2f mm\n", pad_anode_pos.x(), pad_anode_pos.y(), pad_anode_pos.z()); 
+    //printf("pad_anode_phys: %.2f, %.2f, %.2f mm\n", pad_anode_phys.x(), pad_anode_phys.y(), pad_anode_phys.z()); 
+    //getchar();
+
+    TVector3 hit_phys = pad_anode_phys ;
     TVector3 drift_coordinate = fDriftVelocity * trigger_t * fClockUnit * (*fDriftDirection);
     TVector3 hit_coordinates = hit_phys + drift_coordinate;
     
-    //printf("t_phys: %.2f, %.2f, %.2f mm\n", t_phys.x(), t_phys.y(), t_phys.z()); 
-    //printf("anode_phys: %.2f, %.2f, %.2f mm\n", anode_pos.x(), anode_pos.y(), anode_pos.z()); 
-    //printf("hit_phys: %.2f, %.2f, %.2f mm\n", hit_phys.x(), hit_phys.y(), hit_phys.z()); 
-    //getchar();
     hit.x = hit_coordinates.x(); 
     hit.y = hit_coordinates.y(); 
     hit.z = hit_coordinates.z(); 
@@ -93,7 +104,7 @@ int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UI
   return 1;
 }
 
-TVector3 TChannelAnalyzer::get_bin_center(TH2PolyBin* bin) {
+TVector3 TChannelAnalyzer::get_bin_center(TH2PolyBin* bin, const TVector3& axis_x, const TVector3& axis_y) {
   TGraph* g = static_cast<TGraph*>(bin->GetPolygon());
   double x = 0.; 
   double y = 0.;
@@ -104,7 +115,7 @@ TVector3 TChannelAnalyzer::get_bin_center(TH2PolyBin* bin) {
 
   x /= g->GetN(); 
   y /= g->GetN(); 
-  TVector3 bin_pos(y, 0., x);
+  TVector3 bin_pos = axis_x*x + axis_y*y;
 
   return bin_pos;
 }

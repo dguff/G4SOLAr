@@ -25,6 +25,7 @@ class TChannelAnalyzer {
       fCfgAnode = anode_cfg;
       fRot.SetXEulerAngles( anode_cfg->GetPhi(), anode_cfg->GetTheta(), anode_cfg->GetPsi() );      
     }
+    inline void set_megatile_config(const SLArCfgMegaTile* mt_cfg) {fCfgMegaTile = mt_cfg;}
     inline void set_tile_config(const SLArCfgReadoutTile* tile_cfg) {fCfgTile = tile_cfg;}
     inline void set_tpc_id(const Int_t itpc) {fTPCID = itpc;} 
 
@@ -40,10 +41,11 @@ class TChannelAnalyzer {
     TRotation fRot = {};
     const SLArCfgReadoutTile* fCfgTile = {}; 
     SLArCfgAnode* fCfgAnode = {};
+    const SLArCfgMegaTile* fCfgMegaTile = {};
     const TVector3* fDriftDirection = {};
 
     int record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainers_t& hitvars);
-    TVector3 get_bin_center(TH2PolyBin* bin);
+    TVector3 get_bin_center(TH2PolyBin* bin, const TVector3& axis_x, const TVector3& axis_y);
 };
 
 
