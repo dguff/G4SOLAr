@@ -1,0 +1,18 @@
+{
+  "generator" : {
+    "type" : "marley", 
+    "label" : "marley_test", 
+    "config" : {
+      "marley_config_path" : "assets/marley_cfg/b8_osc_spect_CC_nue.js", 
+      "direction" : "isotropic", 
+      "vertex_gen" : {
+        "type" : "bulk", 
+        "config" : {
+          "volume" : "TPC11", 
+          "fiducial_fraction" : 0.75, 
+          "avoid_daughters" : false
+        }
+      }
+    }
+  }
+}

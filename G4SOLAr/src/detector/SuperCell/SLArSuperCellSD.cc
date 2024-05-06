@@ -59,13 +59,13 @@ SLArSuperCellSD::~SLArSuperCellSD()
 
 void SLArSuperCellSD::Initialize(G4HCofThisEvent* hce)
 {
-    fHitsCollection 
-      = new SLArSuperCellHitsCollection(SensitiveDetectorName,collectionName[0]);
-    if (fHCID<0)
-    { fHCID = G4SDManager::GetSDMpointer()
-              ->GetCollectionID(fHitsCollection); }
+  fHitsCollection 
+    = new SLArSuperCellHitsCollection(SensitiveDetectorName,collectionName[0]);
+  if (fHCID<0) { 
+    fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); 
+  }
 
-    hce->AddHitsCollection(fHCID,fHitsCollection);
+  hce->AddHitsCollection(fHCID,fHitsCollection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,6 +78,15 @@ G4bool SLArSuperCellSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
+
+
+#ifdef SLAR_DEBUG
+  printf("SLArSuperCellSD::ProcessHits(): processing %s [%i] TPC hit\n", 
+      step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+      step->GetTrack()->GetTrackID());
+  //getchar(); 
+#endif
+
   //if (step->GetTrack()->GetDynamicParticle()
       //->GetDefinition()->GetParticleName() != "opticalphoton") {
 
@@ -110,6 +119,13 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   //need to know if this is an optical photon
   if(track->GetDefinition()
      != G4OpticalPhoton::OpticalPhotonDefinition()) return false;
+#ifdef SLAR_DEBUG
+  printf("SLArSuperCellSD::ProcessHits_constStep(): processing %s [%i] TPC hit\n", 
+      step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+      step->GetTrack()->GetTrackID());
+  //getchar(); 
+#endif
+
 
   G4double phEne = 0*CLHEP::eV;
 
@@ -133,7 +149,7 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
   {
     // Get the creation process of optical photon
     G4String procName = "";
-    if (track->GetTrackID() != 1) // make sure consider only secondaries
+    if (track->GetCreatorProcess()) // make sure consider only secondaries
     {
       procName = track->GetCreatorProcess()->GetProcessName();
     }
@@ -145,12 +161,13 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
     hit->SetWorldPos(worldPos);
     hit->SetLocalPos(localPos);
     hit->SetTime(preStepPoint->GetGlobalTime());
-    //for (int i=0; i<5; i++) {
-      //printf("[%i] volume: %s - copyNo: %i\n", 
-          //i, touchable->GetVolume(i)->GetName().data(), touchable->GetCopyNumber(i));
-    //}
-    //getchar(); 
-
+    if (verboseLevel > 2) {
+      for (int i=0; i<5; i++) {
+        printf("[%i] volume: %s - copyNo: %i\n", 
+            i, touchable->GetVolume(i)->GetName().data(), touchable->GetCopyNumber(i));
+      }
+      //getchar(); 
+    }
     //hit->SetSuperCellIdx(postStepPoint->
         //GetTouchableHandle()->GetCopyNumber(1));
     hit->SetSuperCellNo( touchable->GetCopyNumber(1) ); 
@@ -158,6 +175,7 @@ G4bool SLArSuperCellSD::ProcessHits_constStep(const G4Step* step,
     hit->SetSuperCellArrayNo( touchable->GetCopyNumber(3) ); 
 
     hit->SetPhotonProcess(procName);
+    hit->SetProducerID( track->GetParentID() );
     
     fHitsCollection->insert(hit);
   }

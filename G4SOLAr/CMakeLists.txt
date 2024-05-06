@@ -13,6 +13,24 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  message(STATUS "DEBUG: Adding '-g' option for gdb debugging")
+endif()
+
+#----------------------------------------------------------------------------
+# Define few SoLAr-sim options
+option(SLAR_PROFILE "Enbale profiling with gprof" OFF)
+option(SLAR_EXTERNAL "Build code with special external background features" OFF)
+option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
+option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
+option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
+
+if (SLAR_PROFILE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+  message(STATUS "Building solar_sim with gprof profiling feature")
+endif()
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -27,6 +45,20 @@ endif()
 
 find_package(ROOT REQUIRED COMPONENTS RIO Core)
 
+if (DEFINED ENV{CRYHOME}) 
+  set(SLAR_CRY_INTERFACE "ON")
+  message(STATUS "Found CRY package at $ENV{CRYHOME}. Building CRY interface classes")
+  set(CRY_INCLUDE_DIRS $ENV{CRYHOME}/src)
+  set(CRY_LIBRARIES $ENV{CRYHOME}/lib/libCRY.a)
+endif()
+
+if (DEFINED ENV{RADSRC_HOME})
+  set(SLAR_RADSRC_INTERFACE "ON")
+  message(STATUS "Found RadSrc package at $ENV{RADSRC_HOME}. Building RadSrc interface classes")
+  set(RADSRC_INCLUDE_DIRS $ENV{RADSRC_HOME}/src/libradsrc)
+  set(RADSRC_LIBRARIES $ENV{RADSRC_HOME}/lib/libradsrc.a)
+endif()
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
@@ -39,7 +71,7 @@ message(STATUS "Geant4 GDML SUPPORT: ${Geant4_gdml_FOUND}")
 set(G4SOLAR_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
 if (NOT G4SOLAR_EXT_DIR)
-  set(G4SOLAR_EXT_DIR   "${PROJECT_SOURCE_DIR}/extern" )
+  set(G4SOLAR_EXT_DIR   "${PROJECT_SOURCE_DIR}/extern/install" )
 endif()
 set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
 set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
@@ -52,6 +84,7 @@ set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 # cmakelists in there
 #
 # 1. RapidJSON
+message(STATUS "G4SOLAR_EXT_DIR set to ${G4SOLAR_EXT_DIR}")
 include(ExternalProject)
 if(NOT RAPIDJSON_DIR)
   set(RAPIDJSON_DIR "${G4SOLAR_EXT_DIR}/rapidjson")
@@ -66,6 +99,9 @@ find_package(BxDecay0 REQUIRED COMPONENTS Geant4 CONFIG PATHS ${BXDECAY0_DIR} NO
 if(BxDecay0_FOUND)
   message(STATUS "BxDecay0 found: include at ${BxDecay0_INCLUDE_DIR}")
   list(APPEND CMAKE_PREFIX_PATH ${BXDECAY0_DIR})
+endif()
+if (RapidJSON_FOUND)
+  message(STATUS "RapidJSON found: include at ${RapidJSON_INCLUDE_DIR}")
 endif()
 
 if(NOT MARLEY_DIR)
@@ -99,7 +135,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/physics
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
-                    ${RapidJSON_INCLUDE_DIR}
+                    ${RapidJSON_INCLUDE_DIR}/..
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 )
@@ -129,6 +165,18 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
                     )
+
+if (SLAR_CRY_INTERFACE)
+  include_directories(${CRY_INCLUDE_DIRS})
+  file(GLOB cry_sources ${G4SOLAR_SRC_DIR}/cry/*.cc)
+  file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
+endif()
+
+if (SLAR_RADSRC_INTERFACE)
+  include_directories(${RADSRC_INCLUDE_DIRS})
+  file(GLOB radsrc_sources ${G4SOLAR_SRC_DIR}/radsrc/*.cc)
+  file(GLOB radsrc_headers ${G4SOLAR_INCLUDE_DIR}/radsrc/*.hh)
+endif()
 
 add_definitions(${ROOT_CXX_FLAGS})
 
@@ -198,7 +246,18 @@ execute_process(
 # Add the executable, and link it to the Geant4 libraries
 #
 
-add_executable(solar_sim solar_sim.cc ${sources} ${headers})
+if (SLAR_CRY_INTERFACE)
+  if (SLAR_RADSRC_INTERFACE) 
+    add_executable(solar_sim solar_sim.cc 
+      ${sources} ${cry_sources} ${radsrc_sources} 
+      ${headers} ${cry_headers} ${radsrc_headers})
+  else()
+    add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
+  endif()
+else()
+  add_executable(solar_sim solar_sim.cc ${sources} ${headers})
+endif()
+
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
 target_link_libraries(solar_sim SLArMCEvent)
@@ -206,11 +265,20 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+if (SLAR_CRY_INTERFACE)
+  target_link_libraries(solar_sim ${CRY_LIBRARIES})
+endif()
+if (SLAR_RADSRC_INTERFACE) 
+  target_link_libraries(solar_sim ${RADSRC_LIBRARIES})
+endif()
+
 target_compile_definitions(solar_sim 
   PUBLIC 
   $<$<CONFIG:Debug>:SLAR_DEBUG>
   $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
   $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
+  $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
+  $<$<STREQUAL:${SLAR_RADSRC_INTERFACE},ON>:SLAR_RADSRC>
   SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
   PRIVATE
   "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""

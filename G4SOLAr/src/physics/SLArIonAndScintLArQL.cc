@@ -26,43 +26,70 @@ SLArIonAndScintLArQL::~SLArIonAndScintLArQL()
   // Default destructor
 }
 
-
-double SLArIonAndScintLArQL::QBirks(double dE, double dx, double E) const {
-    double dEdx = dE/dx;
+double SLArIonAndScintLArQL::QBirks(double& dEdx, const double& E) const {
     if(dEdx<0.1) dEdx = 0.1;
     double nom = fBirksA/fWion;
     double denom = 1+ fBirksK*dEdx /(fLArDensity * E);
     return nom/denom;
 }
 
-double SLArIonAndScintLArQL::Corr(double dE, double dx, double E) const {
+double SLArIonAndScintLArQL::QBirks(const double& dE, const double& dx, const double& E) const {
     double dEdx = dE/dx;
+    return QBirks(dEdx, E);
+}
+
+double SLArIonAndScintLArQL::Corr(double& dEdx, const double& E) const {
     if(dEdx<1) dEdx = 1.;
     return exp(-E/(fLArQLAlpha *log(dEdx) + fLArQLBeta));
 }
 
-double SLArIonAndScintLArQL::QChi(double dE, double dx, double E) const {
+double SLArIonAndScintLArQL::Corr(const double& dE, const double& dx, const double& E) const {
     double dEdx = dE/dx;
+    return Corr(dEdx,E);
+}
+
+double SLArIonAndScintLArQL::QChi(double& dEdx, const double& E) const {
     if(dEdx<1) dEdx = 1.;
     return fLArQLChiPars[0] / 
       (fLArQLChiPars[1]+exp(fLArQLChiPars[2] + fLArQLChiPars[3]*dEdx));
+}
+
+
+double SLArIonAndScintLArQL::QChi(const double& dE, const double& dx, const double& E) const {
+    double dEdx = dE/dx;
+    if(dEdx<1) dEdx = 1.;
+    return QChi(dEdx, E);
 }
 
 double SLArIonAndScintLArQL::Qinf() const {
     return fIonizationDensity;
 }
 
-double SLArIonAndScintLArQL::ComputeScintYield(const double energy_deposit, const double hit_distance, const double electric_field) const {
-    return fElectronIonRatio * fIonizationDensity + 
-      fIonizationDensity - ComputeIonYield(energy_deposit,hit_distance, electric_field);
+Ion_and_Scint_t SLArIonAndScintLArQL::ComputeIonAndScintYield(const double& energy_deposit, const double& hit_distance, const double& electric_field) const {
+  // compute Ionization yield
+    const double ion_yield = ComputeIonYield(energy_deposit, hit_distance, electric_field);
+    const double scn_yield = fElectronIonRatio * fIonizationDensity + fIonizationDensity - ion_yield;
+    return Ion_and_Scint_t(ion_yield, scn_yield);
 }
 
-double SLArIonAndScintLArQL::ComputeIonYield(const double energy_deposit, const double hit_distance, const double electric_field) const {
-  double QB = QBirks(energy_deposit, hit_distance, electric_field); 
-  double QX = Corr(energy_deposit, hit_distance, electric_field)*
-      QChi(energy_deposit, hit_distance, electric_field)*Qinf();
+Ion_and_Scint_t SLArIonAndScintLArQL::ComputeIonAndScintYield(double& dEdx, const double& electric_field) const {
+  // compute Ionization yield
+    const double ion_yield = ComputeIonYield(dEdx, electric_field);
+    const double scn_yield = fElectronIonRatio * fIonizationDensity + fIonizationDensity - ion_yield;
+    return Ion_and_Scint_t(ion_yield, scn_yield);
+}
+
+double SLArIonAndScintLArQL::ComputeIonYield(const double& energy_deposit, const double& hit_distance, const double& electric_field) const {
+  double dEdx = energy_deposit / hit_distance;
+  return ComputeIonYield(dEdx, electric_field);
+}
+
+double SLArIonAndScintLArQL::ComputeIonYield(double& dEdx, const double& electric_field) const {
+  double QB = QBirks(dEdx, electric_field); 
+  double QX = Corr(dEdx, electric_field)*QChi(dEdx, electric_field)*Qinf();
   return (QB + QX); 
 }
+
 
 double SLArIonAndScintLArQL::Flat() const {
     return FlatLightYieldPerMeV;

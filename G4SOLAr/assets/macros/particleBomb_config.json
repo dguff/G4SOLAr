@@ -1,0 +1,16 @@
+{
+  "generator" : {
+    "type" : "particlebomb", 
+    "label" : "pbomb_test", 
+    "config" : {
+      "particle" : "opticalphoton", 
+      "energy" : {"val" : 9.68, "unit" : "eV"}, 
+      "n_particles" : 5000, 
+      "direction" : "isotropic", 
+      "vertex_gen" : {
+        "type" : "point", 
+        "config" : {"xyz" : [-50, -30, -60], "unit" : "cm"}
+      }
+    }
+  }
+}

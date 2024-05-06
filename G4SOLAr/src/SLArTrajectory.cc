@@ -42,8 +42,9 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
 #ifdef SLAR_DEBUG
   if (aTrack->GetDynamicParticle()->GetParticleDefinition() != 
       G4OpticalPhoton::Definition()) {
-    printf("SLArTrajectory: Create new SLArTrajectory for trk %i\n", 
-        aTrack->GetTrackID());
+    //printf("SLArTrajectory: Create new SLArTrajectory for trk %i\n", 
+        //aTrack->GetTrackID());
+    //getchar();
   }
 #endif
 
@@ -57,16 +58,17 @@ SLArTrajectory::SLArTrajectory(const G4Track* aTrack)
     fCreatorProcess    =aTrack->GetCreatorProcess()->GetProcessName();
   }
   else {
+    fCreatorProcess = "PrimaryGenerator";
     // this is a primary. Save the track ID in the corresponding SLArMCPrimaryInfo
-    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-    for (auto &primaryInfo : SLArAnaMgr->GetEvent()->GetPrimaries()) {
-      if (fabs(aTrack->GetMomentum().x() - primaryInfo->GetMomentum()[0]) < 1e-6 &&
-          fabs(aTrack->GetMomentum().y() - primaryInfo->GetMomentum()[1]) < 1e-6 &&
-          fabs(aTrack->GetMomentum().z() - primaryInfo->GetMomentum()[2]) < 1e-6) {
-        primaryInfo->SetTrackID(aTrack->GetTrackID()); 
-        break;
-      }
-    }
+    //SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    //for (auto &primaryInfo : SLArAnaMgr->GetEvent()->GetPrimaries()) {
+      //if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < 1e-6 &&
+          //fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < 1e-6 &&
+          //fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < 1e-6) {
+        //primaryInfo.SetTrackID(aTrack->GetTrackID()); 
+        //break;
+      //}
+    //}
   }
   fTime = aTrack->GetGlobalTime(); 
 }

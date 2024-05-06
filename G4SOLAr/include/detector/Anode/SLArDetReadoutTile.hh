@@ -52,7 +52,7 @@ public:
   void BuildChargePix();
   void BuildUnitCell(); 
 
-  void SetVisAttributes();
+  void SetVisAttributes(const int depth = 0);
 
   SLArBaseDetModule* GetSiPMActive();
   SLArBaseDetModule* GetUnitCell() {return fUnitCell;}
@@ -71,6 +71,7 @@ private:
   G4bool             fPerfectQE;
 
   SLArBaseDetModule* fBasePCB;
+  SLArBaseDetModule* fBaseTile;
   SLArBaseDetModule* fChargePix;
   SLArBaseDetModule* fSiPM;
   SLArBaseDetModule* fSiPMActive; 
@@ -78,6 +79,7 @@ private:
 
   SLArMaterial*  fMatReadoutTile; 
   SLArMaterial*  fMatPCB;
+  SLArMaterial*  fMatCopper; 
   SLArMaterial*  fMatChargePix;
   SLArMaterial*  fMatSiPM; 
   SLArMaterial*  fMatSiPMCapsule;

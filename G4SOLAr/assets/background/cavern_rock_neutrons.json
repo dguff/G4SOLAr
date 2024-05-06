@@ -1,0 +1,9 @@
+{
+  "externals" : 
+    {
+      "particle" : "neutron", 
+      "origin_volume" : "cavern_rock_gen", 
+      "file" : "/home/guff/Dune/SOLAr/SOLAr-sim/install/assets/background/neutron_rates_20240313.root",
+      "key" : "rock/rock_total"
+    }
+}

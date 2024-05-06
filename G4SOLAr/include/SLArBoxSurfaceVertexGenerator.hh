@@ -10,25 +10,26 @@
 
 #include <random>
 
-#include "bxdecay0_g4/vertex_generator_interface.hh"
+#include <G4LogicalVolume.hh>
+#include <G4VSolid.hh>
+#include <G4ThreeVector.hh>
+#include <G4RotationMatrix.hh>
+#include <detector/SLArGeoUtils.hh>
+#include <SLArVertextGenerator.hh>
 
-#include "G4LogicalVolume.hh"
-#include "G4Box.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "detector/SLArGeoUtils.hpp"
-
-class SLArBoxSurfaceVertexGenerator : 
-  public bxdecay0_g4::VertexGeneratorInterface 
+namespace gen {
+class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
 {
   public: 
     SLArBoxSurfaceVertexGenerator(); 
     SLArBoxSurfaceVertexGenerator(const SLArBoxSurfaceVertexGenerator&); 
     ~SLArBoxSurfaceVertexGenerator() override; 
 
+    G4String GetType() const override {return "boxface_vertex_generator";}
+
     void FixVertexFace(const bool isFaceFixed) {fFixFace = isFaceFixed;}
-    void SetVertexFace(const slargeo::EBoxFace face) {fVtxFace = face;}
-    slargeo::EBoxFace GetVertexFace() const {return fVtxFace;}
+    void SetVertexFace(const geo::EBoxFace face) {fVtxFace = face;}
+    geo::EBoxFace GetVertexFace() const {return fVtxFace;}
     const G4LogicalVolume* GetBoxLogicalVolume() const; 
     void SetBoxLogicalVolume(const G4LogicalVolume*); 
     const G4VSolid* GetSolid() const; 
@@ -41,9 +42,20 @@ class SLArBoxSurfaceVertexGenerator :
     void SetTolerance(double tolerance_);
     void SetRandomSeed(unsigned int seed_);
     void SetNoDaughters(bool no_daughters_);
+    G4double GetSurfaceGenerator() const; 
 
-    // From the VertexGeneratorInterface abstract class:
     void ShootVertex(G4ThreeVector & vertex_) override;
+    void Config(const rapidjson::Value& config) override;
+    void Config(const G4String& vol_face_name); 
+    void Print() const override {
+      printf("SLArBoxSurfaceVertexGenerator info dump:\n"); 
+      printf("logical (solid) volume name: %s (%s)\n",
+          fLogVol->GetName().data(), fSolid->GetName().data()); 
+      printf("fixed face: %i - face number: %i\n", fFixFace, fVtxFace); 
+      printf("box surface: %g mm2\n\n", GetSurfaceGenerator()); 
+      return;
+    }
+    const rapidjson::Document ExportConfig() const override;
 
   private:
     // Configuration:
@@ -54,13 +66,14 @@ class SLArBoxSurfaceVertexGenerator :
     unsigned int fRandomSeed{0}; ///< Seed for the random number generator
     bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
     bool fFixFace = false; ///
-    slargeo::EBoxFace fVtxFace = slargeo::kXplus; 
+    geo::EBoxFace fVtxFace = geo::kXplus; 
 
     // Working internals:
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
     G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
+    G4double fSurface = 0.0; 
     unsigned int fCounter = 0.0; // Internal vertex counter
 }; 
-
+}
 #endif /* end of include guard SLARBOXSURFACEVERTEXGENERATOR_HH */
 

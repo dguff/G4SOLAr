@@ -19,6 +19,7 @@
 #include <G4Tokenizer.hh>
 #include <G4UIcommand.hh>
 
+namespace gen {
 namespace bxdecay0_g4 {
 
   SLArDecay0GeneratorMessenger::SLArDecay0GeneratorMessenger(SLArDecay0GeneratorAction* pga_)
@@ -442,7 +443,7 @@ namespace bxdecay0_g4 {
     if (command_ == _pga_gtor_destroy_cmd_) {
     }
     if (command_ == _pga_gtor_mdl_cmd_) {
-      SLArDecay0GeneratorAction::ConfigurationInterface configInt = _pga_->GetConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t configInt = _pga_->GetConfiguration();
       std::ostringstream sCurValue;
       sCurValue << (configInt.mdl_target_name.empty() ? "all" :  configInt.mdl_target_name) << ' ';
       sCurValue << configInt.mdl_target_rank << ' ';
@@ -453,7 +454,7 @@ namespace bxdecay0_g4 {
       curValue = sCurValue.str();
     }
     if (command_ == _pga_gtor_mdlr_cmd_) {
-      SLArDecay0GeneratorAction::ConfigurationInterface configInt = _pga_->GetConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t configInt = _pga_->GetConfiguration();
       std::ostringstream sCurValue;
       sCurValue << (configInt.mdl_target_name.empty() ? "all" :  configInt.mdl_target_name) << ' ';
       sCurValue << configInt.mdl_target_rank << ' ';
@@ -465,7 +466,7 @@ namespace bxdecay0_g4 {
       curValue = sCurValue.str();
     }
     if (command_ == _pga_gtor_bkgd_cmd_) {
-      SLArDecay0GeneratorAction::ConfigurationInterface configInt = _pga_->GetConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t configInt = _pga_->GetConfiguration();
       std::ostringstream sCurValue;
       sCurValue << configInt.nuclide << ' ';
       sCurValue << configInt.seed << ' ';
@@ -473,7 +474,7 @@ namespace bxdecay0_g4 {
       curValue = sCurValue.str();
     }
     if (command_ == _pga_gtor_dbd_cmd_) {
-      SLArDecay0GeneratorAction::ConfigurationInterface configInt = _pga_->GetConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t configInt = _pga_->GetConfiguration();
       std::ostringstream sCurValue;
       sCurValue << configInt.nuclide << ' ';
       sCurValue << configInt.seed << ' ';
@@ -485,7 +486,7 @@ namespace bxdecay0_g4 {
       curValue = sCurValue.str();
     }
     if (command_ == _pga_gtor_dbdr_cmd_) {
-      SLArDecay0GeneratorAction::ConfigurationInterface configInt = _pga_->GetConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t configInt = _pga_->GetConfiguration();
       std::ostringstream sCurValue;
       sCurValue << "dbd" << ' ';
       sCurValue << configInt.nuclide << ' ';
@@ -512,7 +513,7 @@ namespace bxdecay0_g4 {
       if (_pga_->IsDebug()) {
         std::cerr << "[debug] bxdecay0_g4::SLArDecay0GeneratorMessenger::SetNewValue: "
                   << "Command 'apply' -> Action -> ApplyConfiguration...\n";
-        const SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GetConfiguration();
+        const SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GetConfiguration();
         configInt.print(std::cerr);
       }
     }
@@ -522,7 +523,7 @@ namespace bxdecay0_g4 {
       if (_pga_->IsDebug()) {
         std::cerr << "[debug] bxdecay0_g4::SLArDecay0GeneratorMessenger::SetNewValue: "
                   << "Command 'destroy' -> Action -> DestroyConfiguration...\n";
-        const SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GetConfiguration();
+        const SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GetConfiguration();
         configInt.print(std::cerr);
       }
     }
@@ -585,7 +586,7 @@ namespace bxdecay0_g4 {
                   << "errorOnMissingTarget = " << errorOnMissingTarget << "\n";
       }
       // Grab config interface:
-      SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GrabConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GrabConfiguration();
       configInt.reset_mdl();
       static const std::set<G4String> targetNames
         = {"all", "*", "e+", "positron", "e-", "electron", "g", "gamma", "a", "alpha", "n", "neutron", "p", "proton"};
@@ -656,7 +657,7 @@ namespace bxdecay0_g4 {
                   << "errorOnMissingTarget = " << errorOnMissingTarget << "\n";
       }
       // Grab config interface:
-      SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GrabConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GrabConfiguration();
       configInt.reset_mdl();
       static const std::set<G4String> targetNames
         = {"all", "*", "e+", "positron", "e-", "electron", "g", "gamma", "a", "alpha", "n", "neutron", "p", "proton"};
@@ -698,7 +699,7 @@ namespace bxdecay0_g4 {
         debug = G4UIcommand::ConvertToBool(sD.data());
       }
       // Grab config interface:
-      SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GrabConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GrabConfiguration();
       bool error = false;
       if (not error) {
         configInt.reset_base();
@@ -736,7 +737,7 @@ namespace bxdecay0_g4 {
         debug = G4UIcommand::ConvertToBool(sD.data());
       }
       // Grab config interface:
-      SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GrabConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GrabConfiguration();
       bool error = false;
       if (not error) {
         configInt.reset_mdl();
@@ -783,7 +784,7 @@ namespace bxdecay0_g4 {
         }
       }
       // Grab config interface:
-      SLArDecay0GeneratorAction::ConfigurationInterface & configInt = _pga_->GrabConfiguration();
+      SLArDecay0GeneratorAction::Decay0Config_t & configInt = _pga_->GrabConfiguration();
       bool error = false;
       if (not error) {
         configInt.reset_mdl();
@@ -812,5 +813,5 @@ namespace bxdecay0_g4 {
   }
 
 } // end of namespace bxdecay0_g4 
-
+}
 

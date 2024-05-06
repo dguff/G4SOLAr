@@ -54,7 +54,7 @@ SLArEventPhotonHit::SLArEventPhotonHit(const SLArEventPhotonHit &pmtHit)
 }
 
 
-void SLArEventPhotonHit::DumpInfo()
+void SLArEventPhotonHit::DumpInfo() const
 {
   printf("SLArEventPhotonHit: ");
   printf("time = %g ns - loc pos = [%.1f, %.1f, %.1f] mm - proc = %s\n",

@@ -19,7 +19,7 @@ class SLArDetAnodeAssembly : public SLArBaseDetModule {
     SLArDetAnodeAssembly(); 
     ~SLArDetAnodeAssembly(); 
 
-    SLArCfgAnode* BuildAnodeConfig(); 
+    SLArCfgAnode BuildAnodeConfig(); 
     void BuildMaterial(G4String materials_db); 
     void BuildAnodeAssembly(SLArDetReadoutTileAssembly*); 
 
@@ -40,7 +40,7 @@ class SLArDetAnodeAssembly : public SLArBaseDetModule {
     G4ThreeVector fNormal; 
     G4RotationMatrix* fRotation; 
     G4String fTileAssemblyModel;
-    void SetupAnodePlaneAxes( SLArCfgAnode* );
+    void SetupAnodePlaneAxes( SLArCfgAnode& );
 }; 
 
 

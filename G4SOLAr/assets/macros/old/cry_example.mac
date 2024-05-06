@@ -1,0 +1,36 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : cry_example.mac
+# @created     : Monday Mar 18, 2024 12:31:57 CET
+#
+# @description : example of CRY cosmic-ray shower generator
+######################################################################
+
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 1.0 mm
+/SLAr/phys/positronCut 1.0 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/phys/DoDriftElectrons false
+/SLAr/scint/enablePhGeneration false
+
+# Set CRY options
+/SLAr/gen/type CRY
+/SLAr/gen/CRY/input returnNeutrons 0
+/SLAr/gen/CRY/input returnProtons 0
+/SLAr/gen/CRY/input returnGammas 0
+/SLAr/gen/CRY/input nParticlesMin 1
+/SLAr/gen/CRY/input date 7-7-2023
+/SLAr/gen/CRY/input latitude 46.95
+/SLAr/gen/CRY/input altitude 0
+/SLAr/gen/CRY/input subboxLength 3
+/SLAr/gen/CRY/update
+/SLAr/gen/CRY/quota 1 m
+
+/SLAr/manager/setZeroSuppressionThrs 10
+
+/event/verbose 0
+
+# Fire!
+/run/beamOn 100

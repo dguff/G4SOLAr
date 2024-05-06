@@ -7,11 +7,15 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArDetectorConstruction.hh"
 #include "SLArPrimaryGeneratorAction.hh"
+#include "SLArExternalGeneratorAction.hh"
+#include "SLArBoxSurfaceVertexGenerator.hh"
+#include "SLArBulkVertexGenerator.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
+#include "G4SDManager.hh"
 #include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -46,12 +50,17 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance(); 
+
   SLArAnaMgr->CreateFileStructure();
 
   fElectronDrift = new SLArElectronDrift(); 
   fElectronDrift->ComputeProperties(); 
   fElectronDrift->PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+
+  for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {
+    SLArAnaMgr->WriteCrossSection(xsec); 
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -125,12 +134,54 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
   SLArAnaMgr->WriteCfgFile("geometry", SLArDetConstr->GetGeometryCfgFile().c_str());
   SLArAnaMgr->WriteCfgFile("materials", SLArDetConstr->GetMaterialCfgFile().c_str());
 
-  auto SLArGen = (SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
-  if (!SLArGen->GetMarleyConf().empty()) {
-    SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+  auto SLArGen = (gen::SLArPrimaryGeneratorAction*)RunMngr->GetUserPrimaryGeneratorAction(); 
+  const auto& generators = SLArGen->GetGenerators(); 
+
+  for (const auto& gen : generators) {
+    gen::EGenerator kGen = gen.second->GetGeneratorEnum(); 
+
+    G4String gen_config = gen.second->WriteConfig(); 
+
+    SLArAnaMgr->WriteCfg(gen.first.data(), gen_config.data()); 
   }
 
+
+
+  //if (SLArGen->GetGeneratorIndex() == kMarley) {
+    //SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
+  //}
+  //if (SLArGen->GetGeneratorIndex() == kExternalGen) {
+    //auto gen = (SLArExternalGeneratorAction*)SLArGen->GetGenerator(); 
+
+    //if (dynamic_cast<SLArBoxSurfaceVertexGenerator*>( gen->GetVertexGenerator() )) {
+      //auto vtxGen = (SLArBoxSurfaceVertexGenerator*)gen->GetVertexGenerator();
+      //G4double surface = vtxGen->GetSurfaceGenerator();
+
+      //printf("surface box area is %g mm2\n", surface);
+      //SLArAnaMgr->WriteVariable("surface_generator", surface); 
+    //}
+    //else if ( dynamic_cast<SLArBulkVertexGenerator*>(gen->GetVertexGenerator()) ) {
+      //auto vtxGen = (SLArBulkVertexGenerator*)gen->GetVertexGenerator();
+      //G4double volume = vtxGen->GetCubicVolumeGenerator();
+      //G4double mass   = vtxGen->GetMassVolumeGenerator();
+
+      //printf("volume of the generator is %g mm2\n", volume);
+      //SLArAnaMgr->WriteVariable("volume_generator", volume); 
+      //SLArAnaMgr->WriteVariable("mass_generator", mass);
+
+    //} 
+
+    //for (const auto& scorer : fExtScorerLV) {
+      //auto scorer_solid = scorer->GetSolid(); 
+      //printf("scorer solid volume is %s\n", scorer_solid->GetName().data()); 
+      //SLArAnaMgr->WriteVariable("surface_scorer_"+scorer->GetName(), 
+          //slargeo::get_bounding_volume_surface(scorer_solid)); 
+    //}
+  //}
+
   SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 
+
+  SLArAnaMgr->WriteVariable("rndm_seed", SLArAnaMgr->GetSeed()); 
 
   SLArAnaMgr->Save();
 

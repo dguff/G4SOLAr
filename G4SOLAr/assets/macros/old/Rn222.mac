@@ -7,21 +7,19 @@
 ######################################################################
 
 
-# Set output path and file name
-/SLAr/manager/SetOutputName slar_ar42.root
-/SLAr/manager/SetOutputFolder ./../SOLArAnalysis
-
 # Select bxdecay0 generator
 /SLAr/gen/type Decay0
 
 # Set secondary production cuts for gamma and electrons
 /SLAr/phys/gammaCut 0.5 mm
 /SLAr/phys/electronCut 0.5 mm
-
+/SLAr/phys/stepMax 50 um
+/SLAr/phys/DoTracePhotons false
+/SLAr/gen/volume target_lar_pv
 
 # Set decay to be produced by bxdecay0
 /bxdecay0/generator/verbosity 0
-/bxdecay0/generator/background Ar42 123456
+/bxdecay0/generator/background Rn222 114425
 
 # Fire!
 /run/beamOn 500

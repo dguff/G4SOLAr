@@ -28,19 +28,22 @@ class SLArCfgBaseSystem : public SLArCfgBaseModule
     ~SLArCfgBaseSystem();
 
     virtual TH2Poly* BuildPolyBinHist(); 
-    void DumpMap();
-    TAssemblyModule* GetBaseElement(int idx); 
-    TAssemblyModule* GetBaseElement(const char* name);
-    TAssemblyModule* FindBaseElementInMap(int ibin); 
-    std::map<int, TAssemblyModule*>& GetMap() {return fElementsMap;}
-    void RegisterElement(TAssemblyModule* mod); 
+    void DumpMap() const;
+    void DumpInfo() const override;
+    TAssemblyModule& GetBaseElement(int idx); 
+    TAssemblyModule& GetBaseElement(const char* name);
+    TAssemblyModule& FindBaseElementInMap(int ibin); 
+    std::map<int, TAssemblyModule>& GetMap() {return fElementsMap;}
+    const std::map<int, TAssemblyModule>& GetConstMap() const {return fElementsMap;}
+    void RegisterElement(TAssemblyModule& mod);
+    TGraph BuildGShape() const override;
 
   protected:
     int fNElements; 
-    std::map<int, TAssemblyModule*> fElementsMap;
+    std::map<int, TAssemblyModule> fElementsMap;
 
   public:
-    ClassDefOverride(SLArCfgBaseSystem, 1);
+    ClassDefOverride(SLArCfgBaseSystem, 2);
 };
 
 typedef SLArCfgBaseSystem<SLArCfgSuperCellArray> SLArCfgSystemSuperCell; 

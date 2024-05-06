@@ -42,8 +42,10 @@
 #include "G4ParticleTable.hh"
 
 //#include "G4PhysListFactory.hh"
+#include "FTFP_BERT.hh"
 #include "FTFP_BERT_HP.hh"
 #include "QGSP_BERT_HP.hh"
+#include "QGSP_BIC_AllHP.hh"
 #include "G4EmLivermorePhysics.hh"
 #include "G4EmStandardPhysics_option4.hh"
 
@@ -68,7 +70,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArPhysicsList::SLArPhysicsList(G4String physName) : 
+SLArPhysicsList::SLArPhysicsList(G4String physName, G4bool do_cerenkov) : 
   G4VModularPhysicsList()
 {
   G4LossTableManager::Instance();
@@ -83,8 +85,12 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   G4VModularPhysicsList* phys = NULL;
   if (physName == "QGSP_BERT_HP") {
     phys = new QGSP_BERT_HP;
-  } else {
-    phys = new FTFP_BERT_HP;
+  } 
+  else if (physName == "QGSP_BIC_AllHP") {
+    phys = new QGSP_BIC_AllHP; 
+  }
+  else {
+    phys = new FTFP_BERT;
   }
   //    if (factory.IsReferencePhysList(physName)) {
   //       phys = factory.GetReferencePhysList(physName);
@@ -102,7 +108,8 @@ SLArPhysicsList::SLArPhysicsList(G4String physName) :
   }
 
   fAbsorptionOn = true;
-  fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn); 
+  fCerenkovOn = do_cerenkov;
+  fOpticalPhysics = new SLArOpticalPhysics(fAbsorptionOn, fCerenkovOn); 
 
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics);
@@ -349,7 +356,9 @@ void SLArPhysicsList::SetNbOfPhotonsCerenkov(G4int maxNumber)
 
 void SLArPhysicsList::SetVerbose(G4int verbose)
 {
-  fOpticalPhysics->GetCerenkovProcess()->SetVerboseLevel(verbose);
+  if (fOpticalPhysics->GetCerenkovProcess()) {
+    fOpticalPhysics->GetCerenkovProcess()->SetVerboseLevel(verbose);
+  }
   fOpticalPhysics->GetScintillationProcess()->SetVerboseLevel(verbose);
   fOpticalPhysics->GetAbsorptionProcess()->SetVerboseLevel(verbose);
   fOpticalPhysics->GetRayleighScatteringProcess()->SetVerboseLevel(verbose);

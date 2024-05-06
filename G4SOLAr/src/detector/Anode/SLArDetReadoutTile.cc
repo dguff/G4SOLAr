@@ -7,6 +7,7 @@
 
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/SLArPlaneParameterisation.hpp"
+#include "detector/SLArGeoUtils.hh"
 #include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
@@ -31,9 +32,9 @@
 
 SLArDetReadoutTile::SLArDetReadoutTile() : SLArBaseDetModule(),
   fPerfectQE(false),
-  fBasePCB(nullptr), fChargePix(nullptr), 
+  fBasePCB(nullptr), fBaseTile(nullptr), fChargePix(nullptr), 
   fSiPM(nullptr), fSiPMActive(nullptr), fUnitCell(nullptr),
-  fMatReadoutTile(nullptr), fMatPCB(nullptr), 
+  fMatReadoutTile(nullptr), fMatPCB(nullptr), fMatCopper(nullptr), 
   fMatSiPM(nullptr), fMatSiPMCapsule(nullptr), 
   fSkinSurface(nullptr)
 {  
@@ -48,10 +49,12 @@ SLArDetReadoutTile::SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile)
 
   fMatReadoutTile = new SLArMaterial(*detReadoutTile.fMatReadoutTile); 
   fMatPCB = new SLArMaterial(*detReadoutTile.fMatPCB);
+  fMatCopper = new SLArMaterial(*detReadoutTile.fMatCopper);
   fMatSiPM   = new SLArMaterial(*detReadoutTile.fMatSiPM);
   fMatSiPMCapsule = new SLArMaterial(*detReadoutTile.fMatSiPMCapsule); 
 
   fBasePCB = new SLArBaseDetModule(*detReadoutTile.fBasePCB); 
+  fBaseTile = new SLArBaseDetModule(*detReadoutTile.fBaseTile); 
   fSiPM = new SLArBaseDetModule(*detReadoutTile.fSiPM); 
   fSiPMActive = new SLArBaseDetModule(*detReadoutTile.fSiPMActive); 
   fUnitCell = new SLArBaseDetModule(*detReadoutTile.fUnitCell); 
@@ -62,11 +65,13 @@ SLArDetReadoutTile::~SLArDetReadoutTile() {
   G4cerr << "Deleting SLArDetReadoutTile... " <<  G4endl;
 
   if (fBasePCB)   {delete fBasePCB; fBasePCB = 0;}
+  if (fBaseTile)   {delete fBaseTile; fBaseTile = 0;}
   if (fChargePix) {delete fChargePix; fChargePix = 0;}
   if (fSiPM)      {delete fSiPM; fSiPM = 0;}
   if (fSiPMActive){delete fSiPMActive; fSiPMActive = 0;} 
   if (fMatReadoutTile) {delete fMatReadoutTile; fMatReadoutTile = 0;}
   if (fMatPCB){delete fMatPCB; fMatPCB = 0;}
+  if (fMatCopper){delete fMatCopper; fMatCopper = 0;}
   if (fMatSiPM)   {delete fMatSiPM; fMatSiPM = 0;}
   if (fMatSiPMCapsule)   {delete fMatSiPMCapsule; fMatSiPMCapsule = 0;}
   G4cerr << "SLArDetReadoutTile DONE" <<  G4endl;
@@ -79,7 +84,7 @@ void SLArDetReadoutTile::BuildPCB()
   fBasePCB = new SLArBaseDetModule();
   fBasePCB->SetGeoPar(fGeoInfo->GetGeoPair("tile_z"));
   fBasePCB->SetGeoPar(fGeoInfo->GetGeoPair("tile_x"));
-  fBasePCB->SetGeoPar(fGeoInfo->GetGeoPair("tile_y"));
+  fBasePCB->SetGeoPar("tile_y", fGeoInfo->GetGeoPar("tile_y") - 1*CLHEP::mm);
 
   fBasePCB->SetMaterial(fMatPCB->GetMaterial());
 
@@ -95,6 +100,22 @@ void SLArDetReadoutTile::BuildPCB()
       fBasePCB->GetMaterial(),
       "PCBBaseLV", 0, 0, 0)
     );
+
+  fBaseTile = new SLArBaseDetModule(); 
+  fBaseTile->SetGeoPar(fGeoInfo->GetGeoPair("tile_z"));
+  fBaseTile->SetGeoPar(fGeoInfo->GetGeoPair("tile_x"));
+  fBaseTile->SetGeoPar("tile_y", 1*CLHEP::mm);
+
+  fBaseTile->SetMaterial(fMatCopper->GetMaterial()); 
+
+  fBaseTile->SetSolidVolume(new G4Box("TileBaseSolid", 
+      0.5*fBaseTile->GetGeoPar("tile_x"), 
+      0.5*fBaseTile->GetGeoPar("tile_y"), 
+      0.5*fBaseTile->GetGeoPar("tile_z")
+      )); 
+  fBaseTile->SetLogicVolume( new G4LogicalVolume(
+      fBaseTile->GetModSV(), fBaseTile->GetMaterial(), 
+      "TileBaseLV", 0, 0, 0));
 
   //printf("tile dimensions: %.2f %.2f, %.2f mm\n", 
       //fGeoInfo->GetGeoPar("tile_x"), fGeoInfo->GetGeoPar("tile_y"), fGeoInfo->GetGeoPar("tile_z"));
@@ -228,13 +249,18 @@ void SLArDetReadoutTile::BuildReadoutTile()
         "ReadoutTileLV",0,0,0);
 
   //----------------------------Place ReadoutTile components
-  // 1. The PCB base
+  // 1a. The PCB base
   G4double h = 0*CLHEP::mm;
   G4cout<<"GetModPV PCB base..." << G4endl; 
   fBasePCB->GetModPV("ReadoutTilePCB", 0, 
-      G4ThreeVector(0, -0.5*(fhTot-fGeoInfo->GetGeoPar("tile_y")), 0),
+      G4ThreeVector(0, -0.5*(fhTot-fBasePCB->GetGeoPar("tile_y")), 0),
       fModLV, false, 200);
-
+  // 1a. The copper base
+  fBaseTile->GetModPV("ReadoutTileBase", 0, 
+      G4ThreeVector(0, -0.5*(fhTot-2*fBasePCB->GetGeoPar("tile_y")-1*CLHEP::mm), 0), 
+      fModLV, false, 201); 
+  
+  
   // 3. Create a volume parametrization instance 
   G4double cell_z = fUnitCell->GetGeoPar("cell_z"); 
   G4double cell_y = fUnitCell->GetGeoPar("cell_y"); 
@@ -282,21 +308,43 @@ void SLArDetReadoutTile::BuildReadoutTile()
 }
 
 
-void SLArDetReadoutTile::SetVisAttributes()
+void SLArDetReadoutTile::SetVisAttributes(const int depth)
 {
   G4VisAttributes* visAttributes = new G4VisAttributes();
   visAttributes->SetColor(0.0824, 0.635, 0.019);
-  fBasePCB->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+  if (depth > 0) {
+    fBasePCB->GetModLV()->SetVisAttributes( visAttributes );
+    fBaseTile->GetModLV()->SetVisAttributes( G4VisAttributes(true, G4Color(0.988, 0.906, 0.6)) ); 
+  }
+  else {
+    fBasePCB->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+    fBaseTile->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+  }
 
   visAttributes = new G4VisAttributes( G4Color(0.753, 0.753, 0.753) );
-  fSiPM->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+  if (depth > 1) {
+    fSiPM->GetModLV()->SetVisAttributes( visAttributes );
+  }
+  else {
+    fSiPM->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+  }
   for (size_t ii=0; ii < fSiPM->GetModLV()->GetNoDaughters(); ii++) {
-    fSiPM->GetModLV()->GetDaughter(ii)->GetLogicalVolume()->SetVisAttributes( G4VisAttributes(false) ); 
+    if (depth > 1) {
+      fSiPM->GetModLV()->GetDaughter(ii)->GetLogicalVolume()->SetVisAttributes( visAttributes ); 
+    }
+    else {
+      fSiPM->GetModLV()->GetDaughter(ii)->GetLogicalVolume()->SetVisAttributes( G4VisAttributes(false) ); 
+    }
   }
 
   if (fChargePix) {
     visAttributes = new G4VisAttributes( G4Color(0.921, 0.659, 0.007) );
-    fChargePix->GetModLV()->SetVisAttributes( visAttributes );
+    if (depth > 1) {
+      fChargePix->GetModLV()->SetVisAttributes( visAttributes );
+    }
+    else {
+      fChargePix->GetModLV()->SetVisAttributes( G4VisAttributes(false) );
+    }
   }
 
   visAttributes = new G4VisAttributes();
@@ -347,6 +395,7 @@ void SLArDetReadoutTile::SetPerfectQE(G4bool kQE)
 void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
 {
   fMatPCB         = new SLArMaterial();
+  fMatCopper      = new SLArMaterial();
   fMatSiPM        = new SLArMaterial();
   fMatChargePix   = new SLArMaterial(); 
   fMatReadoutTile = new SLArMaterial();
@@ -357,6 +406,9 @@ void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
 
   fMatPCB->SetMaterialID("PCB");
   fMatPCB->BuildMaterialFromDB(materials_db);
+
+  fMatCopper->SetMaterialID("CopperPassive");
+  fMatCopper->BuildMaterialFromDB(materials_db);
 
   fMatChargePix->SetMaterialID("Steel");
   fMatChargePix->BuildMaterialFromDB(materials_db);
@@ -414,9 +466,9 @@ void SLArDetReadoutTile::BuildUnitCellStructure(const rapidjson::Value& celldef)
     G4String name_ = comp["name"].GetString(); 
     G4int copy_ = comp["copy"].GetInt(); 
     G4ThreeVector pos_ = G4ThreeVector(0, 0, 0); 
-    if (comp.HasMember("pos_x")) pos_.setX(SLArGeoInfo::ParseJsonVal(comp["pos_x"]));
-    if (comp.HasMember("pos_y")) pos_.setY(SLArGeoInfo::ParseJsonVal(comp["pos_y"]));
-    if (comp.HasMember("pos_z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(comp["pos_z"]));
+    if (comp.HasMember("pos_x")) pos_.setX(unit::ParseJsonVal(comp["pos_x"]));
+    if (comp.HasMember("pos_y")) pos_.setY(unit::ParseJsonVal(comp["pos_y"]));
+    if (comp.HasMember("pos_z")) pos_.setZ(unit::ParseJsonVal(comp["pos_z"]));
 
     fCellStructure.push_back( SUnitCellComponent(name_, copy_, mod, pos_) );
   }
@@ -436,9 +488,9 @@ void SLArDetReadoutTile::BuildUnitCellPixMap(const rapidjson::Value& pixblueprin
 
     for (const auto &edge : pix["edges"].GetArray()) {
       G4ThreeVector pos_ = G4ThreeVector(0, 0, 0); 
-      if (edge.HasMember("x")) pos_.setX(SLArGeoInfo::ParseJsonVal(edge["x"]));
-      if (edge.HasMember("y")) pos_.setY(SLArGeoInfo::ParseJsonVal(edge["y"]));
-      if (edge.HasMember("z")) pos_.setZ(SLArGeoInfo::ParseJsonVal(edge["z"]));
+      if (edge.HasMember("x")) pos_.setX(unit::ParseJsonVal(edge["x"]));
+      if (edge.HasMember("y")) pos_.setY(unit::ParseJsonVal(edge["y"]));
+      if (edge.HasMember("z")) pos_.setZ(unit::ParseJsonVal(edge["z"]));
 
       pixArea.fEdges.push_back(pos_); 
     }
@@ -476,7 +528,7 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
       -0.5*fGeoInfo->GetGeoPar("tile_x"), +0.5*fGeoInfo->GetGeoPar("tile_x")); 
   h2->SetFloat(); 
 
-  auto tilesens_pv = fModLV->GetDaughter(1)->GetLogicalVolume()->GetDaughter(0);
+  auto tilesens_pv = fModLV->GetDaughter(2)->GetLogicalVolume()->GetDaughter(0);
   G4int n_row = 0; G4int n_cell = 0; 
   G4double crow_x = 0; G4double cell_z = 0.; 
   G4ThreeVector crow_pos0;  G4ThreeVector crow_vaxis;
@@ -513,7 +565,7 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
       for (G4int iz=0; iz<n_cell; iz++) {
         G4ThreeVector cell_pos = row_pos + cell_pos0 + iz*cell_z*cell_vaxis; 
 
-        printf("cell_pos:[%.2f, %.2f, %.2f]\n",cell_pos.x(),cell_pos.y(),cell_pos.z());
+        //printf("cell_pos:[%.2f, %.2f, %.2f]\n",cell_pos.x(),cell_pos.y(),cell_pos.z());
         //printf("----------------------------------------------------------------\n");
         for (const auto &cc : fCellPixelMap) {
           std::vector<SLArCfgReadoutTile::xypoint> xypoints; 
@@ -564,7 +616,7 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
             ipoint++; 
           }
 
-          h2->AddBin(g); 
+          h2->AddBin( std::move(g) ); 
 //#ifdef SLAR_DEBUG
           //printf("----------------------------------------------------------------\n");
 //#endif

@@ -26,7 +26,7 @@ G4ThreadLocal G4Allocator<SLArReadoutTileHit>* SLArReadoutTileHitAllocator;
 SLArReadoutTileHit::SLArReadoutTileHit()
 : G4VHit(), fAnodeIdx(0), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
   fRowCellNr(0), fCellNr(0),
-  fWavelength(-1), fTime(0.), fPhType(-1),
+  fWavelength(-1), fTime(0.), fPhType(-1), fPhProducerID(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
 
@@ -35,7 +35,7 @@ SLArReadoutTileHit::SLArReadoutTileHit()
 SLArReadoutTileHit::SLArReadoutTileHit(G4double z)
 : G4VHit(), fAnodeIdx(0), fMegaTileIdx(0), fRowTileIdx(0), fTileIdx(0), 
   fRowCellNr(0), fCellNr(0),
-  fWavelength(z), fTime(0.), fPhType(-1),
+  fWavelength(z), fTime(0.), fPhType(-1), fPhProducerID(-1),
   fLocalPos(0), fWorldPos(0) 
 {}
 
@@ -48,17 +48,18 @@ SLArReadoutTileHit::~SLArReadoutTileHit()
 
 SLArReadoutTileHit::SLArReadoutTileHit(const SLArReadoutTileHit &right)
 : G4VHit() {
-    fWavelength = right.fWavelength;
-    fWorldPos   = right.fWorldPos;
-    fLocalPos   = right.fLocalPos;
-    fTime       = right.fTime;
-    fAnodeIdx   = right.fAnodeIdx;
-    fMegaTileIdx= right.fMegaTileIdx;
-    fRowTileIdx = right.fRowTileIdx; 
-    fTileIdx    = right.fTileIdx; 
-    fRowCellNr  = right.fRowCellNr; 
-    fCellNr     = right.fCellNr;
-    fPhType     = right.fPhType;
+    fWavelength   = right.fWavelength;
+    fWorldPos     = right.fWorldPos;
+    fLocalPos     = right.fLocalPos;
+    fPhProducerID = right.fPhProducerID;
+    fTime         = right.fTime;
+    fAnodeIdx     = right.fAnodeIdx;
+    fMegaTileIdx  = right.fMegaTileIdx;
+    fRowTileIdx   = right.fRowTileIdx; 
+    fTileIdx      = right.fTileIdx; 
+    fRowCellNr    = right.fRowCellNr; 
+    fCellNr       = right.fCellNr;
+    fPhType       = right.fPhType;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -76,6 +77,7 @@ const SLArReadoutTileHit& SLArReadoutTileHit::operator=(const SLArReadoutTileHit
     fRowCellNr    = right.fRowCellNr; 
     fCellNr       = right.fCellNr; 
     fPhType       = right.fPhType;
+    fPhProducerID = right.fPhProducerID;
     return *this;
 }
 
@@ -144,6 +146,9 @@ const std::map<G4String,G4AttDef>* SLArReadoutTileHit::GetAttDefs() const
 
         (*store)["PhType"] 
           = G4AttDef("PhType","Ph process","Physics","","G4int");
+
+        (*store)["PhProducerID"] 
+          = G4AttDef("PhProducerID","Ph producer trk id","Physics","","G4int");
     }
     return store;
 }
@@ -177,7 +182,9 @@ std::vector<G4AttValue>* SLArReadoutTileHit::CreateAttValues() const
 
     values
       ->push_back(G4AttValue("PhType", G4UIcommand::ConvertToString(fPhType), ""));
-    
+
+    values
+      ->push_back(G4AttValue("PhProducerID", G4UIcommand::ConvertToString(fPhProducerID), ""));    
     return values;
 }
 
@@ -204,12 +211,12 @@ void SLArReadoutTileHit::SetPhotonProcess(G4String prname)
   else                                   fPhType = 4;
 }
 
-G4int SLArReadoutTileHit::GetPhotonProcessId()
+G4int SLArReadoutTileHit::GetPhotonProcessId() const
 {
   return fPhType;
 }
 
-G4String SLArReadoutTileHit::GetPhotonProcessName()
+G4String SLArReadoutTileHit::GetPhotonProcessName() const
 {
   G4String prname;
   if      (fPhType == 1) prname = "Cerenkov";

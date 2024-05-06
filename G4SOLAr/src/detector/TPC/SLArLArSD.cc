@@ -31,6 +31,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4UnitsTable.hh"
+#include <cstdio>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -86,83 +87,87 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit\n", 
         step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
         step->GetTrack()->GetTrackID());
-    getchar(); 
+    //getchar(); 
 #endif
-
 
     SLArRunAction* runAction = 
       (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
-  
 
     SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
 
     // Get hit from collection
     SLArLArHit* hit = (*fHitsCollection)[0];
+    hit->Add(edep);
 
     int n_ph = 0; 
     int n_el = 0; 
     auto trackingAction = 
       (SLArTrackingAction*)G4EventManager::GetEventManager()->GetUserTrackingAction(); 
-    
+
     auto stepMngr = trackingAction->GetTrackingManager()->GetSteppingManager(); 
     if (stepMngr->GetfStepStatus() != fAtRestDoItProc) {
       G4ProcessVector* process_vector = stepMngr->GetfPostStepDoItVector(); 
       for (size_t iproc = 0; iproc < stepMngr->GetMAXofPostStepLoops(); iproc++) {
         G4VProcess* proc = (*process_vector)[iproc]; 
 
-        if (proc->GetProcessName() == "Scintillation") {
+        if (proc->GetProcessName() == "Scintillation")  {
           SLArScintillation* scint_process = (SLArScintillation*)proc; 
           n_ph = scint_process->GetNumPhotons(); 
           n_el = scint_process->GetNumIonElectrons(); 
-          
+
           break;
         } 
       }
     }
 
-    auto anodeCfg = anaMngr->GetAnodeCfg(fTPCID); 
+    try {
+      auto& anodeCfg = anaMngr->GetAnodeCfg(fTPCID);  
+
 
 #ifdef SLAR_DEBUG
-    printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit: %i electrons to drift\n", 
-        step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
-        step->GetTrack()->GetTrackID(), 
-        n_el);
+      printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit: %i electrons to drift\n", 
+          step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
+          step->GetTrack()->GetTrackID(), 
+          n_el);
 #endif
 
-    auto generatorAction = (SLArPrimaryGeneratorAction*)
-      G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
+      auto generatorAction = (gen::SLArPrimaryGeneratorAction*)
+        G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
+      const auto eventAction = (SLArEventAction*)
+        G4RunManager::GetRunManager()->GetUserEventAction(); 
+      auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
+      // Add edep in LAr to the primary 
+      SLArMCPrimaryInfo* ancestor = nullptr;
+      auto& primaries = anaMngr->GetEvent().GetPrimaries();
+      for (auto &p : primaries) {
+        if (p.GetTrackID() == ancestor_id) {
+          ancestor = &p;
+          break;
+        }
+      }
 
-    if (generatorAction->DoDriftElectrons()) {
+      if (ancestor) ancestor->IncrementLArEdep(edep); 
 
-      if (anodeCfg) {
+      if (generatorAction->DoDriftElectrons()) {
         runAction->GetElectronDrift()->Drift(n_el, 
-            step->GetTrack()->GetTrackID(), 
+            step->GetTrack()->GetTrackID(), ancestor_id,
             0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
             postStepPoint->GetGlobalTime(), 
-            anodeCfg, 
-            anaMngr->GetEvent()->GetEventAnodeByTPCID(fTPCID)); 
-      } else {
-        printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
-        getchar(); 
-      }
+            &anodeCfg, 
+            &anaMngr->GetEvent().GetEventAnodeByTPCID(fTPCID)); 
+      } 
+      //else {
+        //printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
+        //getchar(); 
+      //}
     }
-    hit->Add(edep);
-    
-    // Add edep in LAr to the primary 
-    const auto eventAction = (SLArEventAction*)
-      G4RunManager::GetRunManager()->GetUserEventAction(); 
-    auto ancestor_id = eventAction->FindTopParentID(step->GetTrack()->GetTrackID()); 
-
-    SLArMCPrimaryInfo* ancestor = nullptr; 
-    for (auto &p : anaMngr->GetEvent()->GetPrimaries()) {
-      if (p->GetTrackID() == ancestor_id) {
-        ancestor = p;
-        break;
-      }
+    catch (const std::exception& e) {
+      G4cerr << "SLArLArSD::ProcessHits() ERROR: No anode config found for TPC "
+        << fTPCID << G4endl; 
+      G4cerr << e.what() << G4endl; 
+      return false;
     }
 
-    if (ancestor) ancestor->IncrementLArEdep(edep); 
-    
   }     
 
   return true;

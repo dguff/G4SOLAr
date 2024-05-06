@@ -14,30 +14,35 @@
 class SLArEventSuperCellArray : public TNamed {
   public: 
     SLArEventSuperCellArray(); 
-    SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg); 
+    SLArEventSuperCellArray(const SLArCfgSuperCellArray& cfg); 
     SLArEventSuperCellArray(const SLArEventSuperCellArray&); 
     ~SLArEventSuperCellArray();
 
-    int ConfigSystem(SLArCfgSuperCellArray* cfg); 
-    std::map<int, SLArEventSuperCell*>& GetSuperCellMap() {return fSuperCellMap;}
-    int GetNhits() {return fNhits;}
-    bool IsActive() {return fIsActive;}
+    int ConfigSystem(const SLArCfgSuperCellArray& cfg); 
+    inline std::map<int, SLArEventSuperCell>& GetSuperCellMap() {return fSuperCellMap;}
+    inline const std::map<int, SLArEventSuperCell>& GetConstSuperCellMap() const {return fSuperCellMap;}
+    inline int GetNhits() const {return fNhits;}
+    inline bool IsActive() const {return fIsActive;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    SLArEventSuperCell& GetOrCreateEventSuperCell(const int scIdx); 
+    SLArEventSuperCell& RegisterHit(const SLArEventPhotonHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
-    bool SortHits(); 
+    //bool SortHits(); 
 
   private: 
     int fNhits; 
     bool fIsActive; 
-    std::map<int, SLArEventSuperCell*> fSuperCellMap;
+    UShort_t fLightBacktrackerRecordSize;
+    std::map<int, SLArEventSuperCell> fSuperCellMap;
 
   public:
-    ClassDef(SLArEventSuperCellArray, 1); 
+    ClassDef(SLArEventSuperCellArray, 2); 
 }; 
-
 
 #endif /* end of include guard SLAREVENTSUPERCELLARRAY */
 

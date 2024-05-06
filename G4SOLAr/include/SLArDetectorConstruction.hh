@@ -78,7 +78,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
     G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
-    std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV();
+    //! Get the vector containing the SuperCell Physical Volumes
+    inline std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV() {return fSuperCellsPV;}
+    //! Get the vector containing the Physical Volumes of volumes set as ExtScorer
+    inline std::vector<G4VPhysicalVolume*>&GetVecExtScorerPV() {return fExtScorerPV;}
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file
@@ -86,9 +89,12 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void                            DumpSuperCellMap(G4String path = "");
     //! Construct scorers in the cryostat layers for neutron shielding studies
     void                            ConstructCryostatScorer(); 
+    //! Set anode visualization attributes 
+    void                            SetAnodeVisAttributes(const int depth = 0); 
+    //! Add External Scorer Volume
+    void                            AddExternalScorer(const G4String phys_volume_name, const G4String alias);
 
   private:
-
     //! Detector description initilization
     void Init();
     G4String fGeometryCfgFile; //!< Geometry configuration file
@@ -103,6 +109,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::map<int, SLArDetCathode*> fCathode; 
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
+    SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
     std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
@@ -111,9 +118,13 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     G4VPhysicalVolume* fWorldPhys; //!< World physical volume
+    G4VPhysicalVolume* fCavernPhys;//!< Cavern physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
+    std::vector<G4VPhysicalVolume*> fExtScorerPV;
     G4String GetFirstChar(G4String line);
     
+    //! Construct Cavern
+    void ConstructCavern(); 
     //! Parse the description of the supercell detector system
     void InitSuperCell(const rapidjson::Value&); 
     //! Parse the description of the SC PDS

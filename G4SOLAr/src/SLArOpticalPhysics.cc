@@ -37,7 +37,7 @@
 
 #include "SLArOpticalPhysics.hh"
 
-SLArOpticalPhysics::SLArOpticalPhysics(G4bool toggle)
+SLArOpticalPhysics::SLArOpticalPhysics(G4bool abs_toggle, G4bool cerenkov_toggle)
   : G4VPhysicsConstructor("Optical")
 {
   //fWLSProcess                = NULL;
@@ -48,7 +48,8 @@ SLArOpticalPhysics::SLArOpticalPhysics(G4bool toggle)
   fRayleighScattering        = NULL;
   fMieHGScatteringProcess    = NULL;
 
-  fAbsorptionOn              = toggle;
+  fAbsorptionOn              = abs_toggle;
+  fCerenkovOn                = cerenkov_toggle;
 
 }
 
@@ -70,13 +71,14 @@ void SLArOpticalPhysics::ConstructProcess()
 
   //fWLSProcess = new G4OpWLS("WLS");
 
-  fScintProcess = new SLArScintillation("Scintillation");
+  fScintProcess = new SLArScintillation("Scintillation", fOptical);
   //fScintProcess = new G4Scintillation("Scintillation");
 
-  fCerenkovProcess = new G4Cerenkov("Cerenkov");
-  fCerenkovProcess->SetMaxNumPhotonsPerStep(300);
-  fCerenkovProcess->SetTrackSecondariesFirst(true);
-
+  if (fCerenkovOn) {
+    fCerenkovProcess = new G4Cerenkov("Cerenkov");
+    fCerenkovProcess->SetMaxNumPhotonsPerStep(300);
+    fCerenkovProcess->SetTrackSecondariesFirst(true);
+  }
   fAbsorptionProcess      = new G4OpAbsorption();
   fRayleighScattering     = new G4OpRayleigh();
   fMieHGScatteringProcess = new G4OpMieHG();
@@ -132,9 +134,11 @@ void SLArOpticalPhysics::ConstructProcess()
           FatalException,o.str().c_str());
     }
 
-    if(fCerenkovProcess->IsApplicable(*particle)){
-      pManager->AddProcess(fCerenkovProcess);
-      pManager->SetProcessOrdering(fCerenkovProcess,idxPostStep);
+    if (fCerenkovOn) {
+      if(fCerenkovProcess->IsApplicable(*particle)){
+        pManager->AddProcess(fCerenkovProcess);
+        pManager->SetProcessOrdering(fCerenkovProcess,idxPostStep);
+      }
     }
     if(fScintProcess->IsApplicable(*particle)){
       printf("Add scintillation process to %s\n", particle->GetParticleName().c_str());
@@ -148,5 +152,7 @@ void SLArOpticalPhysics::ConstructProcess()
 
 void SLArOpticalPhysics::SetNbOfPhotonsCerenkov(G4int maxNumber)
 {
-  fCerenkovProcess->SetMaxNumPhotonsPerStep(maxNumber);
+  if (fCerenkovProcess) {
+    fCerenkovProcess->SetMaxNumPhotonsPerStep(maxNumber);
+  }
 }

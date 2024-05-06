@@ -1,23 +1,24 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArAnalysisManagerMsgr
- * @created     : martedì mar 03, 2020 17:15:44 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArAnalysisManagerMsgr.cc
+ * @created     : Tue Mar 03, 2020 17:15:44 CET
  */
-#include "SLArAnalysisManager.hh"
-#include "SLArAnalysisManagerMsgr.hh"
+#include <sstream>
+#include <SLArAnalysisManager.hh>
+#include <SLArAnalysisManagerMsgr.hh>
+#include <SLArDetectorConstruction.hh>
 
-#include "G4RunManager.hh"
+#include <G4RunManager.hh>
 
-#include "G4UImessenger.hh"
-#include "G4UIcmdWithABool.hh"
-#include "G4UIcmdWithAString.hh"
-#include "G4UIcmdWithAnInteger.hh"
-#include "G4UIcmdWithADouble.hh"
-#include "G4UIcmdWith3Vector.hh"
-#include "G4UIcmdWithADoubleAndUnit.hh"
-#include "G4UIcmdWith3VectorAndUnit.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4VPhysicalVolume.hh"
+//#include <G4UImessenger.hh>
+#include <G4UIcmdWithABool.hh>
+#include <G4UIcmdWithAString.hh>
+#include <G4UIcmdWithAnInteger.hh>
+#include <G4PhysicalVolumeStore.hh>
+//#include <G4UIcmdWithADouble.hh>
+//#include <G4UIcmdWith3Vector.hh>
+//#include <G4UIcmdWithADoubleAndUnit.hh>
+//#include <G4UIcmdWith3VectorAndUnit.hh>
 
 #ifdef SLAR_GDML
 #include "G4GDMLParser.hh"
@@ -26,13 +27,19 @@
 SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fMsgrDir  (nullptr), fConstr_(nullptr),
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
-  fCmdWriteCfgFile(nullptr)
+  fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
+  fCmdGeoAnodeDepth(nullptr), 
+  fCmdEnableBacktracker(nullptr),
+  fCmdRegisterBacktracker(nullptr), 
+  fCmdSetZeroSuppressionThrs(nullptr)
 #ifdef SLAR_GDML
-  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
-  fGDMLFileName("slar_export.gdml")
+  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
 #endif
+  fCmdAddExtScorer(nullptr),
+  fGDMLFileName("slar_export.gdml")
 {
   TString UIManagerPath = "/SLAr/manager/";
+  TString UIGeometryPath = "/SLAr/geometry/";
   TString UIExportPath = "/SLAr/export/"; 
 
   fMsgrDir = new G4UIdirectory(UIManagerPath);
@@ -57,6 +64,45 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
     new G4UIcmdWithAString(UIManagerPath+"WriteCfgFile", this);
   fCmdOutputPath->SetGuidance("Write cfg file to output");
   fCmdOutputPath->SetParameterName("name path", false); 
+
+  fCmdPlotXSec = 
+    new G4UIcmdWithAString(UIManagerPath+"WriteXSection", this);
+  fCmdPlotXSec->SetGuidance("Write a cross-section to  output");
+  fCmdPlotXSec->SetParameterName("xsec_spec", false);
+  fCmdPlotXSec->SetGuidance("Specfiy [particle]:[process]:[material]:[log(0-1)]");
+
+  fCmdStoreFullTrajectory = 
+    new G4UIcmdWithABool(UIManagerPath+"storeFullTrajectory", this);
+  fCmdStoreFullTrajectory->SetGuidance("Store full track trajectory");
+
+  fCmdEnableBacktracker = 
+    new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
+  fCmdEnableBacktracker->SetGuidance("Enable backtracker on readout system");
+  fCmdEnableBacktracker->SetParameterName("backtraker_system", false);
+  fCmdEnableBacktracker->SetGuidance("Specfiy readout system");
+  fCmdEnableBacktracker->SetCandidates("charge vuv_sipm supercell");
+
+  fCmdRegisterBacktracker = 
+    new G4UIcmdWithAString(UIManagerPath+"registerBacktracker", this);
+  fCmdRegisterBacktracker->SetGuidance("Add backtracker on readout system");
+  fCmdRegisterBacktracker->SetParameterName("backtraker_system", false);
+  fCmdRegisterBacktracker->SetGuidance("Specfiy readout system and backtracker [readout_system]:[backtraker]");
+
+  fCmdSetZeroSuppressionThrs = 
+    new G4UIcmdWithAnInteger(UIManagerPath+"setZeroSuppressionThrs", this);
+  fCmdSetZeroSuppressionThrs->SetGuidance("Set charge readout zero suppression threshold");
+  fCmdSetZeroSuppressionThrs->SetParameterName("threshold", false);
+  
+  fCmdGeoAnodeDepth = 
+    new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
+  fCmdGeoAnodeDepth->SetGuidance("Set visualization depth for SoLAr anode");
+  fCmdGeoAnodeDepth->SetParameterName("depth", false);
+
+  fCmdAddExtScorer = 
+    new G4UIcmdWithAString(UIManagerPath+"addExtScorer", this);
+  fCmdAddExtScorer->SetGuidance("Add external scorer volume (only for EXT mode)");
+  fCmdAddExtScorer->SetParameterName("scorer_pv:alias", false);
+  fCmdAddExtScorer->SetGuidance("Specfiy physical volume to be used as ext scorer [pv_name]:[alias]");
   
 #ifdef SLAR_GDML
   fCmdGDMLFileName = 
@@ -76,10 +122,17 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
 SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
 {
   G4cerr << "Deleting SLArAnalysisManagerMsgr..." << G4endl;
-  if (fMsgrDir          ) delete fMsgrDir          ;
-  if (fCmdOutputPath    ) delete fCmdOutputPath    ;
-  if (fCmdOutputFileName) delete fCmdOutputFileName;
-  if (fCmdWriteCfgFile  ) delete fCmdWriteCfgFile  ; 
+  if (fMsgrDir               ) delete fMsgrDir               ;
+  if (fCmdOutputPath         ) delete fCmdOutputPath         ;
+  if (fCmdOutputFileName     ) delete fCmdOutputFileName     ;
+  if (fCmdWriteCfgFile       ) delete fCmdWriteCfgFile       ; 
+  if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
+  if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
+  if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
+  if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
+  if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
+  if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
+  if (fCmdAddExtScorer       ) delete fCmdAddExtScorer       ; 
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -105,6 +158,87 @@ void SLArAnalysisManagerMsgr::SetNewValue
     strm >> name >> file_path; 
 
     SLArAnaMgr->WriteCfgFile(name, file_path.c_str()); 
+  }
+  else if (cmd == fCmdPlotXSec) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _particle; 
+    G4String _process; 
+    G4String _material;
+    G4String _log = "0";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _particle = temp;
+      else if (ifield == 1) _process = temp;
+      else if (ifield == 2) _material = temp;
+      else if (ifield == 3) _log = temp;
+
+      ifield++;
+    }
+    
+    SLArAnaMgr->RegisterXSecDump( 
+        SLArAnalysisManager::SLArXSecDumpSpec(
+          _particle, _process, _material, std::atoi(_log)
+        )
+    ); 
+  }
+  else if (cmd == fCmdGeoAnodeDepth) {
+    fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
+  }
+  else if (cmd == fCmdStoreFullTrajectory) {
+    SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
+  else if (cmd == fCmdEnableBacktracker) {
+    SLArAnaMgr->ConstructBacktracker( newVal );
+  }
+  else if (cmd == fCmdRegisterBacktracker) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _system; 
+    G4String _backtracker; 
+    G4String _name = "";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _system = temp;
+      else if (ifield == 1) _backtracker = temp;
+      else if (ifield == 2) _name = temp;
+      ifield++;
+    }
+
+    auto bkt_mngr = SLArAnaMgr->GetBacktrackerManager(_system);
+    bkt_mngr->RegisterBacktracker(backtracker::GetBacktrackerEnum(_backtracker), _name);
+  }
+  else if (cmd == fCmdAddExtScorer) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _phys_vol_name; 
+    G4String _alias; 
+    G4String _name = "";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _phys_vol_name = temp;
+      else if (ifield == 1) _alias = temp;
+      else if (ifield == 2) _name = temp;
+      ifield++;
+    }
+
+    auto construction = 
+      (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    construction->AddExternalScorer(_phys_vol_name, _alias);
+    return;
+  }
+
+  else if (cmd == fCmdSetZeroSuppressionThrs) {
+    int thrs = std::atoi( newVal ); 
+    for (auto& anode_itr : SLArAnaMgr->GetEvent().GetEventAnode()) {
+      anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
+    }
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

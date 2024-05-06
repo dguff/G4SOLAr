@@ -5,86 +5,105 @@
  */
 
 #include "TRegexp.h"
-#include "TPRegexp.h"
-#include "TList.h"
+//#include "TPRegexp.h"
+//#include "TList.h"
 
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgReadoutTile.hh"
 #include "config/SLArCfgSuperCell.hh"
+#include <cstdio>
 #include "config/SLArCfgAssembly.hh"
 
 templateClassImp(SLArCfgAssembly)
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::SLArCfgAssembly() 
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::SLArCfgAssembly() 
   : SLArCfgBaseModule()/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName("aAssemblyHasNoName");
+  fElementsMap.reserve(50); 
 }
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(TString name, int serie) 
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::SLArCfgAssembly(TString name, int serie) 
   : SLArCfgBaseModule(serie)/*, fH2Bins(nullptr)*/, fNElements(0)
 {
   SetName(name);
+  fElementsMap.reserve(50);
+#ifdef SLAR_DEBUG
   printf("SLArCfgAssembly created with name %s\n", fName.Data());
+#endif
 }
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::SLArCfgAssembly(const SLArCfgAssembly &cfg)
   : SLArCfgBaseModule(cfg)/*, fH2Bins(0)*/, fNElements(0)
 {
-  SLArCfgAssembly<TBAseModule>();
+  SLArCfgAssembly<TBaseModule>();
   SetName(cfg.fName);
 
-  for (auto &el : cfg.fElementsMap)
+  const size_t n_elements = cfg.fElementsMap.size();
+  fElementsMap.reserve(n_elements); 
+  for (size_t i_element = 0; i_element < n_elements; i_element++)
   {
-    fElementsMap.insert(std::make_pair(
-          el.first, (TBAseModule*)el.second->Clone()));
+    fElementsMap.push_back( TBaseModule(cfg.fElementsMap.at(i_element)) ); 
     fNElements++;
+  }
+
+  for (const auto& p : cfg.fBinToIdxMap) {
+    fBinToIdxMap.insert( {p.first, p.second} ); 
+  }
+  for (const auto& p : cfg.fIDtoIdxMap) {
+    fIDtoIdxMap.insert( {p.first, p.second} ); 
   }
 
   //if (fNElements) SetTH2BinIdx();
 }
 
-template<class TBAseModule>
-SLArCfgAssembly<TBAseModule>::~SLArCfgAssembly()
+template<class TBaseModule>
+SLArCfgAssembly<TBaseModule>::~SLArCfgAssembly()
 {
   //if (fH2Bins) {delete fH2Bins; fH2Bins = nullptr;}
-  for (auto &sc : fElementsMap)
-    if (sc.second) {delete sc.second; sc.second = 0;}
+  //for (auto &sc : fElementsMap)
+    //if (sc) {delete sc.second; sc.second = 0;}
   fElementsMap.clear();
   fNElements = 0;
 }
 
-template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::DumpMap() 
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::DumpMap() const
 {
+  const size_t n_elements = fElementsMap.size(); 
   std::printf("SLArCfgAssembly %s has %lu entries\n", 
-      fName.Data(), fElementsMap.size());
-  for (auto &itr : fElementsMap)
-    itr.second->DumpInfo();
+      fName.Data(), n_elements);
+  for (size_t i_element = 0; i_element < n_elements; i_element++) 
+  {
+    const auto& itr = fElementsMap.at(i_element); 
+    itr.DumpInfo();
+  }
 }
 
-template<class TBAseModule>
-void SLArCfgAssembly<TBAseModule>::RegisterElement(TBAseModule* element)
-{
-  int idx = element->GetIdx();
-  if (fElementsMap.count(idx)) 
-  {
-    std::cout<<"Base element "<<idx<<" already registered. Skip"<<std::endl;
-    return;
-  }
-  fElementsMap.insert( 
-      std::make_pair(idx, element)
-      );
-  fNElements++; 
-}
 
 template<class TBaseModule>
-TBaseModule* SLArCfgAssembly<TBaseModule>::GetBaseElement(int idx)
+void SLArCfgAssembly<TBaseModule>::DumpInfo() const
 {
-  return fElementsMap.find(idx)->second;
+  DumpMap(); 
+}
+
+
+template<class TBaseModule>
+void SLArCfgAssembly<TBaseModule>::RegisterElement(TBaseModule& element)
+{
+  int id = element.GetID();
+  if (fIDtoIdxMap.count(id)) 
+  {
+    std::cout<<"Base element with id "<<id<<" already registered. Skip"<<std::endl;
+    return;
+  }
+  element.SetIdx( fElementsMap.size() ); 
+  fIDtoIdxMap.insert( std::make_pair( id, element.GetIdx() ) ); 
+  fElementsMap.push_back( std::move(element) );
+  fNElements++; 
 }
 
 template<class TBaseModule>
@@ -99,26 +118,24 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
   h2Bins->SetFloat();
 
   int iBin = 1;
-  for (auto &el : fElementsMap) 
-  {
-    //printf("el position (global): %g, %g, %g \n", 
-        //el.second->GetPhysX(), el.second->GetPhysY(), el.second->GetPhysZ());
-    TGraph* g = el.second->BuildGShape(); 
+  const size_t n_elements = fElementsMap.size(); 
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    auto& el = GetBaseElement(i_element); 
+    TGraph g = el.BuildGShape(); 
     if (kFrame == kRelative) {
-      for (int i=0; i<g->GetN(); i++) {
+      for (int i=0; i<g.GetN(); i++) {
         //printf("(%g, %g) -> ", g->GetX()[i], g->GetY()[i]);
-        g->GetX()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis0 ); 
-        g->GetY()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis1 ); 
+        g.GetX()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis0 ); 
+        g.GetY()[i] -= TVector3(fPhysX, fPhysY, fPhysZ).Dot( fAxis1 ); 
         //printf("(%g, %g)\n", g->GetX()[i], g->GetY()[i]);
       }
       //getchar(); 
     }
     TString gBinName = Form("gBin%i", iBin);
-    int bin_idx = h2Bins->AddBin(
-        g->Clone(gBinName));
-    el.second->SetBinIdx(bin_idx);
+    int bin_idx = h2Bins->AddBin((TGraph*)g.Clone(gBinName));
+    el.SetBinIdx(bin_idx);
+    fBinToIdxMap.insert( std::make_pair(bin_idx, i_element) ); 
     iBin ++;
-    delete g; 
   }
 
   h2Bins->ChangePartition(n, m); 
@@ -150,18 +167,21 @@ TH2Poly* SLArCfgAssembly<TBaseModule>::BuildPolyBinHist(
  */
 
 template<class TBaseModule>
-TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
+TGraph SLArCfgAssembly<TBaseModule>::BuildGShape() const {
 
   double x_min =  1e10;
   double x_max = -1e10; 
   double y_min =  1e10; 
   double y_max = -1e10; 
 
-  for (const auto &el : fElementsMap) {
-    TGraph* gbin = el.second->BuildGShape(); 
-    double* x = gbin->GetX(); 
-    double* y = gbin->GetY(); 
-    int n = gbin->GetN(); 
+  const size_t n_elements = fElementsMap.size();
+
+  for (size_t i_element = 0; i_element < n_elements; i_element++) {
+    const auto& el = GetBaseElement(i_element); 
+    TGraph gbin = el.BuildGShape(); 
+    const double* x = gbin.GetX(); 
+    const double* y = gbin.GetY(); 
+    int n = gbin.GetN(); 
     double x_min_bin = *std::min_element(x, x+n);
     double x_max_bin = *std::max_element(x, x+n); 
     double y_min_bin = *std::min_element(y, y+n); 
@@ -171,33 +191,17 @@ TGraph* SLArCfgAssembly<TBaseModule>::BuildGShape() {
     if (x_max_bin > x_max) x_max = x_max_bin; 
     if (y_min_bin < y_min) y_min = y_min_bin; 
     if (y_max_bin > y_max) y_max = y_max_bin;
-
-    delete gbin; 
   }
 
-  TGraph* g = new TGraph(5); 
-  g->SetPoint(0, x_min, y_min); 
-  g->SetPoint(1, x_min, y_max); 
-  g->SetPoint(2, x_max, y_max); 
-  g->SetPoint(3, x_max, y_min); 
-  g->SetPoint(4, x_min, y_min); 
+  TGraph g(5); 
+  g.SetPoint(0, x_min, y_min); 
+  g.SetPoint(1, x_min, y_max); 
+  g.SetPoint(2, x_max, y_max); 
+  g.SetPoint(3, x_max, y_min); 
+  g.SetPoint(4, x_min, y_min); 
 
-  g->SetName(Form("g%s", fName.Data())); 
+  g.SetName(Form("g%s", fName.Data())); 
   return g;
-}
-
-template<class TBaseModule>
-TBaseModule* SLArCfgAssembly<TBaseModule>::FindBaseElementInMap(int ibin) 
-{
-  TBaseModule* module_cfg = nullptr;
-  for (const auto& mod : fElementsMap) {
-    if (mod.second->GetBinIdx() == ibin) {
-      module_cfg = mod.second; 
-      break;
-    }
-  }
-
-  return module_cfg;
 }
 
 

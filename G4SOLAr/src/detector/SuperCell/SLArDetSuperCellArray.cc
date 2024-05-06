@@ -54,7 +54,7 @@ void SLArDetSuperCellArray::Init(const rapidjson::Value& jconf) {
 
   auto jpos = jarray["position"].GetObject(); 
   int idim = 0; 
-  G4double vunit = SLArGeoInfo::Unit2Val(jpos["unit"]); 
+  G4double vunit = unit::Unit2Val(jpos["unit"]); 
   for (const auto &v : jpos["xyz"].GetArray()) {
     fPosition[idim] = (v.GetDouble() * vunit); 
     fGeoInfo->RegisterGeoPar("pos_"+xyz_suffix[idim], fPosition[idim]); 
@@ -62,7 +62,7 @@ void SLArDetSuperCellArray::Init(const rapidjson::Value& jconf) {
   }
 
   auto jrot = jarray["rot"].GetObject(); 
-  vunit = SLArGeoInfo::Unit2Val(jrot["unit"]); 
+  vunit = unit::Unit2Val(jrot["unit"]); 
   assert(jrot.HasMember("val")); 
   assert(jrot["val"].IsArray()); 
   assert(jrot["val"].GetArray().Size() == 3);
@@ -194,11 +194,11 @@ void SLArDetSuperCellArray::BuildSuperCellArray(SLArDetSuperCell* superCell) {
   //printf("vol name: %s (%lu daughters)\n", vol->GetName().data(), fModLV->GetNoDaughters());
   vol->SetCopyNo(800+fID); 
 
-  //for (auto &subModules : fSubModules) {
-    //subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
-  //}
+  for (auto &subModules : fSubModules) {
+    subModules->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
+  }
 
-  //fModLV->SetVisAttributes( G4VisAttributes(false) ); 
+  fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 }
 
 std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(
@@ -215,15 +215,15 @@ std::pair<int, G4double> SLArDetSuperCellArray::ComputeArrayTrueLength(
   return std::make_pair(n_replica, fabs(len));
 };
 
-SLArCfgSuperCellArray* SLArDetSuperCellArray::BuildSuperCellArrayCfg() {
-  SLArCfgSuperCellArray* arrayCfg = new SLArCfgSuperCellArray("SC_array_"+std::to_string(fID), fID); 
-  arrayCfg->SetIdx( fID ); 
+SLArCfgSuperCellArray SLArDetSuperCellArray::BuildSuperCellArrayCfg() {
+  SLArCfgSuperCellArray arrayCfg("SC_array_"+std::to_string(fID), fID); 
+  arrayCfg.SetIdx( fID ); 
 
-  arrayCfg->SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
-  arrayCfg->SetupAxes(); 
-  arrayCfg->SetPhi  ( fGeoInfo->GetGeoPar("scarray_phi") ); 
-  arrayCfg->SetTheta( fGeoInfo->GetGeoPar("scarray_theta") ); 
-  arrayCfg->SetPsi  ( fGeoInfo->GetGeoPar("scarray_psi") ); 
+  arrayCfg.SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
+  arrayCfg.SetupAxes(); 
+  arrayCfg.SetPhi  ( fGeoInfo->GetGeoPar("scarray_phi") ); 
+  arrayCfg.SetTheta( fGeoInfo->GetGeoPar("scarray_theta") ); 
+  arrayCfg.SetPsi  ( fGeoInfo->GetGeoPar("scarray_psi") ); 
 
   auto sc_array = (G4PVParameterised*)fModLV->GetDaughter(0); 
   auto sc_row   = (G4PVParameterised*)fSubModules.front()->GetModLV()->GetDaughter(0);  
@@ -249,37 +249,37 @@ SLArCfgSuperCellArray* SLArDetSuperCellArray::BuildSuperCellArrayCfg() {
       rpl_sc_row.fStartingPos + rpl_sc_row.fWidth*i_sc_row*rpl_sc_row.fReplicaAxisVec;
 
     for (int i_sc_clm = 0; i_sc_clm < rpl_sc_clm.fNreplica; i_sc_clm++) {
-      G4int sc_idx = (i_sc_row+1)*100 + i_sc_clm;
+      G4int sc_id = (i_sc_row+1)*100 + i_sc_clm;
       G4String scName = Form("%s_%i_%i", 
-          fPhotoDetModel.data(), arrayCfg->GetIdx(), sc_idx); 
-      SLArCfgSuperCell* scCfg = new SLArCfgSuperCell(sc_idx);
-      scCfg->SetName(scName);
+          fPhotoDetModel.data(), arrayCfg.GetIdx(), sc_id); 
+      SLArCfgSuperCell scCfg(sc_id);
+      scCfg.SetName(scName);
 
       G4ThreeVector sc_local_pos = pos_sc_row + 
         rpl_sc_clm.fStartingPos + rpl_sc_clm.fWidth*i_sc_clm*rpl_sc_clm.fReplicaAxisVec;
-      scCfg->SetX(sc_local_pos.x()); 
-      scCfg->SetY(sc_local_pos.y()); 
-      scCfg->SetZ(sc_local_pos.z()); 
+      scCfg.SetX(sc_local_pos.x()); 
+      scCfg.SetY(sc_local_pos.y()); 
+      scCfg.SetZ(sc_local_pos.z()); 
 
       G4ThreeVector sc_abs_pos = fGlobalPosition + sc_local_pos.transform(*rot_inv); 
 
-      scCfg->SetPhysX( sc_abs_pos.x() ); 
-      scCfg->SetPhysY( sc_abs_pos.y() ); 
-      scCfg->SetPhysZ( sc_abs_pos.z() ); 
+      scCfg.SetPhysX( sc_abs_pos.x() ); 
+      scCfg.SetPhysY( sc_abs_pos.y() ); 
+      scCfg.SetPhysZ( sc_abs_pos.z() ); 
 
-      scCfg->SetPhi( arrayCfg->GetPhi() ); 
-      scCfg->SetTheta( arrayCfg->GetTheta() ); 
-      scCfg->SetPsi( arrayCfg->GetPsi() ); 
+      scCfg.SetPhi( arrayCfg.GetPhi() ); 
+      scCfg.SetTheta( arrayCfg.GetTheta() ); 
+      scCfg.SetPsi( arrayCfg.GetPsi() ); 
 
-      scCfg->SetNormal( arrayCfg->GetNormal() ); 
-      scCfg->SetupAxes(); 
+      scCfg.SetNormal( arrayCfg.GetNormal() ); 
+      scCfg.SetupAxes(); 
 
       const auto scBox = (G4Box*)fSuperCell->GetModSV();
-      scCfg->SetSize( 2*scBox->GetXHalfLength(),
+      scCfg.SetSize( 2*scBox->GetXHalfLength(),
                       2*scBox->GetYHalfLength(), 
                       2*scBox->GetZHalfLength() ); 
 
-      arrayCfg->RegisterElement( scCfg );
+      arrayCfg.RegisterElement( scCfg );
     }
   }
 

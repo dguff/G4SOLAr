@@ -16,30 +16,31 @@
 class SLArEventGenericHit : public TObject {
   public: 
     SLArEventGenericHit(); 
+    SLArEventGenericHit(float t, int prodTrkID=-1, int primaryTrkID=-1);
     SLArEventGenericHit(const SLArEventGenericHit& h); 
     virtual ~SLArEventGenericHit() {}
 
     virtual void DumpInfo() {} 
 
-    virtual float GetTime() {return fTime;}
-    virtual void  SetTime(float t) {fTime = t;}
+    inline virtual float GetTime() const {return fTime;}
+    inline virtual int   GetProducerTrkID() const {return fProducerTrkID;}
+    inline virtual int   GetPrimaryProducerTrkID() const {return fPrimaryProducerTrkID;}
+    inline virtual void  SetProducerTrkID(const int id) {fProducerTrkID = id;}
+    inline virtual void  SetPrimaryProducerTrkID(const int id) {fPrimaryProducerTrkID = id;}
+    inline virtual void  SetTime(float t) {fTime = t;}
 
     virtual bool operator< (const SLArEventGenericHit& other) const; 
     static  bool CompareHitPtrs(const SLArEventGenericHit* left, const SLArEventGenericHit* right); 
 
   protected:
     float fTime; 
+    int   fProducerTrkID;
+    int   fPrimaryProducerTrkID;
   
   public: 
-    ClassDef(SLArEventGenericHit, 1)
+    ClassDef(SLArEventGenericHit, 2)
 }; 
 
-inline bool SLArEventGenericHit::operator<(const SLArEventGenericHit& other) const {
-  return fTime < other.fTime; 
-}
 
-inline bool SLArEventGenericHit::CompareHitPtrs(const SLArEventGenericHit* left, const SLArEventGenericHit* right) {
-  return left->fTime < right->fTime; 
-}
 #endif /* end of include guard SLAREVENTGENERICHIT_HH */
 

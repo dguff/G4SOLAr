@@ -1,0 +1,25 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : Ar42.mac
+# @created     : venerdì lug 01, 2022 11:44:25 CEST
+#
+# @description : Prouduce Ar-42 decays using the bxdecay0 generator
+######################################################################
+
+
+# Select bxdecay0 generator
+/SLAr/gen/type Decay0
+/SLAr/gen/volume target_lar_pv
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/gammaCut 0.5 mm
+/SLAr/phys/electronCut 0.5 mm
+/SLAr/scint/enablePhGeneration false
+
+
+# Set decay to be produced by bxdecay0
+/bxdecay0/generator/verbosity 0
+/bxdecay0/generator/background Ar42 123456
+
+# Fire!
+/run/beamOn 500

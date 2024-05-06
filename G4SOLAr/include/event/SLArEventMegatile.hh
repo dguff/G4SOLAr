@@ -7,6 +7,8 @@
 #ifndef SLAREVENTMEGATILE_HH
 
 #define SLAREVENTMEGATILE_HH
+#include <map>
+#include <memory>
 
 #include "event/SLArEventTile.hh"
 #include "config/SLArCfgMegaTile.hh"
@@ -15,34 +17,42 @@
 class SLArEventMegatile : public TNamed {
   public: 
     SLArEventMegatile(); 
-    SLArEventMegatile(SLArCfgMegaTile* cfg); 
+    SLArEventMegatile(const SLArCfgMegaTile* cfg); 
     SLArEventMegatile(const SLArEventMegatile& right);
     ~SLArEventMegatile(); 
 
-    int ConfigModule(SLArCfgMegaTile* cfg);
+    SLArEventTile& GetOrCreateEventTile(const int& tileIdx); 
+    int ConfigModule(const SLArCfgMegaTile* cfg);
 
-    std::map<int, SLArEventTile*>& GetTileMap() {return fTilesMap;}
-    int GetNPhotonHits();
-    int GetNChargeHits(); 
-    int GetIdx() {return fIdx;}
+    inline const std::map<int, SLArEventTile>& GetConstTileMap() const {return fTilesMap;}
+    inline std::map<int, SLArEventTile>& GetTileMap() {return fTilesMap;}
+    int GetNPhotonHits() const;
+    int GetNChargeHits() const; 
+    inline int GetIdx() const {return fIdx;}
 
-    int RegisterHit(SLArEventPhotonHit* hit); 
+    SLArEventTile& RegisterHit(const SLArEventPhotonHit& hit); 
     int ResetHits(); 
+    int SoftResetHits();
 
     void SetActive(bool is_active); 
     void SetIdx(int idx) {fIdx = idx;}
-    bool SortHits(); 
+    inline void SetChargeBacktrackerRecordSize(const UShort_t size) {fChargeBacktrackerRecordSize = size;}
+    inline UShort_t GetChargeBacktrackerRecordSize() const {return fChargeBacktrackerRecordSize;}
+    inline void SetLightBacktrackerRecordSize(const UShort_t size) {fLightBacktrackerRecordSize = size;}
+    inline UShort_t GetLightBacktrackerRecordSize() const {return fLightBacktrackerRecordSize;}
+    //bool SortHits(); 
 
   private:
     int fIdx; 
     bool fIsActive; 
     int fNhits; 
-    std::map<int, SLArEventTile*> fTilesMap; 
+    UShort_t fLightBacktrackerRecordSize;
+    UShort_t fChargeBacktrackerRecordSize;
+    std::map<int, SLArEventTile> fTilesMap; 
 
   public:
-    ClassDef(SLArEventMegatile, 1)
+    ClassDef(SLArEventMegatile, 2)
 };
-
 
 #endif /* end of include guard SLAREVENTMEGATILE_HH */
 

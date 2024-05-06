@@ -1,0 +1,22 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : electrons.mac
+# @created     : venerdì lug 01, 2022 11:47:12 CEST
+#
+# @description : Produce monoenergetic electrons in the detector center
+######################################################################
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 1.5 mm
+/SLAr/phys/positronCut 1.5 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/scint/enablePhGeneration false
+
+# Set particle energy and source position 
+/SLAr/gen/configure assets/macros/generator_test.json
+# Set output file name
+/SLAr/manager/SetOutputName gen_test.root
+
+# Fire!
+/run/beamOn 1

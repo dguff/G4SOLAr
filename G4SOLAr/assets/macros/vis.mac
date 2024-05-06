@@ -1,5 +1,5 @@
 # Use this open statement to create an OpenGL view:
-/vis/open OGLIQt 600x600-0+0
+/vis/open OGLSQt 600x600-0+0
 #
 # Use this open statement to create a .prim file suitable for
 # viewing in DAWN:
@@ -19,7 +19,9 @@
 /vis/verbose errors
 #
 # Draw geometry:
-/vis/drawVolume
+/vis/drawVolume target_lar_pv
+/SLAr/geometry/setAnodeVisDepth 0
+
 #
 # Specify view angle:
 #/vis/viewer/set/viewpointThetaPhi 90. 0.
@@ -45,12 +47,12 @@
 #/vis/scene/add/hits
 #
 # To draw only gammas:
-/vis/filtering/trajectories/create/particleFilter
-/vis/filtering/trajectories/particleFilter-0/add opticalphoton
+#/vis/filtering/trajectories/create/particleFilter
+#/vis/filtering/trajectories/particleFilter-0/add opticalphoton
 #
 # To invert the above, drawing all particles except gammas,
 # keep the above two lines but also add:
-/vis/filtering/trajectories/particleFilter-0/invert true
+#/vis/filtering/trajectories/particleFilter-0/invert true
 #
 # Many other options are available with /vis/modeling and /vis/filtering.
 # For example, to select colour by particle ID:

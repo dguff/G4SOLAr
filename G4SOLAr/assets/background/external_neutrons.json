@@ -2,8 +2,13 @@
   "externals" : 
     {
       "particle" : "neutron", 
-      "origin_volume" : "cryostat_pv", 
-      "file" : "/home/guff/Dune/SOLAr/SOLAr-sim/install/assets/background/dune_cavern_n.root",
-      "key" : "EnergySpectrum"
+      "ext_spectrum_file" : "/home/guff/Dune/SOLAr/SOLAr-sim/install/assets/background/dune_cavern_n.root",
+      "ext_spectrum_key" : "EnergySpectrum",
+      "vertex_gen" : {
+        "type" : "bulk", 
+        "config" : {
+          "volume" : "cavern_rock_gen"
+        }
+      }
     }
 }

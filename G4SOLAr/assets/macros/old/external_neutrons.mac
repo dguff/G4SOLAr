@@ -1,0 +1,25 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : externals.mac
+# @created     : Wed Apr 12, 2023 09:20:36 CEST
+#
+# @description : external background generator example
+######################################################################
+
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 2.5 mm
+/SLAr/phys/positronCut 2.5 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/phys/DoTracePhotons false
+
+# Set particle energy and source position 
+/SLAr/gen/type ExternalGen
+/SLAr/gen/externalconf assets/background/cavern_rock_neutrons.json
+
+# Set output file name
+/SLAr/manager/storeFullTrajectory false
+
+# Fire!
+/run/beamOn 100000

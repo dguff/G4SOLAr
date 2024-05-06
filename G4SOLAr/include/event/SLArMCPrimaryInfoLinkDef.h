@@ -13,7 +13,9 @@
 #pragma link C++ struct trj_point+;
 #pragma link C++ class std::vector<trj_point>+;
 #pragma link C++ class SLArEventTrajectory+;
-#pragma link C++ class std::vector<SLArEventTrajectory*>+;
+#pragma link C++ struct SLArEventTrajectoryLite::Coordinates_t+; 
+#pragma link C++ class SLArEventTrajectoryLite+;
+#pragma link C++ class std::vector<std::unique_ptr<SLArEventTrajectory>>+;
 #pragma link C++ class SLArMCPrimaryInfo+;
 #endif
 

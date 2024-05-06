@@ -9,9 +9,17 @@
 #define SLARGEOUTILS_HH
 
 #include <map>
-#include <G4ThreeVector.hh>
+#include <regex>
 
-namespace slargeo {
+#include <G4ThreeVector.hh>
+#include <G4UIcommand.hh>
+
+#include <rapidjson/document.h>
+#include <rapidjson/allocators.h>
+
+class G4VSolid;
+
+namespace geo {
   enum EBoxFace {kXplus=0, kXminus=1, kYplus=2, kYminus=3, kZplus=4, kZminus=5}; 
   static std::map<EBoxFace, G4ThreeVector> BoxFaceNormal  = {
     {kXplus, G4ThreeVector(-1, 0, 0)},
@@ -21,6 +29,8 @@ namespace slargeo {
     {kZplus, G4ThreeVector(0, 0, -1)},
     {kZminus, G4ThreeVector(0, 0, +1)}
   };
+
+  double get_bounding_volume_surface(const G4VSolid* solid);
 }
 
 

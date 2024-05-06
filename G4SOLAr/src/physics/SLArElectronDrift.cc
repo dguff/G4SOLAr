@@ -5,6 +5,8 @@
  */
 
 #include <functional>
+#include "SLArAnalysisManager.hh"
+#include "SLArBacktrackerManager.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventChargeHit.hh"
 #include "config/SLArCfgAnode.hh"
@@ -92,12 +94,17 @@ void SLArElectronDrift::PrintProperties() {
   return;
 }
 
-void SLArElectronDrift::Drift(const int& n, const int& trkId,
+void SLArElectronDrift::Drift(const int& n, 
+    const int& trkId,
+    const int& ancestorId,
     const G4ThreeVector& pos, 
     const double time, 
     SLArCfgAnode* anodeCfg, 
     SLArEventAnode* anodeEv) 
 {
+  auto ana_mngr = SLArAnalysisManager::Instance();
+  auto bkt_mngr = ana_mngr->GetBacktrackerManager( backtracker:: kCharge );
+
   // Find the megatile interested by the hit
   G4ThreeVector anodeXaxis = 
     G4ThreeVector(anodeCfg->GetAxis0().x(), anodeCfg->GetAxis0().y(), anodeCfg->GetAxis0().z());
@@ -108,73 +115,66 @@ void SLArElectronDrift::Drift(const int& n, const int& trkId,
   G4ThreeVector anodePos = 
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
-  auto pixID = anodeCfg->FindPixel( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
-//#ifdef SLAR_DEBUG
+  //#ifdef SLAR_DEBUG
   //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
-      //n, pos.x(), pos.y(), pos.z(), time);
+  //n, pos.x(), pos.y(), pos.z(), time);
   //printf("axis projection: [%.0f, %.0f]\n", pos.dot(anodeXaxis), pos.dot(anodeYaxis)); 
-  //printf("pixID[%i, %i, %i]\n", pixID[0], pixID[1], pixID[2]);
-//#endif
+  //printf("pixID[%i, %i, %i]\n", pixID_tmp[0], pixID_tmp[1], pixID_tmp[2]);
+  //#endif
 
-    // Get anode position and compute drift time
-    G4double driftLength = (pos - anodePos).dot(anodeNormal);
-    if (driftLength < 0) return;
+  // Get anode position and compute drift time
+  G4double driftLength = (pos - anodePos).dot(anodeNormal);
+  if (driftLength < 0) return;
 
-    G4double driftTime   = driftLength / fvDrift;
-    G4double hitTime     = time + driftTime; 
-    // compute diffusion length and fraction of surviving electrons
-    G4double diffLengthT = sqrt(2*fDiffCoefficientT*driftTime); 
-    G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
-    G4double f_surv      = exp (-driftTime/fElectronLifetime); 
+  G4double driftTime   = driftLength / fvDrift;
+  G4double hitTime     = time + driftTime; 
+  // compute diffusion length and fraction of surviving electrons
+  G4double diffLengthT = sqrt(2*fDiffCoefficientT*driftTime); 
+  G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
+  G4double f_surv      = exp (-driftTime/fElectronLifetime); 
 
-//#ifdef SLAR_DEBUG
-    //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
-        //driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
-    //getchar(); 
-//#endif
+  //#ifdef SLAR_DEBUG
+  //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
+  //driftLength, driftTime, f_surv*100, diffLengthL, diffLengthT);
+  //getchar(); 
+  //#endif
 
-    G4int n_elec_anode = G4Poisson(n*f_surv); 
+  G4int n_elec_anode = G4Poisson(n*f_surv); 
 
-    std::vector<double> x_(n_elec_anode); 
-    std::vector<double> y_(n_elec_anode); 
-    std::vector<double> t_(n_elec_anode);
-    G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.dot(anodeXaxis), diffLengthT); 
-    G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
-    G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
+  std::vector<double> x_(n_elec_anode); 
+  std::vector<double> y_(n_elec_anode); 
+  std::vector<double> t_(n_elec_anode);
+  G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.dot(anodeXaxis), diffLengthT); 
+  G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
+  G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
 
-    for (G4int i=0; i<n_elec_anode; i++) {
-      pixID = anodeCfg->FindPixel(x_[i], y_[i]); 
-      if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-        SLArCfgMegaTile* mtile = (SLArCfgMegaTile*)anodeCfg->FindBaseElementInMap(pixID[0]); 
-        SLArCfgReadoutTile* tile = (SLArCfgReadoutTile*)mtile->FindBaseElementInMap(pixID[1]); 
-        if (!tile) {
-          printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
-              pixID[1], pixID[0], pixID[1], pixID[2]);
-          getchar(); 
-          continue;
-        }
-        SLArEventMegatile* evMT=anodeEv->GetMegaTilesMap().find(mtile->GetIdx())->second;
-        if (!evMT) {
-          printf("SLArElectronDrift::WARNING No MT event registered at idx %i\n", 
-              mtile->GetIdx());
-          getchar(); 
-          continue;
-        }
-        SLArEventTile* evT=evMT->GetTileMap().find(tile->GetIdx())->second;
-        if (!evT) {
-          printf("SLArElectronDrift::WARNING No Tile event registered at idx %i\n", 
-              tile->GetIdx());
-          getchar(); 
-          continue;
-        }
-        evT->RegisterChargeHit(pixID[2], new SLArEventChargeHit(t_[i], trkId, 0)); 
-//#ifdef SLAR_DEBUG
-        //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
-        //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
-        ////evT->PrintHits(); 
-        //getchar();
-//#endif
+  SLArCfgAnode::SLArPixIdx pixID;
+  for (G4int i=0; i<n_elec_anode; i++) {
+    pixID = anodeCfg->GetPixelIndex(x_[i], y_[i]); 
+    if (pixID[0] >= 0 && pixID[1] >= 0 && pixID[2] >= 0 ) {
+
+      SLArEventChargeHit hit(t_[i], trkId, ancestorId); 
+      auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
+
+      //#ifdef SLAR_DEBUG
+      //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);
+      //printf("\tpix id: %i, %i, %i\n", pixID[0], pixID[1], pixID[2]);
+      ////evT->PrintHits(); 
+      //getchar();
+      //#endif
+
+      if (bkt_mngr == nullptr) continue;
+
+      if (bkt_mngr->IsNull()) continue;
+
+      auto& records = 
+        evPixel.GetBacktrackerVector( evPixel.ConvertToClock<float>(hit.GetTime()));
+
+      for (size_t ib = 0; ib < bkt_mngr->GetBacktrackers().size(); ib++) {
+        bkt_mngr->GetBacktrackers().at(ib)->Eval(&hit, 
+            &records.GetRecords().at(ib));
       }
     }
-
+  }
 }
+
