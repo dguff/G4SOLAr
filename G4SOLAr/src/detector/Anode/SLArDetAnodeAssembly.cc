@@ -283,7 +283,8 @@ SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
   }
 
   printf("%s has %lu elements registered\n", 
-      anodeCfg.GetName(), anodeCfg.GetMap().size());
+
+  anodeCfg.GetName(), anodeCfg.GetMap().size());
 
   return anodeCfg; 
 }
