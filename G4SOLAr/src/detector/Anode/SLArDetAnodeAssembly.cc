@@ -217,17 +217,20 @@ SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
       
 
       //printf("megatile %i: local (%.2f, %.2f, %.2f) - abs (%.2f, %.2f, %.2f)\n", 
-          //mtCfg->GetIdx(), mtCfg->GetX(), mtCfg->GetY(), mtCfg->GetZ(), 
-          //mtCfg->GetPhysX(), mtCfg->GetPhysY(), mtCfg->GetPhysZ());
+          //mtCfg.GetIdx(), mtCfg.GetX(), mtCfg.GetY(), mtCfg.GetZ(), 
+          //mtCfg.GetPhysX(), mtCfg.GetPhysY(), mtCfg.GetPhysZ());
 
       for (int i_t_row = 0; i_t_row < rpl_t_row.fNreplica; i_t_row++) {
         G4ThreeVector pos_t_row = 
           rpl_t_row.fStartingPos + rpl_t_row.fWidth*(i_t_row)*rpl_t_row.fReplicaAxisVec;
+        printf("pos_t_row: %.2f, %.2f, %.2f\n", pos_t_row.x(), pos_t_row.y(), pos_t_row.z()); 
         for (int i_t_clm = 0; i_t_clm < rpl_t_clm.fNreplica; i_t_clm++) {
+          G4ThreeVector t_pos = 
+            rpl_t_clm.fStartingPos + rpl_t_clm.fWidth*(i_t_clm)*rpl_t_clm.fReplicaAxisVec;
           G4ThreeVector t_local_pos = pos_t_row + 
             rpl_t_clm.fStartingPos + rpl_t_clm.fWidth*(i_t_clm)*rpl_t_clm.fReplicaAxisVec;
-
-          G4ThreeVector t_abs_pos = mt_abs_pos + t_local_pos.transform(*rot_inv); 
+          //printf("\tt_pos: %.2f, %.2f, %.2f\n", t_pos.x(), t_pos.y(), t_pos.z()); 
+          //printf("\tt_local_pos: %.2f, %.2f, %.2f\n", t_local_pos.x(), t_local_pos.y(), t_local_pos.z()); 
 
           SLArCfgReadoutTile tileCfg( 100*(i_t_row+1) + i_t_clm ); 
           G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg.GetID(), 
@@ -241,8 +244,10 @@ SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
 
           tileCfg.SetX( t_local_pos.x() ); 
           tileCfg.SetY( t_local_pos.y() ); 
-          tileCfg.SetX( t_local_pos.z() ); 
+          tileCfg.SetZ( t_local_pos.z() ); 
           
+          G4ThreeVector t_abs_pos = mt_abs_pos + t_local_pos.transform(*rot_inv); 
+
           tileCfg.SetPhysX( t_abs_pos.x() ); 
           tileCfg.SetPhysY( t_abs_pos.y() ); 
           tileCfg.SetPhysZ( t_abs_pos.z() ); 
@@ -261,6 +266,12 @@ SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
 
       auto h2 = mtCfg.BuildPolyBinHist(SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative);
       delete h2;
+
+      //for (const auto& t : mtCfg.GetConstMap()) {
+        //printf("Tile %i - pos: %.2f, %.2f, %.2f\n", t.GetIdx(), 
+            //t.GetX(), t.GetY(), t.GetZ());
+      //}
+      //getchar();
 
       anodeCfg.RegisterElement( mtCfg ); 
     }
