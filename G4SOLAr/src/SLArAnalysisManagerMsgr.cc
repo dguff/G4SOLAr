@@ -7,6 +7,7 @@
 #include <SLArAnalysisManager.hh>
 #include <SLArAnalysisManagerMsgr.hh>
 #include <SLArDetectorConstruction.hh>
+#include <SLArRunAction.hh>
 
 #include <G4RunManager.hh>
 
@@ -15,9 +16,9 @@
 #include <G4UIcmdWithAString.hh>
 #include <G4UIcmdWithAnInteger.hh>
 #include <G4PhysicalVolumeStore.hh>
+#include <G4UIcmdWithADoubleAndUnit.hh>
 //#include <G4UIcmdWithADouble.hh>
 //#include <G4UIcmdWith3Vector.hh>
-//#include <G4UIcmdWithADoubleAndUnit.hh>
 //#include <G4UIcmdWith3VectorAndUnit.hh>
 
 #ifdef SLAR_GDML
@@ -31,7 +32,8 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdGeoAnodeDepth(nullptr), 
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
-  fCmdSetZeroSuppressionThrs(nullptr)
+  fCmdSetZeroSuppressionThrs(nullptr), 
+  fCmdElectronLifetime(nullptr)
 #ifdef SLAR_GDML
   ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
 #endif
@@ -41,6 +43,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   TString UIManagerPath = "/SLAr/manager/";
   TString UIGeometryPath = "/SLAr/geometry/";
   TString UIExportPath = "/SLAr/export/"; 
+  TString UIPhysPath = "/SLAr/phys/"; 
 
   fMsgrDir = new G4UIdirectory(UIManagerPath);
   fMsgrDir->SetGuidance("SLAr manager instructions");
@@ -92,6 +95,11 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
     new G4UIcmdWithAnInteger(UIManagerPath+"setZeroSuppressionThrs", this);
   fCmdSetZeroSuppressionThrs->SetGuidance("Set charge readout zero suppression threshold");
   fCmdSetZeroSuppressionThrs->SetParameterName("threshold", false);
+
+  fCmdElectronLifetime = 
+    new G4UIcmdWithADoubleAndUnit(UIPhysPath+"setElectronLifetime", this); 
+  fCmdElectronLifetime->SetGuidance("Set electrons lifetime in LAr"); 
+  fCmdElectronLifetime->SetParameterName("electron_lifetime", false); 
   
   fCmdGeoAnodeDepth = 
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
@@ -132,6 +140,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
+  if (fCmdElectronLifetime)    delete fCmdElectronLifetime   ; 
   if (fCmdAddExtScorer       ) delete fCmdAddExtScorer       ; 
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
@@ -232,6 +241,12 @@ void SLArAnalysisManagerMsgr::SetNewValue
       (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     construction->AddExternalScorer(_phys_vol_name, _alias);
     return;
+  }
+  else if ( cmd == fCmdElectronLifetime ) {
+    auto detector = 
+      (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+    auto& lar_properties = detector->GetLArProperties(); 
+    lar_properties.SetElectronLifetime( fCmdElectronLifetime->GetNewDoubleValue( newVal ) ); 
   }
 
   else if (cmd == fCmdSetZeroSuppressionThrs) {

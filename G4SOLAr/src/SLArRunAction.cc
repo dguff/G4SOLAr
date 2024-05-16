@@ -4,19 +4,17 @@
  * @created     : venerdì nov 04, 2022 09:28:13 CET
  */
 
-#include "SLArAnalysisManager.hh"
-#include "SLArDetectorConstruction.hh"
-#include "SLArPrimaryGeneratorAction.hh"
-#include "SLArExternalGeneratorAction.hh"
-#include "SLArBoxSurfaceVertexGenerator.hh"
-#include "SLArBulkVertexGenerator.hh"
-#include "SLArRunAction.hh"
-#include "SLArRun.hh"
+#include <SLArAnalysisManager.hh>
+#include <SLArDetectorConstruction.hh>
+#include <SLArPrimaryGeneratorAction.hh>
+//#include "SLArExternalGeneratorAction.hh>
+//#include "SLArBoxSurfaceVertexGenerator.hh>
+//#include "SLArBulkVertexGenerator.hh>
+#include <SLArRunAction.hh>
+#include <SLArRun.hh>
 
-#include "G4Run.hh"
-#include "G4RunManager.hh"
-#include "G4SDManager.hh"
-#include "G4UnitsTable.hh"
+#include <G4Run.hh>
+#include <G4RunManager.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -25,6 +23,9 @@ SLArRunAction::SLArRunAction()
 { 
   // Create custom SLAr Analysis Manager
   SLArAnalysisManager* anamgr = SLArAnalysisManager::Instance();
+
+  const auto detector = (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  fElectronDrift = new SLArElectronDrift(detector->GetLArProperties()); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -53,9 +54,10 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
 
   SLArAnaMgr->CreateFileStructure();
 
-  fElectronDrift = new SLArElectronDrift(); 
-  fElectronDrift->ComputeProperties(); 
-  fElectronDrift->PrintProperties(); 
+  const auto detector = (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  SLArLArProperties& lar_properties = detector->GetLArProperties(); 
+  lar_properties.ComputeProperties(); 
+  lar_properties.PrintProperties(); 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 
   for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {

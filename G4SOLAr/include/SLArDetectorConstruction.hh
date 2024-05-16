@@ -15,6 +15,7 @@
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/Anode/SLArDetReadoutTileAssembly.hh"
 #include "detector/Anode/SLArDetAnodeAssembly.hh"
+#include <physics/SLArLArProperties.hh>
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -41,8 +42,6 @@ class SLArCfgSuperCellArray;
  */
 class SLArDetectorConstruction : public G4VUserDetectorConstruction
 {
-
-
   friend class SLArAnalysisManagerMsgr;
 
   public:
@@ -86,6 +85,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file
     G4String                        GetMaterialCfgFile() {return fMaterialDBFile;}
+    //!  Return Liquid Argon Properties
+    SLArLArProperties&              GetLArProperties() {return fLArProperties;}
+    //!  Return Liquid Argon Properties
+    const SLArLArProperties&        GetLArProperties() const {return fLArProperties;}
     void                            DumpSuperCellMap(G4String path = "");
     //! Construct scorers in the cryostat layers for neutron shielding studies
     void                            ConstructCryostatScorer(); 
@@ -99,6 +102,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void Init();
     G4String fGeometryCfgFile; //!< Geometry configuration file
     G4String fMaterialDBFile;  //!< Material table file
+    SLArLArProperties fLArProperties; //!< Liquid Argon Properties
     //! vector of visualization attributes
     std::vector<G4VisAttributes*>   fVisAttributes; 
 
