@@ -5,7 +5,7 @@
  */
 
 #include <G4SystemOfUnits.hh>
-#include <SLArLArProperties.hh>
+#include <physics/SLArLArProperties.hh>
 
 SLArLArProperties::SLArLArProperties() :
   fElectricField(0.5), fLArTemperature(87.7), fMuElectron(1.), 
