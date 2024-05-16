@@ -8,6 +8,7 @@
 
 #define SLARLARPROPERTIES_HH
 
+#include <array>
 #include <G4ThreeVector.hh>
 
 class SLArLArProperties {
