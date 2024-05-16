@@ -6,6 +6,8 @@
 
 #include "SLArBulkVertexGenerator.hh"
 #include "G4PhysicalVolumeStore.hh"
+#include <G4TransportationManager.hh>
+#include <G4Material.hh>
 #include "G4RandomTools.hh"
 
 namespace gen {
@@ -122,14 +124,20 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     //printf("delta = %g\n", delta);
   }
 
+  auto navigator = G4TransportationManager::GetTransportationManager()->GetNavigator("World"); 
+
   G4ThreeVector localVertex;
+  G4String localMaterial; 
   G4int maxtries=100000, itry=1;
   do {
     localVertex.set(
         lo.x() + 0.5*delta + G4UniformRand()*(hi.x()-lo.x()-delta),
         lo.y() + 0.5*delta + G4UniformRand()*(hi.y()-lo.y()-delta),
         lo.z() + 0.5*delta + G4UniformRand()*(hi.z()-lo.z()-delta));
-  } while (!fSolid->Inside(localVertex) && ++itry < maxtries);
+
+    G4VPhysicalVolume* vol = navigator->LocateGlobalPointAndSetup(localVertex);
+    localMaterial = vol->GetLogicalVolume()->GetMaterial()->GetName();
+  } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
   G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
@@ -186,6 +194,10 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
   }
   if (cfg.HasMember("avoid_daughters")) {
     fNoDaughters = cfg["avoid_daughters"].GetBool();
+  }
+  if (cfg.HasMember("material")) {
+    fMaterial = cfg["material"].GetString(); 
+    fRequireMaterialMatch = true;
   }
   Config(volName);
 }
