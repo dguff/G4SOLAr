@@ -1,0 +1,20 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : rootlogon.C
+ * @created     : 2024-05-20 10:59
+ */
+
+#include <iostream>
+#include "TSystem.h"
+
+void rootlogon()
+{
+  gSystem->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
+  gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
+
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
+  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
+}
+
