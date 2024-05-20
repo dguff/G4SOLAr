@@ -83,6 +83,11 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction(const G4String config_fil
 
 void SLArPrimaryGeneratorAction::Configure(const G4String config_file_path) {
   FILE* gen_cfg_file = std::fopen(config_file_path, "r");
+  if (gen_cfg_file == nullptr) {
+    fprintf(stderr, "SLArPrimaryGeneratorAction::Configure ERROR: Cannot open configuration file %s",
+        config_file_path.data());
+    exit( EXIT_FAILURE ); 
+  }
   char readBuffer[65536];
   rapidjson::FileReadStream is(gen_cfg_file, readBuffer, sizeof(readBuffer));
 
