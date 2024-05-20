@@ -108,13 +108,13 @@ TVector3 TChannelAnalyzer::get_bin_center(TH2PolyBin* bin, const TVector3& axis_
   TGraph* g = static_cast<TGraph*>(bin->GetPolygon());
   double x = 0.; 
   double y = 0.;
-  for (int i=0; i<g->GetN(); i++) {
+  for (int i=0; i<g->GetN()-1; i++) {
     x += g->GetX()[i]; 
     y += g->GetY()[i]; 
   }
 
-  x /= g->GetN(); 
-  y /= g->GetN(); 
+  x /= (g->GetN() -1); 
+  y /= (g->GetN() -1); 
   TVector3 bin_pos = axis_x*x + axis_y*y;
 
   return bin_pos;
