@@ -37,6 +37,9 @@ if(G4SOLAr_FOUND)
 endif()
 
 find_package(RapidJSON REQUIRED)
+if (RapidJSON_FOUND) 
+  message(STATUS "RapidJSON found: include at ${RapidJSON_INCLUDE_DIR}")
+endif()
 
 #----------------------------------------------------------------------------
 # Define path variables
@@ -65,7 +68,7 @@ include_directories(
   ${G4SOLAR_INCLUDE_DIR}
   ${Geant4_INCLUDE_DIR}
   ${ROOT_INCLUDE_DIRS}
-  "${RapidJSON_INCLUDE_DIR}"
+  "${RapidJSON_INCLUDE_DIR}/.."
   )
 if (CLHEP_EXTERNAL) 
   include_directories(${CLHEP_EXTERNAL})
