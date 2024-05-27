@@ -88,6 +88,8 @@ int main(int argc,char** argv)
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
   G4double bias_factor = 1; 
+  G4long myseed = 345354;
+
   G4String physName = "FTFP_BERT_HP";
   std::vector<G4String> bias_process;
 
@@ -95,7 +97,6 @@ int main(int argc,char** argv)
   G4int nThreads = 0;
 #endif
 
-  G4long myseed = 345354;
   const char* short_opts = "m:o:d:l:x:u:t:r:g:p:b:c:h";
   static struct option long_opts[14] = 
   {
@@ -156,8 +157,8 @@ int main(int argc,char** argv)
       };
       case 'r':
       {
-        myseed = std::atoi(optarg); 
-        printf("solar_sim seed: %lu\n", myseed);
+        myseed = std::atol(optarg); 
+        printf("solar_sim seed: %ld\n", myseed);
         break;
       }; 
       case 'g':
@@ -292,7 +293,9 @@ int main(int argc,char** argv)
   if (generator_file.empty() == false) {
     gen::SLArPrimaryGeneratorAction* gen = 
       (gen::SLArPrimaryGeneratorAction*)runManager->GetUserPrimaryGeneratorAction(); 
+    printf("Configuring generator as per %s", generator_file.data()); 
     gen->Configure( generator_file ); 
+    printf("Done\n"); 
   }
 
   #ifdef SLAR_EXTERNAL
