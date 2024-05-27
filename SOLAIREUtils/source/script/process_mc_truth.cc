@@ -244,7 +244,7 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
         const auto& steps = t->GetConstPoints();
         for (const auto& p : steps) {
             // here you can access the step-level information
-            // p.fX, p.fY, p.fZ; step-point coordinates [mm]  
+            // p.fX, p.fZ, p.fY; step-point coordinates [mm]  
             // p.fLAr [bool] if the step was in LAr or not
             // p.fEdep; Energy loss in step [MeV]
             // p.fCopy; Copy Nr of the volume
@@ -253,23 +253,23 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
             // p.fNph; Nr of scintillation produces
           // Control plots
           if ( p.fLAr && p.fEdep > 0) {
-              hEdepProfile_XY->Fill(p.fX, p.fY, p.fEdep); 
-              hEdepProfile_RZ->Fill(sqrt(pow(p.fX,2)+pow(p.fY,2)), p.fZ, p.fEdep); 
-              if(abs(p.fY) < 1500)
-                  hEdepProfile_XZ->Fill(p.fX, p.fZ, p.fEdep); 
+              hEdepProfile_XY->Fill(p.fX, p.fZ, p.fEdep); 
+              hEdepProfile_RZ->Fill(sqrt(pow(p.fX,2)+pow(p.fZ,2)), p.fY, p.fEdep); 
+              if(abs(p.fZ) < 1500)
+                  hEdepProfile_XZ->Fill(p.fX, p.fY, p.fEdep); 
           }
           // Clustering in ID volume
           if ( p.fLAr && p.fEdep > 0) {
               n_edeps++;
-              if(abs(p.fX) < 500 && abs(p.fY) < 500 && abs(p.fZ) < 600) {
+              if(abs(p.fX) < 500 && abs(p.fZ) < 500 && abs(p.fY) < 675) {
                   hEdepID_NoCuts->Fill(p.fEdep*1000);
                   hEdepID_NoCuts_Zoom0200->Fill(p.fEdep*1000);
                   hEdepID_NoCuts_Zoom020->Fill(p.fEdep*1000);
               // Construct clusters from Energy deposits
-              if(distXY(p.fX,p.fY, v_cl.back().x, v_cl.back().y) < 10 && distZ(p.fZ, v_cl.back().z) < 3){
+              if(distXY(p.fX,p.fZ, v_cl.back().x, v_cl.back().y) < 10 && distZ(p.fY, v_cl.back().z) < 3){
                   v_cl.back().x = (p.fX*p.fEdep +  v_cl.back().x*v_cl.back().ene)/(p.fEdep+v_cl.back().ene);
-                  v_cl.back().y = (p.fY*p.fEdep +  v_cl.back().y*v_cl.back().ene)/(p.fEdep+v_cl.back().ene);
-                  v_cl.back().z = (p.fZ*p.fEdep +  v_cl.back().z*v_cl.back().ene)/(p.fEdep+v_cl.back().ene);
+                  v_cl.back().y = (p.fZ*p.fEdep +  v_cl.back().y*v_cl.back().ene)/(p.fEdep+v_cl.back().ene);
+                  v_cl.back().z = (p.fY*p.fEdep +  v_cl.back().z*v_cl.back().ene)/(p.fEdep+v_cl.back().ene);
                   v_cl.back().ene += p.fEdep*1000;
                   v_cl.back().ndep ++;
               }
@@ -279,8 +279,8 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
                       v_cl.push_back(cl1);
                       v_cl.back().ene = p.fEdep*1000;
                       v_cl.back().x = p.fX;
-                      v_cl.back().y = p.fY;
-                      v_cl.back().z = p.fZ;
+                      v_cl.back().y = p.fZ;
+                      v_cl.back().z = p.fY;
                       v_cl.back().ndep = 1;
                       nclusters++;
                   }
@@ -288,20 +288,20 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
                       nclusters++;
                       v_cl.back().ene = p.fEdep*1000;
                       v_cl.back().x = p.fX;
-                      v_cl.back().y = p.fY;
-                      v_cl.back().z = p.fZ;
+                      v_cl.back().y = p.fZ;
+                      v_cl.back().z = p.fY;
                       v_cl.back().ndep = 1;
                   }
                   else cout << "Warning!!! Clusters counting problem!  Vector size: " << v_cl.size() << "   Counter: " << nclusters << endl;
               }
             }
             // Energy deposited in the Outer Detector
-            else if (abs(p.fX) >= 500 || abs(p.fY) >= 500){
+            else if (abs(p.fX) >= 500 || abs(p.fZ) >= 500){
                 OD_energy += p.fEdep*1000;
                 OD_photons += OD_ene_to_nph(p.fEdep*1000, gER_QY_nph_600V, r);
             }
-            else if (abs(p.fX) < 500 && abs(p.fY) < 500 && abs(p.fZ) >= 600){
-                if(p.fZ>0){
+            else if (abs(p.fX) < 500 && abs(p.fZ) < 500 && abs(p.fY) >= 675){
+                if(p.fY>0){
                     ID_buffer_top_energy += p.fEdep*1000;;
                     ID_buffer_top_photons += OD_ene_to_nph(p.fEdep*1000, gER_QY_nph_0V, r);;
                 } 
@@ -312,7 +312,7 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
             }
             else cout << "Something's strange in the segmentation conditions!" << endl;
           }
-          // cout << i << "  " << n_edeps << "  " << p.fX << "  " << p.fY << "  " << p.fZ << "  " << p.fEdep*1000 << endl; 
+          // cout << i << "  " << n_edeps << "  " << p.fX << "  " << p.fZ << "  " << p.fY << "  " << p.fEdep*1000 << endl; 
         }
       }
     }
@@ -384,8 +384,8 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
                 const auto& steps = t->GetConstPoints();
                 for (const auto& p : steps) {
                     if ( p.fLAr && p.fEdep > 0) {
-                        hEdepProfile_RZ_nclus1->Fill(sqrt(pow(p.fX,2)+pow(p.fY,2)),p.fZ);
-                        hEdepProfile_XY_nclus1->Fill(p.fX,p.fY);
+                        hEdepProfile_RZ_nclus1->Fill(sqrt(pow(p.fX,2)+pow(p.fZ,2)),p.fY);
+                        hEdepProfile_XY_nclus1->Fill(p.fX,p.fZ);
                     }
                 }
             }
@@ -425,7 +425,7 @@ int process_mc_truth(const TString mc_file_path, const TString output_file_path)
     top_buffer_veto = 0;
     bottom_buffer_veto = 0;
     // Event counter
-    if(i%10000 == 0) cout << "Event ID: " << i << endl;
+    if(i%500000 == 0) cout << "Event ID: " << i << endl;
   }
 
   gER_QY_nph_600V->Write();
