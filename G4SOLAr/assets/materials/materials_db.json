@@ -195,6 +195,18 @@
         {"name" : "Epoxi", "massFraction" : 0.40}
       ]
     },
+    {
+      "name" : "Copper", 
+      "NIST" : "G4_Cu"
+    },
+    {
+      "name" : "HDPE", 
+      "density" : {"val" : 0.961, "unit" : "g/cm3"}, 
+      "atomic_components" : [
+        {"name" : "Carbon", "symb" : "C", "Z" : 6, "nAtom" : 2},
+        {"name" : "Hydrogen", "symb" : "H" , "Z" :  1, "nAtom" : 4}
+      ]
+    },
     {"name" : "Water",
       "NIST" : "G4_WATER", 
       "PropertiesTable" : [
@@ -281,8 +293,8 @@
         {"property" : "SCINTILLATIONYIELD1", "value" : 0.77}, 
         {"property" : "SCINTILLATIONYIELD2", "value" : 0.23}, 
         {"property" : "ELECTRONSCINTILLATIONYIELD", "value" : [
-          {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 2e4]},  
-          {"var" : "Yield", "val" : [4.0, 4.0e8]} 
+          {"var" : "Energy", "unit" : "MeV", "val" : [2e-4, 2e5]},  
+          {"var" : "Yield", "val" : [4.0, 4.0e9]} 
         ]}, 
         {"property" : "ELECTRONSCINTILLATIONYIELD1", "value" : 0.73},  
         {"property" : "ELECTRONSCINTILLATIONYIELD2", "value" : 0.27}, 
@@ -294,8 +306,8 @@
         {"property" : "ALPHASCINTILLATIONYIELD1", "value" : 0.44},  
         {"property" : "ALPHASCINTILLATIONYIELD2", "value" : 0.56},  
         {"property" : "PROTONSCINTILLATIONYIELD",  "value" : [
-          {"var" : "Energy", "unit" : "MeV", "val" : [0.0, 10.0e3]},  
-          {"var" : "Yield", "val" : [3.84, 1.92e8]} 
+          {"var" : "Energy", "unit" : "MeV", "val" : [0.0, 10.0e4]},  
+          {"var" : "Yield", "val" : [3.84, 1.92e9]} 
         ]}, 
         {"property" : "PROTONSCINTILLATIONYIELD1", "value" : 0.71},  
         {"property" : "PROTONSCINTILLATIONYIELD2", "value" : 0.29},  

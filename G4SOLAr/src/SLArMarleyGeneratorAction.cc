@@ -33,10 +33,21 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArMarleyGeneratorAction.hh"
+#include <SLArRandomExtra.hh>
 
+// rapidjson
+#include "rapidjson/document.h"
+#include "rapidjson/reader.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/prettywriter.h"
+
+
+
+namespace gen {
 namespace marley {
-SLArMarleyGeneratorAction::SLArMarleyGeneratorAction() 
-  : G4VUserPrimaryGeneratorAction(), marley_vertex_generator_(0), marley_nu_direction(0, 0, 1) 
+SLArMarleyGeneratorAction::SLArMarleyGeneratorAction(const G4String label) 
+  : SLArBaseGenerator(label)
 {
   fHalfLifeTable = {
         //{ 0.0298299*CLHEP::MeV, 4.25*CLHEP::ns },
@@ -47,32 +58,20 @@ SLArMarleyGeneratorAction::SLArMarleyGeneratorAction()
     };
 }
 
-SLArMarleyGeneratorAction::SLArMarleyGeneratorAction(
-  const std::string& config_file_name) 
-  : SLArMarleyGeneratorAction()
-{
-  // Create a new marley::Generator object using the settings from the
-  // configuration file. If the USE_ROOT preprocessor macro is defined, then
-  // parse the configuration file using a RootJSONConfig object to make
-  // ROOT-dependent configuration options available (e.g., the use of a "th1"
-  // or "tgraph" neutrino source)
-  marley::RootJSONConfig config( config_file_name );
-  marley_generator_= config.create_generator();
-  const auto run_seed = SLArAnalysisManager::Instance()->GetSeed();
-  marley_generator_.reseed( run_seed ); 
-} 
-
 void SLArMarleyGeneratorAction::SetupMarleyGen(const std::string& config_file_name) 
 {
-  marley::RootJSONConfig config( config_file_name );
-  marley_generator_= config.create_generator();
+  fMarleyConfig.marley_config_path = config_file_name;
+  SetupMarleyGen();
 }
 
-void SLArMarleyGeneratorAction::SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface* vtx_gen)
+void SLArMarleyGeneratorAction::SetupMarleyGen() 
 {
-  marley_vertex_generator_ = vtx_gen; 
-  return;
+  ::marley::RootJSONConfig config( fMarleyConfig.marley_config_path );
+  fMarleyGenerator = config.create_generator();
+  const auto run_seed = SLArAnalysisManager::Instance()->GetSeed();
+  fMarleyGenerator.reseed( run_seed ); 
 }
+
 
 double SLArMarleyGeneratorAction::SampleDecayTime(const double half_life) const  {
   return CLHEP::RandExponential::shoot( half_life / log(2) ); 
@@ -82,20 +81,24 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // Create a new primary vertex at the spacetime origin.
   G4ThreeVector vtx(0., 0., 0); 
-  if (marley_vertex_generator_) {
-    marley_vertex_generator_->ShootVertex(vtx); 
+  if (fVtxGen) {
+    fVtxGen->ShootVertex(vtx); 
   }
-
-  
 
   G4double marley_time = 0.; 
 
   std::array<double, 3> dir = 
-  {marley_nu_direction.x(), marley_nu_direction.y(), marley_nu_direction.z()};
-  marley_generator_.set_neutrino_direction(dir); 
+  {fMarleyConfig.direction.x(), fMarleyConfig.direction.y(), fMarleyConfig.direction.z()};
+  if (fMarleyConfig.direction_mode == EDirectionMode::kRandomDir) {
+    G4ThreeVector dir_tmp = SampleRandomDirection();
+    dir.at(0) = dir_tmp.x(); 
+    dir.at(1) = dir_tmp.y(); 
+    dir.at(2) = dir_tmp.z();
+  }
+  fMarleyGenerator.set_neutrino_direction(dir); 
 
   // Generate a new MARLEY event using the owned marley::Generator object
-  marley::Event ev = marley_generator_.create_event();
+  ::marley::Event ev = fMarleyGenerator.create_event();
 
   // Get nuclear cascade info
   const auto& marley_cascades = ev.get_cascade_levels(); 
@@ -151,4 +154,78 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     anEvent->AddPrimaryVertex( vertex );
   }
 }
+
+void SLArMarleyGeneratorAction::Configure(const rapidjson::Value& config) {
+  if (config.HasMember("marley_config_path")) {
+    fMarleyConfig.marley_config_path = config["marley_config_path"].GetString(); 
+  } else {
+    throw std::invalid_argument("Marley gen missing mandatory field \"marley_config_path\"\n");
+  }
+
+  if (config.HasMember("direction")) {
+    if (config["direction"].IsString()) {
+      G4String dir_mode = config["direction"].GetString(); 
+      if (dir_mode == "isotropic") {
+        fMarleyConfig.direction_mode = EDirectionMode::kRandomDir;
+      } else if (dir_mode == "fixed") {
+        fMarleyConfig.direction_mode = EDirectionMode::kFixedDir;
+        fMarleyConfig.direction.set(0, 0, 1); 
+      }
+    }
+    else if (config["direction"].IsArray()) {
+      fMarleyConfig.direction_mode = EDirectionMode::kFixedDir;
+      assert( config["direction"].GetArray().Size() == 3 ); 
+      G4double dir[3] = {0}; 
+      G4int idir = 0; 
+      for (const auto& p : config["direction"].GetArray()) {
+        dir[idir] = p.GetDouble(); idir++; 
+      }
+      fMarleyConfig.direction.set(dir[0], dir[1], dir[2]); 
+    }
+  }
+  if (config.HasMember("vertex_gen")) {
+    ConfigureVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+  }
+
+  SetupMarleyGen(); 
+  return;
 }
+
+G4String SLArMarleyGeneratorAction::WriteConfig() const 
+{
+  G4String config_str = "";
+
+  rapidjson::Document config; 
+  FILE* config_file = std::fopen(fMarleyConfig.marley_config_path, "r"); 
+  char readBuffer[65536];
+  rapidjson::FileReadStream is(config_file, readBuffer, sizeof(readBuffer));
+
+  config.ParseStream<rapidjson::kParseCommentsFlag>(is);
+
+  rapidjson::Document vtx_json = fVtxGen->ExportConfig();
+
+  rapidjson::Document d; 
+  d.SetObject(); 
+  rapidjson::StringBuffer buffer;
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+  G4String gen_type = GetGeneratorType(); 
+
+  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
+  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
+  d.AddMember("marley_config", config.GetObj(), d.GetAllocator()); 
+  rapidjson::Value vtx_config; 
+  vtx_config.CopyFrom(vtx_json, config.GetAllocator()); 
+  d.AddMember("vertex_generator", vtx_config, d.GetAllocator()); 
+  d.Accept(writer);
+  config_str = buffer.GetString();
+
+  fclose(config_file); 
+  return config_str;
+}
+
+} // close namespace marley
+
+} // close namespace gen

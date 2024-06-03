@@ -10,9 +10,12 @@
 
 #define SLArTRACKINGACTION_HH
 
-#include "G4UserTrackingAction.hh"
-#include "G4TrackingManager.hh"
+#include <G4UserTrackingAction.hh>
+#include <G4TrackingManager.hh>
+#include <G4UImessenger.hh>
 #include "globals.hh"
+
+class SLArTrackingActionMessenger;
 
 class SLArTrackingAction : public G4UserTrackingAction {
 
@@ -26,8 +29,37 @@ class SLArTrackingAction : public G4UserTrackingAction {
 
     G4TrackingManager* GetTrackingManager() {return fpTrackingManager;}
 
+  private:
+    SLArTrackingActionMessenger* fTrackingExtraMessenger;
+    G4bool _store_particle_trajectory_  = false;
+    G4bool _store_photon_trajectory_ = false;
+
+    friend class SLArTrackingActionMessenger;
 };
 
+class G4UIdirectory;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWith3VectorAndUnit;
+class G4UIcmdWith3Vector;
+class G4UIcmdWithAString;
+class G4UIcmdWithADouble; 
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithABool; 
+class G4UIcmdWithoutParameter;
+
+
+class SLArTrackingActionMessenger : public G4UImessenger {
+  public: 
+    SLArTrackingActionMessenger( SLArTrackingAction* );
+    virtual ~SLArTrackingActionMessenger(); 
+
+    virtual void SetNewValue(G4UIcommand*, G4String); 
+  
+  private:
+    SLArTrackingAction*     fTrkAction;
+    G4UIcmdWithABool*       fCmdStoreParticleTrajectory;
+    G4UIcmdWithABool*       fCmdStorePhotonTrajectory;
+};
 
 
 

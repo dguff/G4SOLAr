@@ -1,0 +1,11 @@
+{
+  "generator" : {
+    "type" : "genie", 
+    "label" : "genie_test", 
+    "config" : {
+      "genie_file_path" : "/home/guff/Downloads/enubetMCG_v1.0.root",
+      "genie_tree_key" : "enubetG", 
+      "tree_first_entry" : 2
+    }
+  }
+}

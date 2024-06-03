@@ -53,7 +53,7 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 
     G4UIcmdWithAString*         fCmdGDMLExport    ;
 #endif
-
+    G4UIcmdWithAString*         fCmdAddExtScorer; 
     G4String                    fGDMLFileName     ; 
 };
 

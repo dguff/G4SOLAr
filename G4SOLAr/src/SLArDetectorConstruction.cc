@@ -524,6 +524,7 @@ void SLArDetectorConstruction::ConstructSDandField()
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDname;
 
+#ifndef SLAR_EXTERNAL
   auto anaMngr = SLArAnalysisManager::Instance(); 
   if (anaMngr->GetPhysicsBiasingMap().size() > 0) {
     for (const auto &biasing : anaMngr->GetPhysicsBiasingMap() ) {
@@ -563,20 +564,41 @@ void SLArDetectorConstruction::ConstructSDandField()
     iTPC++; 
   }
 
-
-#ifdef SLAR_EXTERNAL
-  auto cavern_scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume("cavern_scorer_pv"); 
-  if (cavern_scorer_pv) {
-    auto ext_scorer_sd = 
-      new SLArExtScorerSD("/Ext/cavern"); 
-    SDman->AddNewDetector(ext_scorer_sd); 
-    SetSensitiveDetector(cavern_scorer_pv->GetLogicalVolume(), ext_scorer_sd); 
-    auto runAction = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
-    runAction->RegisterExtScorerLV( cavern_scorer_pv->GetLogicalVolume() ); 
-  }
 #endif
+
 }
 
+void SLArDetectorConstruction::AddExternalScorer(const G4String phys_volume_name, const G4String alias)
+{
+  // sensitive detectors 
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  G4String SDname;
+#ifdef SLAR_EXTERNAL
+  auto external_scorer_pv = G4PhysicalVolumeStore::GetInstance()->GetVolume(phys_volume_name); 
+  if (external_scorer_pv) {
+    G4String ext_scorer_name = "/Ext/scorer/" + alias;
+    printf("SLArDetectorConstruction::AddExternalScorer(): "); 
+    printf("Making %s a scorer volume (%s)\n", phys_volume_name.data(), ext_scorer_name.data()); 
+
+    auto ext_scorer_sd = 
+      new SLArExtScorerSD(ext_scorer_name); 
+    SDman->AddNewDetector(ext_scorer_sd); 
+    SetSensitiveDetector(external_scorer_pv->GetLogicalVolume(), ext_scorer_sd); 
+    auto runAction = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
+    runAction->RegisterExtScorerLV( external_scorer_pv->GetLogicalVolume() ); 
+    fExtScorerPV.push_back( external_scorer_pv ); 
+  }
+  else {
+    printf("SLArDetectorConstruction::AddExternalScorer(): ERROR "); 
+    printf("Unable to fond physical volume %s in physical volume store\n", phys_volume_name.data()); 
+  }
+#else
+  G4cout << "SLArDetectorConstruction::AddExternalScorer WARNING: " << G4endl;
+  G4cout << "This method is active only when solar_sim is compiled with SLAR_EXTERNAL option, and this is not the case." << G4endl;
+#endif
+
+  return;
+}
 
 
 SLArDetTPC* SLArDetectorConstruction::GetDetTPC(int copyid) 
@@ -635,7 +657,7 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
 
   // Get PMTSystem Configuration
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-  SLArCfgSystemSuperCell*  pdsCfg = new SLArCfgSystemSuperCell("PDSCfg"); 
+  SLArCfgSystemSuperCell&  pdsCfg = SLArAnaMgr->GetPDSCfg();
 
   printf("-- Building SuperCell arrays\n");
   for (auto &array_ : fSCArray) {
@@ -656,10 +678,10 @@ void SLArDetectorConstruction::BuildAndPlaceSuperCells()
         rot, pos, tpc->GetModLV(), 0, scarray_id); 
 
     auto array_cfg = scarray->BuildSuperCellArrayCfg(); 
-    array_cfg->SetX( pos.x() ); array_cfg->SetPhysX( glb_pos.x() );
-    array_cfg->SetY( pos.y() ); array_cfg->SetPhysY( glb_pos.y() );
-    array_cfg->SetZ( pos.z() ); array_cfg->SetPhysZ( glb_pos.z() );
-    pdsCfg->RegisterElement( array_cfg ); 
+    array_cfg.SetX( pos.x() ); array_cfg.SetPhysX( glb_pos.x() );
+    array_cfg.SetY( pos.y() ); array_cfg.SetPhysY( glb_pos.y() );
+    array_cfg.SetZ( pos.z() ); array_cfg.SetPhysZ( glb_pos.z() );
+    pdsCfg.RegisterElement( array_cfg ); 
   }
 
  
@@ -706,9 +728,9 @@ void SLArDetectorConstruction::BuildAndPlaceAnode() {
         rot, pos, tpc->GetModLV(), 0, anode_id); 
 
     auto anode_cfg = anode->BuildAnodeConfig(); 
-    anode_cfg->SetX( pos.x() ); anode_cfg->SetPhysX( glb_pos.x() ); 
-    anode_cfg->SetY( pos.y() ); anode_cfg->SetPhysY( glb_pos.y() ); 
-    anode_cfg->SetZ( pos.z() ); anode_cfg->SetPhysZ( glb_pos.z() ); 
+    anode_cfg.SetX( pos.x() ); anode_cfg.SetPhysX( glb_pos.x() ); 
+    anode_cfg.SetY( pos.y() ); anode_cfg.SetPhysY( glb_pos.y() ); 
+    anode_cfg.SetZ( pos.z() ); anode_cfg.SetPhysZ( glb_pos.z() ); 
     ana_mgr->LoadAnodeCfg(anode_cfg); 
   }
 
@@ -729,25 +751,27 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
   auto ana_mgr = SLArAnalysisManager::Instance(); 
 
   for (auto &anodeCfg_ : ana_mgr->GetAnodeCfg()) {
-    auto anodeCfg = anodeCfg_.second; 
+    auto& anodeCfg = anodeCfg_.second; 
     // access the first megatile to extract the map of the tiles 
     // (which is replicated for all the megatiles in the anode). 
-    int megatile_nr = anodeCfg->GetMap().size(); 
-    printf("%s has %i elements registered\n", anodeCfg->GetName(), megatile_nr); 
+    int megatile_nr = anodeCfg.GetMap().size(); 
+    printf("%s has %i elements registered\n", anodeCfg.GetName(), megatile_nr); 
 #ifdef SLAR_DEBUG
-    anodeCfg->DumpMap(); 
+    anodeCfg.DumpMap(); 
 #endif
 
-    const size_t n_megatiles = anodeCfg->GetMap().size(); 
+    const size_t n_megatiles = anodeCfg.GetMap().size(); 
     if (n_megatiles == 0) {
       printf("SLArDetectorConstruction::ConstructAnodeMap WARNING: Anode %i has no megatiles registered.\n", 
-        anodeCfg->GetIdx()); 
+        anodeCfg.GetIdx()); 
       return;
     }
     
-    SLArCfgMegaTile& mtileCfg = anodeCfg->GetMap().front(); 
+    printf("getting front megatile\n"); 
+    SLArCfgMegaTile& mtileCfg = anodeCfg.GetMap().front(); 
 
-    auto hMapMegaTile = anodeCfg->BuildPolyBinHist(); 
+    printf("creating TH2Poly for a megatile...\n"); 
+    auto hMapMegaTile = anodeCfg.BuildPolyBinHist();
     printf("mapMegaTile\n");
     auto hMapTile     = mtileCfg.BuildPolyBinHist(
         SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative); 
@@ -760,14 +784,14 @@ void SLArDetectorConstruction::ConstructAnodeMap() {
     mtile_rot_inv->invert(); // FIXME: Why do I need to use the inverse rotation????? 
 
     auto hMapPixel = fReadoutTile->BuildTileChgPixelMap(
-        G4ThreeVector(anodeCfg->GetAxis0().x(), anodeCfg->GetAxis0().y(), anodeCfg->GetAxis0().z()), 
-        G4ThreeVector(anodeCfg->GetAxis1().x(), anodeCfg->GetAxis1().y(), anodeCfg->GetAxis1().z()), 
+        G4ThreeVector(anodeCfg.GetAxis0().x(), anodeCfg.GetAxis0().y(), anodeCfg.GetAxis0().z()), 
+        G4ThreeVector(anodeCfg.GetAxis1().x(), anodeCfg.GetAxis1().y(), anodeCfg.GetAxis1().z()), 
         nullptr, mtile_rot_inv);
     printf("mapPixel\n");
 
-    anodeCfg->RegisterMap(0, hMapMegaTile); 
-    anodeCfg->RegisterMap(1, hMapTile); 
-    anodeCfg->RegisterMap(2, hMapPixel); 
+    anodeCfg.RegisterMap(0, hMapMegaTile); 
+    anodeCfg.RegisterMap(1, hMapTile); 
+    anodeCfg.RegisterMap(2, hMapPixel); 
 
     delete mtile_rot;
     delete mtile_rot_inv; 
@@ -789,6 +813,17 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   printf("fCavern PV ptr: %p\n", static_cast<void*>(fCavernPhys));
   istore->AddImportanceGeometryCell(
       1, *fCavernPhys, fCavernPhys->GetCopyNo()); 
+  size_t n_cavern_layers = fCavernPhys->GetLogicalVolume()->GetNoDaughters(); 
+  for (int i = 0; i<n_cavern_layers; i++) {
+    auto vol = fCavernPhys->GetLogicalVolume()->GetDaughter(i);
+    auto cell = G4GeometryCell(*vol, vol->GetCopyNo()); 
+    if (istore->IsKnown(cell) == false) {
+      printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
+          cell.GetPhysicalVolume().GetName().data(), 
+          imp, cell.GetReplicaNumber(), static_cast<void*>(vol) );
+      istore->AddImportanceGeometryCell(imp, cell); 
+    }
+  }
 
   printf("\nCryostat ----------------------------------------\n");
   printf("fCryostat PV ptr: %p\n", static_cast<void*>(fCryostat->GetModPV())); 
@@ -1075,7 +1110,7 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
           cell.GetReplicaNumber(), imp);              
       istore->AddImportanceGeometryCell(imp, cell); 
     }
-    cell = G4GeometryCell(*base_vol, sensor_vol->GetCopyNo()); 
+    cell = G4GeometryCell(*base_vol, base_vol->GetCopyNo()); 
     if (istore->IsKnown(cell) == false) {
       printf("TILE MODULE: Adding %s (rp nr %i) to istore with importance %g\n",
           cell.GetPhysicalVolume().GetName().data(), 
@@ -1322,16 +1357,16 @@ void SLArDetectorConstruction::ConstructCavern() {
   new G4PVPlacement(0,G4ThreeVector(), shotcrete_logic,"cavern_shotcrete", cavern_logic, false, 3, true); 
 
   //----------------------------------------------------- cavern_scorer_surface 
-  G4SubtractionSolid* cavern_scorer_box = new G4SubtractionSolid("cavern_scorer_box", 
-      outer_cavern_scorer_box, inner_cavern_scorer_box, nullptr, G4ThreeVector(0, 0, 0));
+  //G4SubtractionSolid* cavern_scorer_box = new G4SubtractionSolid("cavern_scorer_box", 
+      //outer_cavern_scorer_box, inner_cavern_scorer_box, nullptr, G4ThreeVector(0, 0, 0));
 
-  SLArMaterial* scorer_mat_handle = new SLArMaterial(); 
-  scorer_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "Air" ); 
+  //SLArMaterial* scorer_mat_handle = new SLArMaterial(); 
+  //scorer_mat_handle->BuildMaterialFromDB( fMaterialDBFile, "Air" ); 
 
-  G4LogicalVolume* cavern_scorer_logic = new G4LogicalVolume(
-      cavern_scorer_box, scorer_mat_handle->GetMaterial(), "cavern_scorer_lv" ); 
+  //G4LogicalVolume* cavern_scorer_logic = new G4LogicalVolume(
+      //cavern_scorer_box, scorer_mat_handle->GetMaterial(), "cavern_scorer_lv" ); 
 
-  new G4PVPlacement(0, G4ThreeVector(), cavern_scorer_logic, "cavern_scorer_pv", cavern_logic, false, 4, false); 
+  //new G4PVPlacement(0, G4ThreeVector(), cavern_scorer_logic, "cavern_scorer_pv", cavern_logic, false, 4, false); 
 
   return; 
 }

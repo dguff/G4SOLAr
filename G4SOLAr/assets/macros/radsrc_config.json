@@ -1,0 +1,20 @@
+{
+  "generator" : 
+  {
+    "type" : "radsrc", 
+    "label" : "uranium_gammas", 
+    "config" : {
+      "isotopes" : [ {"name" : "U238", "fraction" : 0.95}, {"name" : "U235", "fraction" : 0.05} ], 
+      "age" : 100000, 
+      "add_brem" : true,
+      "vertex_gen" : {
+        "type" : "bulk", 
+        "config" : {
+          "volume" : "TPC10", 
+          "fiducial_fraction" : 0.75, 
+          "avoid_daughters" : false
+        }
+      }
+    }
+  }
+}

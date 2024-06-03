@@ -4,21 +4,21 @@
  * @created     : Tue Mar 03, 2020 17:15:44 CET
  */
 #include <sstream>
-#include "SLArAnalysisManager.hh"
-#include "SLArAnalysisManagerMsgr.hh"
-#include "SLArDetectorConstruction.hh"
+#include <SLArAnalysisManager.hh>
+#include <SLArAnalysisManagerMsgr.hh>
+#include <SLArDetectorConstruction.hh>
 
-//#include "G4RunManager.hh"
+#include <G4RunManager.hh>
 
-//#include "G4UImessenger.hh"
-#include "G4UIcmdWithABool.hh"
-#include "G4UIcmdWithAString.hh"
-#include "G4UIcmdWithAnInteger.hh"
-#include "G4PhysicalVolumeStore.hh"
-//#include "G4UIcmdWithADouble.hh"
-//#include "G4UIcmdWith3Vector.hh"
-//#include "G4UIcmdWithADoubleAndUnit.hh"
-//#include "G4UIcmdWith3VectorAndUnit.hh"
+//#include <G4UImessenger.hh>
+#include <G4UIcmdWithABool.hh>
+#include <G4UIcmdWithAString.hh>
+#include <G4UIcmdWithAnInteger.hh>
+#include <G4PhysicalVolumeStore.hh>
+//#include <G4UIcmdWithADouble.hh>
+//#include <G4UIcmdWith3Vector.hh>
+//#include <G4UIcmdWithADoubleAndUnit.hh>
+//#include <G4UIcmdWith3VectorAndUnit.hh>
 
 #ifdef SLAR_GDML
 #include "G4GDMLParser.hh"
@@ -33,9 +33,10 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr)
 #ifdef SLAR_GDML
-  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr), 
-  fGDMLFileName("slar_export.gdml")
+  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
 #endif
+  fCmdAddExtScorer(nullptr),
+  fGDMLFileName("slar_export.gdml")
 {
   TString UIManagerPath = "/SLAr/manager/";
   TString UIGeometryPath = "/SLAr/geometry/";
@@ -96,6 +97,12 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
   fCmdGeoAnodeDepth->SetGuidance("Set visualization depth for SoLAr anode");
   fCmdGeoAnodeDepth->SetParameterName("depth", false);
+
+  fCmdAddExtScorer = 
+    new G4UIcmdWithAString(UIManagerPath+"addExtScorer", this);
+  fCmdAddExtScorer->SetGuidance("Add external scorer volume (only for EXT mode)");
+  fCmdAddExtScorer->SetParameterName("scorer_pv:alias", false);
+  fCmdAddExtScorer->SetGuidance("Specfiy physical volume to be used as ext scorer [pv_name]:[alias]");
   
 #ifdef SLAR_GDML
   fCmdGDMLFileName = 
@@ -125,6 +132,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
+  if (fCmdAddExtScorer       ) delete fCmdAddExtScorer       ; 
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -204,9 +212,31 @@ void SLArAnalysisManagerMsgr::SetNewValue
     auto bkt_mngr = SLArAnaMgr->GetBacktrackerManager(_system);
     bkt_mngr->RegisterBacktracker(backtracker::GetBacktrackerEnum(_backtracker), _name);
   }
+  else if (cmd == fCmdAddExtScorer) {
+    std::stringstream input(newVal); 
+    G4String temp;
+
+    G4String _phys_vol_name; 
+    G4String _alias; 
+    G4String _name = "";
+
+    G4int ifield = 0;
+    while ( getline(input, temp, ':') ) {
+      if (ifield == 0) _phys_vol_name = temp;
+      else if (ifield == 1) _alias = temp;
+      else if (ifield == 2) _name = temp;
+      ifield++;
+    }
+
+    auto construction = 
+      (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    construction->AddExternalScorer(_phys_vol_name, _alias);
+    return;
+  }
+
   else if (cmd == fCmdSetZeroSuppressionThrs) {
     int thrs = std::atoi( newVal ); 
-    for (auto& anode_itr : SLArAnaMgr->GetEvent()->GetEventAnode()) {
+    for (auto& anode_itr : SLArAnaMgr->GetEvent().GetEventAnode()) {
       anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
     }
   }

@@ -71,7 +71,7 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
   // compute total thickness
   for (const auto &layer : jlayers) {
     if (layer.HasMember("thickness")) 
-      cryostat_tk += SLArGeoInfo::ParseJsonVal(layer["thickness"]); 
+      cryostat_tk += unit::ParseJsonVal(layer["thickness"]); 
   }
 
   G4double cryostat_waffle_tk = cryostat_tk; 
@@ -80,21 +80,21 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
     fBuildSupport = true; 
     G4double support_wd = 0.; 
     const auto jsupport = jcryo["Cryostat_support"].GetObj(); 
-    support_wd += SLArGeoInfo::ParseJsonVal(jsupport["steel_major_width"]); 
+    support_wd += unit::ParseJsonVal(jsupport["steel_major_width"]); 
 
     fGeoInfo->RegisterGeoPar("waffle_major_width", 
-        SLArGeoInfo::ParseJsonVal(jsupport["steel_major_width"])); 
+        unit::ParseJsonVal(jsupport["steel_major_width"])); 
     fGeoInfo->RegisterGeoPar("waffle_minor_width", 
-        SLArGeoInfo::ParseJsonVal(jsupport["steel_minor_width"])); 
+        unit::ParseJsonVal(jsupport["steel_minor_width"])); 
     fGeoInfo->RegisterGeoPar("steel_thickness", 
-        SLArGeoInfo::ParseJsonVal(jsupport["steel_thickness"])); 
+        unit::ParseJsonVal(jsupport["steel_thickness"])); 
     fGeoInfo->RegisterGeoPar("waffle_spacing", 
-        SLArGeoInfo::ParseJsonVal(jsupport["main_spacing"])); 
+        unit::ParseJsonVal(jsupport["main_spacing"])); 
 
     if (jsupport.HasMember("neutron_brick")) {
       const auto jbrick = jsupport["neutron_brick"].GetObj(); 
       fGeoInfo->RegisterGeoPar("brick_thickness", 
-          SLArGeoInfo::ParseJsonVal(jbrick["thickness"])); 
+          unit::ParseJsonVal(jbrick["thickness"])); 
       fMatBrick = new SLArMaterial(); 
       fMatBrick->SetMaterialID(jbrick["material"].GetString()); 
       fAddNeutronBricks = true; 
@@ -108,7 +108,7 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
                           tgtZ*0.5 + cryostat_tk}; 
   for (const auto &layer : jlayers) {
     if (layer.HasMember("thickness")) {
-      G4double tk_ = SLArGeoInfo::ParseJsonVal(layer["thickness"]);
+      G4double tk_ = unit::ParseJsonVal(layer["thickness"]);
       if (tk_ == 0.) continue;
 
       assert(layer.HasMember("id")); 
@@ -123,7 +123,7 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
       
       SLArCryostatLayer* ll = new SLArCryostatLayer(
           layer["name"].GetString(), halfSize, 
-          SLArGeoInfo::ParseJsonVal(layer["thickness"]), 
+          unit::ParseJsonVal(layer["thickness"]), 
           layer["material"].GetString(),importance);
 
       fCryostatStructure.insert(std::make_pair(layer["id"].GetInt(), ll)); 
@@ -259,7 +259,7 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
   }
 }
 
-SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFace) {
+SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(geo::EBoxFace kFace) {
   SLArBaseDetModule* waffle = new SLArBaseDetModule(); 
 
   // get cryostat dimensions
@@ -269,10 +269,10 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(slargeo::EBoxFace kFac
       fGeoInfo->GetGeoPar("target_x") + 2*cryo_tk,
       fGeoInfo->GetGeoPar("target_y") + 2*cryo_tk, 
       fGeoInfo->GetGeoPar("target_z") + 2*cryo_tk); 
-  const auto spacing = fGeoInfo->GetGeoPar("spacing"); 
+  const auto spacing = fGeoInfo->GetGeoPar("waffle_spacing"); 
 
   // get normal versor for the given cryostat face
-  const G4ThreeVector normal = slargeo::BoxFaceNormal[kFace]; 
+  const G4ThreeVector normal = geo::BoxFaceNormal[kFace]; 
   
   // get unit waffle dimensions 
   G4ThreeVector wffl_unit_min, wffl_unit_max;
@@ -662,10 +662,10 @@ void SLArDetCryostat::BuildCryostat()
 
 
     for (int i=0; i<6; i++) {
-      auto kFace = (slargeo::EBoxFace)i; 
+      auto kFace = (geo::EBoxFace)i; 
       auto waffle_face = BuildSupportStructure(kFace);
       waffle_face->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
-      const auto face_normal = slargeo::BoxFaceNormal[kFace]; 
+      const auto face_normal = geo::BoxFaceNormal[kFace]; 
       const G4ThreeVector waffle_local_normal(0, -1, 0); 
       G4ThreeVector rot_axis = face_normal.cross(waffle_local_normal); 
       G4double rot_angle = face_normal.angle(waffle_local_normal); 
@@ -685,8 +685,8 @@ void SLArDetCryostat::BuildCryostat()
     // build support structure edges
     
     // top view 
-    const auto face_top = fSupportStructure[slargeo::kYplus]; 
-    const auto face_side = fSupportStructure[slargeo::kZplus]; 
+    const auto face_top = fSupportStructure[geo::kYplus]; 
+    const auto face_side = fSupportStructure[geo::kZplus]; 
     const auto sv_top = face_top->GetModLV()->GetDaughter(0)->GetLogicalVolume()->GetSolid(); 
     const auto sv_side = face_side->GetModLV()->GetDaughter(0)->GetLogicalVolume()->GetSolid(); 
     const auto len_z = static_cast<G4Box*>(sv_top)->GetZHalfLength() * 2; 

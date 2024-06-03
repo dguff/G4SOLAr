@@ -12,6 +12,8 @@
 
 #define SLArANALYSISMANAGER_HH
 
+#include <cstdio>
+#include <stdexcept>
 #include "TFile.h"
 #include "TTree.h"
 #include "TParameter.h"
@@ -56,8 +58,8 @@ class SLArAnalysisManager
     void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
     G4bool CreateEventStructure();
     G4bool CreateFileStructure();
-    G4bool LoadPDSCfg         (SLArCfgSystemSuperCell*  pdsCfg );
-    G4bool LoadAnodeCfg       (SLArCfgAnode*  pixCfg );
+    G4bool LoadPDSCfg         (SLArCfgSystemSuperCell&  pdsCfg );
+    G4bool LoadAnodeCfg       (SLArCfgAnode&  pixCfg );
     G4bool FillEvTree         ();
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
@@ -86,17 +88,21 @@ class SLArAnalysisManager
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
     void SetupBacktrackerRecords(); 
-    TTree* GetTree() const {return  fEventTree.get();}
-    TFile* GetFile() const {return   fRootFile.get();}
-    SLArCfgSystemSuperCell* GetPDSCfg() {return  fPDSysCfg;}
-    std::map<int, SLArCfgAnode*>& GetAnodeCfg() {return fAnodeCfg;}
-    inline SLArCfgAnode* GetAnodeCfg(int id) {
-      SLArCfgAnode* anodeCfg = nullptr;
-      if ( fAnodeCfg.count(id) ) anodeCfg = fAnodeCfg[id];
-      return anodeCfg;}
+    TTree* GetTree() const {return  fEventTree;}
+    TFile* GetFile() const {return   fRootFile;}
+    SLArCfgSystemSuperCell& GetPDSCfg() {return  fPDSysCfg;}
+    std::map<int, SLArCfgAnode>& GetAnodeCfg() {return fAnodeCfg;}
+    inline SLArCfgAnode& GetAnodeCfg(int id) {
+      if ( fAnodeCfg.count(id) ) return fAnodeCfg[id];
+      else {
+        char error_msg[100]; 
+        std::sprintf(error_msg, "No Anode with id %i found in register. abort.\n\n", id);
+        throw std::runtime_error(error_msg); 
+      }
+    }
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEvent* GetEvent()  {return fMCEvent.get();}
+    SLArMCEvent& GetEvent()  {return fMCEvent;}
     G4bool Save ();
 
     // mock fake access
@@ -109,8 +115,8 @@ class SLArAnalysisManager
     SLArAnalysisManagerMsgr* fAnaMsgr;
 #ifdef SLAR_EXTERNAL
     void SetupExternalsTree(); 
-    inline TTree* GetExternalsTree() {return fExternalsTree.get();}
-    inline std::unique_ptr<SLArEventTrajectoryLite>& GetExternalRecord() {return fExternalRecord;}
+    inline TTree* GetExternalsTree() {return fExternalsTree;}
+    inline SLArEventTrajectoryLite& GetExternalRecord() {return fExternalRecord;}
 #endif 
 
   protected:
@@ -130,20 +136,20 @@ class SLArAnalysisManager
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
 
-    std::unique_ptr<TFile> fRootFile;
-    std::unique_ptr<TTree> fEventTree;
-    std::unique_ptr<SLArMCEvent>  fMCEvent;
+    TFile* fRootFile;
+    TTree* fEventTree;
+    SLArMCEvent  fMCEvent;
 #ifdef SLAR_EXTERNAL
-    std::unique_ptr<SLArEventTrajectoryLite> fExternalRecord;
-    std::unique_ptr<TTree> fExternalsTree;
+    SLArEventTrajectoryLite fExternalRecord;
+    TTree* fExternalsTree;
 #endif 
 
     backtracker::SLArBacktrackerManager* fSuperCellBacktrackerManager;
     backtracker::SLArBacktrackerManager* fVUVSiPMBacktrackerManager;
     backtracker::SLArBacktrackerManager* fChargeBacktrackerManager;
 
-    SLArCfgSystemSuperCell* fPDSysCfg;
-    std::map<int, SLArCfgAnode*> fAnodeCfg;
+    SLArCfgSystemSuperCell fPDSysCfg;
+    std::map<int, SLArCfgAnode> fAnodeCfg;
 };
 
 #endif /* end of include guard SLArANALYSISMANAGER_HH */

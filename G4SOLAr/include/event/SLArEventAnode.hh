@@ -16,11 +16,11 @@
 class SLArEventAnode : public TNamed {
   public:
     SLArEventAnode(); 
-    SLArEventAnode(SLArCfgAnode* cfg);
+    SLArEventAnode(const SLArCfgAnode& cfg);
     SLArEventAnode(const SLArEventAnode&);
     ~SLArEventAnode(); 
 
-    int ConfigSystem(SLArCfgAnode* cfg);
+    int ConfigSystem(const SLArCfgAnode& cfg);
     SLArEventMegatile& GetOrCreateEventMegatile(const int mtIdx); 
     inline std::map<int, SLArEventMegatile>& GetMegaTilesMap() {return fMegaTilesMap;}
     inline const std::map<int, SLArEventMegatile>& GetConstMegaTilesMap() const {return fMegaTilesMap;}
@@ -28,7 +28,7 @@ class SLArEventAnode : public TNamed {
     inline bool IsActive() const {return fIsActive;}
 
     SLArEventTile& RegisterHit(const SLArEventPhotonHit& hit); 
-    SLArEventChargePixel& RegisterChargeHit(const SLArCfgAnode::SLArPixIdxCoord& pixId, const SLArEventChargeHit& hit); 
+    SLArEventChargePixel& RegisterChargeHit(const SLArCfgAnode::SLArPixIdx& pixId, const SLArEventChargeHit& hit); 
     int ResetHits(); 
     int SoftResetHits();
 

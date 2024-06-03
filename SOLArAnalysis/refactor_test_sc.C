@@ -10,6 +10,7 @@
 #include <map>
 #include "TFile.h"
 #include "TTree.h"
+#include "TKey.h"
 #include "TSystem.h"
 #include "TStyle.h"
 #include "TCanvas.h"
@@ -24,6 +25,21 @@
 #include "config/SLArCfgAssembly.hh"
 #include "config/SLArCfgSuperCellArray.hh"
 
+UInt_t fill_anode_cfg_map(TFile* file, std::map<int, SLArCfgAnode*>& map) {
+  UInt_t n_anode = 0;
+  TList* l = file->GetListOfKeys(); 
+  for (const auto& kk : *l) {
+    TKey* k = static_cast<TKey*>(kk);
+    if ( std::strcmp(k->GetClassName(), "SLArCfgAnode") == 0) {
+      SLArCfgAnode* cfg = file->Get<SLArCfgAnode>(k->GetName());
+      int tpc_id = cfg->GetTPCID(); 
+      map.insert( std::make_pair(tpc_id, cfg) ); 
+      n_anode++;
+    }
+  }
+  return n_anode;
+}
+
 void refactor_test_sc(const TString file_path, const int iev) 
 {
   gStyle->SetPalette(kBlackBody); 
@@ -34,8 +50,7 @@ void refactor_test_sc(const TString file_path, const int iev)
   //- - - - - - - - - - - - - - - - - - - - - - configuration
   auto PDSSysConfig = (SLArCfgBaseSystem<SLArCfgSuperCellArray>*)mc_file->Get("PDSSysConfig"); 
   std::map<int, SLArCfgAnode*>  AnodeSysCfg;
-  AnodeSysCfg.insert( std::make_pair(10, (SLArCfgAnode*)mc_file->Get("AnodeCfg50") ) );
-  AnodeSysCfg.insert( std::make_pair(11, (SLArCfgAnode*)mc_file->Get("AnodeCfg51") ) );
+  fill_anode_cfg_map(mc_file, AnodeSysCfg); 
 
   TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 1000, 0, 5e3); 
 
@@ -43,23 +58,30 @@ void refactor_test_sc(const TString file_path, const int iev)
 
   std::map<int, TH2Poly*> h2SCArray; 
 
-  for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
-    const auto cfgSCArray = cfgSCArray_.second;
-    printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
-        cfgSCArray->GetMap().size());
-    printf("\tposition: [%g, %g, %g] mm\n", 
-        cfgSCArray->GetPhysX(), cfgSCArray->GetPhysY(), cfgSCArray->GetPhysZ()); 
-    printf("\tnormal: [%g, %g, %g]\n", 
-        cfgSCArray->GetNormal().x(), cfgSCArray->GetNormal().y(), cfgSCArray->GetNormal().z() );
-    printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
-        cfgSCArray->GetPhi()*TMath::RadToDeg(), 
-        cfgSCArray->GetTheta()*TMath::RadToDeg(), 
-        cfgSCArray->GetPsi()*TMath::RadToDeg());
-    cfgSCArray->BuildGShape(); 
-    auto h2 = cfgSCArray->BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
-    h2SCArray.insert( std::make_pair(cfgSCArray->GetIdx(), h2) ); 
+  if (PDSSysConfig) {
+    for (auto &cfgSCArray_ : PDSSysConfig->GetMap()) {
+      auto& cfgSCArray = cfgSCArray_.second;
+      printf("SC cfg config: %i - %lu super-cell\n", cfgSCArray_.first, 
+          cfgSCArray.GetConstMap().size());
+      printf("\tposition: [%g, %g, %g] mm\n", 
+          cfgSCArray.GetPhysX(), cfgSCArray.GetPhysY(), cfgSCArray.GetPhysZ()); 
+      printf("\tnormal: [%g, %g, %g]\n", 
+          cfgSCArray.GetNormal().x(), cfgSCArray.GetNormal().y(), cfgSCArray.GetNormal().z() );
+      printf("\teuler angles: [φ = %g, θ = %g, ψ = %g]\n", 
+          cfgSCArray.GetPhi()*TMath::RadToDeg(), 
+          cfgSCArray.GetTheta()*TMath::RadToDeg(), 
+          cfgSCArray.GetPsi()*TMath::RadToDeg());
+      cfgSCArray.BuildGShape(); 
+      auto h2 = cfgSCArray.BuildPolyBinHist(SLArCfgSuperCellArray::kWorld, 25, 25);  
+      h2SCArray.insert( std::make_pair(cfgSCArray.GetIdx(), h2) ); 
+    }
+    printf("\n");
+    printf("\n");
+
+    TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
+    h2_30->Draw("axis");
+    h2SCArray.find(30)->second->Draw("col same"); 
   }
-  printf("\n");
 
   for (const auto& anodeCfg_ : AnodeSysCfg) {
     const auto cfgAnode = anodeCfg_.second;
@@ -74,13 +96,7 @@ void refactor_test_sc(const TString file_path, const int iev)
         cfgAnode->GetTheta()*TMath::RadToDeg(), 
         cfgAnode->GetPsi()*TMath::RadToDeg());
   }
-  printf("\n");
-  
-  TH2D* h2_30 = new TH2D("sc_top_30", "30 sc top", 50, -1.5e3, 1.5e3, 50, -1200, 1200); 
-  h2_30->Draw("axis");
-  h2SCArray.find(30)->second->Draw("col same"); 
-
-  //- - - - - - - - - - - - - - - - - - - - - - Access event
+    //- - - - - - - - - - - - - - - - - - - - - - Access event
   SLArMCEvent* ev = 0; 
   mc_tree->SetBranchAddress("MCEvent", &ev); 
   mc_tree->GetEntry(iev); 
@@ -108,7 +124,7 @@ void refactor_test_sc(const TString file_path, const int iev)
         if (t.second.GetPixelHits() == 0 ) continue;
         auto h2t_ = AnodeSysCfg[tpc_id]->ConstructPixHistMap(2, std::vector<int>{mt.first, t.first}); 
         for (const auto &p : t.second.GetConstPixelEvents()) {
-          printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
+          //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
           h2t_->SetBinContent( p.first, p.second.GetNhits() );
           //p.second.PrintHits();
           if (p.second.GetNhits() > z_max) z_max = p.second.GetNhits(); 
@@ -151,7 +167,8 @@ void refactor_test_sc(const TString file_path, const int iev)
 
     for (const auto &p : primaries) {
       printf("----------------------------------------\n");
-      printf("PRIMARY vertex: %s - K0 = %2f - t = %.2f - vtx [%.1f, %.1f, %.1f]\n", 
+      printf("[gen: %s] PRIMARY vertex: %s - K0 = %2f - t = %.2f - vtx [%.1f, %.1f, %.1f]\n", 
+          p.GetGeneratorLabel().Data(),
           p.GetParticleName().Data(), p.GetEnergy(), p.GetTime(), 
           p.GetVertex()[0], p.GetVertex()[1], p.GetVertex()[2]);
       auto& trajectories = p.GetConstTrajectories(); 

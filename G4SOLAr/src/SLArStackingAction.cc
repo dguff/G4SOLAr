@@ -80,7 +80,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
             //aTrack->GetTrackID(), aTrack->GetParticleDefinition()->GetPDGEncoding());
 
         // fix track ID in primary output object
-        auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+        auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
         for (auto &primaryInfo : primaries) {
           if (aTrack->GetDynamicParticle()->GetPDGcode() == primaryInfo.GetCode()) {
             G4double tolerance = 1e-3;
@@ -121,7 +121,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
             momentum_4); 
         //std::printf("trkID: %i, ParentID: %i, pdg code: %i\n", 
             //aTrack->GetTrackID(), aTrack->GetParentID(), trkIdHelp.pdg); 
-        if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp)) {
+        if ( fEventAction->GetProcessExtraInfo().count(trkIdHelp) ) {
           creatorProc = fEventAction->GetProcessExtraInfo()[trkIdHelp];
         }
       }
@@ -138,13 +138,12 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       trajectory->SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
       //trajectory->SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
       trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
-      auto vertex_momentum = aTrack->GetMomentumDirection();
-      trajectory->SetInitMomentum( TVector3(
-            vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() ) );
+      auto& vertex_momentum = aTrack->GetMomentumDirection();
+      trajectory->SetInitMomentum( vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() );
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
-      auto& primaries = SLArAnaMgr->GetEvent()->GetPrimaries();
+      auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
       for (auto &p : primaries) {
         if (p.GetTrackID() == ancestor_id) {
           ancestor = &p; 
@@ -172,7 +171,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
       SLArMCPrimaryInfo* primary = nullptr; 
       //SLArMCPrimaryInfoPtr* primary = nullptr; 
-      auto& primaries = anaMngr->GetEvent()->GetPrimaries();
+      auto& primaries = anaMngr->GetEvent().GetPrimaries();
 
       int primary_parent_id = fEventAction->FindAncestorID(aTrack->GetParentID()); 
 //#ifdef SLAR_DEBUG
@@ -211,7 +210,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 
 
       auto generatorAction = 
-        (SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
+        (gen::SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
       if (generatorAction->DoTraceOptPhotons() == false) {
         kClassification = G4ClassificationOfNewTrack::fKill;
       }

@@ -23,7 +23,7 @@ G4ThreadLocal G4Allocator<SLArLArHit>* SLArLArHitAllocator;
 
 
 SLArLArHit::SLArLArHit()
-: G4VHit(), fEneDep(0.), fNsecondaries(0), fParticleType("geantino")
+: G4VHit(), fEneDep(0.), fNsecondaries(0), fParticleType()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

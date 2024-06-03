@@ -4,16 +4,17 @@
  * @created     Tue Mar 21, 2023 12:00:33 CET
  */
 
-#include "detector/Anode/SLArDetAnodeAssembly.hh"
-#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
-#include "detector/SLArPlaneParameterisation.hpp"
+#include <detector/Anode/SLArDetAnodeAssembly.hh>
+#include <detector/Anode/SLArDetReadoutTileAssembly.hh>
+#include <detector/SLArPlaneParameterisation.hpp>
+#include <detector/SLArGeoUtils.hh>
 
-#include "config/SLArCfgAnode.hh"
+#include <config/SLArCfgAnode.hh>
 
-#include "G4VisAttributes.hh"
-#include "G4PVParameterised.hh"
-#include "G4Box.hh"
-#include "G4RotationMatrix.hh"
+#include <G4VisAttributes.hh>
+#include <G4PVParameterised.hh>
+#include <G4Box.hh>
+#include <G4RotationMatrix.hh>
 
 SLArDetAnodeAssembly::SLArDetAnodeAssembly() : 
   SLArBaseDetModule(), 
@@ -56,7 +57,7 @@ void SLArDetAnodeAssembly::Init(const rapidjson::Value& jconf) {
 
   auto jpos = janode["position"].GetObject(); 
   int idim = 0; 
-  G4double vunit = SLArGeoInfo::Unit2Val(jpos["unit"]); 
+  G4double vunit = unit::Unit2Val(jpos["unit"]); 
   for (const auto &v : jpos["xyz"].GetArray()) {
     fPosition[idim] = (v.GetDouble() * vunit); 
     fGeoInfo->RegisterGeoPar("pos_"+suffix[idim], fPosition[idim]); 
@@ -64,7 +65,7 @@ void SLArDetAnodeAssembly::Init(const rapidjson::Value& jconf) {
   }
 
   auto jrot = janode["rot"].GetObject(); 
-  vunit = SLArGeoInfo::Unit2Val(jrot["unit"]); 
+  vunit = unit::Unit2Val(jrot["unit"]); 
   assert(jrot.HasMember("val")); 
   assert(jrot["val"].IsArray()); 
   assert(jrot["val"].GetArray().Size() == 3);
@@ -114,8 +115,9 @@ void SLArDetAnodeAssembly::BuildAnodeAssembly(SLArDetReadoutTileAssembly* megati
         "anode_row_lv")); 
   fAnodeRow->GetModLV()->SetVisAttributes( G4VisAttributes(false) ); 
 
-  SLArPlaneParameterisation* anodeRowParametrization = 
-    new SLArPlaneParameterisation(kZAxis, G4ThreeVector(0, 0, -0.5*(anode_z-mt_z)), mt_z); 
+  SLArPlaneParameterisation* anodeRowParametrization =
+      new SLArPlaneParameterisation(kZAxis, G4ThreeVector(0, 0, -0.5*mt_z*(n_z-1)), mt_z); 
+ 
   fAnodeRow->SetModPV(
       new G4PVParameterised("anode_row_pv", 
         megatile->GetModLV(), fAnodeRow->GetModLV(),kZAxis, n_z, 
@@ -127,21 +129,22 @@ void SLArDetAnodeAssembly::BuildAnodeAssembly(SLArDetReadoutTileAssembly* megati
   fModLV->SetVisAttributes( G4VisAttributes(false) ); 
 
   SLArPlaneParameterisation* anodeParameterization = 
-    new SLArPlaneParameterisation(kXAxis, G4ThreeVector(-0.5*(anode_x-mt_x), 0, 0), mt_x); 
+      new SLArPlaneParameterisation(kXAxis, G4ThreeVector(-0.5*mt_x*(n_x-1), 0, 0), mt_x); 
+  
   SetModPV(new G4PVParameterised("anode_pv", fAnodeRow->GetModLV(), fModLV,
         kXAxis, n_x, anodeParameterization, true)); 
 
 }
 
-SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
-  SLArCfgAnode* anodeCfg = new SLArCfgAnode("Anode_"+std::to_string(fID)); 
-  anodeCfg->SetIdx( fID ); 
-  anodeCfg->SetTPCID( fTPCID ); 
-  anodeCfg->SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
-  anodeCfg->SetupAxes(); 
-  anodeCfg->SetPhi( fGeoInfo->GetGeoPar("anode_phi") ); 
-  anodeCfg->SetTheta( fGeoInfo->GetGeoPar("anode_theta") ); 
-  anodeCfg->SetPsi( fGeoInfo->GetGeoPar("anode_psi") ); 
+SLArCfgAnode SLArDetAnodeAssembly::BuildAnodeConfig() {
+  SLArCfgAnode anodeCfg("Anode_"+std::to_string(fID)); 
+  anodeCfg.SetIdx( fID ); 
+  anodeCfg.SetTPCID( fTPCID ); 
+  anodeCfg.SetNormal( fNormal.x(), fNormal.y(), fNormal.z() ); 
+  anodeCfg.SetupAxes(); 
+  anodeCfg.SetPhi( fGeoInfo->GetGeoPar("anode_phi") ); 
+  anodeCfg.SetTheta( fGeoInfo->GetGeoPar("anode_theta") ); 
+  anodeCfg.SetPsi( fGeoInfo->GetGeoPar("anode_psi") ); 
 
 
   auto anode_parameterised = (G4PVParameterised*)fModLV->GetDaughter(0); 
@@ -157,7 +160,7 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
   if (anode_parameterised->IsParameterised() == false) {
     printf("SLArDetAnodeAssembly::BuildAnodeConfig() "); 
     printf("Anode is not a parameterised volume! Quit.\n"); 
-    return nullptr; 
+    throw std::runtime_error("SLArDetAnodeAssembly::BuildAnodeConfig() ERROR: Anode is not a parameterized volume.\n"); 
   }
 
   auto get_replication_data = [](G4PVParameterised* pv) {
@@ -186,7 +189,7 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
     for (int i_mt_clm = 0; i_mt_clm < rpl_mt_clm.fNreplica; i_mt_clm++) {
       G4int mt_id = (i_mt_row+1)*1000 + i_mt_clm;
       G4String mtName = Form("%s_%i_%i", 
-          fTileAssemblyModel.data(), anodeCfg->GetID(), mt_id); 
+          fTileAssemblyModel.data(), anodeCfg.GetID(), mt_id); 
       SLArCfgMegaTile mtCfg(mtName, mt_id); 
 
       G4ThreeVector mt_local_pos = pos_mt_row + 
@@ -200,11 +203,11 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
       mtCfg.SetPhysY( mt_abs_pos.y() ); 
       mtCfg.SetPhysZ( mt_abs_pos.z() ); 
 
-      mtCfg.SetPhi( anodeCfg->GetPhi() ); 
-      mtCfg.SetTheta( anodeCfg->GetTheta() ); 
-      mtCfg.SetPsi( anodeCfg->GetPsi() ); 
+      mtCfg.SetPhi( anodeCfg.GetPhi() ); 
+      mtCfg.SetTheta( anodeCfg.GetTheta() ); 
+      mtCfg.SetPsi( anodeCfg.GetPsi() ); 
 
-      mtCfg.SetNormal( anodeCfg->GetNormal() ); 
+      mtCfg.SetNormal( anodeCfg.GetNormal() ); 
       mtCfg.SetupAxes(); 
       
       mtCfg.SetSize( 
@@ -214,32 +217,37 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
       
 
       //printf("megatile %i: local (%.2f, %.2f, %.2f) - abs (%.2f, %.2f, %.2f)\n", 
-          //mtCfg->GetIdx(), mtCfg->GetX(), mtCfg->GetY(), mtCfg->GetZ(), 
-          //mtCfg->GetPhysX(), mtCfg->GetPhysY(), mtCfg->GetPhysZ());
+          //mtCfg.GetIdx(), mtCfg.GetX(), mtCfg.GetY(), mtCfg.GetZ(), 
+          //mtCfg.GetPhysX(), mtCfg.GetPhysY(), mtCfg.GetPhysZ());
 
       for (int i_t_row = 0; i_t_row < rpl_t_row.fNreplica; i_t_row++) {
         G4ThreeVector pos_t_row = 
           rpl_t_row.fStartingPos + rpl_t_row.fWidth*(i_t_row)*rpl_t_row.fReplicaAxisVec;
+        printf("pos_t_row: %.2f, %.2f, %.2f\n", pos_t_row.x(), pos_t_row.y(), pos_t_row.z()); 
         for (int i_t_clm = 0; i_t_clm < rpl_t_clm.fNreplica; i_t_clm++) {
+          G4ThreeVector t_pos = 
+            rpl_t_clm.fStartingPos + rpl_t_clm.fWidth*(i_t_clm)*rpl_t_clm.fReplicaAxisVec;
           G4ThreeVector t_local_pos = pos_t_row + 
             rpl_t_clm.fStartingPos + rpl_t_clm.fWidth*(i_t_clm)*rpl_t_clm.fReplicaAxisVec;
-
-          G4ThreeVector t_abs_pos = mt_abs_pos + t_local_pos.transform(*rot_inv); 
+          //printf("\tt_pos: %.2f, %.2f, %.2f\n", t_pos.x(), t_pos.y(), t_pos.z()); 
+          //printf("\tt_local_pos: %.2f, %.2f, %.2f\n", t_local_pos.x(), t_local_pos.y(), t_local_pos.z()); 
 
           SLArCfgReadoutTile tileCfg( 100*(i_t_row+1) + i_t_clm ); 
-          G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg->GetID(), 
+          G4String tileName = Form("ReadoutTile_%i_%i_%i", anodeCfg.GetID(), 
               mtCfg.GetID(), tileCfg.GetID()); 
           tileCfg.SetName( tileName.data() ); 
           //printf("tile name: %s\n", tileCfg->GetName()); 
 
-          tileCfg.SetPhi( anodeCfg->GetPhi() ); 
-          tileCfg.SetTheta( anodeCfg->GetTheta() ); 
-          tileCfg.SetPsi( anodeCfg->GetPsi() ); 
+          tileCfg.SetPhi( anodeCfg.GetPhi() ); 
+          tileCfg.SetTheta( anodeCfg.GetTheta() ); 
+          tileCfg.SetPsi( anodeCfg.GetPsi() ); 
 
           tileCfg.SetX( t_local_pos.x() ); 
           tileCfg.SetY( t_local_pos.y() ); 
-          tileCfg.SetX( t_local_pos.z() ); 
+          tileCfg.SetZ( t_local_pos.z() ); 
           
+          G4ThreeVector t_abs_pos = mt_abs_pos + t_local_pos.transform(*rot_inv); 
+
           tileCfg.SetPhysX( t_abs_pos.x() ); 
           tileCfg.SetPhysY( t_abs_pos.y() ); 
           tileCfg.SetPhysZ( t_abs_pos.z() ); 
@@ -259,18 +267,24 @@ SLArCfgAnode* SLArDetAnodeAssembly::BuildAnodeConfig() {
       auto h2 = mtCfg.BuildPolyBinHist(SLArCfgAssembly<SLArCfgReadoutTile>::ESubModuleReferenceFrame::kRelative);
       delete h2;
 
-      anodeCfg->RegisterElement( mtCfg ); 
+      //for (const auto& t : mtCfg.GetConstMap()) {
+        //printf("Tile %i - pos: %.2f, %.2f, %.2f\n", t.GetIdx(), 
+            //t.GetX(), t.GetY(), t.GetZ());
+      //}
+      //getchar();
+
+      anodeCfg.RegisterElement( mtCfg ); 
     }
 
-    anodeCfg->SetSize(
+    anodeCfg.SetSize(
         2*((G4Box*)fModSV)->GetXHalfLength(),
         2*((G4Box*)fModSV)->GetYHalfLength(),
         2*((G4Box*)fModSV)->GetZHalfLength() ); 
   }
 
   printf("%s has %lu elements registered\n", 
-      anodeCfg->GetName(), anodeCfg->GetMap().size());
-  //getchar(); 
+
+  anodeCfg.GetName(), anodeCfg.GetMap().size());
 
   return anodeCfg; 
 }

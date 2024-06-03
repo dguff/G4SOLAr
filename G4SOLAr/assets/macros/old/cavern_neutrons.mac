@@ -1,0 +1,27 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : cavern_neutrons.mac
+# @created     : Wednesday Mar 13, 2024 12:03:49 CET
+#
+# @description : Example macro for cavern neutrons generation and propagation
+#                to the experimental hall 
+######################################################################
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 2.5 mm
+/SLAr/phys/positronCut 2.5 mm
+/SLAr/phys/gammaCut 2.5 mm
+/SLAr/phys/stepMax 2.5 mm
+/SLAr/scint/enablePhGeneration false
+
+# Set particle energy and source position 
+/SLAr/gen/type ExternalGen
+/SLAr/gen/externalconf assets/background/cavern_rock_neutrons.json
+
+# Set output file name
+/SLAr/manager/SetOutputName cavern_neutrons.root
+/SLAr/manager/storeFullTrajectory false
+
+# Fire!
+/run/beamOn 10000
+

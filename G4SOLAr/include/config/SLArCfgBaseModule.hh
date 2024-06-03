@@ -24,7 +24,7 @@ class SLArCfgBaseModule : public TNamed {
     SLArCfgBaseModule(const SLArCfgBaseModule& base); 
     virtual ~SLArCfgBaseModule(); 
 
-    inline virtual void DumpInfo() const {}; 
+    inline virtual void DumpInfo() const = 0; 
     inline int GetID() const {return fID;}
     inline void SetID(int id) {fID = id;}
     inline int GetIdx() const {return fIdx;}
@@ -62,7 +62,7 @@ class SLArCfgBaseModule : public TNamed {
     inline void   SetSize (const float x, const float y, const float z) { fSize.SetXYZ(x, y, z); }
 
     inline TVector3 GetNormal() const {return fNormal;}
-    virtual TGraph BuildGShape()=0; 
+    virtual TGraph BuildGShape() const =0; 
     inline void SetupAxis0( const TVector3 v) {fAxis0 = v;} 
     inline void SetupAxis1( const TVector3 v) {fAxis1 = v;}
     inline void SetupAxes ( const TVector3& v0, const TVector3& v1 ) {

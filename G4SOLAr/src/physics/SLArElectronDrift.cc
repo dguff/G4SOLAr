@@ -115,7 +115,6 @@ void SLArElectronDrift::Drift(const int& n,
   G4ThreeVector anodePos = 
     G4ThreeVector(anodeCfg->GetPhysX(), anodeCfg->GetPhysY(), anodeCfg->GetPhysZ()); 
 
-  //auto pixID_tmp = anodeCfg->GetPixelCoord( pos.dot(anodeXaxis), pos.dot(anodeYaxis) ); 
   //#ifdef SLAR_DEBUG
   //printf("%i electrons at [%.0f, %0.f, %0.f] mm, t = %g ns\n", 
   //n, pos.x(), pos.y(), pos.z(), time);
@@ -149,40 +148,13 @@ void SLArElectronDrift::Drift(const int& n,
   G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
   G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
 
-  SLArCfgAnode::SLArPixIdxCoord pixID;
+  SLArCfgAnode::SLArPixIdx pixID;
   for (G4int i=0; i<n_elec_anode; i++) {
-    pixID = anodeCfg->GetPixelCoord(x_[i], y_[i]); 
-    if (pixID[0] > 0 && pixID[1] > 0 && pixID[2] > 0 ) {
-      SLArCfgMegaTile& mtile = anodeCfg->GetBaseElementByID(pixID[0]); 
-      SLArCfgReadoutTile& tile = mtile.GetBaseElementByID(pixID[1]); 
-      //if (!tile) {
-        //printf("SLArElectronDrift::WARNING Unable to find tile with bin ID %i (%i, %i, %i)\n", 
-            //pixID[1], pixID[0], pixID[1], pixID[2]);
-        //getchar(); 
-        //continue;
-      //}
+    pixID = anodeCfg->GetPixelIndex(x_[i], y_[i]); 
+    if (pixID[0] >= 0 && pixID[1] >= 0 && pixID[2] >= 0 ) {
 
       SLArEventChargeHit hit(t_[i], trkId, ancestorId); 
       auto& evPixel = anodeEv->RegisterChargeHit(pixID, hit); 
-
-      //SLArEventMegatile* evMT=nullptr;
-      //auto mt_itr = anodeEv->GetMegaTilesMap().find(mtile->GetIdx());
-      //if (mt_itr == anodeEv->GetMegaTilesMap().end()) {
-        //evMT = anodeEv->CreateEventMegatile(mtile->GetIdx()); 
-      //}
-      //else {
-        //evMT = mt_itr->second;
-      //}
-
-      //SLArEventTile* evT=nullptr;
-      //auto t_itr = evMT->GetTileMap().find(tile->GetIdx()); 
-      //if (t_itr == evMT->GetTileMap().end()) {
-        //evT = evMT->CreateEventTile(tile->GetIdx()); 
-      //}
-      //else {
-        //evT = t_itr->second;
-      //}
-      //auto ev_pixel = evT->RegisterChargeHit(pixID[2], hit); 
 
       //#ifdef SLAR_DEBUG
       //printf("\tdiff x,y: %.2f - %.2f mm\n", x_[i], y_[i]);

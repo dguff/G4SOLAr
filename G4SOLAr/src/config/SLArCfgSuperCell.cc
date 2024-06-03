@@ -28,7 +28,7 @@ SLArCfgSuperCell::~SLArCfgSuperCell()
   //if (fGShape) {delete fGShape; fGShape = nullptr;}
 }
 
-TGraph SLArCfgSuperCell::BuildGShape() 
+TGraph SLArCfgSuperCell::BuildGShape() const
 {
   TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 

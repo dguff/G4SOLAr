@@ -10,10 +10,12 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include <G4ParticleGun.hh>
-#include <bxdecay0_g4/vertex_generator_interface.hh>
+#include <SLArVertextGenerator.hh>
+#include <SLArBaseGenerator.hh>
 
 class G4Event; 
 
+namespace gen{
 namespace bxdecay0_g4 {
 
 class SLArDecay0GeneratorMessenger; 
@@ -24,14 +26,14 @@ class SLArDecay0GeneratorMessenger;
  * @details The implementation of the SLArDecay0GeneratorAction class is 
  * heavily based on the example provided by the bxdecay0 developers. 
  */
-class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
+class SLArDecay0GeneratorAction : public SLArBaseGenerator {
   protected:
     struct pimpl_type;
   public: 
     /// \brief BxDecay0 generator configuration interface for Geant4 (used also by the associated messenger class)
     ///
     /// @see PrimaryGeneratorAction::SetConfiguration
-    struct ConfigurationInterface
+    struct Decay0Config_t
     {
       void print(std::ostream & out_, const std::string & indent_ = "") const;
       void reset_base();
@@ -41,9 +43,10 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
       bool is_valid_mdl() const;
       bool is_valid() const;
       
-      G4String  decay_category; ///< Category of the decay (mandatory)
+      G4String  decay_category = "background"; ///< Category of the decay (mandatory)
       G4String  nuclide;        ///< Name of the decaying isotope (mandatory)
       G4int     seed = 1;       ///< Seed for the pseudo-random number generator (mandatory)
+      G4int     n_decays = 1;   ///< Number of particle decays to be simulated
       G4int     dbd_mode = 0;   ///< Double beta decay mode (mandatory only for "dbd" category)
       G4int     dbd_level = 0;  ///< Daughter's energy level for DBD decay (only for "dbd" category, default to 0)
       /// Minimum sum of betas' energy in MeV 
@@ -68,13 +71,18 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
       
     };
  
-    SLArDecay0GeneratorAction(int verbosity_ = 0); 
-    SLArDecay0GeneratorAction(const ConfigurationInterface&, int verbosity_); 
+    SLArDecay0GeneratorAction(const G4String label = "decay0", int verbosity_ = 0); 
+    SLArDecay0GeneratorAction(const Decay0Config_t&, const G4String label, int verbosity_); 
     ~SLArDecay0GeneratorAction() override;    
 
-    const ConfigurationInterface & GetConfiguration() const;
+    void Configure( const rapidjson::Value& config) override;
 
-    ConfigurationInterface & GrabConfiguration();
+    G4String GetGeneratorType() const override {return "decay0";}
+    EGenerator GetGeneratorEnum() const override {return kDecay0;}
+
+    const Decay0Config_t & GetConfiguration() const;
+
+    Decay0Config_t & GrabConfiguration();
 
     /// Set the configuration changed flag
     void SetConfigHasChanged(bool);
@@ -83,7 +91,7 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
     bool ConfigHasChanged() const;
     
     /// Set the configuration of the embedded BxDecay0 driver
-    void SetConfiguration(const ConfigurationInterface &);
+    void SetConfiguration(const Decay0Config_t &);
 
     /// Apply the currently set configuration
     ///
@@ -117,28 +125,13 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     void Dump(std::ostream &) const;
     
-    /// Set the reference to an external vertex generator provided by the user.
-    ///
-    /// The vertex generator object must inherit the `bxdecay0_g4::VertexGeneratorInterface` abstract class.
-    void SetVertexGenerator(VertexGeneratorInterface & vertex_generator_);
-    
-    /// Install a vertex generator provided by the user but owned by the PGA.
-    ///
-    /// The vertex generator object must inherit the `bxdecay0_g4::VertexGeneratorInterface` abstract class.
-    /// The vertex generator object will be destroyed with the PGA.
-    void SetVertexGenerator(VertexGeneratorInterface * vertex_generator_ptr_);
-    
-    VertexGeneratorInterface & GetVertexGenerator();
-   
-    const VertexGeneratorInterface & GetVertexGeneratorConst() const;
+    G4String WriteConfig() const override;
     
   protected:
 
-    G4ParticleGun * _particle_gun_ = nullptr; ///< The Geant4 particle gun
-    VertexGeneratorInterface * _vertex_generator_ = nullptr; ///< Reference to an external vertex generator
-    bool _owned_vertex_generator_ = false;
+    std::unique_ptr<G4ParticleGun> _particle_gun_ = nullptr; ///< The Geant4 particle gun
     SLArDecay0GeneratorMessenger * _messenger_ = nullptr; ///< Messenger
-    ConfigurationInterface _config_; ///< Current configuration
+    Decay0Config_t fConfig; ///< Current configuration
     bool _config_has_changed_ = false; ///< Config change flag
     int _verbosity_ = 0; ///< Verbosity level (0=mute, 1=info, 2=debug, 3=trace)
     double _decaytime_ = 0;
@@ -147,7 +140,7 @@ class SLArDecay0GeneratorAction : public G4VUserPrimaryGeneratorAction {
  
 }; 
 }
-
+}
 
 #endif /* end of include guard SLARDECAY0GENERATORACTION_HH */
 

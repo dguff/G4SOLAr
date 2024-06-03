@@ -21,22 +21,26 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArTrackingAction::SLArTrackingAction() {}
+SLArTrackingAction::SLArTrackingAction() {
+  fTrackingExtraMessenger = new SLArTrackingActionMessenger( this ); 
+}
 
-SLArTrackingAction::~SLArTrackingAction() {}
+SLArTrackingAction::~SLArTrackingAction() {
+  if (fTrackingExtraMessenger) delete fTrackingExtraMessenger;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
-#ifdef SLAR_DEBUG
-  printf("SLArTrackingAction::PreUserTrackingAction\n");
-#endif // DEBUG
+//#ifdef SLAR_DEBUG
+  //printf("SLArTrackingAction::PreUserTrackingAction\n");
+//#endif // DEBUG
 
   //Let this be up to the user via vis.mac
   if (aTrack->GetParticleDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
   {
-    fpTrackingManager->SetStoreTrajectory(true);
+    fpTrackingManager->SetStoreTrajectory( _store_particle_trajectory_ );
     auto trkInfo = (SLArUserTrackInformation*)aTrack->GetUserInformation();
 
     if (trkInfo) {
@@ -63,7 +67,7 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
   }
   else {
     if (fpTrackingManager->GetStoreTrajectory()) {
-      //fpTrackingManager->SetStoreTrajectory( false );
+      fpTrackingManager->SetStoreTrajectory( _store_photon_trajectory_ );
       //This user track information is only relevant to the photons
       fpTrackingManager->SetUserTrackInformation(
           new SLArUserPhotonTrackInformation);
@@ -73,9 +77,9 @@ void SLArTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     }
   }
 
-#ifdef SLAR_DEBUG
-  printf("SLArTrackingAction::PreUserTrackingAction() DONE\n");
-#endif // DEBUG
+//#ifdef SLAR_DEBUG
+  //printf("SLArTrackingAction::PreUserTrackingAction() DONE\n");
+//#endif // DEBUG
        //Use custom trajectory class
 }
 
@@ -118,3 +122,41 @@ void SLArTrackingAction::PostUserTrackingAction(const G4Track* aTrack){
   }
 
 }
+
+#include <G4UIcmdWithABool.hh>
+
+SLArTrackingActionMessenger::SLArTrackingActionMessenger(SLArTrackingAction* trkAction)
+  : G4UImessenger(), fTrkAction(trkAction), 
+  fCmdStoreParticleTrajectory(nullptr), fCmdStorePhotonTrajectory(nullptr)
+{
+  fCmdStoreParticleTrajectory = 
+    new G4UIcmdWithABool("/tracking/storeParticleTrajectory", this); 
+  fCmdStoreParticleTrajectory->SetGuidance("store (or not) particle trajectory"); 
+  fCmdStoreParticleTrajectory->SetDefaultValue(true);
+
+  fCmdStorePhotonTrajectory = 
+    new G4UIcmdWithABool("/tracking/storePhotonTrajectory", this); 
+  fCmdStorePhotonTrajectory->SetGuidance("store (or not) optical photon trajectory"); 
+  fCmdStorePhotonTrajectory->SetDefaultValue(true);
+
+  return;
+}
+
+SLArTrackingActionMessenger::~SLArTrackingActionMessenger() {
+  if (fCmdStoreParticleTrajectory) delete fCmdStoreParticleTrajectory;
+  if (fCmdStorePhotonTrajectory) delete fCmdStorePhotonTrajectory;
+}
+
+void SLArTrackingActionMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
+  if (command == fCmdStoreParticleTrajectory) {
+    G4bool do_store = fCmdStoreParticleTrajectory->GetNewBoolValue(newValue); 
+    fTrkAction->_store_particle_trajectory_ = do_store;
+  }
+  else if (command == fCmdStorePhotonTrajectory) {
+    G4bool do_store = fCmdStorePhotonTrajectory->GetNewBoolValue(newValue); 
+    fTrkAction->_store_photon_trajectory_ = do_store;
+  }
+
+  return;
+}
+

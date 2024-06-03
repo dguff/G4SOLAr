@@ -90,7 +90,7 @@ SLArCfgReadoutTile::~SLArCfgReadoutTile()
  *}
  */
 
-TGraph SLArCfgReadoutTile::BuildGShape() 
+TGraph SLArCfgReadoutTile::BuildGShape() const
 {
   TGraph g(5);
   TVector3 pos(fPhysX, fPhysY, fPhysZ); 

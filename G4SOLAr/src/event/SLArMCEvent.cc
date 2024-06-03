@@ -4,15 +4,14 @@
  * @created     : mercoledì ago 10, 2022 11:52:40 CEST
  */
 
-#include "SLArAnalysisManager.hh"
-#include "event/SLArMCEvent.hh"
-#include "TRandom3.h"
+#include <event/SLArMCEvent.hh>
+#include <TRandom3.h>
 #include <cstdio>
 #include <typeinfo>
 ClassImp(SLArMCEvent)
 
 
-SLArMCEvent::SLArMCEvent() : 
+SLArMCEvent::SLArMCEvent() : TObject(),
   fEvNumber(0), fDirection{0, 0, 0}
 {
    fSLArPrimary.reserve(50);
@@ -59,19 +58,19 @@ SLArMCEvent::~SLArMCEvent()
 }
 
 
-int SLArMCEvent::ConfigAnode(std::map<int, SLArCfgAnode*> anodeCfg)
+int SLArMCEvent::ConfigAnode(const std::map<int, SLArCfgAnode>& anodeCfg)
 {
   for (const auto& anode : anodeCfg) {
     fEvAnode.insert(std::make_pair(anode.first, SLArEventAnode(anode.second)));
-    fEvAnode[anode.first].SetID(anode.second->GetIdx());
+    fEvAnode[anode.first].SetID(anode.second.GetIdx());
   }
 
   return fEvAnode.size();
 }
 
-int SLArMCEvent::ConfigSuperCellSystem(SLArCfgSystemSuperCell* supercellSysCfg)
+int SLArMCEvent::ConfigSuperCellSystem(const SLArCfgSystemSuperCell& supercellSysCfg)
 {
-  for (const auto& scArray : supercellSysCfg->GetMap()) {
+  for (const auto& scArray : supercellSysCfg.GetConstMap()) {
     if (fEvSuperCellArray.count(scArray.first)) {
       printf("SLArMCEvent::ConfigSuperCellSystem() WARNING: "); 
       printf("SuperCelll array with index %i is aleady stored in the MCEvent. Skipping.\n", scArray.first);

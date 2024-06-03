@@ -21,35 +21,50 @@
 #include <map>
 
 // Geant4 includes
-#include "G4VUserPrimaryGeneratorAction.hh"
-
-#include "bxdecay0_g4/vertex_generator_interface.hh"
+#include <G4VUserPrimaryGeneratorAction.hh>
+#include <SLArVertextGenerator.hh>
+#include <SLArBaseGenerator.hh>
 
 // MARLEY includes
-#include "marley/Generator.hh"
+#include <marley/Generator.hh>
 
 class G4Event;
 
+namespace gen {
 namespace marley {
 
-class SLArMarleyGeneratorAction : public G4VUserPrimaryGeneratorAction
+class SLArMarleyGeneratorAction : public SLArBaseGenerator
 {
   public:
-    SLArMarleyGeneratorAction();
-    SLArMarleyGeneratorAction(const std::string& config_file_name);
+    struct MarleyConfig_t {
+      G4String marley_config_path {};
+      G4double time = 0.0; 
+      G4int    n_particles = 1; 
+      EDirectionMode direction_mode = EDirectionMode::kRandomDir;
+      G4ThreeVector direction {0, 0, 0};
+    };
+    SLArMarleyGeneratorAction(G4String label = "");
+    ~SLArMarleyGeneratorAction() {};
 
-    void SetupMarleyGen(const std::string& config_file_name); 
-    void SetVertexGenerator(bxdecay0_g4::VertexGeneratorInterface*); 
+    G4String GetGeneratorType() const override {return "marley";}
+    EGenerator GetGeneratorEnum() const override {return kMarley;}
+
+    void Configure(const rapidjson::Value& config) override;
+    void SetupMarleyGen(const std::string& config_file_name);
+    void SetupMarleyGen(); 
     virtual void GeneratePrimaries(G4Event*) override;
-    void SetNuDirection(G4ThreeVector dir) {marley_nu_direction = dir;} 
-    G4ThreeVector GetNuDirection() {return marley_nu_direction;}
+    void SetNuDirection(G4ThreeVector dir) {fMarleyConfig.direction.set(dir.x(), dir.y(), dir.z());} 
+    G4ThreeVector GetNuDirection() {return fMarleyConfig.direction;}
+
+    G4String WriteConfig() const override;
 
   protected:
     // MARLEY event generator object
-    marley::Generator marley_generator_;
-    bxdecay0_g4::VertexGeneratorInterface* marley_vertex_generator_;
-    G4ThreeVector marley_nu_direction; 
+    MarleyConfig_t fMarleyConfig;
+    ::marley::Generator fMarleyGenerator;
     double SampleDecayTime(const double half_life) const;
     std::map<double, double> fHalfLifeTable;
+    
 };
+}
 }

@@ -74,7 +74,7 @@ void SLArDetReadoutTileAssembly::BuildTileRow(SLArDetReadoutTile* tile) {
 
   SLArPlaneParameterisation* rowTileParametrization = 
     new SLArPlaneParameterisation(
-      kZAxis, G4ThreeVector(0, 0, -0.5*(true_plane_z-tile_z)), tile_z);
+          kZAxis, G4ThreeVector(0, 0, -0.5*tile_z*(n_z-1)), tile_z);
   
   fTileRow->SetModPV(
       //new G4PVReplica("tile_row_z", tile->fModLV, fTileRow->GetModLV(), kZAxis, n_z, tile_z)
@@ -109,10 +109,9 @@ void SLArDetReadoutTileAssembly::BuildReadoutPlane(SLArDetReadoutTile* tile)
       fMatReadoutPlane->GetMaterial(), "ReadoutPlaneLV", 0, 0, 0, 1); 
 
   
-  SLArPlaneParameterisation* planeParametrization = 
+  SLArPlaneParameterisation* planeParametrization =
     new SLArPlaneParameterisation(
-        kXAxis, G4ThreeVector(-0.5*(true_plane_x-tile_x), 0., 0.), tile_x); 
-
+        kXAxis, G4ThreeVector(-0.5*tile_x*(n_x-1), 0., 0.), tile_x); 
 
   SetModPV(
       //new G4PVReplica("ReadoutPlane", fTileRow->GetModLV(), fModLV, kXAxis, n_x, tile_x)

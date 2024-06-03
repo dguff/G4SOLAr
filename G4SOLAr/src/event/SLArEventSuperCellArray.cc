@@ -24,10 +24,10 @@ SLArEventSuperCellArray::SLArEventSuperCellArray(const SLArEventSuperCellArray& 
   return;
 }
 
-SLArEventSuperCellArray::SLArEventSuperCellArray(SLArCfgSuperCellArray* cfg) 
+SLArEventSuperCellArray::SLArEventSuperCellArray(const SLArCfgSuperCellArray& cfg) 
   : SLArEventSuperCellArray()
 {
-  SetName(cfg->GetName());
+  SetName(cfg.GetName());
   //ConfigSystem(cfg); 
   return;
 }
@@ -40,9 +40,9 @@ SLArEventSuperCellArray::~SLArEventSuperCellArray() {
   fSuperCellMap.clear(); 
 }
 
-int SLArEventSuperCellArray::ConfigSystem(SLArCfgSuperCellArray* cfg) {
+int SLArEventSuperCellArray::ConfigSystem(const SLArCfgSuperCellArray& cfg) {
   int nsc = 0; 
-  for (const auto &sc : cfg->GetMap()) {
+  for (const auto &sc : cfg.GetConstMap()) {
       if (fSuperCellMap.count(sc.GetID()) == 0) {
         fSuperCellMap.insert( std::make_pair(sc.GetID(), SLArEventSuperCell(sc.GetID())) ); 
         nsc++;

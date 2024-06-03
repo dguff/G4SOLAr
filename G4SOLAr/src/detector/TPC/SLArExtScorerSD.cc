@@ -27,9 +27,10 @@ void SLArExtScorerSD::Initialize(G4HCofThisEvent* hce) {
   fHitsCollection = new SLArExtHitsCollection(SensitiveDetectorName, collectionName[0]); 
   if (fHCID < 0) {
     fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); 
-    if (verboseLevel) {
+    //if (verboseLevel) {
       printf("Registering SLArExtHitsCollection with ID %i\n", fHCID); 
-    }
+      //getchar();
+    //}
   }
 
   hce->AddHitsCollection(fHCID,fHitsCollection);
@@ -49,13 +50,13 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
         track->GetTrackID()); 
     return false; 
   }
-  SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
+  const SLArEventTrajectory* trajectory = trkInfo->GimmeEvTrajectory();
 
 
   if ( fabs(trajectory->GetPDGID()) == 12 || 
        fabs(trajectory->GetPDGID()) == 14 ||
        fabs(trajectory->GetPDGID()) == 16 ) {
-    return false;
+    return true;
   }
 
   auto scorer_hit = new SLArExtHit(); 
@@ -71,10 +72,13 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
   scorer_hit->fCreator = trajectory->GetCreatorProcess(); 
   scorer_hit->fEnergy = thePostPoint->GetKineticEnergy(); 
 
+  scorer_hit->fOriginVertex[0] = trajectory->GetConstPoints().front().fX; 
+  scorer_hit->fOriginVertex[1] = trajectory->GetConstPoints().front().fY; 
+  scorer_hit->fOriginVertex[2] = trajectory->GetConstPoints().front().fZ; 
 
-  scorer_hit->fVertex[0] = trajectory->GetPoints().front().fX; 
-  scorer_hit->fVertex[1] = trajectory->GetPoints().front().fY; 
-  scorer_hit->fVertex[2] = trajectory->GetPoints().front().fZ; 
+  scorer_hit->fVertex[0] = thePostPoint->GetPosition().x();
+  scorer_hit->fVertex[1] = thePostPoint->GetPosition().y();
+  scorer_hit->fVertex[2] = thePostPoint->GetPosition().z();
 
   fHitsCollection->insert( scorer_hit ); 
 
@@ -83,7 +87,6 @@ G4bool SLArExtScorerSD::ProcessHits(G4Step* step, G4TouchableHistory* ) {
     scorer_hit->Print(); 
     //getchar(); 
   }
-
 
   return true;
 }

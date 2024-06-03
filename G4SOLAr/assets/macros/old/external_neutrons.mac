@@ -16,11 +16,10 @@
 
 # Set particle energy and source position 
 /SLAr/gen/type ExternalGen
-/SLAr/gen/externalconf assets/background/external_neutrons.json
+/SLAr/gen/externalconf assets/background/cavern_rock_neutrons.json
 
 # Set output file name
-/SLAr/manager/SetOutputName external_neutrons_killer.root
 /SLAr/manager/storeFullTrajectory false
 
 # Fire!
-/run/beamOn 10000
+/run/beamOn 100000

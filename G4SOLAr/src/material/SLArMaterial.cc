@@ -392,10 +392,10 @@ G4double SLArMaterial::ParseUnit(const rapidjson::Value& junit) {
       vunit *= G4UIcommand::ValueOf(unit_match); 
     } else if (front == '/') {
       unit_match.erase(0, 1); 
-      printf("Divide %s\n", unit_match.c_str());
+      //printf("Divide %s\n", unit_match.c_str());
       vunit /= G4UIcommand::ValueOf(unit_match);  
     } else {
-      printf("Multiply %s\n", unit_match.c_str());
+      //printf("Multiply %s\n", unit_match.c_str());
       vunit *= G4UIcommand::ValueOf(unit_match); 
     }
   }

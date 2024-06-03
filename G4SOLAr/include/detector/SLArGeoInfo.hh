@@ -10,13 +10,12 @@
 
 #include <ostream>
 #include <map>
-#include "G4ThreeVector.hh"
+#include <G4ThreeVector.hh>
 
-#include "rapidjson/document.h"
-#include "rapidjson/allocators.h"
+#include <rapidjson/document.h>
+#include <rapidjson/allocators.h>
 
 class SLArGeoInfo {
-
   public:
     SLArGeoInfo();
     SLArGeoInfo(const SLArGeoInfo &geo);
@@ -34,11 +33,6 @@ class SLArGeoInfo {
              GetGeoPair      (G4String str);
     bool     ReadFromJSON    (const rapidjson::Value::ConstArray&); 
     bool     ReadFromJSON    (const rapidjson::Value::ConstObject&, const char* prefix = ""); 
-    static G4double ParseJsonVal    (const rapidjson::Value&); 
-    static G4double Unit2Val        (const char* unit); 
-    static G4double Unit2Val        (const rapidjson::Value&);
-    static G4double GetJSONunit      (const rapidjson::Value& obj); 
-
 
   private:
     std::map<G4String, G4double        >  fGeoPar;

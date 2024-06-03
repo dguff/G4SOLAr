@@ -71,9 +71,9 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   }
   if ( isMaster ) {
     fgMasterInstance = this;
-    fMCEvent = std::make_unique<SLArMCEvent>();
+    //fMCEvent = std::make_unique<SLArMCEvent>();
 #ifdef SLAR_EXTERNAL
-    fExternalRecord = std::make_unique<SLArEventTrajectoryLite>(); 
+    //fExternalRecord = std::make_unique<SLArEventTrajectoryLite>(); 
 #endif // DEBUG
     fAnaMsgr = new SLArAnalysisManagerMsgr();
   }
@@ -87,7 +87,7 @@ SLArAnalysisManager::~SLArAnalysisManager()
   if (fRootFile) {
     if (fRootFile->IsOpen()) {
       fRootFile->cd();
-      fEventTree->Write();
+      if (fEventTree) fEventTree->Write();
 #ifdef SLAR_EXTERNAL
       fExternalsTree->Write(); 
 #endif // SLAR_EXTERNAL
@@ -108,7 +108,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 {
   G4String filepath = fOutputPath;
   filepath.append(fOutputFileName);
-  fRootFile = std::make_unique<TFile>(filepath, "recreate");
+  fRootFile = new TFile(filepath, "recreate");
 
   if (!fRootFile)
   {
@@ -116,14 +116,15 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
-  fEventTree = std::make_unique<TTree>("EventTree", "SoLAr-sim Simulated Events", 
-      /*splitlevel*/ 99, /*dir*/ nullptr);
+  fEventTree = new TTree("EventTree", "SoLAr-sim Simulated Events");
  
   // setup backtracker size
   SetupBacktrackerRecords(); 
 
   printf("setting up ROOT TTree Branch...\n");
-  fEventTree->Branch("MCEvent", fMCEvent.get());
+  fEventTree->Branch("MCEvent", &fMCEvent);
+
+  printf("MCEvent tree created with AutoFlush set to %lld\n", fEventTree->GetAutoFlush());
 
 #ifdef SLAR_EXTERNAL
   SetupExternalsTree(); 
@@ -133,13 +134,13 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 }
 
 G4bool SLArAnalysisManager::CreateEventStructure() {
-  printf("fMCEvent pointer: %p\n", fMCEvent.get());
+  //printf("fMCEvent pointer: %p\n", fMCEvent.get());
 
   printf("configuring anode...\n");
-  fMCEvent->ConfigAnode( fAnodeCfg ); 
+  fMCEvent.ConfigAnode( fAnodeCfg ); 
 
   printf("configuring PDS...\n");
-  if (fPDSysCfg) fMCEvent->ConfigSuperCellSystem(fPDSysCfg);
+  if (!fPDSysCfg.GetMap().empty()) fMCEvent.ConfigSuperCellSystem(fPDSysCfg);
 
   return true;
 }
@@ -164,23 +165,24 @@ G4bool SLArAnalysisManager::Save()
 }
 
 
-G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell* pdsCfg)
+G4bool SLArAnalysisManager::LoadPDSCfg(SLArCfgSystemSuperCell& pdsCfg)
 {
-  fPDSysCfg = pdsCfg;
-  if (!fPDSysCfg) return false;
-  else return true ; 
+  fPDSysCfg = SLArCfgSystemSuperCell(pdsCfg);
+  return true;
+  //if (!fPDSysCfg) return false;
+  //else return true ; 
 }
 
-G4bool SLArAnalysisManager::LoadAnodeCfg(SLArCfgAnode* anodeCfg)
+G4bool SLArAnalysisManager::LoadAnodeCfg(SLArCfgAnode& anodeCfg)
 {
-  if (fAnodeCfg.count(anodeCfg->GetTPCID())) {
+  if (fAnodeCfg.count(anodeCfg.GetTPCID())) {
     printf("SLArAnalysisManager::LoadAnodeCfg WARNING "); 
     printf("an anode configuration with index %i is already registered. skip.\n",
-        anodeCfg->GetID());
+        anodeCfg.GetID());
     return false;
   }
 
-  fAnodeCfg.insert(std::make_pair(anodeCfg->GetTPCID(), anodeCfg));
+  fAnodeCfg.insert(std::make_pair(anodeCfg.GetTPCID(), std::move(anodeCfg)));
 
   return true;
 }
@@ -192,9 +194,9 @@ void SLArAnalysisManager::WriteSysCfg() {
     return;
   }
 
-  if (fPDSysCfg) {
+  if (fPDSysCfg.GetMap().empty() == false) {
     fRootFile->cd();
-    fPDSysCfg->Write("PDSSysConfig");
+    fPDSysCfg.Write("PDSSysConfig");
   } else {
     G4cout << "SLArAnalysisManager::WritePDSSysConfig" << G4endl;
     G4cout << "fPDSysCfg is nullptr! Quit."      << G4endl;
@@ -202,7 +204,7 @@ void SLArAnalysisManager::WriteSysCfg() {
 
   for (auto &anodeCfg : fAnodeCfg) {
     fRootFile->cd();
-    anodeCfg.second->Write(Form("AnodeCfg%i", anodeCfg.second->GetIdx()));
+    anodeCfg.second.Write(Form("AnodeCfg%i", anodeCfg.second.GetIdx()));
   } 
   return;
 }
@@ -231,7 +233,7 @@ G4bool SLArAnalysisManager::FillEvTree() {
     //printf("SLArAnalysisManager::WriteVariable WARNING ");
     //printf("rootfile not present yet. Cannot write %s variable.\n", 
         //name.c_str());
-    //return 666;
+    //return 666    
   //} 
 
   //TParameter<T> var(name, val); 
@@ -525,7 +527,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // charge backtrackers 
   if (fChargeBacktrackerManager) {
     if (fChargeBacktrackerManager->IsNull() == false) {
-      for (auto& evAnode : fMCEvent->GetEventAnode()) {
+      for (auto& evAnode : fMCEvent.GetEventAnode()) {
         evAnode.second.SetChargeBacktrackerRecordSize( fChargeBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
@@ -534,7 +536,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // vuv sipm backtrackers
   if (fVUVSiPMBacktrackerManager) {
     if (fVUVSiPMBacktrackerManager->IsNull() == false) {
-      for (auto& evAnode : fMCEvent->GetEventAnode()) {
+      for (auto& evAnode : fMCEvent.GetEventAnode()) {
         evAnode.second.SetLightBacktrackerRecordSize( fVUVSiPMBacktrackerManager->GetConstBacktrackers().size() );
       }
     }
@@ -543,7 +545,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
   // supercell backtrakers
   if (fSuperCellBacktrackerManager) {
     if (fSuperCellBacktrackerManager->IsNull() == false) {
-      for (auto& evSCA : fMCEvent->GetEventSuperCellArray() ) {
+      for (auto& evSCA : fMCEvent.GetEventSuperCellArray() ) {
         evSCA.second.SetLightBacktrackerRecordSize( fSuperCellBacktrackerManager->GetConstBacktrackers().size() ); 
       }
     }
@@ -553,20 +555,22 @@ void SLArAnalysisManager::SetupBacktrackerRecords() {
 
 #ifdef SLAR_EXTERNAL
 void SLArAnalysisManager::SetupExternalsTree() {
-  fExternalsTree = std::make_unique<TTree>("ExternalTree", "Externals reaching LAr interface", 
-      /*splitlevel*/99, /*dir*/ nullptr); 
+  fExternalsTree = new TTree("ExternalTree", "Externals reaching LAr interface");
 
-  fExternalsTree->Branch("iEv", &fExternalRecord->fEvNumber); 
-  fExternalsTree->Branch("pdgID", &fExternalRecord->fPDGCode); 
-  fExternalsTree->Branch("trkID", &fExternalRecord->fTrkID); 
-  fExternalsTree->Branch("parentID", &fExternalRecord->fParentID); 
-  fExternalsTree->Branch("origin_vol", &fExternalRecord->fOriginVol);
-  fExternalsTree->Branch("origin_energy", &fExternalRecord->fOriginEnergy);
-  fExternalsTree->Branch("weight", &fExternalRecord->fWeight);
-  fExternalsTree->Branch("time", &fExternalRecord->fTime); 
-  fExternalsTree->Branch("lar_energy", &fExternalRecord->fEnergy); 
-  fExternalsTree->Branch("vertex", &fExternalRecord->fVertex, "vertex[3]/F");
-  fExternalsTree->Branch("creator", &fExternalRecord->fCreator); 
+  fExternalsTree->Branch("iEv", &fExternalRecord.fEvNumber); 
+  fExternalsTree->Branch("pdgID", &fExternalRecord.fPDGCode); 
+  fExternalsTree->Branch("trkID", &fExternalRecord.fTrkID); 
+  fExternalsTree->Branch("parentID", &fExternalRecord.fParentID); 
+  fExternalsTree->Branch("origin_vol", &fExternalRecord.fOriginVol);
+  fExternalsTree->Branch("origin_energy", &fExternalRecord.fOriginEnergy);
+  fExternalsTree->Branch("weight", &fExternalRecord.fWeight);
+  fExternalsTree->Branch("time", &fExternalRecord.fTime); 
+  fExternalsTree->Branch("scorer_energy", &fExternalRecord.fEnergy); 
+  fExternalsTree->Branch("origin_vertex", &fExternalRecord.fOriginVertex);
+  fExternalsTree->Branch("scorer_vertex", &fExternalRecord.fScorerVertex);
+  fExternalsTree->Branch("creator", &fExternalRecord.fCreator); 
+
+  printf("ExternalsTree created with AutoFlush set to %lld\n", fExternalsTree->GetAutoFlush()); 
 }
 #endif // SLAR_EXTERNAL
 
