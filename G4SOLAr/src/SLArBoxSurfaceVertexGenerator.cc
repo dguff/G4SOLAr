@@ -285,17 +285,39 @@ void SLArBoxSurfaceVertexGenerator::Config( const G4String& config ) {
 }
 
 const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
+  G4String gen_type = GetType();
+  G4String solid_name = fSolid->GetName();
+  G4String logic_name = fLogVol->GetName();
   rapidjson::Document vtx_info; 
   vtx_info.SetObject(); 
 
-  vtx_info.AddMember("type", rapidjson::StringRef( GetType().data() ), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("solid_volume", rapidjson::StringRef(fSolid->GetName().data()), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("logical_volume", rapidjson::StringRef(fLogVol->GetName().data()), vtx_info.GetAllocator()); 
+  rapidjson::Value str_gen_type;
+  char buffer[50];
+  int len = sprintf(buffer, "%s", gen_type.data());
+  str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_solid_vol;
+  len = sprintf(buffer, "%s", solid_name.data());
+  str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_logic_vol; 
+  len = sprintf(buffer, "%s", logic_name.data());
+  str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  memset(buffer, 0, sizeof(buffer));
+  vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
+  
   vtx_info.AddMember("is_fixed_face", fFixFace, vtx_info.GetAllocator()); 
   if (fFixFace) {
     vtx_info.AddMember("fixed_face", fVtxFace, vtx_info.GetAllocator()); 
   }
-  vtx_info.AddMember("surface", GetSurfaceGenerator(), vtx_info.GetAllocator()); 
+  rapidjson::Value surface_val( rapidjson::kObjectType ); 
+  surface_val.AddMember("val", GetSurfaceGenerator() / CLHEP::cm2, vtx_info.GetAllocator()); 
+  surface_val.AddMember("unit", "cm2", vtx_info.GetAllocator()); 
+  vtx_info.AddMember("surface", surface_val, vtx_info.GetAllocator()); 
   
   return vtx_info;
 }

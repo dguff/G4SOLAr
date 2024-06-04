@@ -203,19 +203,42 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
 }
 
 const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
-  rapidjson::Document vtx_info; 
-  vtx_info.SetObject(); 
-
   G4String gen_type = GetType();
   G4String solid_name = fSolid->GetName();
   G4String logic_name = fLogVol->GetName();
 
-  vtx_info.AddMember("type", rapidjson::StringRef( gen_type.data() ), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("solid_volume", rapidjson::StringRef(solid_name.data()), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("logical_volume", rapidjson::StringRef(logic_name.data()), vtx_info.GetAllocator()); 
+  rapidjson::Document vtx_info; 
+  vtx_info.SetObject(); 
+
+  rapidjson::Value str_gen_type;
+  char buffer[50];
+  int len = sprintf(buffer, "%s", gen_type.data());
+  str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_solid_vol;
+  len = sprintf(buffer, "%s", solid_name.data());
+  str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_logic_vol; 
+  len = sprintf(buffer, "%s", logic_name.data());
+  str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  memset(buffer, 0, sizeof(buffer));
+  vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
+  
   vtx_info.AddMember("fiducial_volume_fraction", fFVFraction, vtx_info.GetAllocator()); 
-  vtx_info.AddMember("cubic_volume", GetCubicVolumeGenerator(), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("mass", GetMassVolumeGenerator(), vtx_info.GetAllocator()); 
+
+  rapidjson::Value volume_val( rapidjson::kObjectType ); 
+  volume_val.AddMember("val", GetCubicVolumeGenerator()/CLHEP::cm3, vtx_info.GetAllocator()); 
+  volume_val.AddMember("unit", "cm3", vtx_info.GetAllocator()); 
+  vtx_info.AddMember("cubic_volume", volume_val, vtx_info.GetAllocator()); 
+  rapidjson::Value mass_val( rapidjson::kObjectType ); 
+  mass_val.AddMember("val", GetMassVolumeGenerator()/CLHEP::kg, vtx_info.GetAllocator()); 
+  mass_val.AddMember("unit", "kg", vtx_info.GetAllocator()); 
+  vtx_info.AddMember("mass", mass_val, vtx_info.GetAllocator()); 
   return vtx_info;
 }
 }
