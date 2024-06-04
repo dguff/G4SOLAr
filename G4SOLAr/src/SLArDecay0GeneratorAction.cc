@@ -104,12 +104,15 @@ namespace bxdecay0_g4{
   bool SLArDecay0GeneratorAction::Decay0Config_t::is_valid_base() const
   {
     if (decay_category != "background" and decay_category != "dbd") {
+      fprintf(stderr, "Decay0Config_t::is_valid_base() ERROR: decay_category is neither \"background\" nor \"dbd\" - %s not valid\n", decay_category.data()); 
       return false;
     }
     if (nuclide.empty()) {
+      fprintf(stderr, "Decay0Config_t::is_valid_base() ERROR: nuclide is empty\n"); 
       return false;
     }
     if (seed < 1) {
+      fprintf(stderr, "Decay0Config_t::is_valid_base() ERROR: seed < 1 (%i)\n", seed); 
       return false;
     }
     if (decay_category == "dbd") {
@@ -177,7 +180,7 @@ namespace bxdecay0_g4{
     /// Category of the decay
     bxdecay0::decay0_generator::decay_category_type decay_category = bxdecay0::decay0_generator::DECAY_CATEGORY_UNDEFINED;
     /// Name of the decaying isotope
-    std::string   nuclide;      
+    std::string   nuclide = {};      
     /// Seed for the pseudo-random number generator
     unsigned int  seed = 314159; 
     /// Daughter's energy level (default: ground state)
@@ -228,7 +231,7 @@ namespace bxdecay0_g4{
     bxdecay0::std_random & get_prng();
 
     // Attributes:
-    SLArDecay0GeneratorAction *     action = nullptr;     // Mother action
+    SLArDecay0GeneratorAction *  action = nullptr;     // Mother action
     Configuration                config;               // Configuration of the BxDecay0 driver
     MdlEventOpConfiguration      mdl_config;           // Configuration of the MDL post-generation event operation in the BxDecay0 driver
     std::default_random_engine * pgenerator = nullptr; // Low level random generator (depends on config for its seeding)
@@ -270,8 +273,8 @@ namespace bxdecay0_g4{
           destroy();
         }
       } else {
-        if (action->IsTrace()) std::cerr << "[debug] bxdecay0_g4::SLArDecay0GeneratorAction::pimpl_type::get_decay0: Invalid configuration!\n";
-        
+        std::cerr << "[debug] bxdecay0_g4::SLArDecay0GeneratorAction::pimpl_type::get_decay0: Invalid configuration!\n";
+        exit( EXIT_FAILURE );  
       }
     }
     if (pdecay0 == nullptr) {
@@ -378,7 +381,7 @@ namespace bxdecay0_g4{
     return *pprng;
   }
 
-  SLArDecay0GeneratorAction::pimpl_type::pimpl_type(SLArDecay0GeneratorAction * action_)
+  SLArDecay0GeneratorAction::pimpl_type::pimpl_type(SLArDecay0GeneratorAction * action_) : pgenerator(nullptr), pdecay0(nullptr)
   {
     action = action_;
     if (action->IsTrace()) std::cerr << "[trace] bxdecay0_g4::SLArDecay0GeneratorAction::pimpl_type::ctor: Construction of the BxDecay0 Geant4 Plugin PIMPL...\n";
@@ -556,6 +559,7 @@ namespace bxdecay0_g4{
         _pimpl_->config.decay_category = bxdecay0::decay0_generator::DECAY_CATEGORY_DBD;
       } else if (fConfig.decay_category == "background") {
         _pimpl_->config.decay_category = bxdecay0::decay0_generator::DECAY_CATEGORY_BACKGROUND;
+        printf("SLArDecay0GeneratorAction::ApplyConfiguration(): setting \"background\" decay category to _pimpl_\n"); 
       } else {
         std::cerr << "[error] bxdecay0_g4::SLArDecay0GeneratorAction::ApplyConfiguration: Unsupported decay category '" << fConfig.decay_category << "'!\n";
         error = true;
@@ -802,6 +806,7 @@ namespace bxdecay0_g4{
     if ( config.HasMember("decay0_type") ) {
       G4String d0type = config["decay0_type"].GetString(); 
       fConfig.decay_category = d0type;
+      printf("fConfig.decay_category: %s\n", fConfig.decay_category.data()); 
     }
 
     if (config.HasMember("n_decays")) {
