@@ -114,7 +114,7 @@ SLArPhysicsList::SLArPhysicsList(G4String physName, G4bool do_cerenkov) :
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics);
   //RegisterPhysics(new G4RadioactiveDecayPhysics());
-  ReplacePhysics(new G4EmStandardPhysics_option4());
+  ReplacePhysics(new G4EmLivermorePhysics());
 
   fStepMaxProcess = new SLArStepMax();
 }
