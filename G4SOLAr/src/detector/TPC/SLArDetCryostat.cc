@@ -376,7 +376,7 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(geo::EBoxFace kFace) {
     else {
       G4cout << "SLArDetSuperCellArray::BuildSuperCellArray() WARNING: " << G4endl;
       G4cout << "I should not be here!" << G4endl;
-      getchar(); 
+      exit( EXIT_FAILURE ); 
       waffle_plane_submodule.push_back( new SLArBaseDetModule() ); 
       target = waffle_plane_submodule.back(); 
       origin = waffle_plane_submodule.rbegin()[1];
