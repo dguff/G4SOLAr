@@ -505,14 +505,14 @@ void print_usage() {
 
 
 int main (int argc, char *argv[]) {
-     const char* short_opts = "i:o:h";
-   static struct option long_opts[7] = 
-   {
-     {"input", required_argument, 0, 'i'}, 
-     {"output", required_argument, 0, 'o'}, 
-     {"help", no_argument, 0, 'h'}, 
-     {nullptr, no_argument, nullptr, 0}
-   };
+  const char* short_opts = "i:o:h";
+  static struct option long_opts[7] = 
+  {
+    {"input", required_argument, 0, 'i'}, 
+    {"output", required_argument, 0, 'o'}, 
+    {"help", no_argument, 0, 'h'}, 
+    {nullptr, no_argument, nullptr, 0}
+  };
 
   int c, option_index; 
 

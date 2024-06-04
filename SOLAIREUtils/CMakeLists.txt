@@ -19,6 +19,11 @@ include(${ROOT_USE_FILE})
 find_package(Geant4 REQUIRED)
 include(${Geant4_USE_FILE})
 
+find_package(RapidJSON REQUIRED)
+if (RapidJSON_FOUND) 
+  message(STATUS "RapidJSON found: include at ${RapidJSON_INCLUDE_DIR}")
+endif()
+
 find_package(G4SOLAr)
 if(G4SOLAr_FOUND)
   message(STATUS "G4SOLAR found: include at ${G4SOLAR_INCLUDE_DIR}")
@@ -53,6 +58,7 @@ include_directories(
   ${G4SOLAR_INCLUDE_DIR}
   ${Geant4_INCLUDE_DIR}
   ${ROOT_INCLUDE_DIRS}
+  "${RapidJSON_INCLUDE_DIR}/.."
   )
 if (CLHEP_EXTERNAL) 
   include_directories(${CLHEP_EXTERNAL})
@@ -76,7 +82,11 @@ configure_file(${PROJECT_SOURCE_DIR}/source/rootlogon.C.in
 add_executable(process_mc_truth "${SOLAIRE_SCRIPT_DIR}/process_mc_truth.cc")
 target_link_libraries(process_mc_truth ${ROOT_LIBRARIES} G4SOLAr::SLArMCEvent)
 
-install(TARGETS process_mc_truth
+add_executable(make_solaire_background "${SOLAIRE_SCRIPT_DIR}/make_solaire_background.cc")
+add_dependencies(make_solaire_background RapidJSON)
+target_link_libraries(make_solaire_background ${ROOT_LIBRARIES})
+
+install(TARGETS process_mc_truth make_solaire_background
   LIBRARY DESTINATION "${SOLAIRE_BIN_DIR}"
   RUNTIME DESTINATION "${SOLAIRE_BIN_DIR}"
   )

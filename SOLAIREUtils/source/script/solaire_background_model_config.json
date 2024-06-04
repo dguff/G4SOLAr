@@ -1,0 +1,50 @@
+// SOLAIRE Background description - v0
+// ---------------------------------------------------------------------------
+// exposure is given in [s], mass in [kg], activity in [Bq/kg]
+//
+
+{
+  "exposure" : 31536000, 
+  "sources" : [
+    {"name" : "HDPE", "mass" : 2684.0, "components" : [ // ---- MAJORANA radiopurity.org
+      {"name" : "uchain" , "activity" : 0.020, "propagation":0.29452565, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/hdpe/lar_sim/solaire_hdpe_uchain_tpc_hist.root"},
+      {"name" : "thchain", "activity" : 0.010, "propagation":0.19990367, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/hdpe/lar_sim/solaire_hdpe_thchain_tpc_hist.root"},
+      {"name" : "K40"    , "activity" : 0.043, "propagation":0.04869291, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/hdpe/lar_sim/solaire_hdpe_K40_tpc_hist.root"}
+      // {"name" : "Co60"   , "activity" : 0.000, "propagation":0.88438190, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/hdpe/lar_sim/solaire_hdpe_Co60_tpc_hist.root"}
+    ]}, 
+    {"name" : "Copper", "mass" : 19200.0, "components" : [ // ---- XENON 1ton OFHC(C10100) radiopurity.org
+      {"name" : "uchain" , "activity" : 1.9e-3 , "propagation":0.063186624, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/copper/lar_sim/solaire_copper_uchain_tpc_hist.root"},
+      {"name" : "thchain", "activity" : 0.09e-3, "propagation":0.042300362, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/copper/lar_sim/solaire_copper_thchain_tpc_hist.root"},
+      {"name" : "K40"    , "activity" : 0.5e-3 , "propagation":0.016004981, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/copper/lar_sim/solaire_copper_K40_tpc_hist.root"},
+      {"name" : "Co60"   , "activity" : 0.07e-3, "propagation":0.26621367 , "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/copper/lar_sim/solaire_copper_Co60_tpc_hist.root"}
+    ]}, 
+    //{"name" : "Foam1", "mass" : 2627.5882, "components" : [ // ---- DARKSIDE
+    //  {"name" : "uchain" , "activity" : 5.4, "propagation":0.0042377476, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam1/lar_sim/solaire_foam1_uchain_tpc_hist.root"},
+    //  {"name" : "thchain", "activity" : 8.7, "propagation":0.0032225559, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam1/lar_sim/solaire_foam1_thchain_tpc_hist.root"},
+    //  {"name" : "K40"    , "activity" :84.0, "propagation":0.0015137300, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam1/lar_sim/solaire_foam1_K40_tpc_hist.root"}
+    //]}, 
+    {"name" : "Foam2", "mass" : 2627.5882, "components" : [ // ---- DARKSIDE
+      {"name" : "uchain" , "activity" : 5.4, "propagation":0.0083072109, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam2/lar_sim/solaire_foam2_uchain_tpc_hist.root"},
+      {"name" : "thchain", "activity" : 8.7, "propagation":0.0061669257, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam2/lar_sim/solaire_foam2_thchain_tpc_hist.root"},
+      {"name" : "K40"    , "activity" :84.0, "propagation":0.0029305955, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/foam2/lar_sim/solaire_foam2_K40_tpc_hist.root"}
+    ]}, 
+    {"name" : "CryostatSteel", "mass" : 15000.0, "components" : [ // ---- SOLAIRE Design estimate
+      {"name" : "uchain" , "activity" : 1.1, "propagation":0.00086156288, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cryostat_steel/lar_sim/solaire_cryostat_steel_uchain_tpc_hist.root"},
+      {"name" : "thchain", "activity" : 3.9e-3, "propagation":0.00072684988, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cryostat_steel/lar_sim/solaire_cryostat_steel_thchain_tpc_hist.root"},
+      {"name" : "K40"    , "activity" : 15e-3, "propagation":0.00030860485, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cryostat_steel/lar_sim/solaire_cryostat_steel_K40_tpc_hist.root"},
+      {"name" : "Co60"   , "activity" : 11e-3, "propagation":0.0041511580 , "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cryostat_steel/lar_sim/solaire_cryostat_steel_Co60_tpc_hist.root"}
+    ]}, 
+    {"name" : "Cathode", "mass" : 5.0, "components" : [ // ---- 
+      {"name" : "uchain" , "activity" : 1.6e-3, "propagation":1.00000000000, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cathode/lar_sim/solaire_cathode_uchain_tpc_hist.root"},
+      {"name" : "thchain", "activity" : 2.7e-3, "propagation":1.00000000000, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cathode/lar_sim/solaire_cathode_thchain_tpc_hist.root"},
+      {"name" : "K40"    , "activity" : 3.5e-3, "propagation":1.00000000000, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cathode/lar_sim/solaire_cathode_K40_tpc_hist.root"},
+      {"name" : "Co60"   , "activity" : 0.8e-3, "propagation":1.00000000000, "file" : "/eos/experiment/dune/solar/montecarlo/solaire/radgamma2/cathode/lar_sim/solaire_cathode_Co60_tpc_hist.root"}
+    ]}
+  ], 
+  "hist_keys" : [
+    "hClusterEne_NoCuts", 
+    "hClusterEne_nclus1", 
+    "hClusterEne_nclus1_ODnpe20",
+    "hClusterEne_nclus1_ODnpe20_IDbtbnpe50"
+  ]
+}
