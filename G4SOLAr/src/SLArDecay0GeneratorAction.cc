@@ -112,7 +112,7 @@ namespace bxdecay0_g4{
       return false;
     }
     if (seed < 1) {
-      fprintf(stderr, "Decay0Config_t::is_valid_base() ERROR: seed < 1 (%i)\n", seed); 
+      fprintf(stderr, "Decay0Config_t::is_valid_base() ERROR: seed < 1 (%ld)\n", seed); 
       return false;
     }
     if (decay_category == "dbd") {
