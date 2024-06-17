@@ -18,6 +18,7 @@
 #include <SLArExternalGeneratorAction.hh>
 //#include <SLArBackgroundGeneratorAction.hh>
 #include <SLArGENIEGeneratorAction.hh>
+#include <SLArCorsikaGeneratorAction.hh>
 #ifdef SLAR_CRY
 #include <cry/SLArCRYGeneratorAction.hh>
 #endif
@@ -206,6 +207,14 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
         break;
       }
 
+  case (kCorsika) : // --JM
+    {
+      auto gen = new SLArCorsikaGeneratorAction(label);
+      gen->Configure( jgen["config"] );
+      this_gen = gen;
+      break;
+    }
+
 #ifdef SLAR_CRY
     case (kCRY) : 
       {
@@ -277,6 +286,10 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
       else if (igen == kGENIE) {
         auto local = (SLArGENIEGeneratorAction*)gen.second;
         delete local; 
+      }
+      else if (igen == kCorsika) {
+	auto local = (SLArCorsikaGeneratorAction*)gen.second;
+	delete local;
       }
 #ifdef SLAR_CRY
       else if (igen == kCRY) {

@@ -98,6 +98,8 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 
   for (int i=0; i<gVar.nPart; i++){
 
+    if (gVar.pdg[i] >= 2000000000) continue;
+
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
       G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
           gVar.p4[i][0]*1E3,
