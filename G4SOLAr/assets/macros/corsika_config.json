@@ -1,0 +1,9 @@
+{
+  "generator" : {
+    "type" : "corsika",
+    "label" : "corsika_test",
+    "config" : {
+      "corsika_db_dir" : "/sps/gdrnu/jmcelwee/corsika_gen/database/"
+    }
+  }
+}

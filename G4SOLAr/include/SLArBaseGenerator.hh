@@ -32,6 +32,7 @@ namespace gen{
 #ifdef SLAR_RADSRC
       ,kRadSrc=8
 #endif // DEBUG
+      ,kCorsika=9 // --JM
   };
 
   static const std::map<G4String, EGenerator> genMap = {
@@ -41,6 +42,7 @@ namespace gen{
     ,{"marley", EGenerator::kMarley}
     ,{"external", EGenerator::kExternalGen}
     ,{"genie", EGenerator::kGENIE}
+    ,{"corsika", EGenerator::kCorsika}
 #ifdef SLAR_CRY
     ,{"cry", EGenerator::kCRY}
 #endif

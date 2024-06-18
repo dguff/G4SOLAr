@@ -289,7 +289,7 @@ SLArPrimaryGeneratorAction::~SLArPrimaryGeneratorAction()
       }
       else if (igen == kCorsika) {
 	auto local = (SLArCorsikaGeneratorAction*)gen.second;
-	delete local;
+	delete local; // --JM
       }
 #ifdef SLAR_CRY
       else if (igen == kCRY) {
