@@ -97,7 +97,7 @@ class SLArEveDisplay : public TGMainFrame {
     Float_t fZmax = {}; 
 
     TGNumberEntry* fEnterEntry = {};
-    TGGroupFrame*  fGframeEntry = {};
+    TGHorizontalFrame*  fGframeEntry = {};
     TGLabel*       fEntryLabel = {};
 
     void ConfigureTPC(const rapidjson::Value& tpc_config);

@@ -346,42 +346,43 @@ namespace display {
 
    auto hf = new TGHorizontalFrame(frmMain);
    //{
-      TString icondir(TString::Format("%s/icons/", gSystem->Getenv("ROOTSYS")));
-      TGPictureButton* b = 0;
+   TString icondir(TString::Format("%s/icons/", gSystem->Getenv("ROOTSYS")));
+   TGPictureButton* b = 0;
 
-      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoBack.gif"));
-      hf->AddFrame(b);
-      b->Connect("Clicked()", "display::SLArEveDisplay", this, "PrevEvent()");
+   b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoBack.gif"));
+   hf->AddFrame(b);
+   b->Connect("Clicked()", "display::SLArEveDisplay", this, "PrevEvent()");
 
-      fEnterEntry = new TGNumberEntry(hf, 0, 6, 999, 
-          TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative, 
-          TGNumberFormat::kNELLimitMin);
+   fEnterEntry = new TGNumberEntry(hf, 0, 6, 999, 
+       TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative, 
+       TGNumberFormat::kNELLimitMin);
 
-      fEnterEntry->Connect("ValueSet(Long_t)", "display::SLArEveDisplay", this, "SetEntry()");
-      (fEnterEntry->GetNumberEntry())->Connect("ReturnPressed()", "display::SLArEveDisplay", this,
-                                        "SetEntry()");
-      hf->AddFrame(fEnterEntry, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));
+   fEnterEntry->Connect("ValueSet(Long_t)", "display::SLArEveDisplay", this, "SetEntry()");
+   (fEnterEntry->GetNumberEntry())->Connect("ReturnPressed()", "display::SLArEveDisplay", this,
+       "SetEntry()");
+   hf->AddFrame(fEnterEntry, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));
 
-      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoForward.gif"));
-      hf->AddFrame(b);
-      b->Connect("Clicked()", "display::SLArEveDisplay", this, "NextEvent()");
-      //}
-      frmMain->AddFrame(hf);
+   b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoForward.gif"));
+   hf->AddFrame(b);
+   b->Connect("Clicked()", "display::SLArEveDisplay", this, "NextEvent()");
+   //}
+   frmMain->AddFrame(hf);
 
-      fGframeEntry = new TGGroupFrame(this, "Event number");
-      fEntryLabel = new TGLabel(fGframeEntry, "No input.");
-      fGframeEntry->AddFrame(fEntryLabel, new TGLayoutHints(kLHintsTop | kLHintsLeft,
-            5, 5, 5, 5));
+   fGframeEntry = new TGHorizontalFrame(frmMain);
+   fGframeEntry->SetName("Entry number");
+   fEntryLabel = new TGLabel(fGframeEntry, "No input.");
+   fGframeEntry->AddFrame(fEntryLabel, new TGLayoutHints(kLHintsTop | kLHintsLeft,
+         5, 5, 5, 5));
 
-      frmMain->AddFrame(fGframeEntry, new TGLayoutHints(kLHintsExpandX, 2, 2, 1, 1));
+   frmMain->AddFrame(fGframeEntry, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 1));
 
-      frmMain->MapSubwindows();
-      frmMain->Resize();
-      frmMain->MapWindow();
+   frmMain->MapSubwindows();
+   frmMain->Resize();
+   frmMain->MapWindow();
 
-      browser->StopEmbedding();
-      browser->SetTabTitle("Event Control", 0);
+   browser->StopEmbedding();
+   browser->SetTabTitle("Event Control", 0);
 
-      return 1;
+   return 1;
   }
 }
