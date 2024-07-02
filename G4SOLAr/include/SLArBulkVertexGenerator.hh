@@ -92,6 +92,8 @@ private:
   unsigned int fRandomSeed{0}; ///< Seed for the random number generator
   bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
   double fFVFraction{1.0}; //!< Volume fraction 
+  G4bool fRequireMaterialMatch = false;
+  G4String fMaterial = {};
   
   // Working internals:
   G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes

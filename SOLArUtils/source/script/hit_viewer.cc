@@ -80,15 +80,6 @@ int main (int argc, char *argv[]) {
   return 0;
 }
 
-int process_event(TTree* hit_tree, TTree* mc_truth_tree, const Long64_t iev) {
-  hit_tree->GetEntry(iev); 
-
-  if (mc_truth_tree) {
-    mc_truth_tree->GetEntry(iev); 
-  }
-  return 0;
-}
-
 int process_file(const TString input_file_path, const TString control_file_path)
 {
   TFile* mc_truth_file = nullptr;
@@ -112,10 +103,13 @@ int process_file(const TString input_file_path, const TString control_file_path)
       }
       eve_display->Configure( d.GetObj() ); 
     }
+
+    eve_display->LoadTrackFile( control_file_path, "EventTree" ); 
   }
 
   eve_display->MakeGUI();
-  eve_display->GoToEvent(0); 
+  eve_display->SetEntry(0);
+  eve_display->ProcessEvent(); 
 
   if (mc_truth_file) {
     mc_truth_file->Close(); 

@@ -101,8 +101,12 @@ class SLArPointVertexGenerator : public SLArVertexGenerator {
       vtx_info.SetObject(); 
 
       G4String gen_type = GetType();
+      char buffer[50];
+      int len = sprintf(buffer, "%s", gen_type.data());
+      rapidjson::Value str_gen_type;
+      str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
 
-      vtx_info.AddMember("type", rapidjson::StringRef( gen_type.data() ), vtx_info.GetAllocator()); 
+      vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
       rapidjson::Value vtx_coord(rapidjson::kArrayType); 
       vtx_coord.PushBack( fVertex.x(), vtx_info.GetAllocator() ); 
       vtx_coord.PushBack( fVertex.y(), vtx_info.GetAllocator() ); 

@@ -85,6 +85,9 @@
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 #include "G4PhysicsModelCatalog.hh"
+#include <G4RunManager.hh>
+#include <SLArLArProperties.hh>
+#include <SLArDetectorConstruction.hh>
 #include "physics/SLArScintillation.h"
 #include "physics/SLArIonAndScintLArQL.h"
 #include "physics/SLArIonAndScintSeparate.h"
@@ -195,6 +198,10 @@ void SLArScintillation::Initialise()
   SetScintillationTrackInfo(params->GetScintTrackInfo());
   SetStackPhotons(params->GetScintStackPhotons());
   SetVerboseLevel(params->GetScintVerboseLevel());
+
+  auto detector = (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
+  const auto& lar_properties = detector->GetLArProperties(); 
+  electricField_ = lar_properties.GetElectricField(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

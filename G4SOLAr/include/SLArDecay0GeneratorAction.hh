@@ -45,7 +45,7 @@ class SLArDecay0GeneratorAction : public SLArBaseGenerator {
       
       G4String  decay_category = "background"; ///< Category of the decay (mandatory)
       G4String  nuclide;        ///< Name of the decaying isotope (mandatory)
-      G4int     seed = 1;       ///< Seed for the pseudo-random number generator (mandatory)
+      G4long    seed = 1;       ///< Seed for the pseudo-random number generator (mandatory)
       G4int     n_decays = 1;   ///< Number of particle decays to be simulated
       G4int     dbd_mode = 0;   ///< Double beta decay mode (mandatory only for "dbd" category)
       G4int     dbd_level = 0;  ///< Daughter's energy level for DBD decay (only for "dbd" category, default to 0)
@@ -133,7 +133,7 @@ class SLArDecay0GeneratorAction : public SLArBaseGenerator {
     SLArDecay0GeneratorMessenger * _messenger_ = nullptr; ///< Messenger
     Decay0Config_t fConfig; ///< Current configuration
     bool _config_has_changed_ = false; ///< Config change flag
-    int _verbosity_ = 0; ///< Verbosity level (0=mute, 1=info, 2=debug, 3=trace)
+    int _verbosity_ = 3; ///< Verbosity level (0=mute, 1=info, 2=debug, 3=trace)
     double _decaytime_ = 0;
     // PIMPL support (nothing of the BxDecay0 library is publicly exposed here):
     std::unique_ptr<pimpl_type> _pimpl_; ///< Embedded private BxDecay0 driver and associated resources

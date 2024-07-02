@@ -224,6 +224,11 @@ G4String SLArRadSrcGeneratorAction::WriteConfig() const {
     d.AddMember("range", jrange, d.GetAllocator());
   }
 
+  const rapidjson::Document vtx_json = fVtxGen->ExportConfig(); 
+  rapidjson::Value vtx_config;
+  vtx_config.CopyFrom(vtx_json, d.GetAllocator(), true); 
+  d.AddMember("vertex_generator", vtx_config, d.GetAllocator()); 
+
   d.Accept(writer);
   config_str = buffer.GetString();
   return config_str;

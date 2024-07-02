@@ -6,6 +6,8 @@
 
 #include "SLArBulkVertexGenerator.hh"
 #include "G4PhysicalVolumeStore.hh"
+#include <G4TransportationManager.hh>
+#include <G4Material.hh>
 #include "G4RandomTools.hh"
 
 namespace gen {
@@ -122,14 +124,20 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     //printf("delta = %g\n", delta);
   }
 
+  auto navigator = G4TransportationManager::GetTransportationManager()->GetNavigator("World"); 
+
   G4ThreeVector localVertex;
+  G4String localMaterial; 
   G4int maxtries=100000, itry=1;
   do {
     localVertex.set(
         lo.x() + 0.5*delta + G4UniformRand()*(hi.x()-lo.x()-delta),
         lo.y() + 0.5*delta + G4UniformRand()*(hi.y()-lo.y()-delta),
         lo.z() + 0.5*delta + G4UniformRand()*(hi.z()-lo.z()-delta));
-  } while (!fSolid->Inside(localVertex) && ++itry < maxtries);
+
+    G4VPhysicalVolume* vol = navigator->LocateGlobalPointAndSetup(localVertex);
+    localMaterial = vol->GetLogicalVolume()->GetMaterial()->GetName();
+  } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
   G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
@@ -187,23 +195,50 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
   if (cfg.HasMember("avoid_daughters")) {
     fNoDaughters = cfg["avoid_daughters"].GetBool();
   }
+  if (cfg.HasMember("material")) {
+    fMaterial = cfg["material"].GetString(); 
+    fRequireMaterialMatch = true;
+  }
   Config(volName);
 }
 
 const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
-  rapidjson::Document vtx_info; 
-  vtx_info.SetObject(); 
-
   G4String gen_type = GetType();
   G4String solid_name = fSolid->GetName();
   G4String logic_name = fLogVol->GetName();
 
-  vtx_info.AddMember("type", rapidjson::StringRef( gen_type.data() ), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("solid_volume", rapidjson::StringRef(solid_name.data()), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("logical_volume", rapidjson::StringRef(logic_name.data()), vtx_info.GetAllocator()); 
+  rapidjson::Document vtx_info; 
+  vtx_info.SetObject(); 
+
+  rapidjson::Value str_gen_type;
+  char buffer[50];
+  int len = sprintf(buffer, "%s", gen_type.data());
+  str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_solid_vol;
+  len = sprintf(buffer, "%s", solid_name.data());
+  str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
+  memset(buffer, 0, sizeof(buffer));
+
+  rapidjson::Value str_logic_vol; 
+  len = sprintf(buffer, "%s", logic_name.data());
+  str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
+  memset(buffer, 0, sizeof(buffer));
+  vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
+  
   vtx_info.AddMember("fiducial_volume_fraction", fFVFraction, vtx_info.GetAllocator()); 
-  vtx_info.AddMember("cubic_volume", GetCubicVolumeGenerator(), vtx_info.GetAllocator()); 
-  vtx_info.AddMember("mass", GetMassVolumeGenerator(), vtx_info.GetAllocator()); 
+
+  rapidjson::Value volume_val( rapidjson::kObjectType ); 
+  volume_val.AddMember("val", GetCubicVolumeGenerator()/CLHEP::cm3, vtx_info.GetAllocator()); 
+  volume_val.AddMember("unit", "cm3", vtx_info.GetAllocator()); 
+  vtx_info.AddMember("cubic_volume", volume_val, vtx_info.GetAllocator()); 
+  rapidjson::Value mass_val( rapidjson::kObjectType ); 
+  mass_val.AddMember("val", GetMassVolumeGenerator()/CLHEP::kg, vtx_info.GetAllocator()); 
+  mass_val.AddMember("unit", "kg", vtx_info.GetAllocator()); 
+  vtx_info.AddMember("mass", mass_val, vtx_info.GetAllocator()); 
   return vtx_info;
 }
 }

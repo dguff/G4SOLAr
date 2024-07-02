@@ -113,6 +113,11 @@ void SLArDetectorConstruction::Init() {
 
   // open geometry configuration file
   FILE* geo_cfg_file = std::fopen(fGeometryCfgFile, "r");
+  if (geo_cfg_file == nullptr) {
+    fprintf(stderr, "Unable to open geometry configuration file %s\n", 
+        fGeometryCfgFile.c_str()); 
+    exit( EXIT_FAILURE ); 
+  }
   char readBuffer[65536];
   rapidjson::FileReadStream is(geo_cfg_file, readBuffer, sizeof(readBuffer));
 

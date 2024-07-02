@@ -16,83 +16,8 @@
 #include "Randomize.hh"
 #include "G4Poisson.hh"
 
-SLArElectronDrift::SLArElectronDrift() :
-  fElectricField(0.5), fLArTemperature(87.7), fMuElectron(1.), 
-  fDiffCoefficientL(0.), fDiffCoefficientT(0.), 
-  fvDrift(1.0), fElectronLifetime(1e7)
-{}
-
-void SLArElectronDrift::ComputeProperties() {
-  printf("SLArElectronDrift::ComputeProperties() ");
-  printf("Setup electron transport properties in LAr\n");
-
-  fMuElectron = ComputeMobility(fElectricField, fLArTemperature);
-  fvDrift     = ComputeDriftVelocity(fElectricField); 
-  auto diff   = ComputeDiffusion(fElectricField, fLArTemperature); 
-  fDiffCoefficientL = diff.at(0); 
-  fDiffCoefficientT = diff.at(1); 
-}
-
-double SLArElectronDrift::ComputeMobility(std::array<double, 2> par) {
-  double mu = ComputeMobility(par[0], par[1]); 
-  return mu;
-}
-
-double SLArElectronDrift::ComputeMobility(double E, double larT) { 
-  G4double num = a0 + a1*E + a2*pow(E, 1.5) + a3*pow(E, 2.5); 
-  G4double den = 1 + (a1/a0)*E + a4*E*E + a5*E*E*E;
-
-  G4double mu=  num/den*pow(larT/larT0, -1.5); 
-  
-  return mu;
-}
-
-double SLArElectronDrift::ComputeDriftVelocity(double E) {
-  G4double v = E*fMuElectron*1e3/*kV/cm->V/cm*/*1E-8/*cm/s->mm/ns*/;
-  return v;
-}
-
-std::array<double,2> SLArElectronDrift::ComputeDiffusion(double E, double larT) {
-  G4double num = b0 + b1*E + b2*E*E; 
-  G4double den = 1 + (b1/b0)*E + b3*E*E; 
-
-  G4double epsL = (num/den)*(larT/larT1); 
-
-  G4double diffL = epsL * fMuElectron * 1e-7; // [mm2/ns]
-
-  std::array<double, 2> par = {E, larT}; 
-
-  double dMudE = FastMuDerivative(par, 0.005*E, 0); 
-  
-  G4double diffT = diffL / (1+dMudE*E/fMuElectron); 
-
-  return std::array<double,2>({diffL, diffT});
-}
-
-double SLArElectronDrift::FastMuDerivative(
-    std::array<double, 2> par, double step, int ipar) {
-  
-  G4double num = 0; G4double den = 12*step; 
-  std::array<double, 2> par_ = par; 
-  par_[ipar] = par[ipar] + 2*step; num -=   ComputeMobility(par_); 
-  par_[ipar] = par[ipar] + 1*step; num += 8*ComputeMobility(par_); 
-  par_[ipar] = par[ipar] - 1*step; num -= 8*ComputeMobility(par_); 
-  par_[ipar] = par[ipar] - 2*step; num +=   ComputeMobility(par_); 
-
-  return num/den;
-}
-
-void SLArElectronDrift::PrintProperties() {
-  printf("**************************************************\n");
-  printf("* SLArElectronDrift Electron Transport Properties \n");
-  printf("* - - - - - - - - - - - - - - - - - - - - - - - - \n");
-  printf("* electron mobility: %g cm²/s/V\n", fMuElectron); 
-  printf("* drift velocity: %g cm/μs\n", fvDrift * 1e+2);
-  printf("* diff coeff L: %g cm²/s\n", fDiffCoefficientL*1e+7);
-  printf("* diff coeff T: %g cm²/s\n", fDiffCoefficientT*1e+7);
-  printf("**************************************************\n");
-  return;
-}
+SLArElectronDrift::SLArElectronDrift(const SLArLArProperties& lar_properties) : fLArProperties(lar_properties)
+{ }
 
 void SLArElectronDrift::Drift(const int& n, 
     const int& trkId,
@@ -126,12 +51,12 @@ void SLArElectronDrift::Drift(const int& n,
   G4double driftLength = (pos - anodePos).dot(anodeNormal);
   if (driftLength < 0) return;
 
-  G4double driftTime   = driftLength / fvDrift;
+  G4double driftTime   = driftLength / fLArProperties.fvDrift;
   G4double hitTime     = time + driftTime; 
   // compute diffusion length and fraction of surviving electrons
-  G4double diffLengthT = sqrt(2*fDiffCoefficientT*driftTime); 
-  G4double diffLengthL = sqrt(2*fDiffCoefficientL*driftTime); 
-  G4double f_surv      = exp (-driftTime/fElectronLifetime); 
+  G4double diffLengthT = sqrt(2*fLArProperties.fDiffCoefficientT*driftTime); 
+  G4double diffLengthL = sqrt(2*fLArProperties.fDiffCoefficientL*driftTime); 
+  G4double f_surv      = exp (-driftTime/fLArProperties.fElectronLifetime); 
 
   //#ifdef SLAR_DEBUG
   //printf("Drift len = %g mm, time: %g ns, f_surv = %.2f%% - σ(L) = %g mm, σ(T) = %g mm\n", 
@@ -146,7 +71,7 @@ void SLArElectronDrift::Drift(const int& n,
   std::vector<double> t_(n_elec_anode);
   G4RandGauss::shootArray(n_elec_anode, &x_[0], pos.dot(anodeXaxis), diffLengthT); 
   G4RandGauss::shootArray(n_elec_anode, &y_[0], pos.dot(anodeYaxis), diffLengthT); 
-  G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL/fvDrift); 
+  G4RandGauss::shootArray(n_elec_anode, &t_[0], hitTime, diffLengthL / fLArProperties.fvDrift); 
 
   SLArCfgAnode::SLArPixIdx pixID;
   for (G4int i=0; i<n_elec_anode; i++) {
