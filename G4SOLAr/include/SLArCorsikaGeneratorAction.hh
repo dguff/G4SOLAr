@@ -5,8 +5,18 @@
 
 #include "SLArBaseGenerator.hh"
 
+#include "G4Event.hh"
+#include "G4ThreeVector.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
+
+#include "DBReader.hh"
+#include "detector.hh"
+#include "EParticle.hh"
+#include "EShower.hh"
+#include "EHandler.hh"
 
 
 namespace gen{

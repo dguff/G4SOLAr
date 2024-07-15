@@ -67,8 +67,75 @@ namespace gen {
 
   void SLArCorsikaGeneratorAction::GeneratePrimaries(G4Event *ev)
   {
-    std::cout << "Something random" << std::endl;
+
+    double xVals[2] = {-4.,4.};
+    double yVals[2] = {-4.,4.};
+    double EVals[2] = {50,100000};
+    double spillT = 0.001;
+
+    // Read the database using the reader class 
+    DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
+   
+    //Setup a detector level to read from 
+    Detector *pdMuon = new Detector(xVals, yVals, EVals);
+    pdMuon->ValidateRange();
+    
+    // Collect primaries from the detector. Should probably put this in the function
+    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, spillT);
+    // Sort the vector lowest to highest in order to speed up searching (we can skip many
+    // of the early events this way...
+    sort(primary_gen.begin(), primary_gen.end());
+  
+    // Set the spill time for all EHandler objects
+    EHandler::SetSpillT(spillT);
+
+    // Create a handler for the shower
+    EShower showerHandler(corsDB, pdMuon);
+    //    showerHandler.CreateTree();
+
+    // Create a handler for the particle 
+    EParticle particleHandler(corsDB, pdMuon);
+    //    particleHandler.CreateTree();
+
+    // Loop through the showers selected and process them 
+    for (int shower : primary_gen) {
+
+      showerHandler.Process(shower);
+      particleHandler.Process(shower, &showerHandler);
+ 
+    }
+
+    const std::vector<EParticle::Particle> &particles = particleHandler.GetParticles();
+  
+
+    G4ThreeVector vtx(0., 0., 0.);
+    std::vector<G4PrimaryVertex*> primary_vertices;
+
+    int particle_idx = 0;
+
+    for (const auto &part : particles) {
+      
+      G4PrimaryParticle *incident_part = new G4PrimaryParticle(part.m_pdg,
+							       part.m_mom[0]*1E3,
+							       part.m_mom[1]*1E3,
+							       part.m_mom[2]*1E3,
+							       part.m_eK*1E3);
+      vtx.set(part.m_vtx[0], part.m_vtx[1], 4.);
+      auto vertex = new G4PrimaryVertex(vtx, 0.);
+      vertex->SetPrimary(incident_part);
+      primary_vertices.push_back(vertex);
+      
+      particle_idx++;
+    }
+      
+    std::cout << "Number of particles: " << particle_idx << std::endl;
+
+    for (const auto& vertex : primary_vertices) 
+      ev->AddPrimaryVertex(vertex);
+
   }
+
+
 
 // ***************************************************************************
 
