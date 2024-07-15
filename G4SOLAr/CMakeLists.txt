@@ -121,6 +121,8 @@ find_library(MARLEY_ROOT
   NO_DEFAULT_PATH
   )
 
+set(ECOSMIC_SRC "$ENV{ECOSMIC_SRC}")
+
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
@@ -138,6 +140,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${RapidJSON_INCLUDE_DIR}/..
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
+		    ${ECOSMIC_SRC}/include
 )
 
 if (CLHEP_EXTERNAL) 
@@ -265,6 +268,7 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+target_link_libraries(solar_sim ${ECOSMIC_SRC}/lib/libECosmic.so)
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim ${CRY_LIBRARIES})
 endif()

@@ -2,9 +2,9 @@
   "World" : {
     "copyID" : 0, 
     "dimensions" : [
-      {"name" : "size_x" , "val" : 10.0, "unit": "m"},    
-      {"name" : "size_y" , "val" : 10.0, "unit": "m"},   
-      {"name" : "size_z" , "val" : 10.5, "unit": "m"}
+      {"name" : "size_x" , "val" : 20.0, "unit": "m"},    
+      {"name" : "size_y" , "val" : 20.0, "unit": "m"},   
+      {"name" : "size_z" , "val" : 20.5, "unit": "m"}
     ]
   },
   "TPC" : [

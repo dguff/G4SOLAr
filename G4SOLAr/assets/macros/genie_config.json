@@ -3,7 +3,7 @@
     "type" : "genie", 
     "label" : "genie_test", 
     "config" : {
-      "genie_file_path" : "/pbs/home/j/jmcelwee/data/enubet_genie_seed.root",
+      "genie_file_path" : "/pbs/throng/gdrnu/ENUBET/genie_simulations/AR2320i00000_nested_v0.root",
       "genie_tree_key" : "enubetG", 
       "tree_first_entry" : 0
     }
