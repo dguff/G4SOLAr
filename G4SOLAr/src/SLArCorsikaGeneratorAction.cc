@@ -37,6 +37,46 @@ namespace gen {
   {    
     assert( config.HasMember("corsika_db_dir") );
     fConfig.corsika_db_dir = config["corsika_db_dir"].GetString();
+
+    // X Detector Dimensions
+    if ( config.HasMember("corsika_det_xlow") )
+      fConfig.corsika_det_x[0] = config["corsika_det_xlow"].GetDouble();
+    else
+      fConfig.corsika_det_x[0] = -4.;
+
+    if ( config.HasMember("corsika_det_xhigh") )
+      fConfig.corsika_det_x[1] = config["corsika_det_xhigh"].GetDouble();
+    else
+      fConfig.corsika_det_x[1] = 4.;
+
+    // Y Detector Dimensions
+    if ( config.HasMember("corsika_det_ylow") )
+      fConfig.corsika_det_y[0] = config["corsika_det_ylow"].GetDouble();
+    else
+      fConfig.corsika_det_y[0] = -4.;
+
+    if ( config.HasMember("corsika_det_yhigh") )
+      fConfig.corsika_det_y[1] = config["corsika_det_yhigh"].GetDouble();
+    else
+      fConfig.corsika_det_y[1] = 4.;
+
+    // Energy regime
+    if ( config.HasMember("corsika_Elow") )
+      fConfig.corsika_E[0] = config["corsika_Elow"].GetInt();
+    else
+      fConfig.corsika_E[0] = 50;
+
+    if ( config.HasMember("corsika_Ehigh") )
+      fConfig.corsika_E[1] = config["corsika_Ehigh"].GetInt();
+    else
+      fConfig.corsika_E[1] = 100000;
+
+    // Spill Time
+    if ( config.HasMember("corsika_dT") )
+      fConfig.corsika_dT = config["corsika_dT"].GetDouble();
+    else
+      fConfig.corsika_dT = 2.;
+    
   }
 
   G4String SLArCorsikaGeneratorAction::WriteConfig() const
@@ -52,7 +92,14 @@ namespace gen {
     d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator());
     d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator());
     d.AddMember("corsika_db_dir", rapidjson::StringRef(fConfig.corsika_db_dir.data()), d.GetAllocator());
-
+    d.AddMember("corsika_det_xlow",  fConfig.corsika_det_x[0], d.GetAllocator());
+    d.AddMember("corsika_det_xhigh",  fConfig.corsika_det_x[1], d.GetAllocator());
+    d.AddMember("corsika_det_ylow",  fConfig.corsika_det_y[0], d.GetAllocator());
+    d.AddMember("corsika_det_yhigh",  fConfig.corsika_det_y[1], d.GetAllocator());
+    d.AddMember("corsika_Elow",  fConfig.corsika_E[0], d.GetAllocator());
+    d.AddMember("corsika_Ehigh",  fConfig.corsika_E[1], d.GetAllocator());
+    d.AddMember("corsika_dT", fConfig.corsika_dT, d.GetAllocator());
+    
     d.Accept(writer);
     config_str = buffer.GetString();
     return config_str;
@@ -63,7 +110,7 @@ namespace gen {
 
 
 // ***************************************************************************
-// ***** CONFIGURE ***********************************************************
+// ***** GENERATE ************************************************************
 
   void SLArCorsikaGeneratorAction::GeneratePrimaries(G4Event *ev)
   {
@@ -73,6 +120,9 @@ namespace gen {
     double EVals[2] = {50,100000};
     double spillT = 0.001;
 
+    std::cout << fConfig.corsika_det_x[0] << " " << fConfig.corsika_det_x[1] << std::endl;
+    //    exit(0);
+    
     // Read the database using the reader class 
     DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
    

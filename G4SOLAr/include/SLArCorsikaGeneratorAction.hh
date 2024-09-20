@@ -29,6 +29,10 @@ namespace gen{
     // Read configuration file
     struct CorsikaConfig_t {
       G4String corsika_db_dir {};
+      G4double corsika_det_x[2] {};
+      G4double corsika_det_y[2] {};
+      G4int    corsika_E[2] {};
+      G4double corsika_dT {};
     };
 
     // ----- Constructors -----
