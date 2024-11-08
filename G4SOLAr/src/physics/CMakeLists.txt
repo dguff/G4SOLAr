@@ -15,7 +15,7 @@ add_library(SLArIonAndScint
   ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintLArQL.cc
   ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintLArQL.h
   )
-target_link_libraries(SLArIonAndScint ROOT::Core)
+target_link_libraries(SLArIonAndScint ROOT::Core ${Geant4_LIBRARIES})
 
 add_library(SLArScintillation
   SHARED
@@ -27,8 +27,8 @@ add_library(SLArScintillation
   #${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintSeparate.h
   #${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintModel.cc
   #${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintModel.h
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
+  # ${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
+  # ${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
   )
 add_dependencies(SLArScintillation SLArMCEventReadout SLArReadoutSystemConfig)
 target_link_libraries(SLArScintillation SLArIonAndScint ${Geant4_LIBRARIES} SLArMCEventReadout SLArReadoutSystemConfig)

@@ -9,6 +9,7 @@
 #define SLARCFGBASEMODULE_HH
 
 #include <iostream>
+#include <array>
 #include "TNamed.h"
 #include "TVector3.h"
 #include "TRotation.h"
