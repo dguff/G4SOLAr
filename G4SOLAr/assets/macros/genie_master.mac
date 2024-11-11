@@ -1,0 +1,22 @@
+######################################################################
+# @author      : Jordan McElwee (mcelwee@lp2ib.in2p3.fr)
+# @file        : genie_master.mac
+# @created     : Wednesday Oct 04, 2023 14:53:11 CEST
+#
+# @description : master macro for generating genie events
+######################################################################
+
+# Set secondary production cuts for gamma and electrons
+/SLAr/phys/electronCut 10 mm
+/SLAr/phys/positronCut 5 mm
+/SLAr/phys/gammaCut 5 mm
+/SLAr/phys/stepMax 20 mm
+/SLAr/phys/DoTracePhotons false
+
+# Set particle energy and source position 
+/SLAr/gen/configure assets/macros/genie_config.json
+
+/SLAr/manager/SetOutputName genie_out.root
+
+# Fire!
+/run/beamOn 1
